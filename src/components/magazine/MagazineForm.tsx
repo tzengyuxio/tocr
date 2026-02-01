@@ -38,7 +38,8 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
     control,
     formState: { errors },
   } = useForm<MagazineCreateInput>({
-    resolver: zodResolver(magazineCreateSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(magazineCreateSchema) as any,
     defaultValues: {
       name: initialData?.name || "",
       nameEn: initialData?.nameEn || "",

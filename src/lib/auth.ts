@@ -21,7 +21,8 @@ declare module "next-auth" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: PrismaAdapter(prisma) as any,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,

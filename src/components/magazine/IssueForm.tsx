@@ -45,7 +45,8 @@ export function IssueForm({
     control,
     formState: { errors },
   } = useForm<IssueCreateInput>({
-    resolver: zodResolver(issueCreateSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(issueCreateSchema) as any,
     defaultValues: {
       magazineId,
       issueNumber: initialData?.issueNumber || "",

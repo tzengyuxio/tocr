@@ -5,7 +5,7 @@ export const issueCreateSchema = z.object({
   issueNumber: z.string().min(1, "期號為必填"),
   volumeNumber: z.string().optional().nullable(),
   title: z.string().optional().nullable(),
-  publishDate: z.coerce.date({ required_error: "出版日期為必填" }),
+  publishDate: z.coerce.date({ message: "出版日期為必填" }),
   coverImage: z.string().optional().nullable(),
   tocImage: z.string().optional().nullable(),
   pageCount: z.coerce.number().int().positive().optional().nullable(),
