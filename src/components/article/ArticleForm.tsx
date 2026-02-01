@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,11 +17,36 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   articleUpdateSchema,
   type ArticleUpdateInput,
 } from "@/lib/validators/article";
-import { Loader2, X, Plus, Gamepad2, Tags } from "lucide-react";
+import { Loader2, X, Plus, Gamepad2, Tags, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+interface Game {
+  id: string;
+  name: string;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  type: string;
+}
 
 interface ArticleFormProps {
   articleId: string;
@@ -62,6 +87,20 @@ export function ArticleForm({
   const [authors, setAuthors] = useState<string[]>(initialData.authors || []);
   const [newAuthor, setNewAuthor] = useState("");
 
+  // 遊戲與標籤狀態
+  const [allGames, setAllGames] = useState<Game[]>([]);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [selectedGames, setSelectedGames] = useState<Game[]>(
+    initialData.articleGames?.map((ag) => ag.game) || []
+  );
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(
+    initialData.articleTags?.map((at) => at.tag) || []
+  );
+  const [gameOpen, setGameOpen] = useState(false);
+  const [tagOpen, setTagOpen] = useState(false);
+  const [gameSearch, setGameSearch] = useState("");
+  const [tagSearch, setTagSearch] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -81,6 +120,31 @@ export function ArticleForm({
     },
   });
 
+  // 載入遊戲和標籤列表
+  const fetchGamesAndTags = useCallback(async () => {
+    try {
+      const [gamesRes, tagsRes] = await Promise.all([
+        fetch("/api/games?limit=500"),
+        fetch("/api/tags?limit=500"),
+      ]);
+
+      if (gamesRes.ok) {
+        const gamesData = await gamesRes.json();
+        setAllGames(gamesData.data || []);
+      }
+      if (tagsRes.ok) {
+        const tagsData = await tagsRes.json();
+        setAllTags(tagsData.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch games/tags:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchGamesAndTags();
+  }, [fetchGamesAndTags]);
+
   const addAuthor = () => {
     const trimmed = newAuthor.trim();
     if (trimmed && !authors.includes(trimmed)) {
@@ -93,6 +157,22 @@ export function ArticleForm({
     setAuthors(authors.filter((a) => a !== author));
   };
 
+  const toggleGame = (game: Game) => {
+    setSelectedGames((prev) =>
+      prev.some((g) => g.id === game.id)
+        ? prev.filter((g) => g.id !== game.id)
+        : [...prev, game]
+    );
+  };
+
+  const toggleTag = (tag: Tag) => {
+    setSelectedTags((prev) =>
+      prev.some((t) => t.id === tag.id)
+        ? prev.filter((t) => t.id !== tag.id)
+        : [...prev, tag]
+    );
+  };
+
   const onSubmit = async (data: ArticleUpdateInput) => {
     setIsSubmitting(true);
 
@@ -103,6 +183,8 @@ export function ArticleForm({
         body: JSON.stringify({
           ...data,
           authors,
+          gameIds: selectedGames.map((g) => g.id),
+          tagIds: selectedTags.map((t) => t.id),
         }),
       });
 
@@ -145,6 +227,14 @@ export function ArticleForm({
       setIsSubmitting(false);
     }
   };
+
+  // 過濾遊戲和標籤
+  const filteredGames = allGames.filter((g) =>
+    g.name.toLowerCase().includes(gameSearch.toLowerCase())
+  );
+  const filteredTags = allTags.filter((t) =>
+    t.name.toLowerCase().includes(tagSearch.toLowerCase())
+  );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -230,7 +320,7 @@ export function ArticleForm({
             {/* 作者 */}
             <div className="space-y-2 md:col-span-2">
               <Label>作者</Label>
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="mb-2 flex flex-wrap gap-2">
                 {authors.map((author) => (
                   <Badge key={author} variant="secondary" className="gap-1">
                     {author}
@@ -287,54 +377,153 @@ export function ArticleForm({
         </CardContent>
       </Card>
 
-      {/* 關聯的遊戲與標籤（唯讀顯示） */}
+      {/* 關聯遊戲 */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">關聯資料</CardTitle>
-          <CardDescription>目前關聯的遊戲與標籤</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Gamepad2 className="h-4 w-4" />
+            關聯遊戲
+          </CardTitle>
+          <CardDescription>選擇與此文章相關的遊戲</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* 關聯遊戲 */}
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-sm font-medium">
-              <Gamepad2 className="h-4 w-4" />
-              遊戲
-            </div>
-            {initialData.articleGames && initialData.articleGames.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {initialData.articleGames.map((ag) => (
-                  <Badge
-                    key={ag.game.id}
-                    variant={ag.isPrimary ? "default" : "secondary"}
-                  >
-                    {ag.game.name}
-                    {ag.isPrimary && " (主要)"}
-                  </Badge>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">無關聯遊戲</p>
-            )}
+          <div className="flex flex-wrap gap-2">
+            {selectedGames.map((game, index) => (
+              <Badge
+                key={game.id}
+                variant={index === 0 ? "default" : "secondary"}
+                className="gap-1"
+              >
+                {game.name}
+                {index === 0 && " (主要)"}
+                <button
+                  type="button"
+                  onClick={() => toggleGame(game)}
+                  className="ml-1 hover:text-destructive"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
           </div>
+          <Popover open={gameOpen} onOpenChange={setGameOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={gameOpen}
+                className="w-full justify-between"
+              >
+                選擇遊戲...
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput
+                  placeholder="搜尋遊戲..."
+                  value={gameSearch}
+                  onValueChange={setGameSearch}
+                />
+                <CommandList>
+                  <CommandEmpty>找不到遊戲</CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-auto">
+                    {filteredGames.slice(0, 50).map((game) => (
+                      <CommandItem
+                        key={game.id}
+                        value={game.name}
+                        onSelect={() => toggleGame(game)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedGames.some((g) => g.id === game.id)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {game.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </CardContent>
+      </Card>
 
-          {/* 關聯標籤 */}
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-sm font-medium">
-              <Tags className="h-4 w-4" />
-              標籤
-            </div>
-            {initialData.articleTags && initialData.articleTags.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {initialData.articleTags.map((at) => (
-                  <Badge key={at.tag.id} variant="outline">
-                    {at.tag.name}
-                  </Badge>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">無關聯標籤</p>
-            )}
+      {/* 關聯標籤 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Tags className="h-4 w-4" />
+            關聯標籤
+          </CardTitle>
+          <CardDescription>選擇與此文章相關的標籤</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {selectedTags.map((tag) => (
+              <Badge key={tag.id} variant="outline" className="gap-1">
+                {tag.name}
+                <button
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className="ml-1 hover:text-destructive"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
           </div>
+          <Popover open={tagOpen} onOpenChange={setTagOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={tagOpen}
+                className="w-full justify-between"
+              >
+                選擇標籤...
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput
+                  placeholder="搜尋標籤..."
+                  value={tagSearch}
+                  onValueChange={setTagSearch}
+                />
+                <CommandList>
+                  <CommandEmpty>找不到標籤</CommandEmpty>
+                  <CommandGroup className="max-h-64 overflow-auto">
+                    {filteredTags.slice(0, 50).map((tag) => (
+                      <CommandItem
+                        key={tag.id}
+                        value={tag.name}
+                        onSelect={() => toggleTag(tag)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedTags.some((t) => t.id === tag.id)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {tag.name}
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          ({tag.type})
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </CardContent>
       </Card>
 

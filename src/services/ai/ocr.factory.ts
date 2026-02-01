@@ -1,5 +1,7 @@
 import { IOcrProvider, OcrProviderType } from "./ocr.interface";
 import { ClaudeOcrProvider } from "./providers/claude.provider";
+import { OpenAIOcrProvider } from "./providers/openai.provider";
+import { GeminiOcrProvider } from "./providers/gemini.provider";
 
 /**
  * OCR Provider 工廠
@@ -18,11 +20,11 @@ export class OcrProviderFactory {
           this.providers.set(type, new ClaudeOcrProvider());
           break;
         case "openai":
-          // TODO: 實作 OpenAI Provider
-          throw new Error("OpenAI provider not implemented yet");
+          this.providers.set(type, new OpenAIOcrProvider());
+          break;
         case "gemini":
-          // TODO: 實作 Gemini Provider
-          throw new Error("Gemini provider not implemented yet");
+          this.providers.set(type, new GeminiOcrProvider());
+          break;
         default:
           throw new Error(`Unknown OCR provider: ${type}`);
       }
