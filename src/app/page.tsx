@@ -1,65 +1,139 @@
-import Image from "next/image";
+import Link from "next/link";
+import { auth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { BookOpen, Search, Tags, Gamepad2 } from "lucide-react";
 
-export default function Home() {
+export default async function HomePage() {
+  const session = await auth();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2 font-bold text-xl">
+            <BookOpen className="h-6 w-6" />
+            TOCR 期刊目錄索引
+          </Link>
+          <nav className="flex items-center gap-4">
+            <Link
+              href="/magazines"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              期刊
+            </Link>
+            <Link
+              href="/articles"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              文章
+            </Link>
+            <Link
+              href="/games"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              遊戲
+            </Link>
+            <Link
+              href="/tags"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              標籤
+            </Link>
+            {session?.user ? (
+              <>
+                {["EDITOR", "ADMIN"].includes(session.user.role) && (
+                  <Button asChild size="sm">
+                    <Link href="/admin">後台管理</Link>
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Button asChild variant="outline" size="sm">
+                <Link href="/auth/signin">登入</Link>
+              </Button>
+            )}
+          </nav>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+
+      {/* Hero */}
+      <section className="container mx-auto px-4 py-24 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+          遊戲雜誌目錄索引
+        </h1>
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+          探索經典遊戲雜誌的完整目錄，搜尋特定遊戲、人物或主題的相關文章，重溫遊戲媒體的黃金年代。
+        </p>
+        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Button asChild size="lg">
+            <Link href="/magazines">
+              <BookOpen className="mr-2 h-5 w-5" />
+              瀏覽期刊
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/search">
+              <Search className="mr-2 h-5 w-5" />
+              搜尋文章
+            </Link>
+          </Button>
         </div>
-      </main>
+      </section>
+
+      {/* Features */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid gap-8 md:grid-cols-3">
+          <Card>
+            <CardHeader>
+              <BookOpen className="h-10 w-10 text-primary" />
+              <CardTitle className="mt-4">期刊目錄</CardTitle>
+              <CardDescription>
+                完整收錄多本經典遊戲雜誌的目錄資料，包含每期封面、出版日期、文章列表等詳細資訊。
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Gamepad2 className="h-10 w-10 text-primary" />
+              <CardTitle className="mt-4">遊戲索引</CardTitle>
+              <CardDescription>
+                透過遊戲名稱快速找到所有相關報導，追蹤特定遊戲在媒體上的完整歷史紀錄。
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Tags className="h-10 w-10 text-primary" />
+              <CardTitle className="mt-4">主題標籤</CardTitle>
+              <CardDescription>
+                依照人物、活動、遊戲系列等標籤分類，輕鬆探索特定主題的所有相關文章。
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className="text-sm text-muted-foreground">
+              TOCR 期刊目錄索引系統
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Built with Next.js & Tailwind CSS
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

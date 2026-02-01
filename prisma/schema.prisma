@@ -1,0 +1,274 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 使用者與權限 ====================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  role          UserRole  @default(VIEWER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Auth.js relations
+  accounts Account[]
+  sessions Session[]
+
+  // 編輯紀錄
+  editLogs EditLog[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum UserRole {
+  VIEWER // 只能瀏覽
+  EDITOR // 可編輯內容
+  ADMIN  // 管理者
+}
+
+// ==================== 期刊相關 ====================
+
+model Magazine {
+  id          String    @id @default(cuid())
+  name        String
+  nameEn      String?   @map("name_en")
+  publisher   String?
+  issn        String?   @unique
+  description String?   @db.Text
+  coverImage  String?   @map("cover_image")
+  foundedDate DateTime? @map("founded_date")
+  endedDate   DateTime? @map("ended_date")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  issues Issue[]
+
+  @@map("magazines")
+}
+
+model Issue {
+  id           String   @id @default(cuid())
+  magazineId   String   @map("magazine_id")
+  issueNumber  String   @map("issue_number") // "第 42 期" 或 "Vol.5 No.3"
+  volumeNumber String?  @map("volume_number")
+  title        String? // 本期特輯標題
+  publishDate  DateTime @map("publish_date")
+  coverImage   String?  @map("cover_image")
+  tocImage     String?  @map("toc_image") // 目錄頁掃描圖
+  pageCount    Int?     @map("page_count")
+  price        Decimal? @db.Decimal(10, 2)
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  magazine Magazine  @relation(fields: [magazineId], references: [id], onDelete: Cascade)
+  articles Article[]
+
+  @@unique([magazineId, issueNumber])
+  @@index([publishDate])
+  @@map("issues")
+}
+
+// ==================== 文章/目錄 ====================
+
+model Article {
+  id        String   @id @default(cuid())
+  issueId   String   @map("issue_id")
+  title     String
+  subtitle  String?
+  authors   String[] // 作者可能有多位
+  category  String? // 欄目分類（如：攻略、新聞、評測）
+  pageStart Int?     @map("page_start")
+  pageEnd   Int?     @map("page_end")
+  summary   String?  @db.Text
+  content   String?  @db.Text // 可選的全文內容
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  issue        Issue         @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  articleTags  ArticleTag[]
+  articleGames ArticleGame[]
+
+  // Full-text search
+  @@index([title])
+  @@map("articles")
+}
+
+// ==================== Tag 系統 ====================
+
+// 一般 Tag（人物、活動、系列等）
+model Tag {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  type        TagType  @default(GENERAL)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  articleTags ArticleTag[]
+
+  @@index([type])
+  @@map("tags")
+}
+
+enum TagType {
+  GENERAL  // 一般標籤
+  PERSON   // 人物
+  EVENT    // 活動
+  SERIES   // 系列
+  COMPANY  // 公司
+  PLATFORM // 平台
+}
+
+// 遊戲 Tag（特殊類型，有額外欄位）
+model Game {
+  id           String    @id @default(cuid())
+  name         String
+  nameOriginal String?   @map("name_original") // 原文名
+  nameEn       String?   @map("name_en")
+  slug         String    @unique
+  releaseDate  DateTime? @map("release_date")
+  platforms    String[] // ["PC", "PS5", "Switch"]
+  developer    String?
+  publisher    String?
+  genres       String[] // ["RPG", "Action"]
+  coverImage   String?   @map("cover_image")
+  description  String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  articleGames ArticleGame[]
+
+  @@index([releaseDate])
+  @@map("games")
+}
+
+// 文章與一般 Tag 的關聯（多對多）
+model ArticleTag {
+  id        String   @id @default(cuid())
+  articleId String   @map("article_id")
+  tagId     String   @map("tag_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, tagId])
+  @@map("article_tags")
+}
+
+// 文章與遊戲的關聯（多對多）
+model ArticleGame {
+  id        String   @id @default(cuid())
+  articleId String   @map("article_id")
+  gameId    String   @map("game_id")
+  isPrimary Boolean  @default(false) @map("is_primary") // 是否為主要遊戲
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  game    Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, gameId])
+  @@map("article_games")
+}
+
+// ==================== 編輯紀錄 ====================
+
+model EditLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  entityType String   @map("entity_type") // "Magazine", "Issue", "Article", etc.
+  entityId   String   @map("entity_id")
+  action     String // "CREATE", "UPDATE", "DELETE"
+  changes    Json? // 變更的欄位與值
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("edit_logs")
+}
+
+// ==================== AI OCR 紀錄 ====================
+
+model OcrRecord {
+  id           String    @id @default(cuid())
+  issueId      String?   @map("issue_id")
+  imageUrl     String    @map("image_url")
+  provider     String // "claude", "openai", "gemini"
+  rawResult    Json      @map("raw_result")
+  processedAt  DateTime  @default(now()) @map("processed_at")
+  status       OcrStatus @default(PENDING)
+  errorMessage String?   @map("error_message")
+
+  @@index([issueId])
+  @@map("ocr_records")
+}
+
+enum OcrStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
