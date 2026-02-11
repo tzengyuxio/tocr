@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, BookOpen } from "lucide-react";
+import { Plus, Edit, BookOpen, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 
@@ -38,12 +38,20 @@ export default async function MagazinesPage() {
           <h2 className="text-2xl font-bold tracking-tight">期刊管理</h2>
           <p className="text-muted-foreground">管理所有期刊的基本資訊</p>
         </div>
-        <Button asChild>
-          <Link href="/admin/magazines/new">
-            <Plus className="mr-2 h-4 w-4" />
-            新增期刊
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href="/admin/magazines/import">
+              <Upload className="mr-2 h-4 w-4" />
+              批次匯入
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/magazines/new">
+              <Plus className="mr-2 h-4 w-4" />
+              新增期刊
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

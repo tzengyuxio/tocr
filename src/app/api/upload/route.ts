@@ -48,7 +48,9 @@ export async function POST(request: NextRequest) {
     const filename = `${folder}/${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
 
     // 有 Vercel Blob token 時上傳到 Blob，否則存到本地 public/
-    const useLocalStorage = !process.env.BLOB_READ_WRITE_TOKEN;
+    // placeholder token 長度遠小於真正的 token，以此判斷是否為有效 token
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    const useLocalStorage = !token || token.length < 50;
     const result = useLocalStorage
       ? await uploadLocal(filename, file)
       : await put(filename, file, { access: "public" });
