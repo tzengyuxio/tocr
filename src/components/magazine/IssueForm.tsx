@@ -117,9 +117,12 @@ export function IssueForm({
               </Label>
               <Input
                 id="issueNumber"
-                placeholder="例如：第 42 期、Vol.5 No.3"
+                placeholder="例如：42、No.3、2024年8月號"
                 {...register("issueNumber")}
               />
+              <p className="text-xs text-muted-foreground">
+                每期的流水編號，例如「42」「No.3」「2024年8月號」
+              </p>
               {errors.issueNumber && (
                 <p className="text-sm text-red-500">
                   {errors.issueNumber.message}
@@ -132,9 +135,12 @@ export function IssueForm({
               <Label htmlFor="volumeNumber">卷號</Label>
               <Input
                 id="volumeNumber"
-                placeholder="例如：Vol.5"
+                placeholder="例如：Vol.5、第 3 卷"
                 {...register("volumeNumber")}
               />
+              <p className="text-xs text-muted-foreground">
+                將多期歸為一卷的編號，通常以年份或固定期數為單位，選填
+              </p>
             </div>
 
             {/* 出版日期 */}

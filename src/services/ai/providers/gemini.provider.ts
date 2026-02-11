@@ -28,7 +28,7 @@ export class GeminiOcrProvider implements IOcrProvider {
 
     try {
       const model = this.client.getGenerativeModel({
-        model: config?.model || "gemini-1.5-pro",
+        model: config?.model || "gemini-2.0-flash",
       });
 
       const result = await model.generateContent([

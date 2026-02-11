@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,10 +39,23 @@ export function OcrUploader({
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState(initialImageUrl || "");
-  const [provider, setProvider] = useState("claude");
+  const [provider, setProvider] = useState("");
+  const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/ocr")
+      .then((res) => res.json())
+      .then((data) => {
+        setAvailableProviders(data.providers || []);
+        setProvider(data.default || "claude");
+      })
+      .catch(() => {
+        setProvider("claude");
+      });
+  }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -177,12 +190,14 @@ export function OcrUploader({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="claude">Claude (Anthropic)</SelectItem>
-                    <SelectItem value="openai" disabled>
-                      OpenAI (即將推出)
+                    <SelectItem value="claude" disabled={!availableProviders.includes("claude")}>
+                      Claude (Anthropic)
                     </SelectItem>
-                    <SelectItem value="gemini" disabled>
-                      Gemini (即將推出)
+                    <SelectItem value="gemini" disabled={!availableProviders.includes("gemini")}>
+                      Gemini (Google)
+                    </SelectItem>
+                    <SelectItem value="openai" disabled={!availableProviders.includes("openai")}>
+                      OpenAI
                     </SelectItem>
                   </SelectContent>
                 </Select>

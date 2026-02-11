@@ -38,7 +38,7 @@ const CSV_TEMPLATE_EXAMPLE = [
   "",
   "true",
   "42",
-  "",
+  "Vol.5",
   "特別企劃",
   "2024-01-15",
   "128",
@@ -133,6 +133,14 @@ export function CsvImporter() {
               <CardDescription>
                 上傳 CSV 檔案，批次建立期刊與期數資料。已存在的期刊和期數將自動跳過。
               </CardDescription>
+              <div className="mt-3 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+                <p className="mb-1 font-medium text-foreground">欄位說明</p>
+                <ul className="list-inside list-disc space-y-0.5">
+                  <li><span className="font-medium">issue_number（期號）</span>：每一期的流水編號，如「42」「No.3」「2024年8月號」</li>
+                  <li><span className="font-medium">volume_number（卷號）</span>：將多期歸為一卷的編號，通常以年份或固定期數為單位，如「Vol.5」「第 3 卷」。選填</li>
+                  <li>帶有 <span className="font-medium">*</span> 的欄位為必填：magazine_name、issue_number、publish_date</li>
+                </ul>
+              </div>
             </div>
             <Button variant="outline" onClick={downloadTemplate}>
               <Download className="mr-2 h-4 w-4" />
