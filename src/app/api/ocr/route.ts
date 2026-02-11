@@ -1,73 +1,126 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { OcrProviderFactory } from "@/services/ai/ocr.factory";
-import { OcrProviderType } from "@/services/ai/ocr.interface";
+import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
 
-// POST /api/ocr - 執行 AI 辨識
+// POST /api/ocr - 執行 AI 辨識（支援多圖）
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const image = formData.get("image") as File | null;
-    const imageUrl = formData.get("imageUrl") as string | null;
     const provider =
       (formData.get("provider") as OcrProviderType) || "claude";
     const issueId = formData.get("issueId") as string | null;
 
-    // 取得圖片資料
-    let imageBase64: string;
-    let mimeType: string;
-
-    if (image) {
-      // 從上傳的檔案取得
-      const bytes = await image.arrayBuffer();
-      imageBase64 = Buffer.from(bytes).toString("base64");
-      mimeType = image.type;
-    } else if (imageUrl) {
-      // 從 URL 取得
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        return NextResponse.json(
-          { error: "Failed to fetch image from URL" },
-          { status: 400 }
-        );
-      }
-      const buffer = await response.arrayBuffer();
-      imageBase64 = Buffer.from(buffer).toString("base64");
-      mimeType =
-        response.headers.get("content-type") || "image/jpeg";
-    } else {
-      return NextResponse.json(
-        { error: "No image provided. Send either 'image' file or 'imageUrl'" },
-        { status: 400 }
-      );
-    }
-
-    // 驗證圖片類型
     const allowedTypes = [
       "image/jpeg",
       "image/png",
       "image/webp",
       "image/gif",
     ];
-    if (!allowedTypes.includes(mimeType)) {
+
+    const images: OcrImage[] = [];
+
+    // 多圖：FormData 中多個 "images" 欄位
+    const imageFiles = formData.getAll("images") as File[];
+    if (imageFiles.length > 0) {
+      for (const file of imageFiles) {
+        if (!allowedTypes.includes(file.type)) {
+          return NextResponse.json(
+            { error: `Invalid image type: ${file.type}. Allowed: JPEG, PNG, WebP, GIF` },
+            { status: 400 }
+          );
+        }
+        const bytes = await file.arrayBuffer();
+        images.push({
+          base64: Buffer.from(bytes).toString("base64"),
+          mimeType: file.type,
+        });
+      }
+    }
+
+    // 多圖 URL：FormData 中 "imageUrls" JSON 字串陣列
+    const imageUrlsRaw = formData.get("imageUrls") as string | null;
+    if (imageUrlsRaw) {
+      const imageUrls: string[] = JSON.parse(imageUrlsRaw);
+      for (const url of imageUrls) {
+        const response = await fetch(url);
+        if (!response.ok) {
+          return NextResponse.json(
+            { error: `Failed to fetch image from URL: ${url}` },
+            { status: 400 }
+          );
+        }
+        const buffer = await response.arrayBuffer();
+        const mimeType = response.headers.get("content-type") || "image/jpeg";
+        if (!allowedTypes.includes(mimeType)) {
+          return NextResponse.json(
+            { error: `Invalid image type from URL: ${mimeType}` },
+            { status: 400 }
+          );
+        }
+        images.push({
+          base64: Buffer.from(buffer).toString("base64"),
+          mimeType,
+        });
+      }
+    }
+
+    // 向下相容：單個 "image" 檔案或 "imageUrl"
+    if (images.length === 0) {
+      const image = formData.get("image") as File | null;
+      const imageUrl = formData.get("imageUrl") as string | null;
+
+      if (image) {
+        if (!allowedTypes.includes(image.type)) {
+          return NextResponse.json(
+            { error: "Invalid image type. Allowed: JPEG, PNG, WebP, GIF" },
+            { status: 400 }
+          );
+        }
+        const bytes = await image.arrayBuffer();
+        images.push({
+          base64: Buffer.from(bytes).toString("base64"),
+          mimeType: image.type,
+        });
+      } else if (imageUrl) {
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+          return NextResponse.json(
+            { error: "Failed to fetch image from URL" },
+            { status: 400 }
+          );
+        }
+        const buffer = await response.arrayBuffer();
+        const mimeType = response.headers.get("content-type") || "image/jpeg";
+        if (!allowedTypes.includes(mimeType)) {
+          return NextResponse.json(
+            { error: "Invalid image type. Allowed: JPEG, PNG, WebP, GIF" },
+            { status: 400 }
+          );
+        }
+        images.push({
+          base64: Buffer.from(buffer).toString("base64"),
+          mimeType,
+        });
+      }
+    }
+
+    if (images.length === 0) {
       return NextResponse.json(
-        { error: "Invalid image type. Allowed: JPEG, PNG, WebP, GIF" },
+        { error: "No images provided. Send 'images' files, 'imageUrls' JSON array, or single 'image'/'imageUrl'" },
         { status: 400 }
       );
     }
 
     // 執行 AI 辨識
     const ocrProvider = OcrProviderFactory.getProvider(provider);
-    const result = await ocrProvider.extractTableOfContents(
-      imageBase64,
-      mimeType
-    );
+    const result = await ocrProvider.extractTableOfContents(images);
 
     // 儲存辨識紀錄
     const ocrRecord = await prisma.ocrRecord.create({
       data: {
         issueId,
-        imageUrl: imageUrl || "",
+        imageUrl: imageUrlsRaw || formData.get("imageUrl") as string || "",
         provider,
         rawResult: result as object,
         status: "COMPLETED",
@@ -81,7 +134,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("OCR Error:", error);
 
-    // 若有錯誤，也記錄下來
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
 

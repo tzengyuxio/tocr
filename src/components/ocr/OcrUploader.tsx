@@ -19,31 +19,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, Loader2, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Upload, X, Loader2, Image as ImageIcon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { OcrResult } from "@/services/ai/ocr.interface";
 
 interface OcrUploaderProps {
   issueId?: string;
-  initialImageUrl?: string;
+  initialImageUrls?: string[];
   onResult: (result: OcrResult) => void;
 }
 
 export function OcrUploader({
   issueId,
-  initialImageUrl,
+  initialImageUrls,
   onResult,
 }: OcrUploaderProps) {
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    initialImageUrl || null
+  const [imagePreviews, setImagePreviews] = useState<string[]>(
+    initialImageUrls || []
   );
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState(initialImageUrl || "");
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>(
+    initialImageUrls || []
+  );
   const [provider, setProvider] = useState("");
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+
+  // 同步 initialImageUrls 變化（解決切換期數後 prop 變化但 state 不更新的問題）
+  useEffect(() => {
+    const urls = initialImageUrls || [];
+    setImagePreviews(urls);
+    setImageUrls(urls);
+    setImageFiles([]);
+    setError(null);
+  }, [initialImageUrls]);
 
   useEffect(() => {
     fetch("/api/ocr")
@@ -58,19 +70,21 @@ export function OcrUploader({
   }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (!file) return;
+    if (acceptedFiles.length === 0) return;
 
-    setImageFile(file);
-    setImageUrl("");
     setError(null);
 
+    const newFiles = [...acceptedFiles];
+    setImageFiles((prev) => [...prev, ...newFiles]);
+
     // 產生預覽
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    for (const file of newFiles) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreviews((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -78,21 +92,35 @@ export function OcrUploader({
     accept: {
       "image/*": [".jpeg", ".jpg", ".png", ".webp", ".gif"],
     },
-    maxFiles: 1,
     disabled: isProcessing,
   });
 
   const handleUrlSubmit = () => {
-    if (imageUrl.trim()) {
-      setImagePreview(imageUrl.trim());
-      setImageFile(null);
+    if (urlInput.trim()) {
+      const url = urlInput.trim();
+      setImagePreviews((prev) => [...prev, url]);
+      setImageUrls((prev) => [...prev, url]);
+      setUrlInput("");
       setShowUrlInput(false);
       setError(null);
     }
   };
 
+  const handleRemoveImage = (index: number) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+
+    // 判斷此索引對應的是 URL 還是 file
+    // previews = [...imageUrls, ...file previews]
+    if (index < imageUrls.length) {
+      setImageUrls((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      const fileIndex = index - imageUrls.length;
+      setImageFiles((prev) => prev.filter((_, i) => i !== fileIndex));
+    }
+  };
+
   const handleProcess = async () => {
-    if (!imageFile && !imageUrl) {
+    if (imageFiles.length === 0 && imageUrls.length === 0) {
       setError("請先上傳圖片或輸入圖片網址");
       return;
     }
@@ -103,10 +131,14 @@ export function OcrUploader({
     try {
       const formData = new FormData();
 
-      if (imageFile) {
-        formData.append("image", imageFile);
-      } else if (imageUrl) {
-        formData.append("imageUrl", imageUrl);
+      // 多圖檔案
+      for (const file of imageFiles) {
+        formData.append("images", file);
+      }
+
+      // 多圖 URL
+      if (imageUrls.length > 0) {
+        formData.append("imageUrls", JSON.stringify(imageUrls));
       }
 
       formData.append("provider", provider);
@@ -134,11 +166,13 @@ export function OcrUploader({
   };
 
   const handleClear = () => {
-    setImagePreview(null);
-    setImageFile(null);
-    setImageUrl("");
+    setImagePreviews([]);
+    setImageFiles([]);
+    setImageUrls([]);
     setError(null);
   };
+
+  const hasImages = imagePreviews.length > 0;
 
   return (
     <Card>
@@ -148,7 +182,7 @@ export function OcrUploader({
           AI 目錄辨識
         </CardTitle>
         <CardDescription>
-          上傳雜誌目錄頁圖片，AI 將自動辨識並提取文章資訊
+          上傳雜誌目錄頁圖片，AI 將自動辨識並提取文章資訊（可上傳多張）
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -158,24 +192,47 @@ export function OcrUploader({
           </div>
         )}
 
-        {imagePreview ? (
+        {/* 圖片預覽區 */}
+        {hasImages && (
           <div className="space-y-4">
-            <div className="relative">
-              <img
-                src={imagePreview}
-                alt="目錄頁預覽"
-                className="max-h-96 w-full rounded-lg border object-contain"
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="absolute right-2 top-2"
-                onClick={handleClear}
-                disabled={isProcessing}
-              >
-                重新選擇
-              </Button>
+            <div className="flex flex-wrap gap-3">
+              {imagePreviews.map((src, index) => (
+                <div key={`${src.slice(0, 30)}-${index}`} className="relative">
+                  <img
+                    src={src}
+                    alt={`目錄頁 ${index + 1}`}
+                    className="h-48 w-auto rounded-lg border object-contain"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -right-2 -top-2 h-6 w-6"
+                    onClick={() => handleRemoveImage(index)}
+                    disabled={isProcessing}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* 新增更多圖片 */}
+            <div
+              {...getRootProps()}
+              className={cn(
+                "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-colors",
+                isDragActive
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25 hover:border-primary/50",
+                isProcessing && "pointer-events-none opacity-50"
+              )}
+            >
+              <input {...getInputProps()} />
+              <Upload className="h-6 w-6 text-muted-foreground" />
+              <p className="mt-1 text-sm text-muted-foreground">
+                新增更多圖片
+              </p>
             </div>
 
             <div className="flex items-end gap-4">
@@ -203,26 +260,38 @@ export function OcrUploader({
                 </Select>
               </div>
 
-              <Button
-                onClick={handleProcess}
-                disabled={isProcessing}
-                size="lg"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    辨識中...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    開始辨識
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleClear}
+                  disabled={isProcessing}
+                >
+                  清除全部
+                </Button>
+                <Button
+                  onClick={handleProcess}
+                  disabled={isProcessing}
+                  size="lg"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      辨識中...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      開始辨識（{imagePreviews.length} 張）
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        ) : (
+        )}
+
+        {/* 空狀態：Dropzone */}
+        {!hasImages && (
           <>
             <div
               {...getRootProps()}
@@ -238,7 +307,7 @@ export function OcrUploader({
               <p className="mt-4 text-center text-muted-foreground">
                 {isDragActive
                   ? "放開以上傳圖片"
-                  : "拖曳目錄頁圖片至此，或點擊選擇檔案"}
+                  : "拖曳目錄頁圖片至此，或點擊選擇檔案（可多選）"}
               </p>
               <p className="mt-2 text-center text-xs text-muted-foreground">
                 支援 JPEG, PNG, WebP, GIF（最大 10MB）
@@ -251,8 +320,8 @@ export function OcrUploader({
                 <div className="flex flex-1 items-center gap-2">
                   <Input
                     placeholder="輸入圖片網址"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
                     className="flex-1"
                   />
                   <Button type="button" size="sm" onClick={handleUrlSubmit}>

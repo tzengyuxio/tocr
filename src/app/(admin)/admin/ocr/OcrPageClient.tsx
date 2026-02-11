@@ -24,7 +24,7 @@ interface Issue {
   id: string;
   issueNumber: string;
   publishDate: Date;
-  tocImage: string | null;
+  tocImages: string[];
   magazine?: {
     id: string;
     name: string;
@@ -38,7 +38,7 @@ interface Magazine {
     id: string;
     issueNumber: string;
     publishDate: Date;
-    tocImage: string | null;
+    tocImages: string[];
   }[];
 }
 
@@ -70,7 +70,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
 
   const issueOptions = (selectedMagazine?.issues ?? []).map((issue) => ({
     value: issue.id,
-    label: `${issue.issueNumber}（${format(new Date(issue.publishDate), "yyyy/MM/dd", { locale: zhTW })}）${issue.tocImage ? " [有目錄圖]" : ""}`,
+    label: `${issue.issueNumber}（${format(new Date(issue.publishDate), "yyyy/MM/dd", { locale: zhTW })}）${issue.tocImages.length > 0 ? ` [${issue.tocImages.length} 張目錄圖]` : ""}`,
   }));
 
   const handleMagazineChange = (value: string) => {
@@ -218,7 +218,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
       {!ocrResult ? (
         <OcrUploader
           issueId={selectedIssueId}
-          initialImageUrl={selectedIssue?.tocImage || undefined}
+          initialImageUrls={selectedIssue?.tocImages}
           onResult={handleOcrResult}
         />
       ) : (

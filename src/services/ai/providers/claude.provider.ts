@@ -3,6 +3,7 @@ import {
   IOcrProvider,
   OcrResult,
   OcrProviderConfig,
+  OcrImage,
   ImageMimeType,
   OcrArticleResult,
 } from "../ocr.interface";
@@ -19,13 +20,21 @@ export class ClaudeOcrProvider implements IOcrProvider {
   }
 
   async extractTableOfContents(
-    imageBase64: string,
-    mimeType: string,
+    images: OcrImage[],
     config?: Partial<OcrProviderConfig>
   ): Promise<OcrResult> {
     const startTime = Date.now();
 
     try {
+      const imageBlocks = images.map((img) => ({
+        type: "image" as const,
+        source: {
+          type: "base64" as const,
+          media_type: img.mimeType as ImageMimeType,
+          data: img.base64,
+        },
+      }));
+
       const response = await this.client.messages.create({
         model: config?.model || "claude-sonnet-4-20250514",
         max_tokens: config?.maxTokens || 4096,
@@ -33,16 +42,9 @@ export class ClaudeOcrProvider implements IOcrProvider {
           {
             role: "user",
             content: [
+              ...imageBlocks,
               {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: mimeType as ImageMimeType,
-                  data: imageBase64,
-                },
-              },
-              {
-                type: "text",
+                type: "text" as const,
                 text: TOC_EXTRACTION_PROMPT,
               },
             ],

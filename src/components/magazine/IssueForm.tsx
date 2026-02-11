@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { MultiImageUpload } from "@/components/ui/multi-image-upload";
 import {
   issueCreateSchema,
   type IssueCreateInput,
@@ -54,7 +55,7 @@ export function IssueForm({
       title: initialData?.title || "",
       publishDate: initialData?.publishDate || new Date(),
       coverImage: initialData?.coverImage || "",
-      tocImage: initialData?.tocImage || "",
+      tocImages: initialData?.tocImages || [],
       pageCount: initialData?.pageCount || null,
       price: initialData?.price || null,
       notes: initialData?.notes || "",
@@ -210,18 +211,18 @@ export function IssueForm({
               />
             </div>
 
-            {/* 目錄頁圖片 */}
-            <div className="space-y-2">
+            {/* 目錄頁圖片（多張） */}
+            <div className="space-y-2 md:col-span-2">
               <Controller
-                name="tocImage"
+                name="tocImages"
                 control={control}
                 render={({ field }) => (
-                  <ImageUpload
+                  <MultiImageUpload
                     label="目錄頁圖片"
-                    value={field.value || ""}
+                    value={field.value || []}
                     onChange={field.onChange}
                     folder="issues/toc"
-                    description="用於 AI 辨識目錄內容"
+                    description="用於 AI 辨識目錄內容，可上傳多張"
                   />
                 )}
               />

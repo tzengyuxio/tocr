@@ -56,7 +56,7 @@ export default async function EditIssuePage({ params }: PageProps) {
     title: issue.title,
     publishDate: issue.publishDate,
     coverImage: issue.coverImage,
-    tocImage: issue.tocImage,
+    tocImages: issue.tocImages,
     pageCount: issue.pageCount,
     price: issue.price ? Number(issue.price) : null,
     notes: issue.notes,
@@ -90,20 +90,23 @@ export default async function EditIssuePage({ params }: PageProps) {
           </Button>
         </CardHeader>
         <CardContent>
-          {issue.tocImage ? (
+          {issue.tocImages.length > 0 ? (
             <div className="flex items-center gap-4">
-              <img
-                src={issue.tocImage}
-                alt="目錄頁"
-                className="h-32 rounded border object-contain"
-              />
+              {issue.tocImages.map((url, index) => (
+                <img
+                  key={index}
+                  src={url}
+                  alt={`目錄頁 ${index + 1}`}
+                  className="h-32 rounded border object-contain"
+                />
+              ))}
               <p className="text-sm text-muted-foreground">
-                已設定目錄頁圖片，點擊「開始辨識」使用 AI 分析
+                已設定 {issue.tocImages.length} 張目錄頁圖片，點擊「開始辨識」使用 AI 分析
               </p>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              尚未上傳目錄頁圖片，請先在上方表單填入目錄頁圖片 URL，或直接前往辨識頁面上傳
+              尚未上傳目錄頁圖片，請先在上方表單上傳目錄頁圖片，或直接前往辨識頁面上傳
             </p>
           )}
         </CardContent>

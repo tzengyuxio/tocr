@@ -32,7 +32,7 @@ export default async function OcrPage({ searchParams }: PageProps) {
           id: true,
           issueNumber: true,
           publishDate: true,
-          tocImage: true,
+          tocImages: true,
         },
       },
     },

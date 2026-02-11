@@ -3,6 +3,7 @@ import {
   IOcrProvider,
   OcrResult,
   OcrProviderConfig,
+  OcrImage,
   OcrArticleResult,
 } from "../ocr.interface";
 import { TOC_EXTRACTION_PROMPT } from "../prompts/toc-extraction";
@@ -20,8 +21,7 @@ export class GeminiOcrProvider implements IOcrProvider {
   }
 
   async extractTableOfContents(
-    imageBase64: string,
-    mimeType: string,
+    images: OcrImage[],
     config?: Partial<OcrProviderConfig>
   ): Promise<OcrResult> {
     const startTime = Date.now();
@@ -31,13 +31,15 @@ export class GeminiOcrProvider implements IOcrProvider {
         model: config?.model || "gemini-2.0-flash",
       });
 
-      const result = await model.generateContent([
-        {
-          inlineData: {
-            mimeType,
-            data: imageBase64,
-          },
+      const imageParts = images.map((img) => ({
+        inlineData: {
+          mimeType: img.mimeType,
+          data: img.base64,
         },
+      }));
+
+      const result = await model.generateContent([
+        ...imageParts,
         { text: TOC_EXTRACTION_PROMPT },
       ]);
 

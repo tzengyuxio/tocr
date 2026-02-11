@@ -107,7 +107,7 @@ model Issue {
   title        String? // 本期特輯標題
   publishDate  DateTime @map("publish_date")
   coverImage   String?  @map("cover_image")
-  tocImage     String?  @map("toc_image") // 目錄頁掃描圖
+  tocImages    String[] @default([]) @map("toc_images") // 目錄頁掃描圖（可多張）
   pageCount    Int?     @map("page_count")
   price        Decimal? @db.Decimal(10, 2)
   notes        String?  @db.Text

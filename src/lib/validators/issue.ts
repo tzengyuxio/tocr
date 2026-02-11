@@ -7,7 +7,7 @@ export const issueCreateSchema = z.object({
   title: z.string().optional().nullable(),
   publishDate: z.coerce.date({ message: "出版日期為必填" }),
   coverImage: z.string().optional().nullable(),
-  tocImage: z.string().optional().nullable(),
+  tocImages: z.array(z.string()).default([]),
   pageCount: z.coerce.number().int().positive().optional().nullable(),
   price: z.coerce.number().positive().optional().nullable(),
   notes: z.string().optional().nullable(),

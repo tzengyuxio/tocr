@@ -3,6 +3,7 @@ import {
   IOcrProvider,
   OcrResult,
   OcrProviderConfig,
+  OcrImage,
   OcrArticleResult,
 } from "../ocr.interface";
 import { TOC_EXTRACTION_PROMPT } from "../prompts/toc-extraction";
@@ -18,13 +19,20 @@ export class OpenAIOcrProvider implements IOcrProvider {
   }
 
   async extractTableOfContents(
-    imageBase64: string,
-    mimeType: string,
+    images: OcrImage[],
     config?: Partial<OcrProviderConfig>
   ): Promise<OcrResult> {
     const startTime = Date.now();
 
     try {
+      const imageBlocks = images.map((img) => ({
+        type: "image_url" as const,
+        image_url: {
+          url: `data:${img.mimeType};base64,${img.base64}`,
+          detail: "high" as const,
+        },
+      }));
+
       const response = await this.client.chat.completions.create({
         model: config?.model || "gpt-4o",
         max_tokens: config?.maxTokens || 4096,
@@ -33,15 +41,9 @@ export class OpenAIOcrProvider implements IOcrProvider {
           {
             role: "user",
             content: [
+              ...imageBlocks,
               {
-                type: "image_url",
-                image_url: {
-                  url: `data:${mimeType};base64,${imageBase64}`,
-                  detail: "high",
-                },
-              },
-              {
-                type: "text",
+                type: "text" as const,
                 text: TOC_EXTRACTION_PROMPT,
               },
             ],
