@@ -1,7 +1,12 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { isDevBypass } from "@/lib/dev-auth";
 
 export default auth((req) => {
+  if (isDevBypass) {
+    return NextResponse.next();
+  }
+
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
   const userRole = req.auth?.user?.role;
