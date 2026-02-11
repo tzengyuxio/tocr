@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
+
+async function uploadLocal(
+  filename: string,
+  file: File
+): Promise<{ url: string; pathname: string }> {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const filePath = path.join(process.cwd(), "public", filename);
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, buffer);
+  return { url: `/${filename}`, pathname: filename };
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,14 +47,15 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split(".").pop();
     const filename = `${folder}/${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
 
-    // 上傳到 Vercel Blob
-    const blob = await put(filename, file, {
-      access: "public",
-    });
+    // 有 Vercel Blob token 時上傳到 Blob，否則存到本地 public/
+    const useLocalStorage = !process.env.BLOB_READ_WRITE_TOKEN;
+    const result = useLocalStorage
+      ? await uploadLocal(filename, file)
+      : await put(filename, file, { access: "public" });
 
     return NextResponse.json({
-      url: blob.url,
-      filename: blob.pathname,
+      url: result.url,
+      filename: result.pathname,
     });
   } catch (error) {
     console.error("Upload failed:", error);
