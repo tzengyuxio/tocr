@@ -140,9 +140,9 @@ export default function ArticlesPage() {
               />
             </div>
             <Select
-              value={selectedMagazine}
+              value={selectedMagazine || "all"}
               onValueChange={(value) => {
-                setSelectedMagazine(value);
+                setSelectedMagazine(value === "all" ? "" : value);
                 setPage(1);
               }}
             >
@@ -150,7 +150,7 @@ export default function ArticlesPage() {
                 <SelectValue placeholder="所有期刊" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">所有期刊</SelectItem>
+                <SelectItem value="all">所有期刊</SelectItem>
                 {magazines.map((mag) => (
                   <SelectItem key={mag.id} value={mag.id}>
                     {mag.name}
