@@ -61,14 +61,14 @@ export default async function EditMagazinePage({ params }: PageProps) {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+    <div className="grid gap-6 lg:grid-cols-3">
       {/* 左欄：編輯表單 */}
-      <div>
+      <div className="lg:col-span-1">
         <MagazineForm initialData={formData} mode="edit" />
       </div>
 
       {/* 右欄：期數列表 */}
-      <Card>
+      <Card className="lg:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>期數列表</CardTitle>
