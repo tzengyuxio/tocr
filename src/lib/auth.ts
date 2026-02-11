@@ -25,10 +25,38 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma) as any,
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
   ],
+  events: {
+    async createUser({ user }) {
+      if (!user.email) return;
+
+      // 環境變數指定的 admin emails
+      const adminEmails =
+        process.env.ADMIN_EMAILS?.split(",").map((e) =>
+          e.trim().toLowerCase()
+        ) ?? [];
+
+      if (adminEmails.includes(user.email.toLowerCase())) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" },
+        });
+        return;
+      }
+
+      // 第一個使用者自動成為 ADMIN
+      const userCount = await prisma.user.count();
+      if (userCount === 1) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" },
+        });
+      }
+    },
+  },
   callbacks: {
     async session({ session, user }) {
       if (session.user) {
