@@ -12,17 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Combobox } from "@/components/ui/combobox";
 import { OcrUploader } from "@/components/ocr/OcrUploader";
 import { OcrResultEditor } from "@/components/ocr/OcrResultEditor";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { OcrResult, OcrArticleResult } from "@/services/ai/ocr.interface";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
@@ -69,6 +62,16 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
   const selectedIssue = selectedMagazine?.issues.find(
     (i) => i.id === selectedIssueId
   );
+
+  const magazineOptions = magazines.map((m) => ({
+    value: m.id,
+    label: `${m.name}（${m.issues.length} 期）`,
+  }));
+
+  const issueOptions = (selectedMagazine?.issues ?? []).map((issue) => ({
+    value: issue.id,
+    label: `${issue.issueNumber}（${format(new Date(issue.publishDate), "yyyy/MM/dd", { locale: zhTW })}）${issue.tocImage ? " [有目錄圖]" : ""}`,
+  }));
 
   const handleMagazineChange = (value: string) => {
     setSelectedMagazineId(value);
@@ -164,65 +167,27 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>期刊</Label>
-              <Select
+              <Combobox
+                options={magazineOptions}
                 value={selectedMagazineId}
                 onValueChange={handleMagazineChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="選擇期刊" />
-                </SelectTrigger>
-                <SelectContent>
-                  {magazines.map((magazine) => (
-                    <SelectItem key={magazine.id} value={magazine.id}>
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        {magazine.name}
-                        <Badge variant="secondary" className="ml-2">
-                          {magazine.issues.length} 期
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="選擇期刊"
+                searchPlaceholder="搜尋期刊..."
+                emptyMessage="找不到期刊"
+              />
             </div>
 
             <div className="space-y-2">
               <Label>期數</Label>
-              <Select
+              <Combobox
+                options={issueOptions}
                 value={selectedIssueId}
                 onValueChange={handleIssueChange}
+                placeholder={selectedMagazineId ? "選擇期數" : "請先選擇期刊"}
+                searchPlaceholder="搜尋期數..."
+                emptyMessage="找不到期數"
                 disabled={!selectedMagazineId}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      selectedMagazineId ? "選擇期數" : "請先選擇期刊"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {selectedMagazine?.issues.map((issue) => (
-                    <SelectItem key={issue.id} value={issue.id}>
-                      <div className="flex items-center gap-2">
-                        {issue.issueNumber}
-                        <span className="text-muted-foreground">
-                          (
-                          {format(new Date(issue.publishDate), "yyyy/MM/dd", {
-                            locale: zhTW,
-                          })}
-                          )
-                        </span>
-                        {issue.tocImage && (
-                          <Badge variant="outline" className="text-xs">
-                            有目錄圖
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
           </div>
         </CardContent>

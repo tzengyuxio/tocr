@@ -34,6 +34,11 @@ export default async function EditMagazinePage({ params }: PageProps) {
     include: {
       issues: {
         orderBy: { publishDate: "desc" },
+        include: {
+          _count: {
+            select: { articles: true },
+          },
+        },
       },
     },
   });
@@ -56,12 +61,13 @@ export default async function EditMagazinePage({ params }: PageProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="mx-auto max-w-2xl">
+    <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+      {/* 左欄：編輯表單 */}
+      <div>
         <MagazineForm initialData={formData} mode="edit" />
       </div>
 
-      {/* 期數列表 */}
+      {/* 右欄：期數列表 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -123,7 +129,7 @@ export default async function EditMagazinePage({ params }: PageProps) {
                         locale: zhTW,
                       })}
                     </TableCell>
-                    <TableCell>0 篇</TableCell>
+                    <TableCell>{issue._count.articles} 篇</TableCell>
                     <TableCell>
                       <Button asChild variant="ghost" size="icon">
                         <Link
