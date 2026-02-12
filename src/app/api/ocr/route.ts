@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { OcrProviderFactory } from "@/services/ai/ocr.factory";
 import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
+import { resolveImageUrl } from "@/lib/resolve-image-url";
 
 // POST /api/ocr - 執行 AI 辨識（支援多圖）
 export async function POST(request: NextRequest) {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (imageUrlsRaw) {
       const imageUrls: string[] = JSON.parse(imageUrlsRaw);
       for (const url of imageUrls) {
-        const absoluteUrl = url.startsWith('http') ? url : `${origin}${url}`;
+        const absoluteUrl = resolveImageUrl(url, origin);
         const response = await fetch(absoluteUrl);
         if (!response.ok) {
           return NextResponse.json(
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
           mimeType: image.type,
         });
       } else if (imageUrl) {
-        const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${origin}${imageUrl}`;
+        const absoluteImageUrl = resolveImageUrl(imageUrl, origin);
         const response = await fetch(absoluteImageUrl);
         if (!response.ok) {
           return NextResponse.json(

@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
-
-const reorderSchema = z.object({
-  magazineId: z.string().min(1),
-  issueIds: z.array(z.string().min(1)),
-});
+import { reorderSchema } from "@/lib/validators/reorder";
 
 export async function PUT(request: NextRequest) {
   try {

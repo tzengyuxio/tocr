@@ -154,6 +154,47 @@ describe("issueCreateSchema", () => {
     const result = issueCreateSchema.safeParse(input);
     expect(result.success).toBe(true);
   });
+
+  it("should accept order when omitted", () => {
+    const input = {
+      magazineId: "mag-123",
+      issueNumber: "第1期",
+      publishDate: "2023-01-15",
+    };
+    const result = issueCreateSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.order).toBeUndefined();
+    }
+  });
+
+  it("should accept order as a positive integer", () => {
+    const input = {
+      magazineId: "mag-123",
+      issueNumber: "第1期",
+      publishDate: "2023-01-15",
+      order: 5,
+    };
+    const result = issueCreateSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.order).toBe(5);
+    }
+  });
+
+  it("should coerce order from string to number", () => {
+    const input = {
+      magazineId: "mag-123",
+      issueNumber: "第1期",
+      publishDate: "2023-01-15",
+      order: "3",
+    };
+    const result = issueCreateSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.order).toBe(3);
+    }
+  });
 });
 
 describe("issueUpdateSchema", () => {
@@ -192,6 +233,17 @@ describe("issueUpdateSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.price).toBe(250);
+    }
+  });
+
+  it("should accept order in update schema", () => {
+    const input = {
+      order: 2,
+    };
+    const result = issueUpdateSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.order).toBe(2);
     }
   });
 });
