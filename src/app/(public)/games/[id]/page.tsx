@@ -19,9 +19,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Gamepad2, ArrowLeft, Calendar, FileText } from "lucide-react";
+import { Gamepad2, ArrowLeft, Calendar, FileText, SquarePen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { auth } from "@/lib/auth";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -29,6 +30,8 @@ interface PageProps {
 
 export default async function GameDetailPage({ params }: PageProps) {
   const { id } = await params;
+  const session = await auth();
+  const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
   const game = await prisma.game.findUnique({
     where: { id },
@@ -88,7 +91,18 @@ export default async function GameDetailPage({ params }: PageProps) {
           </div>
         )}
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{game.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">{game.name}</h1>
+            {canEdit && (
+              <Link
+                href={`/admin/games/${id}`}
+                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                title="編輯此遊戲"
+              >
+                <SquarePen className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
           {game.nameOriginal && (
             <p className="mt-1 text-lg text-muted-foreground">
               {game.nameOriginal}

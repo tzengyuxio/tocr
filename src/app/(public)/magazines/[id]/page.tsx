@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ArrowLeft, Calendar } from "lucide-react";
+import { BookOpen, ArrowLeft, Calendar, SquarePen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { auth } from "@/lib/auth";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -22,6 +23,8 @@ interface PageProps {
 
 export default async function MagazineDetailPage({ params }: PageProps) {
   const { id } = await params;
+  const session = await auth();
+  const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
   const magazine = await prisma.magazine.findUnique({
     where: { id },
@@ -64,7 +67,18 @@ export default async function MagazineDetailPage({ params }: PageProps) {
           </div>
         )}
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{magazine.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">{magazine.name}</h1>
+            {canEdit && (
+              <Link
+                href={`/admin/magazines/${id}`}
+                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                title="編輯此期刊"
+              >
+                <SquarePen className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
           {magazine.nameEn && (
             <p className="mt-1 text-lg text-muted-foreground">
               {magazine.nameEn}

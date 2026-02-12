@@ -21,8 +21,12 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { auth } from "@/lib/auth";
 
 export default async function HomePage() {
+  const session = await auth();
+  const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
+
   // 取得統計數據
   const [magazineCount, issueCount, articleCount, gameCount, tagCount] =
     await Promise.all([
@@ -161,38 +165,38 @@ export default async function HomePage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {latestIssues.map((issue) => (
               <Link
                 key={issue.id}
                 href={`/magazines/${issue.magazine.id}/issues/${issue.id}`}
               >
                 <Card className="h-full transition-shadow hover:shadow-lg">
-                  <CardHeader className="pb-3">
+                  <CardContent className="flex gap-3 p-3">
                     {issue.coverImage ? (
                       <img
                         src={issue.coverImage}
                         alt={issue.issueNumber}
-                        className="mb-3 aspect-[3/4] w-full rounded-lg object-cover"
+                        className="h-24 w-[72px] shrink-0 rounded object-cover"
                       />
                     ) : (
-                      <div className="mb-3 flex aspect-[3/4] items-center justify-center rounded-lg bg-muted">
-                        <BookOpen className="h-12 w-12 text-muted-foreground/50" />
+                      <div className="flex h-24 w-[72px] shrink-0 items-center justify-center rounded bg-muted">
+                        <BookOpen className="h-6 w-6 text-muted-foreground/50" />
                       </div>
                     )}
-                    <CardDescription>{issue.magazine.name}</CardDescription>
-                    <CardTitle className="line-clamp-1">
-                      {issue.issueNumber}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>
-                        {format(new Date(issue.publishDate), "yyyy/MM/dd", {
-                          locale: zhTW,
-                        })}
-                      </span>
-                      <span>{issue._count.articles} 篇文章</span>
+                    <div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
+                      <div>
+                        <p className="text-xs text-muted-foreground">{issue.magazine.name}</p>
+                        <p className="font-medium line-clamp-1">{issue.issueNumber}</p>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                          {format(new Date(issue.publishDate), "yyyy/MM/dd", {
+                            locale: zhTW,
+                          })}
+                        </span>
+                        <span>{issue._count.articles} 篇</span>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -224,12 +228,14 @@ export default async function HomePage() {
             <CardContent className="p-0">
               <div className="divide-y">
                 {recentArticles.map((article) => (
-                  <Link
+                  <div
                     key={article.id}
-                    href={`/magazines/${article.issue.magazine.id}/issues/${article.issue.id}`}
                     className="flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
                   >
-                    <div className="flex-1">
+                    <Link
+                      href={`/magazines/${article.issue.magazine.id}/issues/${article.issue.id}`}
+                      className="flex-1"
+                    >
                       <div className="font-medium">{article.title}</div>
                       {article.subtitle && (
                         <div className="text-sm text-muted-foreground">
@@ -240,13 +246,24 @@ export default async function HomePage() {
                         {article.issue.magazine.name} ·{" "}
                         {article.issue.issueNumber}
                       </div>
+                    </Link>
+                    <div className="flex items-center gap-2 ml-4">
+                      {article.category && (
+                        <Badge variant="outline">
+                          {article.category}
+                        </Badge>
+                      )}
+                      {canEdit && (
+                        <Link
+                          href={`/admin/articles/${article.id}`}
+                          className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          title="編輯文章"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
                     </div>
-                    {article.category && (
-                      <Badge variant="outline" className="ml-4">
-                        {article.category}
-                      </Badge>
-                    )}
-                  </Link>
+                  </div>
                 ))}
               </div>
             </CardContent>
@@ -272,36 +289,27 @@ export default async function HomePage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
             {popularGames.map((game) => (
               <Link key={game.id} href={`/games/${game.id}`}>
                 <Card className="h-full transition-shadow hover:shadow-lg">
-                  <CardHeader className="pb-3">
+                  <CardContent className="flex items-center gap-3 p-3">
                     {game.coverImage ? (
                       <img
                         src={game.coverImage}
                         alt={game.name}
-                        className="mb-3 aspect-square w-full rounded-lg object-cover"
+                        className="h-12 w-12 shrink-0 rounded object-cover"
                       />
                     ) : (
-                      <div className="mb-3 flex aspect-square items-center justify-center rounded-lg bg-muted">
-                        <Gamepad2 className="h-10 w-10 text-muted-foreground/50" />
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-muted">
+                        <Gamepad2 className="h-5 w-5 text-muted-foreground/50" />
                       </div>
                     )}
-                    <CardTitle className="line-clamp-1 text-base">
-                      {game.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-1">
-                      {game.platforms.slice(0, 2).map((p) => (
-                        <Badge key={p} variant="outline" className="text-xs">
-                          {p}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      {game._count.articleGames} 篇相關文章
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium line-clamp-1 text-sm">{game.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {game._count.articleGames} 篇相關文章
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

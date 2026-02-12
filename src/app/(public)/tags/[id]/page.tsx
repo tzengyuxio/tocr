@@ -19,18 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tags, ArrowLeft, FileText } from "lucide-react";
+import { Tags, ArrowLeft, FileText, SquarePen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
-
-const TAG_TYPE_LABELS: Record<string, string> = {
-  GENERAL: "一般",
-  PERSON: "人物",
-  EVENT: "活動",
-  SERIES: "系列",
-  COMPANY: "公司",
-  PLATFORM: "平台",
-};
+import { auth } from "@/lib/auth";
+import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -38,6 +31,8 @@ interface PageProps {
 
 export default async function TagDetailPage({ params }: PageProps) {
   const { id } = await params;
+  const session = await auth();
+  const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
   const tag = await prisma.tag.findUnique({
     where: { id },
@@ -88,9 +83,20 @@ export default async function TagDetailPage({ params }: PageProps) {
         <div className="flex items-center gap-3">
           <Tags className="h-8 w-8 text-muted-foreground" />
           <div>
-            <h1 className="text-3xl font-bold">{tag.name}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">{tag.name}</h1>
+              {canEdit && (
+                <Link
+                  href={`/admin/tags/${id}`}
+                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  title="編輯此標籤"
+                >
+                  <SquarePen className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
             <div className="mt-1 flex items-center gap-2">
-              <Badge variant="outline">{TAG_TYPE_LABELS[tag.type]}</Badge>
+              <Badge className={getTagTypeColor(tag.type)}>{getTagTypeLabel(tag.type)}</Badge>
               <span className="text-muted-foreground">
                 {tag.articleTags.length} 篇相關文章
               </span>

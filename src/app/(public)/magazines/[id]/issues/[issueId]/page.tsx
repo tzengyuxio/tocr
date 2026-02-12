@@ -19,9 +19,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BookOpen, ArrowLeft, Calendar, FileText } from "lucide-react";
+import { BookOpen, ArrowLeft, Calendar, FileText, SquarePen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { auth } from "@/lib/auth";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -29,6 +30,8 @@ interface PageProps {
 
 export default async function IssueDetailPage({ params }: PageProps) {
   const { id, issueId } = await params;
+  const session = await auth();
+  const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
   const issue = await prisma.issue.findUnique({
     where: { id: issueId },
@@ -91,7 +94,18 @@ export default async function IssueDetailPage({ params }: PageProps) {
               {issue.magazine.name}
             </Link>
           </div>
-          <h1 className="text-3xl font-bold">{issue.issueNumber}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">{issue.issueNumber}</h1>
+            {canEdit && (
+              <Link
+                href={`/admin/magazines/${id}/issues/${issueId}`}
+                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                title="編輯此期數"
+              >
+                <SquarePen className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
           {issue.title && (
             <p className="mt-2 text-xl text-muted-foreground">{issue.title}</p>
           )}
@@ -147,6 +161,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
                   <TableHead>作者</TableHead>
                   <TableHead>分類</TableHead>
                   <TableHead>相關遊戲</TableHead>
+                  {canEdit && <TableHead className="w-[50px]"></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -195,6 +210,17 @@ export default async function IssueDetailPage({ params }: PageProps) {
                         ))}
                       </div>
                     </TableCell>
+                    {canEdit && (
+                      <TableCell>
+                        <Link
+                          href={`/admin/articles/${article.id}`}
+                          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          title="編輯文章"
+                        >
+                          <SquarePen className="h-3.5 w-3.5" />
+                        </Link>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
