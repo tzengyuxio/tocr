@@ -9,12 +9,14 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const searchParams = request.nextUrl.searchParams;
+    const all = searchParams.get("all") === "true";
 
     const game = await prisma.game.findUnique({
       where: { id },
       include: {
         articleGames: {
-          take: 20,
+          ...(all ? {} : { take: 20 }),
           orderBy: { createdAt: "desc" },
           include: {
             article: {
@@ -23,6 +25,7 @@ export async function GET(
                 title: true,
                 category: true,
                 pageStart: true,
+                pageEnd: true,
                 issue: {
                   select: {
                     id: true,

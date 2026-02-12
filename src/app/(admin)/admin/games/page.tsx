@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +29,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Loader2, Gamepad2, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, Gamepad2, Search, Eye, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface Game {
   id: string;
@@ -71,6 +72,45 @@ export default function GamesPage() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
+  const [expandedData, setExpandedData] = useState<{
+    articleGames: {
+      article: {
+        id: string;
+        title: string;
+        category: string | null;
+        pageStart: number | null;
+        pageEnd: number | null;
+        issue: {
+          id: string;
+          issueNumber: string;
+          publishDate: string;
+          magazine: { id: string; name: string };
+        };
+      };
+    }[];
+    _count: { articleGames: number };
+  } | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+
+  const handleToggleExpand = async (gameId: string) => {
+    if (expandedGameId === gameId) {
+      setExpandedGameId(null);
+      setExpandedData(null);
+      return;
+    }
+    setExpandedGameId(gameId);
+    setIsLoadingPreview(true);
+    try {
+      const res = await fetch(`/api/games/${gameId}`);
+      const data = await res.json();
+      setExpandedData(data);
+    } catch {
+      setExpandedData(null);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
 
   const fetchGames = async () => {
     setIsLoading(true);
@@ -267,7 +307,8 @@ export default function GamesPage() {
               </TableHeader>
               <TableBody>
                 {games.map((game) => (
-                  <TableRow key={game.id}>
+                  <Fragment key={game.id}>
+                  <TableRow>
                     <TableCell>
                       <div>
                         <div className="font-medium">{game.name}</div>
@@ -302,12 +343,24 @@ export default function GamesPage() {
                       </div>
                     </TableCell>
                     <TableCell>{game.developer || "-"}</TableCell>
-                    <TableCell>{game._count.articleGames}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 font-normal hover:underline"
+                        onClick={() => handleToggleExpand(game.id)}
+                        title="展開預覽"
+                      >
+                        {game._count.articleGames} 篇
+                        <Eye className="ml-1 h-3 w-3" />
+                      </Button>
+                    </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
+                          title="編輯遊戲"
                           onClick={() => handleOpenEdit(game)}
                         >
                           <Edit className="h-4 w-4" />
@@ -315,6 +368,7 @@ export default function GamesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          title="刪除遊戲"
                           onClick={() => handleDelete(game.id)}
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
@@ -322,6 +376,56 @@ export default function GamesPage() {
                       </div>
                     </TableCell>
                   </TableRow>
+                  {expandedGameId === game.id && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="bg-muted/30 p-4">
+                        {isLoadingPreview ? (
+                          <div className="flex justify-center py-4">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : expandedData ? (
+                          <div className="space-y-2">
+                            {expandedData.articleGames.slice(0, 5).map((ag) => (
+                              <div
+                                key={ag.article.id}
+                                className="flex items-center gap-3 rounded px-3 py-2 text-sm hover:bg-muted"
+                              >
+                                <span className="shrink-0 text-muted-foreground">
+                                  {ag.article.issue.magazine.name}
+                                </span>
+                                <span className="shrink-0 text-muted-foreground">›</span>
+                                <span className="shrink-0 text-muted-foreground">
+                                  {ag.article.issue.issueNumber}
+                                </span>
+                                <span className="shrink-0 text-muted-foreground">›</span>
+                                <span className="flex-1 truncate font-medium">
+                                  {ag.article.title}
+                                </span>
+                                {ag.article.category && (
+                                  <Badge variant="outline" className="text-xs shrink-0">
+                                    {ag.article.category}
+                                  </Badge>
+                                )}
+                              </div>
+                            ))}
+                            <div className="pt-2">
+                              <Button asChild variant="outline" size="sm">
+                                <Link href={`/admin/games/${game.id}`}>
+                                  {expandedData._count.articleGames > 5
+                                    ? `查看全部 ${expandedData._count.articleGames} 篇`
+                                    : "查看完整頁面"}
+                                  <ExternalLink className="ml-1 h-3 w-3" />
+                                </Link>
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">載入失敗</p>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>

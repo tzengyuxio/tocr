@@ -9,22 +9,28 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const searchParams = request.nextUrl.searchParams;
+    const all = searchParams.get("all") === "true";
 
     const tag = await prisma.tag.findUnique({
       where: { id },
       include: {
         articleTags: {
-          take: 20,
+          ...(all ? {} : { take: 20 }),
           orderBy: { createdAt: "desc" },
           include: {
             article: {
               select: {
                 id: true,
                 title: true,
+                category: true,
+                pageStart: true,
+                pageEnd: true,
                 issue: {
                   select: {
                     id: true,
                     issueNumber: true,
+                    publishDate: true,
                     magazine: {
                       select: { id: true, name: true },
                     },

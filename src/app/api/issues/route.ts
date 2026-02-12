@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const [issues, total] = await Promise.all([
       prisma.issue.findMany({
         where,
-        orderBy: { publishDate: "desc" },
+        orderBy: { order: "asc" },
         skip: (page - 1) * limit,
         take: limit,
         include: {
@@ -55,6 +55,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validatedData = issueCreateSchema.parse(body);
+
+    // Auto-assign order if not provided
+    if (validatedData.order === undefined) {
+      const maxOrder = await prisma.issue.aggregate({
+        where: { magazineId: validatedData.magazineId },
+        _max: { order: true },
+      });
+      validatedData.order = (maxOrder._max.order ?? -1) + 1;
+    }
 
     const issue = await prisma.issue.create({
       data: validatedData,

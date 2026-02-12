@@ -8,18 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, BookOpen, Upload } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { Plus, BookOpen, Upload } from "lucide-react";
+import { MagazineListClient } from "@/components/magazine/MagazineListClient";
 
 export default async function MagazinesPage() {
   const magazines = await prisma.magazine.findMany({
@@ -69,68 +59,7 @@ export default async function MagazinesPage() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>期刊名稱</TableHead>
-                  <TableHead>出版社</TableHead>
-                  <TableHead>期數</TableHead>
-                  <TableHead>狀態</TableHead>
-                  <TableHead>建立日期</TableHead>
-                  <TableHead className="w-[100px]">操作</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {magazines.map((magazine) => (
-                  <TableRow key={magazine.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        {magazine.coverImage ? (
-                          <img
-                            src={magazine.coverImage}
-                            alt={magazine.name}
-                            className="h-10 w-8 rounded object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-10 w-8 items-center justify-center rounded bg-muted">
-                            <BookOpen className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div>
-                          <div className="font-medium">{magazine.name}</div>
-                          {magazine.nameEn && (
-                            <div className="text-sm text-muted-foreground">
-                              {magazine.nameEn}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{magazine.publisher || "-"}</TableCell>
-                    <TableCell>{magazine._count.issues} 期</TableCell>
-                    <TableCell>
-                      <Badge variant={magazine.isActive ? "default" : "secondary"}>
-                        {magazine.isActive ? "發行中" : "已停刊"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(magazine.createdAt), "yyyy/MM/dd", {
-                        locale: zhTW,
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button asChild variant="ghost" size="icon">
-                          <Link href={`/admin/magazines/${magazine.id}`}>
-                            <Edit className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <MagazineListClient magazines={magazines} />
           )}
         </CardContent>
       </Card>

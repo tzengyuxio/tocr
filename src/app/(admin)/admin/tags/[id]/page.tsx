@@ -1,0 +1,256 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Loader2,
+  Tags,
+  BookOpen,
+  FileText,
+} from "lucide-react";
+
+const TAG_TYPES: Record<string, string> = {
+  GENERAL: "一般",
+  PERSON: "人物",
+  EVENT: "活動",
+  SERIES: "系列",
+  COMPANY: "公司",
+  PLATFORM: "平台",
+};
+
+interface ArticleData {
+  id: string;
+  title: string;
+  category: string | null;
+  pageStart: number | null;
+  pageEnd: number | null;
+  issue: {
+    id: string;
+    issueNumber: string;
+    publishDate: string;
+    magazine: { id: string; name: string };
+  };
+}
+
+interface GroupedData {
+  magazine: { id: string; name: string };
+  issues: {
+    issue: { id: string; issueNumber: string; publishDate: string };
+    articles: ArticleData[];
+  }[];
+}
+
+function groupArticles(articles: ArticleData[]): GroupedData[] {
+  const magazineMap = new Map<string, GroupedData>();
+
+  for (const article of articles) {
+    const mag = article.issue.magazine;
+    if (!magazineMap.has(mag.id)) {
+      magazineMap.set(mag.id, { magazine: mag, issues: [] });
+    }
+    const group = magazineMap.get(mag.id)!;
+
+    let issueGroup = group.issues.find(
+      (ig) => ig.issue.id === article.issue.id
+    );
+    if (!issueGroup) {
+      issueGroup = {
+        issue: {
+          id: article.issue.id,
+          issueNumber: article.issue.issueNumber,
+          publishDate: article.issue.publishDate,
+        },
+        articles: [],
+      };
+      group.issues.push(issueGroup);
+    }
+    issueGroup.articles.push(article);
+  }
+
+  // Sort issues by publishDate descending within each magazine
+  for (const group of magazineMap.values()) {
+    group.issues.sort(
+      (a, b) =>
+        new Date(b.issue.publishDate).getTime() -
+        new Date(a.issue.publishDate).getTime()
+    );
+  }
+
+  return Array.from(magazineMap.values()).sort((a, b) =>
+    a.magazine.name.localeCompare(b.magazine.name)
+  );
+}
+
+export default function TagDetailPage() {
+  const params = useParams<{ id: string }>();
+  const [tag, setTag] = useState<{
+    id: string;
+    name: string;
+    slug: string;
+    type: string;
+    description: string | null;
+    _count: { articleTags: number };
+  } | null>(null);
+  const [grouped, setGrouped] = useState<GroupedData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/tags/${params.id}?all=true`);
+        const data = await res.json();
+        setTag({
+          id: data.id,
+          name: data.name,
+          slug: data.slug,
+          type: data.type,
+          description: data.description,
+          _count: data._count,
+        });
+        const articles = data.articleTags.map(
+          (at: { article: ArticleData }) => at.article
+        );
+        setGrouped(groupArticles(articles));
+      } catch (err) {
+        console.error("Failed to load tag:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, [params.id]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!tag) {
+    return <p className="py-12 text-center text-muted-foreground">找不到標籤</p>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button asChild variant="ghost" size="icon" title="返回標籤列表">
+            <Link href="/admin/tags">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div>
+            <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+              <Tags className="h-6 w-6" />
+              {tag.name}
+            </h2>
+            <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+              <Badge variant="secondary">{TAG_TYPES[tag.type] || tag.type}</Badge>
+              <span>{tag._count.articleTags} 篇相關文章</span>
+              {tag.description && <span>· {tag.description}</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>相關文章</CardTitle>
+          <CardDescription>
+            出現在 {grouped.length} 本期刊、
+            {grouped.reduce((sum, g) => sum + g.issues.length, 0)} 期中
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {grouped.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="h-12 w-12 text-muted-foreground/50" />
+              <h3 className="mt-4 text-lg font-semibold">尚無相關文章</h3>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {grouped.map((group) => (
+                <Collapsible key={group.magazine.id} defaultOpen>
+                  <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-lg bg-muted px-4 py-3 text-left font-medium hover:bg-muted/80 transition-colors [&[data-state=open]>svg]:rotate-90">
+                    <ChevronRight className="h-4 w-4 shrink-0 transition-transform" />
+                    <BookOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="flex-1">{group.magazine.name}</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {group.issues.length} 期・
+                      {group.issues.reduce((s, ig) => s + ig.articles.length, 0)} 篇
+                    </span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="ml-6 border-l pl-4 pt-2 space-y-3">
+                      {group.issues.map((issueGroup) => (
+                        <Collapsible key={issueGroup.issue.id} defaultOpen>
+                          <CollapsibleTrigger className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm hover:bg-muted/50 transition-colors [&[data-state=open]>svg]:rotate-90">
+                            <ChevronRight className="h-3 w-3 shrink-0 transition-transform" />
+                            <span className="font-medium">
+                              {issueGroup.issue.issueNumber}
+                            </span>
+                            <span className="text-muted-foreground">
+                              ({new Date(issueGroup.issue.publishDate).toLocaleDateString("zh-TW")})
+                            </span>
+                            <span className="text-muted-foreground">
+                              — {issueGroup.articles.length} 篇
+                            </span>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="ml-5 space-y-1 pt-1">
+                              {issueGroup.articles.map((article) => (
+                                <Link
+                                  key={article.id}
+                                  href={`/admin/magazines/${article.issue.magazine.id}/issues/${article.issue.id}`}
+                                  className="flex items-center gap-3 rounded px-3 py-2 text-sm hover:bg-muted transition-colors"
+                                >
+                                  <span className="w-16 shrink-0 text-right font-mono text-xs text-muted-foreground">
+                                    {article.pageStart
+                                      ? `p.${article.pageStart}${article.pageEnd && article.pageEnd !== article.pageStart ? `-${article.pageEnd}` : ""}`
+                                      : ""}
+                                  </span>
+                                  <span className="flex-1 truncate">
+                                    {article.title}
+                                  </span>
+                                  {article.category && (
+                                    <Badge variant="outline" className="text-xs shrink-0">
+                                      {article.category}
+                                    </Badge>
+                                  )}
+                                </Link>
+                              ))}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

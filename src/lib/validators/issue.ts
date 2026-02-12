@@ -11,6 +11,7 @@ export const issueCreateSchema = z.object({
   pageCount: z.coerce.number().int().positive().optional().nullable(),
   price: z.coerce.number().positive().optional().nullable(),
   notes: z.string().optional().nullable(),
+  order: z.coerce.number().int().optional(),
 });
 
 export const issueUpdateSchema = issueCreateSchema.partial().omit({ magazineId: true });

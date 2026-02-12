@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     const provider =
       (formData.get("provider") as OcrProviderType) || "claude";
     const issueId = formData.get("issueId") as string | null;
+    const origin = new URL(request.url).origin;
 
     const allowedTypes = [
       "image/jpeg",
@@ -43,7 +44,8 @@ export async function POST(request: NextRequest) {
     if (imageUrlsRaw) {
       const imageUrls: string[] = JSON.parse(imageUrlsRaw);
       for (const url of imageUrls) {
-        const response = await fetch(url);
+        const absoluteUrl = url.startsWith('http') ? url : `${origin}${url}`;
+        const response = await fetch(absoluteUrl);
         if (!response.ok) {
           return NextResponse.json(
             { error: `Failed to fetch image from URL: ${url}` },
@@ -83,7 +85,8 @@ export async function POST(request: NextRequest) {
           mimeType: image.type,
         });
       } else if (imageUrl) {
-        const response = await fetch(imageUrl);
+        const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${origin}${imageUrl}`;
+        const response = await fetch(absoluteImageUrl);
         if (!response.ok) {
           return NextResponse.json(
             { error: "Failed to fetch image from URL" },

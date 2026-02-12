@@ -225,6 +225,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
         <OcrResultEditor
           result={ocrResult}
           issueId={selectedIssueId}
+          tocImages={selectedIssue?.tocImages || []}
           onSave={handleSave}
           onCancel={handleCancel}
         />

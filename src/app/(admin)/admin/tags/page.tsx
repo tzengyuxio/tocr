@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,7 +36,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Edit, Trash2, Loader2, Tags } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, Tags, Eye, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface Tag {
   id: string;
@@ -72,6 +73,45 @@ export default function TagsPage() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedTagId, setExpandedTagId] = useState<string | null>(null);
+  const [expandedData, setExpandedData] = useState<{
+    articleTags: {
+      article: {
+        id: string;
+        title: string;
+        category: string | null;
+        pageStart: number | null;
+        pageEnd: number | null;
+        issue: {
+          id: string;
+          issueNumber: string;
+          publishDate: string;
+          magazine: { id: string; name: string };
+        };
+      };
+    }[];
+    _count: { articleTags: number };
+  } | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+
+  const handleToggleExpand = async (tagId: string) => {
+    if (expandedTagId === tagId) {
+      setExpandedTagId(null);
+      setExpandedData(null);
+      return;
+    }
+    setExpandedTagId(tagId);
+    setIsLoadingPreview(true);
+    try {
+      const res = await fetch(`/api/tags/${tagId}`);
+      const data = await res.json();
+      setExpandedData(data);
+    } catch {
+      setExpandedData(null);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
 
   const fetchTags = async () => {
     setIsLoading(true);
@@ -242,7 +282,8 @@ export default function TagsPage() {
                   </TableHeader>
                   <TableBody>
                     {tags.map((tag) => (
-                      <TableRow key={tag.id}>
+                      <React.Fragment key={tag.id}>
+                      <TableRow>
                         <TableCell className="font-medium">{tag.name}</TableCell>
                         <TableCell className="font-mono text-sm text-muted-foreground">
                           {tag.slug}
@@ -252,12 +293,24 @@ export default function TagsPage() {
                             {getTypeLabel(tag.type)}
                           </Badge>
                         </TableCell>
-                        <TableCell>{tag._count.articleTags}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 font-normal hover:underline"
+                            onClick={() => handleToggleExpand(tag.id)}
+                            title="展開預覽"
+                          >
+                            {tag._count.articleTags} 篇
+                            <Eye className="ml-1 h-3 w-3" />
+                          </Button>
+                        </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
+                              title="編輯標籤"
                               onClick={() => handleOpenEdit(tag)}
                             >
                               <Edit className="h-4 w-4" />
@@ -265,6 +318,7 @@ export default function TagsPage() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              title="刪除標籤"
                               onClick={() => handleDelete(tag.id)}
                             >
                               <Trash2 className="h-4 w-4 text-red-500" />
@@ -272,6 +326,56 @@ export default function TagsPage() {
                           </div>
                         </TableCell>
                       </TableRow>
+                      {expandedTagId === tag.id && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="bg-muted/30 p-4">
+                            {isLoadingPreview ? (
+                              <div className="flex justify-center py-4">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                              </div>
+                            ) : expandedData ? (
+                              <div className="space-y-2">
+                                {expandedData.articleTags.slice(0, 5).map((at) => (
+                                  <div
+                                    key={at.article.id}
+                                    className="flex items-center gap-3 rounded px-3 py-2 text-sm hover:bg-muted"
+                                  >
+                                    <span className="shrink-0 text-muted-foreground">
+                                      {at.article.issue.magazine.name}
+                                    </span>
+                                    <span className="shrink-0 text-muted-foreground">›</span>
+                                    <span className="shrink-0 text-muted-foreground">
+                                      {at.article.issue.issueNumber}
+                                    </span>
+                                    <span className="shrink-0 text-muted-foreground">›</span>
+                                    <span className="flex-1 truncate font-medium">
+                                      {at.article.title}
+                                    </span>
+                                    {at.article.category && (
+                                      <Badge variant="outline" className="text-xs shrink-0">
+                                        {at.article.category}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                ))}
+                                <div className="pt-2">
+                                  <Button asChild variant="outline" size="sm">
+                                    <Link href={`/admin/tags/${tag.id}`}>
+                                      {expandedData._count.articleTags > 5
+                                        ? `查看全部 ${expandedData._count.articleTags} 篇`
+                                        : "查看完整頁面"}
+                                      <ExternalLink className="ml-1 h-3 w-3" />
+                                    </Link>
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">載入失敗</p>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      </React.Fragment>
                     ))}
                   </TableBody>
                 </Table>

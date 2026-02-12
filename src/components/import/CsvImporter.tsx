@@ -175,7 +175,7 @@ export function CsvImporter() {
             </Button>
             <Button
               onClick={handleImport}
-              disabled={stage === "importing" || !hasData || (hasErrors && !hasData)}
+              disabled={stage === "importing" || !hasData || (!!hasErrors && !hasData)}
             >
               {stage === "importing" && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
