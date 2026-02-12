@@ -31,6 +31,7 @@ import {
   X,
 } from "lucide-react";
 import type { OcrArticleResult, OcrResult } from "@/services/ai/ocr.interface";
+import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 
 interface OcrResultEditorProps {
   result: OcrResult;
@@ -183,6 +184,40 @@ function ArticleRow({
         </div>
 
         <div className="space-y-1">
+          <Label className="text-xs">建議標籤（逗號分隔，格式：名稱 或 名稱:類型）</Label>
+          <Input
+            value={editingArticle.suggestedTags?.map((t) => t.type !== "GENERAL" ? `${t.name}:${t.type}` : t.name).join(", ") || ""}
+            onChange={(e) =>
+              onEditChange({
+                ...editingArticle,
+                suggestedTags: e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .map((s) => {
+                    const parts = s.split(":");
+                    return parts.length > 1
+                      ? { name: parts[0].trim(), type: parts[1].trim().toUpperCase() }
+                      : { name: s, type: "GENERAL" };
+                  }),
+              })
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Escape") onCancelEdit();
+            }}
+          />
+          {editingArticle.suggestedTags && editingArticle.suggestedTags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {editingArticle.suggestedTags.map((tag, i) => (
+                <Badge key={i} className={`text-xs ${getTagTypeColor(tag.type)}`}>
+                  {tag.name} ({getTagTypeLabel(tag.type)})
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-1">
           <Label className="text-xs">摘要</Label>
           <Textarea
             value={editingArticle.summary || ""}
@@ -238,8 +273,13 @@ function ArticleRow({
             </Badge>
           )}
           {article.suggestedGames?.map((game, i) => (
-            <Badge key={i} variant="secondary" className="text-xs">
+            <Badge key={`game-${i}`} variant="secondary" className="text-xs">
               {game}
+            </Badge>
+          ))}
+          {article.suggestedTags?.map((tag, i) => (
+            <Badge key={`tag-${i}`} className={`text-xs ${getTagTypeColor(tag.type)}`}>
+              {tag.name}
             </Badge>
           ))}
         </div>

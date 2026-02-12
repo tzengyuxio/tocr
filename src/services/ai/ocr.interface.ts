@@ -12,7 +12,7 @@ export interface OcrArticleResult {
   pageStart?: number;
   pageEnd?: number;
   summary?: string;
-  suggestedTags?: string[];
+  suggestedTags?: Array<{ name: string; type: string }>;
   suggestedGames?: string[];
   confidence: number; // 0-1 辨識信心度
 }

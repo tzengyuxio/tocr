@@ -69,8 +69,10 @@ export default function GamesPage() {
     publisher: "",
     genres: [] as string[],
     description: "",
+    coverImage: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isFetchingCover, setIsFetchingCover] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
   const [expandedData, setExpandedData] = useState<{
@@ -147,6 +149,7 @@ export default function GamesPage() {
       publisher: "",
       genres: [],
       description: "",
+      coverImage: "",
     });
     setError(null);
     setIsDialogOpen(true);
@@ -165,6 +168,7 @@ export default function GamesPage() {
       publisher: game.publisher || "",
       genres: game.genres,
       description: "",
+      coverImage: game.coverImage || "",
     });
     setError(null);
     setIsDialogOpen(true);
@@ -247,6 +251,30 @@ export default function GamesPage() {
         ? prev.genres.filter((g) => g !== genre)
         : [...prev.genres, genre],
     }));
+  };
+
+  const handleFetchCover = async () => {
+    if (!formData.name.trim()) return;
+    setIsFetchingCover(true);
+    try {
+      const res = await fetch("/api/games/search-cover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: formData.name }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.coverImage) {
+          setFormData((prev) => ({ ...prev, coverImage: data.coverImage }));
+        } else {
+          setError("RAWG 找不到此遊戲的封面");
+        }
+      }
+    } catch {
+      setError("抓取封面失敗");
+    } finally {
+      setIsFetchingCover(false);
+    }
   };
 
   return (
@@ -583,6 +611,38 @@ export default function GamesPage() {
                 placeholder="遊戲簡介（選填）"
                 rows={3}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>封面圖片</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={formData.coverImage}
+                  onChange={(e) =>
+                    setFormData({ ...formData, coverImage: e.target.value })
+                  }
+                  placeholder="封面圖片 URL"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleFetchCover}
+                  disabled={isFetchingCover || !formData.name.trim()}
+                >
+                  {isFetchingCover ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  從 RAWG 抓取
+                </Button>
+              </div>
+              {formData.coverImage && (
+                <img
+                  src={formData.coverImage}
+                  alt="Cover preview"
+                  className="mt-2 aspect-video w-full rounded-lg object-cover"
+                />
+              )}
             </div>
           </div>
 

@@ -173,10 +173,10 @@ export default async function HomePage() {
                       <img
                         src={issue.coverImage}
                         alt={issue.issueNumber}
-                        className="mb-3 h-48 w-full rounded-lg object-cover"
+                        className="mb-3 aspect-[3/4] w-full rounded-lg object-cover"
                       />
                     ) : (
-                      <div className="mb-3 flex h-48 items-center justify-center rounded-lg bg-muted">
+                      <div className="mb-3 flex aspect-[3/4] items-center justify-center rounded-lg bg-muted">
                         <BookOpen className="h-12 w-12 text-muted-foreground/50" />
                       </div>
                     )}
@@ -281,10 +281,10 @@ export default async function HomePage() {
                       <img
                         src={game.coverImage}
                         alt={game.name}
-                        className="mb-3 h-32 w-full rounded-lg object-cover"
+                        className="mb-3 aspect-square w-full rounded-lg object-cover"
                       />
                     ) : (
-                      <div className="mb-3 flex h-32 items-center justify-center rounded-lg bg-muted">
+                      <div className="mb-3 flex aspect-square items-center justify-center rounded-lg bg-muted">
                         <Gamepad2 className="h-10 w-10 text-muted-foreground/50" />
                       </div>
                     )}

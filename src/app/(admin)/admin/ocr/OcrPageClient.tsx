@@ -110,7 +110,9 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
           summary: article.summary,
           sortOrder: index,
           suggestedGames: article.suggestedGames,
-          suggestedTags: article.suggestedTags,
+          suggestedTags: article.suggestedTags?.map((t) =>
+            typeof t === "string" ? { name: t, type: "GENERAL" } : t
+          ),
         })),
       }),
     });

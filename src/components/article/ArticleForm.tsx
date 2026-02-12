@@ -36,6 +36,7 @@ import {
 import { Loader2, X, Plus, Gamepad2, Tags, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 
 interface Game {
   id: string;
@@ -100,6 +101,8 @@ export function ArticleForm({
   const [tagOpen, setTagOpen] = useState(false);
   const [gameSearch, setGameSearch] = useState("");
   const [tagSearch, setTagSearch] = useState("");
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const [isCreatingGame, setIsCreatingGame] = useState(false);
 
   const {
     register,
@@ -171,6 +174,66 @@ export function ArticleForm({
         ? prev.filter((t) => t.id !== tag.id)
         : [...prev, tag]
     );
+  };
+
+  const handleCreateTag = async (name: string) => {
+    if (!name.trim() || isCreatingTag) return;
+    setIsCreatingTag(true);
+    try {
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const res = await fetch("/api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, slug: `${slug}-${Date.now()}`, type: "GENERAL" }),
+      });
+      if (res.ok) {
+        const newTag = await res.json();
+        setAllTags((prev) => [...prev, newTag]);
+        setSelectedTags((prev) => [...prev, newTag]);
+        setTagSearch("");
+        toast.success(`標籤「${name}」已建立`);
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "建立標籤失敗");
+      }
+    } catch {
+      toast.error("建立標籤失敗");
+    } finally {
+      setIsCreatingTag(false);
+    }
+  };
+
+  const handleCreateGame = async (name: string) => {
+    if (!name.trim() || isCreatingGame) return;
+    setIsCreatingGame(true);
+    try {
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const res = await fetch("/api/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, slug: `${slug}-${Date.now()}` }),
+      });
+      if (res.ok) {
+        const newGame = await res.json();
+        setAllGames((prev) => [...prev, newGame]);
+        setSelectedGames((prev) => [...prev, newGame]);
+        setGameSearch("");
+        toast.success(`遊戲「${name}」已建立`);
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "建立遊戲失敗");
+      }
+    } catch {
+      toast.error("建立遊戲失敗");
+    } finally {
+      setIsCreatingGame(false);
+    }
   };
 
   const onSubmit = async (data: ArticleUpdateInput) => {
@@ -426,7 +489,25 @@ export function ArticleForm({
                   onValueChange={setGameSearch}
                 />
                 <CommandList>
-                  <CommandEmpty>找不到遊戲</CommandEmpty>
+                  <CommandEmpty>
+                    {gameSearch.trim() ? (
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 px-2 py-1.5 text-sm hover:bg-muted rounded cursor-pointer"
+                        onClick={() => handleCreateGame(gameSearch.trim())}
+                        disabled={isCreatingGame}
+                      >
+                        {isCreatingGame ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
+                        建立「{gameSearch.trim()}」
+                      </button>
+                    ) : (
+                      "找不到遊戲"
+                    )}
+                  </CommandEmpty>
                   <CommandGroup className="max-h-64 overflow-auto">
                     {filteredGames.slice(0, 50).map((game) => (
                       <CommandItem
@@ -465,7 +546,7 @@ export function ArticleForm({
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {selectedTags.map((tag) => (
-              <Badge key={tag.id} variant="outline" className="gap-1">
+              <Badge key={tag.id} className={cn("gap-1", getTagTypeColor(tag.type))}>
                 {tag.name}
                 <button
                   type="button"
@@ -497,7 +578,25 @@ export function ArticleForm({
                   onValueChange={setTagSearch}
                 />
                 <CommandList>
-                  <CommandEmpty>找不到標籤</CommandEmpty>
+                  <CommandEmpty>
+                    {tagSearch.trim() ? (
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 px-2 py-1.5 text-sm hover:bg-muted rounded cursor-pointer"
+                        onClick={() => handleCreateTag(tagSearch.trim())}
+                        disabled={isCreatingTag}
+                      >
+                        {isCreatingTag ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
+                        建立「{tagSearch.trim()}」
+                      </button>
+                    ) : (
+                      "找不到標籤"
+                    )}
+                  </CommandEmpty>
                   <CommandGroup className="max-h-64 overflow-auto">
                     {filteredTags.slice(0, 50).map((tag) => (
                       <CommandItem
@@ -514,9 +613,9 @@ export function ArticleForm({
                           )}
                         />
                         {tag.name}
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          ({tag.type})
-                        </span>
+                        <Badge className={cn("ml-2 text-xs", getTagTypeColor(tag.type))}>
+                          {getTagTypeLabel(tag.type)}
+                        </Badge>
                       </CommandItem>
                     ))}
                   </CommandGroup>

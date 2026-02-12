@@ -26,15 +26,7 @@ import {
   FileText,
 } from "lucide-react";
 import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-articles";
-
-const TAG_TYPES: Record<string, string> = {
-  GENERAL: "一般",
-  PERSON: "人物",
-  EVENT: "活動",
-  SERIES: "系列",
-  COMPANY: "公司",
-  PLATFORM: "平台",
-};
+import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 
 export default function TagDetailPage() {
   const params = useParams<{ id: string }>();
@@ -103,7 +95,7 @@ export default function TagDetailPage() {
               {tag.name}
             </h2>
             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-              <Badge variant="secondary">{TAG_TYPES[tag.type] || tag.type}</Badge>
+              <Badge className={getTagTypeColor(tag.type)}>{getTagTypeLabel(tag.type)}</Badge>
               <span>{tag._count.articleTags} 篇相關文章</span>
               {tag.description && <span>· {tag.description}</span>}
             </div>

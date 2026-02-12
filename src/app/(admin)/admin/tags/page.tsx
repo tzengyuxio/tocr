@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit, Trash2, Loader2, Tags, Eye, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { TAG_TYPES, getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 
 interface Tag {
   id: string;
@@ -49,15 +50,6 @@ interface Tag {
     articleTags: number;
   };
 }
-
-const TAG_TYPES = [
-  { value: "GENERAL", label: "一般" },
-  { value: "PERSON", label: "人物" },
-  { value: "EVENT", label: "活動" },
-  { value: "SERIES", label: "系列" },
-  { value: "COMPANY", label: "公司" },
-  { value: "PLATFORM", label: "平台" },
-];
 
 export default function TagsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
@@ -211,21 +203,6 @@ export default function TagsPage() {
       .replace(/^-|-$/g, "");
   };
 
-  const getTypeLabel = (type: string) => {
-    return TAG_TYPES.find((t) => t.value === type)?.label || type;
-  };
-
-  const getTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
-      GENERAL: "bg-gray-100 text-gray-800",
-      PERSON: "bg-blue-100 text-blue-800",
-      EVENT: "bg-purple-100 text-purple-800",
-      SERIES: "bg-green-100 text-green-800",
-      COMPANY: "bg-orange-100 text-orange-800",
-      PLATFORM: "bg-cyan-100 text-cyan-800",
-    };
-    return colors[type] || "bg-gray-100 text-gray-800";
-  };
 
   return (
     <div className="space-y-6">
@@ -289,8 +266,8 @@ export default function TagsPage() {
                           {tag.slug}
                         </TableCell>
                         <TableCell>
-                          <Badge className={getTypeColor(tag.type)}>
-                            {getTypeLabel(tag.type)}
+                          <Badge className={getTagTypeColor(tag.type)}>
+                            {getTagTypeLabel(tag.type)}
                           </Badge>
                         </TableCell>
                         <TableCell>

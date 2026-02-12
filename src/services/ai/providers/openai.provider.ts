@@ -118,7 +118,11 @@ export class OpenAIOcrProvider implements IOcrProvider {
           typeof a.pageEnd === "number" ? a.pageEnd : undefined,
         summary: a.summary ? String(a.summary) : undefined,
         suggestedTags: Array.isArray(a.suggestedTags)
-          ? a.suggestedTags.map(String)
+          ? a.suggestedTags.map((t: unknown) =>
+              typeof t === "string"
+                ? { name: t, type: "GENERAL" }
+                : { name: String((t as Record<string, unknown>).name || ""), type: String((t as Record<string, unknown>).type || "GENERAL") }
+            )
           : [],
         suggestedGames: Array.isArray(a.suggestedGames)
           ? a.suggestedGames.map(String)

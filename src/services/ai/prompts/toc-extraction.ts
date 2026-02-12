@@ -20,7 +20,7 @@ export const TOC_EXTRACTION_PROMPT = `你是一位專業的雜誌目錄資料整
       "pageStart": 起始頁碼,
       "pageEnd": 結束頁碼,
       "summary": "簡短摘要（若可從目錄推測）",
-      "suggestedTags": ["建議標籤"],
+      "suggestedTags": [{"name": "PS5", "type": "PLATFORM"}, {"name": "E3", "type": "EVENT"}],
       "suggestedGames": ["相關遊戲名稱"],
       "confidence": 0.95
     }
@@ -68,10 +68,15 @@ export const TOC_EXTRACTION_PROMPT = `你是一位專業的雜誌目錄資料整
 - 若文章是某遊戲的專題或攻略，該遊戲應列入
 
 ### 標籤建議 (suggestedTags)
-可能的標籤類型：
-- 遊戲平台：PS5、Switch、PC、Xbox 等
-- 遊戲類型：RPG、動作、射擊、模擬 等
-- 特殊主題：E3、TGS、發售前情報 等
+每個標籤為一個物件，包含 name 和 type：
+- **PLATFORM**（遊戲平台）：PS5、PS4、Switch、PC、Xbox Series、Xbox One 等
+- **PERSON**（人物）：製作人、設計師、聲優等人名（如宮本茂、小島秀夫）
+- **EVENT**（活動）：E3、TGS（東京電玩展）、Gamescom、Nintendo Direct 等
+- **SERIES**（遊戲系列）：從標題中提取的遊戲系列名（如「薩爾達傳說系列」「Final Fantasy 系列」）
+- **COMPANY**（公司）：開發商或發行商（如 Nintendo、Square Enix、Sony）
+- **GENERAL**（其他主題）：不屬於以上分類的主題標籤
+
+重要：請積極從文章標題中提取隱含的標籤實體。例如「《薩爾達傳說 王國之淚》製作人青沼英二專訪」應產生 PERSON:青沼英二、SERIES:薩爾達傳說系列。
 
 ### 信心度 (confidence)
 - 1.0：非常確定

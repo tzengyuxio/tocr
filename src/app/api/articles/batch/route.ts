@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { articleBatchCreateSchema } from "@/lib/validators/article";
+import { TagType } from "@prisma/client";
 
 // POST /api/articles/batch - 批次建立文章（AI 辨識後使用）
 export async function POST(request: NextRequest) {
@@ -82,7 +83,12 @@ export async function POST(request: NextRequest) {
 
         // 處理建議的標籤關聯
         if (articleData.suggestedTags && articleData.suggestedTags.length > 0) {
-          for (const tagName of articleData.suggestedTags) {
+          for (const tagItem of articleData.suggestedTags) {
+            // Normalize: string → { name, type: "GENERAL" }
+            const tagName = typeof tagItem === "string" ? tagItem : tagItem.name;
+            const rawType = typeof tagItem === "string" ? "GENERAL" : (tagItem.type || "GENERAL");
+            const tagType = Object.values(TagType).includes(rawType as TagType) ? (rawType as TagType) : TagType.GENERAL;
+
             // 查找或建立標籤
             let tag = await tx.tag.findFirst({
               where: {
@@ -101,7 +107,7 @@ export async function POST(request: NextRequest) {
                 data: {
                   name: tagName,
                   slug: `${slug}-${Date.now()}`,
-                  type: "GENERAL",
+                  type: tagType,
                 },
               });
             }

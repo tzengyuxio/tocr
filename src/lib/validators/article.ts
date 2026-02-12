@@ -28,7 +28,9 @@ export const articleBatchCreateSchema = z.object({
       summary: z.string().optional().nullable(),
       sortOrder: z.coerce.number().int().default(0),
       suggestedGames: z.array(z.string()).optional(),
-      suggestedTags: z.array(z.string()).optional(),
+      suggestedTags: z.array(
+        z.union([z.string(), z.object({ name: z.string(), type: z.string() })])
+      ).optional(),
     })
   ),
 });
