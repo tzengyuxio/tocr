@@ -9,6 +9,8 @@ import {
   Tags,
   Gamepad2,
   ScanText,
+  Upload,
+  Download,
   Users,
   LayoutDashboard,
   ChevronLeft,
@@ -47,6 +49,16 @@ const navItems = [
     title: "AI 辨識",
     href: "/admin/ocr",
     icon: ScanText,
+  },
+  {
+    title: "批次匯入",
+    href: "/admin/magazines/import",
+    icon: Upload,
+  },
+  {
+    title: "資料匯出",
+    href: "/admin/export",
+    icon: Download,
   },
   {
     title: "使用者管理",

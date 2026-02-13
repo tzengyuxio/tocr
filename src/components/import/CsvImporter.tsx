@@ -29,29 +29,34 @@ const CSV_TEMPLATE_HEADERS = [
   "notes",
 ];
 
-const CSV_TEMPLATE_EXAMPLE = [
-  "電玩通",
-  "Game Express",
-  "範例出版社",
-  "",
-  "",
-  "",
-  "true",
-  "42",
-  "Vol.5",
-  "特別企劃",
-  "2024-01-15",
-  "128",
-  "150",
-  "",
+const CSV_TEMPLATE_ROWS = [
+  // Magazine A - first issue: fill all magazine fields
+  ["電玩通", "Game Express", "範例出版社", "1234-5678", "台灣老牌電玩雜誌", "1995-06-01", "true", "42", "Vol.5", "年度大作特輯", "2024-01-15", "128", "150", ""],
+  // Magazine A - second issue: magazine fields can be empty since it already exists
+  ["電玩通", "", "", "", "", "", "", "43", "Vol.5", "", "2024-02-15", "120", "150", ""],
+  // Magazine A - third issue
+  ["電玩通", "", "", "", "", "", "", "44", "Vol.6", "E3 特別報導", "2024-03-15", "144", "150", "附贈海報"],
+  // Magazine B - first issue: fill all magazine fields for the new magazine
+  ["遊戲世界", "Game World", "另一出版社", "8765-4321", "綜合遊戲情報誌", "2000-03-01", "true", "100", "", "百期紀念號", "2024-01-20", "160", "200", "限量封面"],
+  // Magazine B - second issue
+  ["遊戲世界", "", "", "", "", "", "", "101", "", "", "2024-02-20", "140", "200", ""],
 ];
+
+function escapeCsvField(value: string): string {
+  if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
 
 function downloadTemplate() {
   // BOM + UTF-8 CSV
   const bom = "\uFEFF";
   const header = CSV_TEMPLATE_HEADERS.join(",");
-  const example = CSV_TEMPLATE_EXAMPLE.join(",");
-  const content = bom + header + "\n" + example + "\n";
+  const rows = CSV_TEMPLATE_ROWS.map((row) =>
+    row.map(escapeCsvField).join(",")
+  ).join("\n");
+  const content = bom + header + "\n" + rows + "\n";
   const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -133,13 +138,35 @@ export function CsvImporter() {
               <CardDescription>
                 上傳 CSV 檔案，批次建立期刊與單期資料。已存在的期刊和單期將自動跳過。
               </CardDescription>
-              <div className="mt-3 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-                <p className="mb-1 font-medium text-foreground">欄位說明</p>
-                <ul className="list-inside list-disc space-y-0.5">
-                  <li><span className="font-medium">issue_number（期號）</span>：每一期的流水編號，如「42」「No.3」「2024年8月號」</li>
-                  <li><span className="font-medium">volume_number（卷號）</span>：將多期歸為一卷的編號，通常以年份或固定期數為單位，如「Vol.5」「第 3 卷」。選填</li>
-                  <li>帶有 <span className="font-medium">*</span> 的欄位為必填：magazine_name、issue_number、publish_date</li>
-                </ul>
+              <div className="mt-3 space-y-3 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+                <div>
+                  <p className="mb-1.5 font-medium text-foreground">期刊欄位</p>
+                  <ul className="list-inside list-disc space-y-0.5">
+                    <li><span className="font-medium">magazine_name *</span>：期刊名稱，用來識別期刊，如「電玩通」</li>
+                    <li><span className="font-medium">magazine_name_en</span>：期刊英文名稱</li>
+                    <li><span className="font-medium">publisher</span>：出版社名稱</li>
+                    <li><span className="font-medium">issn</span>：國際標準期刊號</li>
+                    <li><span className="font-medium">description</span>：期刊描述</li>
+                    <li><span className="font-medium">founded_date</span>：創刊日期，格式 YYYY-MM-DD</li>
+                    <li><span className="font-medium">is_active</span>：是否仍在發行，true 或 false（預設 true）</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="mb-1.5 font-medium text-foreground">單期欄位</p>
+                  <ul className="list-inside list-disc space-y-0.5">
+                    <li><span className="font-medium">issue_number *</span>：期號，每一期的編號，如「42」「No.3」「2024年8月號」</li>
+                    <li><span className="font-medium">volume_number</span>：卷號，將多期歸為一卷的編號，如「Vol.5」「第 3 卷」</li>
+                    <li><span className="font-medium">issue_title</span>：本期標題或特輯名稱</li>
+                    <li><span className="font-medium">publish_date *</span>：出版日期，格式 YYYY-MM-DD</li>
+                    <li><span className="font-medium">page_count</span>：頁數</li>
+                    <li><span className="font-medium">price</span>：售價</li>
+                    <li><span className="font-medium">notes</span>：備註</li>
+                  </ul>
+                </div>
+                <div className="rounded border border-blue-200 bg-blue-50 p-2 text-blue-800 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300">
+                  <p className="font-medium">💡 關於重複期刊</p>
+                  <p className="mt-0.5">同一期刊第一次出現時，會使用該行的期刊欄位（英文名、出版社、ISSN 等）建立期刊資料。之後若期刊已存在，期刊欄位會被略過，因此同一期刊的後續行可以只填 magazine_name 和單期欄位，其餘期刊欄位留空即可。</p>
+                </div>
               </div>
             </div>
             <Button variant="outline" onClick={downloadTemplate}>
