@@ -1,17 +1,12 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { IssueCard } from "@/components/IssueCard";
 import { BookOpen, ArrowLeft, Calendar, SquarePen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
@@ -19,6 +14,12 @@ import { auth } from "@/lib/auth";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const magazine = await prisma.magazine.findUnique({ where: { id }, select: { name: true } });
+  return { title: magazine?.name ?? "期刊詳情" };
 }
 
 export default async function MagazineDetailPage({ params }: PageProps) {
@@ -135,47 +136,13 @@ export default async function MagazineDetailPage({ params }: PageProps) {
             <p className="text-muted-foreground">尚無期數資料</p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {magazine.issues.map((issue) => (
-              <Link
+              <IssueCard
                 key={issue.id}
-                href={`/magazines/${magazine.id}/issues/${issue.id}`}
-              >
-                <Card className="h-full transition-shadow hover:shadow-lg">
-                  <CardHeader className="pb-3">
-                    {issue.coverImage ? (
-                      <img
-                        src={issue.coverImage}
-                        alt={issue.issueNumber}
-                        className="mb-3 h-40 w-full rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="mb-3 flex h-40 items-center justify-center rounded-lg bg-muted">
-                        <BookOpen className="h-12 w-12 text-muted-foreground/50" />
-                      </div>
-                    )}
-                    <CardTitle className="text-lg">{issue.issueNumber}</CardTitle>
-                    {issue.title && (
-                      <CardDescription className="line-clamp-2">
-                        {issue.title}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center text-muted-foreground">
-                        <Calendar className="mr-1 h-3 w-3" />
-                        {format(new Date(issue.publishDate), "yyyy/MM/dd", {
-                          locale: zhTW,
-                        })}
-                      </span>
-                      <Badge variant="outline">
-                        {issue._count.articles} 篇文章
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                issue={issue}
+                magazineId={magazine.id}
+              />
             ))}
           </div>
         )}

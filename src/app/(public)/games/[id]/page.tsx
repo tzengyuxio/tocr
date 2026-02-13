@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -26,6 +27,12 @@ import { auth } from "@/lib/auth";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const game = await prisma.game.findUnique({ where: { id }, select: { name: true } });
+  return { title: game?.name ?? "遊戲詳情" };
 }
 
 export default async function GameDetailPage({ params }: PageProps) {
@@ -83,11 +90,11 @@ export default async function GameDetailPage({ params }: PageProps) {
           <img
             src={game.coverImage}
             alt={game.name}
-            className="h-64 w-48 rounded-lg object-cover shadow-lg"
+            className="h-48 w-36 rounded-lg object-cover shadow-lg"
           />
         ) : (
-          <div className="flex h-64 w-48 items-center justify-center rounded-lg bg-muted shadow-lg">
-            <Gamepad2 className="h-16 w-16 text-muted-foreground/50" />
+          <div className="flex h-48 w-36 items-center justify-center rounded-lg bg-muted shadow-lg">
+            <Gamepad2 className="h-12 w-12 text-muted-foreground/50" />
           </div>
         )}
         <div className="flex-1">
@@ -185,65 +192,94 @@ export default async function GameDetailPage({ params }: PageProps) {
               尚無相關文章
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>期刊</TableHead>
-                  <TableHead>期數</TableHead>
-                  <TableHead>出版日期</TableHead>
-                  <TableHead>文章標題</TableHead>
-                  <TableHead>分類</TableHead>
-                  <TableHead>頁碼</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>期刊</TableHead>
+                      <TableHead>期數</TableHead>
+                      <TableHead>出版日期</TableHead>
+                      <TableHead>文章標題</TableHead>
+                      <TableHead>分類</TableHead>
+                      <TableHead>頁碼</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {game.articleGames.map((ag) => (
+                      <TableRow key={ag.id}>
+                        <TableCell>
+                          <Link
+                            href={`/magazines/${ag.article.issue.magazine.id}`}
+                            className="hover:underline"
+                          >
+                            {ag.article.issue.magazine.name}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <Link
+                            href={`/magazines/${ag.article.issue.magazine.id}/issues/${ag.article.issue.id}`}
+                            className="hover:underline"
+                          >
+                            {ag.article.issue.issueNumber}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {format(
+                            new Date(ag.article.issue.publishDate),
+                            "yyyy/MM/dd",
+                            { locale: zhTW }
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{ag.article.title}</div>
+                          {ag.article.subtitle && (
+                            <div className="text-sm text-muted-foreground">
+                              {ag.article.subtitle}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {ag.article.category ? (
+                            <Badge variant="outline">{ag.article.category}</Badge>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {ag.article.pageStart || "-"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="divide-y md:hidden">
                 {game.articleGames.map((ag) => (
-                  <TableRow key={ag.id}>
-                    <TableCell>
-                      <Link
-                        href={`/magazines/${ag.article.issue.magazine.id}`}
-                        className="hover:underline"
-                      >
+                  <div key={ag.id} className="py-3">
+                    <div className="font-medium">{ag.article.title}</div>
+                    {ag.article.subtitle && (
+                      <div className="text-sm text-muted-foreground">{ag.article.subtitle}</div>
+                    )}
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                      <Link href={`/magazines/${ag.article.issue.magazine.id}`} className="hover:underline">
                         {ag.article.issue.magazine.name}
                       </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/magazines/${ag.article.issue.magazine.id}/issues/${ag.article.issue.id}`}
-                        className="hover:underline"
-                      >
+                      <span>·</span>
+                      <Link href={`/magazines/${ag.article.issue.magazine.id}/issues/${ag.article.issue.id}`} className="hover:underline">
                         {ag.article.issue.issueNumber}
                       </Link>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {format(
-                        new Date(ag.article.issue.publishDate),
-                        "yyyy/MM/dd",
-                        { locale: zhTW }
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{ag.article.title}</div>
-                      {ag.article.subtitle && (
-                        <div className="text-sm text-muted-foreground">
-                          {ag.article.subtitle}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {ag.article.category ? (
-                        <Badge variant="outline">{ag.article.category}</Badge>
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {ag.article.pageStart || "-"}
-                    </TableCell>
-                  </TableRow>
+                      <span>·</span>
+                      <span>{format(new Date(ag.article.issue.publishDate), "yyyy/MM/dd", { locale: zhTW })}</span>
+                      {ag.article.pageStart && <span>· p.{ag.article.pageStart}</span>}
+                    </div>
+                    {ag.article.category && (
+                      <Badge variant="outline" className="mt-1 text-xs">{ag.article.category}</Badge>
+                    )}
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

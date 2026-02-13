@@ -1,6 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "標籤分類",
+};
 import { prisma } from "@/lib/prisma";
 import {
   Card,
@@ -10,15 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tags } from "lucide-react";
-
-const TAG_TYPE_LABELS: Record<string, string> = {
-  GENERAL: "一般",
-  PERSON: "人物",
-  EVENT: "活動",
-  SERIES: "系列",
-  COMPANY: "公司",
-  PLATFORM: "平台",
-};
+import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 
 export default async function TagsPage() {
   const tags = await prisma.tag.findMany({
@@ -64,7 +61,9 @@ export default async function TagsPage() {
           {Object.entries(tagsByType).map(([type, typeTags]) => (
             <Card key={type}>
               <CardHeader>
-                <CardTitle>{TAG_TYPE_LABELS[type] || type}</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Badge className={getTagTypeColor(type)}>{getTagTypeLabel(type)}</Badge>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">

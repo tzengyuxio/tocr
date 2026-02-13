@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import {
   Card,
   CardContent,
@@ -5,41 +7,58 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BookOpen, FileText, Tags, Gamepad2 } from "lucide-react";
+import { BookOpen, FileText, Tags, Gamepad2, Calendar } from "lucide-react";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-const stats = [
-  {
-    title: "期刊",
-    value: "0",
-    description: "已建立的期刊數量",
-    icon: BookOpen,
-    href: "/admin/magazines",
-  },
-  {
-    title: "文章",
-    value: "0",
-    description: "已建立的文章數量",
-    icon: FileText,
-    href: "/admin/articles",
-  },
-  {
-    title: "標籤",
-    value: "0",
-    description: "已建立的標籤數量",
-    icon: Tags,
-    href: "/admin/tags",
-  },
-  {
-    title: "遊戲",
-    value: "0",
-    description: "已建立的遊戲數量",
-    icon: Gamepad2,
-    href: "/admin/games",
-  },
-];
+export default async function AdminDashboardPage() {
+  const [magazineCount, issueCount, articleCount, tagCount, gameCount] =
+    await Promise.all([
+      prisma.magazine.count(),
+      prisma.issue.count(),
+      prisma.article.count(),
+      prisma.tag.count(),
+      prisma.game.count(),
+    ]);
 
-export default function AdminDashboardPage() {
+  const stats = [
+    {
+      title: "期刊",
+      value: magazineCount,
+      description: "已建立的期刊數量",
+      icon: BookOpen,
+      href: "/admin/magazines",
+    },
+    {
+      title: "期數",
+      value: issueCount,
+      description: "已建立的期數數量",
+      icon: Calendar,
+      href: "/admin/magazines",
+    },
+    {
+      title: "文章",
+      value: articleCount,
+      description: "已建立的文章數量",
+      icon: FileText,
+      href: "/admin/articles",
+    },
+    {
+      title: "遊戲",
+      value: gameCount,
+      description: "已建立的遊戲數量",
+      icon: Gamepad2,
+      href: "/admin/games",
+    },
+    {
+      title: "標籤",
+      value: tagCount,
+      description: "已建立的標籤數量",
+      icon: Tags,
+      href: "/admin/tags",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -49,7 +68,7 @@ export default function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((stat) => (
           <Link key={stat.title} href={stat.href}>
             <Card className="transition-colors hover:bg-muted/50">

@@ -1,6 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "搜尋文章",
+};
 import { prisma } from "@/lib/prisma";
 import {
   Card,
@@ -35,8 +40,8 @@ interface SearchPageProps {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const query = params.q || "";
-  const magazineId = params.magazine || "";
-  const category = params.category || "";
+  const magazineId = params.magazine === "__all__" ? "" : (params.magazine || "");
+  const category = params.category === "__all__" ? "" : (params.category || "");
   const page = parseInt(params.page || "1");
   const limit = 20;
 
@@ -158,12 +163,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   className="pl-10"
                 />
               </div>
-              <Select name="magazine" defaultValue={magazineId}>
+              <Select name="magazine" defaultValue={magazineId || "__all__"}>
                 <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="所有期刊" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">所有期刊</SelectItem>
+                  <SelectItem value="__all__">所有期刊</SelectItem>
                   {magazines.map((mag) => (
                     <SelectItem key={mag.id} value={mag.id}>
                       {mag.name}
@@ -171,12 +176,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   ))}
                 </SelectContent>
               </Select>
-              <Select name="category" defaultValue={category}>
+              <Select name="category" defaultValue={category || "__all__"}>
                 <SelectTrigger className="w-full md:w-[150px]">
                   <SelectValue placeholder="所有分類" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">所有分類</SelectItem>
+                  <SelectItem value="__all__">所有分類</SelectItem>
                   {uniqueCategories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}

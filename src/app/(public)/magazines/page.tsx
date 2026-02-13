@@ -1,6 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "期刊列表",
+};
 import { prisma } from "@/lib/prisma";
 import {
   Card,

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { IssueCard } from "@/components/IssueCard";
 import {
   BookOpen,
   Gamepad2,
@@ -53,7 +54,7 @@ export default async function HomePage() {
 
   // 取得最近更新的文章
   const recentArticles = await prisma.article.findMany({
-    take: 10,
+    take: 5,
     orderBy: { updatedAt: "desc" },
     include: {
       issue: {
@@ -98,52 +99,22 @@ export default async function HomePage() {
 
       {/* Stats Section */}
       <section className="mb-12">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">期刊</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{magazineCount}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">期數</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{issueCount}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">文章</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{articleCount}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">遊戲</CardTitle>
-              <Gamepad2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{gameCount}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">標籤</CardTitle>
-              <Tags className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{tagCount}</div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-5 gap-2">
+          {[
+            { label: "期刊", count: magazineCount, icon: BookOpen },
+            { label: "期數", count: issueCount, icon: Calendar },
+            { label: "文章", count: articleCount, icon: FileText },
+            { label: "遊戲", count: gameCount, icon: Gamepad2 },
+            { label: "標籤", count: tagCount, icon: Tags },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-lg border p-2 text-center sm:p-3"
+            >
+              <div className="text-xl font-bold sm:text-2xl">{stat.count}</div>
+              <div className="text-xs text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -165,42 +136,14 @@ export default async function HomePage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {latestIssues.map((issue) => (
-              <Link
+              <IssueCard
                 key={issue.id}
-                href={`/magazines/${issue.magazine.id}/issues/${issue.id}`}
-              >
-                <Card className="h-full transition-shadow hover:shadow-lg">
-                  <CardContent className="flex gap-3 p-3">
-                    {issue.coverImage ? (
-                      <img
-                        src={issue.coverImage}
-                        alt={issue.issueNumber}
-                        className="h-24 w-[72px] shrink-0 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-24 w-[72px] shrink-0 items-center justify-center rounded bg-muted">
-                        <BookOpen className="h-6 w-6 text-muted-foreground/50" />
-                      </div>
-                    )}
-                    <div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
-                      <div>
-                        <p className="text-xs text-muted-foreground">{issue.magazine.name}</p>
-                        <p className="font-medium line-clamp-1">{issue.issueNumber}</p>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>
-                          {format(new Date(issue.publishDate), "yyyy/MM/dd", {
-                            locale: zhTW,
-                          })}
-                        </span>
-                        <span>{issue._count.articles} 篇</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                issue={issue}
+                magazineId={issue.magazine.id}
+                magazineName={issue.magazine.name}
+              />
             ))}
           </div>
         )}

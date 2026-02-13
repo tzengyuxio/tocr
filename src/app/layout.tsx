@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TOCR - 期刊目錄索引系統",
+  title: {
+    default: "TOCR - 期刊目錄索引系統",
+    template: "%s | TOCR",
+  },
   description: "遊戲雜誌目錄索引網站，支援 AI 圖片辨識自動擷取目錄、多人協作編輯、標籤系統",
 };
 

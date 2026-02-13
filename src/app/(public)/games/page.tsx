@@ -108,39 +108,39 @@ export default function GamesPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {games.map((game) => (
               <Link key={game.id} href={`/games/${game.id}`}>
-                <Card className="h-full transition-shadow hover:shadow-lg">
-                  <CardHeader className="pb-3">
+                <Card className="h-full transition-shadow hover:shadow-md">
+                  <CardContent className="flex items-center gap-3 p-3">
                     {game.coverImage ? (
                       <img
                         src={game.coverImage}
                         alt={game.name}
-                        className="mb-3 aspect-square w-full rounded-lg object-cover"
+                        className="h-14 w-14 shrink-0 rounded-md object-cover"
                       />
                     ) : (
-                      <div className="mb-3 flex aspect-square items-center justify-center rounded-lg bg-muted">
-                        <Gamepad2 className="h-12 w-12 text-muted-foreground/50" />
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-muted">
+                        <Gamepad2 className="h-6 w-6 text-muted-foreground/50" />
                       </div>
                     )}
-                    <CardTitle className="line-clamp-1">{game.name}</CardTitle>
-                    {(game.nameOriginal || game.nameEn) && (
-                      <CardDescription className="line-clamp-1">
-                        {game.nameOriginal || game.nameEn}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-1">
-                      {game.platforms.slice(0, 3).map((p) => (
-                        <Badge key={p} variant="outline" className="text-xs">
-                          {p}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      {game._count.articleGames} 篇相關文章
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium line-clamp-1">{game.name}</div>
+                      {(game.nameOriginal || game.nameEn) && (
+                        <div className="text-sm text-muted-foreground line-clamp-1">
+                          {game.nameOriginal || game.nameEn}
+                        </div>
+                      )}
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {game._count.articleGames} 篇相關文章
+                        </span>
+                        {game.platforms.slice(0, 2).map((p) => (
+                          <Badge key={p} variant="outline" className="text-[10px] px-1 py-0">
+                            {p}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

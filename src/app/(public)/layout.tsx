@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen, Gamepad2, Tags, Search, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MobileNav } from "@/components/MobileNav";
 
 export default function PublicLayout({
   children,
@@ -12,11 +13,12 @@ export default function PublicLayout({
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-14 items-center px-4">
+          <MobileNav />
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <BookOpen className="h-6 w-6" />
             <span className="font-bold">TOCR</span>
           </Link>
-          <nav className="flex flex-1 items-center space-x-1">
+          <nav className="hidden flex-1 items-center space-x-1 sm:flex">
             <Button variant="ghost" size="sm" asChild>
               <Link href="/">
                 <Home className="mr-2 h-4 w-4" />
@@ -48,8 +50,8 @@ export default function PublicLayout({
               </Link>
             </Button>
           </nav>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" asChild>
+          <div className="ml-auto flex items-center space-x-2">
+            <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
               <Link href="/admin">後台管理</Link>
             </Button>
           </div>

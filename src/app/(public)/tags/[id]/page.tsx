@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +28,12 @@ import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const tag = await prisma.tag.findUnique({ where: { id }, select: { name: true } });
+  return { title: tag?.name ?? "標籤詳情" };
 }
 
 export default async function TagDetailPage({ params }: PageProps) {
@@ -122,61 +129,89 @@ export default async function TagDetailPage({ params }: PageProps) {
               尚無相關文章
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>期刊</TableHead>
-                  <TableHead>期數</TableHead>
-                  <TableHead>出版日期</TableHead>
-                  <TableHead>文章標題</TableHead>
-                  <TableHead>分類</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>期刊</TableHead>
+                      <TableHead>期數</TableHead>
+                      <TableHead>出版日期</TableHead>
+                      <TableHead>文章標題</TableHead>
+                      <TableHead>分類</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tag.articleTags.map((at) => (
+                      <TableRow key={at.id}>
+                        <TableCell>
+                          <Link
+                            href={`/magazines/${at.article.issue.magazine.id}`}
+                            className="hover:underline"
+                          >
+                            {at.article.issue.magazine.name}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <Link
+                            href={`/magazines/${at.article.issue.magazine.id}/issues/${at.article.issue.id}`}
+                            className="hover:underline"
+                          >
+                            {at.article.issue.issueNumber}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {format(
+                            new Date(at.article.issue.publishDate),
+                            "yyyy/MM/dd",
+                            { locale: zhTW }
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{at.article.title}</div>
+                          {at.article.subtitle && (
+                            <div className="text-sm text-muted-foreground">
+                              {at.article.subtitle}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {at.article.category ? (
+                            <Badge variant="outline">{at.article.category}</Badge>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="divide-y md:hidden">
                 {tag.articleTags.map((at) => (
-                  <TableRow key={at.id}>
-                    <TableCell>
-                      <Link
-                        href={`/magazines/${at.article.issue.magazine.id}`}
-                        className="hover:underline"
-                      >
+                  <div key={at.id} className="py-3">
+                    <div className="font-medium">{at.article.title}</div>
+                    {at.article.subtitle && (
+                      <div className="text-sm text-muted-foreground">{at.article.subtitle}</div>
+                    )}
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                      <Link href={`/magazines/${at.article.issue.magazine.id}`} className="hover:underline">
                         {at.article.issue.magazine.name}
                       </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/magazines/${at.article.issue.magazine.id}/issues/${at.article.issue.id}`}
-                        className="hover:underline"
-                      >
+                      <span>·</span>
+                      <Link href={`/magazines/${at.article.issue.magazine.id}/issues/${at.article.issue.id}`} className="hover:underline">
                         {at.article.issue.issueNumber}
                       </Link>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {format(
-                        new Date(at.article.issue.publishDate),
-                        "yyyy/MM/dd",
-                        { locale: zhTW }
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{at.article.title}</div>
-                      {at.article.subtitle && (
-                        <div className="text-sm text-muted-foreground">
-                          {at.article.subtitle}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {at.article.category ? (
-                        <Badge variant="outline">{at.article.category}</Badge>
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
-                  </TableRow>
+                      <span>·</span>
+                      <span>{format(new Date(at.article.issue.publishDate), "yyyy/MM/dd", { locale: zhTW })}</span>
+                    </div>
+                    {at.article.category && (
+                      <Badge variant="outline" className="mt-1 text-xs">{at.article.category}</Badge>
+                    )}
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

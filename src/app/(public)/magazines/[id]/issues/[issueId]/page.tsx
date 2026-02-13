@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -26,6 +27,16 @@ import { auth } from "@/lib/auth";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { issueId } = await params;
+  const issue = await prisma.issue.findUnique({
+    where: { id: issueId },
+    select: { issueNumber: true, magazine: { select: { name: true } } },
+  });
+  if (!issue) return { title: "期數詳情" };
+  return { title: `${issue.issueNumber} - ${issue.magazine.name}` };
 }
 
 export default async function IssueDetailPage({ params }: PageProps) {
@@ -78,11 +89,11 @@ export default async function IssueDetailPage({ params }: PageProps) {
           <img
             src={issue.coverImage}
             alt={issue.issueNumber}
-            className="h-80 w-56 rounded-lg object-cover shadow-lg"
+            className="h-64 w-44 rounded-lg object-cover shadow-lg"
           />
         ) : (
-          <div className="flex h-80 w-56 items-center justify-center rounded-lg bg-muted shadow-lg">
-            <BookOpen className="h-16 w-16 text-muted-foreground/50" />
+          <div className="flex h-64 w-44 items-center justify-center rounded-lg bg-muted shadow-lg">
+            <BookOpen className="h-12 w-12 text-muted-foreground/50" />
           </div>
         )}
         <div className="flex-1">
@@ -153,78 +164,130 @@ export default async function IssueDetailPage({ params }: PageProps) {
               尚無文章資料
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">頁碼</TableHead>
-                  <TableHead>標題</TableHead>
-                  <TableHead>作者</TableHead>
-                  <TableHead>分類</TableHead>
-                  <TableHead>相關遊戲</TableHead>
-                  {canEdit && <TableHead className="w-[50px]"></TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {issue.articles.map((article) => (
-                  <TableRow key={article.id}>
-                    <TableCell className="font-mono text-sm text-muted-foreground">
-                      {article.pageStart}
-                      {article.pageEnd && article.pageEnd !== article.pageStart
-                        ? `-${article.pageEnd}`
-                        : ""}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{article.title}</div>
-                      {article.subtitle && (
-                        <div className="text-sm text-muted-foreground">
-                          {article.subtitle}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {article.authors.length > 0
-                        ? article.authors.join(", ")
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {article.category ? (
-                        <Badge variant="outline">{article.category}</Badge>
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {article.articleGames.map((ag) => (
-                          <Link
-                            key={ag.game.id}
-                            href={`/games/${ag.game.id}`}
-                          >
-                            <Badge
-                              variant="secondary"
-                              className="cursor-pointer hover:bg-secondary/80"
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[80px]">頁碼</TableHead>
+                      <TableHead>標題</TableHead>
+                      <TableHead>作者</TableHead>
+                      <TableHead>分類</TableHead>
+                      <TableHead>相關遊戲</TableHead>
+                      {canEdit && <TableHead className="w-[50px]"></TableHead>}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {issue.articles.map((article) => (
+                      <TableRow key={article.id}>
+                        <TableCell className="font-mono text-sm text-muted-foreground">
+                          {article.pageStart}
+                          {article.pageEnd && article.pageEnd !== article.pageStart
+                            ? `-${article.pageEnd}`
+                            : ""}
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{article.title}</div>
+                          {article.subtitle && (
+                            <div className="text-sm text-muted-foreground">
+                              {article.subtitle}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {article.authors.length > 0
+                            ? article.authors.join(", ")
+                            : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {article.category ? (
+                            <Badge variant="outline">{article.category}</Badge>
+                          ) : (
+                            "-"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {article.articleGames.map((ag) => (
+                              <Link
+                                key={ag.game.id}
+                                href={`/games/${ag.game.id}`}
+                              >
+                                <Badge
+                                  variant="secondary"
+                                  className="cursor-pointer hover:bg-secondary/80"
+                                >
+                                  {ag.game.name}
+                                </Badge>
+                              </Link>
+                            ))}
+                          </div>
+                        </TableCell>
+                        {canEdit && (
+                          <TableCell>
+                            <Link
+                              href={`/admin/articles/${article.id}`}
+                              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                              title="編輯文章"
                             >
-                              {ag.game.name}
-                            </Badge>
-                          </Link>
-                        ))}
+                              <SquarePen className="h-3.5 w-3.5" />
+                            </Link>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {/* Mobile card list */}
+              <div className="divide-y md:hidden">
+                {issue.articles.map((article) => (
+                  <div key={article.id} className="py-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium">{article.title}</div>
+                        {article.subtitle && (
+                          <div className="text-sm text-muted-foreground">
+                            {article.subtitle}
+                          </div>
+                        )}
                       </div>
-                    </TableCell>
-                    {canEdit && (
-                      <TableCell>
-                        <Link
-                          href={`/admin/articles/${article.id}`}
-                          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                          title="編輯文章"
-                        >
-                          <SquarePen className="h-3.5 w-3.5" />
+                      <div className="flex shrink-0 items-center gap-1">
+                        {article.pageStart && (
+                          <span className="font-mono text-xs text-muted-foreground">
+                            p.{article.pageStart}
+                            {article.pageEnd && article.pageEnd !== article.pageStart
+                              ? `-${article.pageEnd}`
+                              : ""}
+                          </span>
+                        )}
+                        {canEdit && (
+                          <Link
+                            href={`/admin/articles/${article.id}`}
+                            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            <SquarePen className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-1">
+                      {article.category && (
+                        <Badge variant="outline" className="text-xs">{article.category}</Badge>
+                      )}
+                      {article.articleGames.map((ag) => (
+                        <Link key={ag.game.id} href={`/games/${ag.game.id}`}>
+                          <Badge variant="secondary" className="text-xs cursor-pointer">
+                            {ag.game.name}
+                          </Badge>
                         </Link>
-                      </TableCell>
-                    )}
-                  </TableRow>
+                      ))}
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
