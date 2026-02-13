@@ -51,7 +51,7 @@ describe("articleCreateSchema", () => {
     const result = articleCreateSchema.safeParse(input);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("期數 ID 為必填");
+      expect(result.error.issues[0].message).toBe("單期 ID 為必填");
     }
   });
 
@@ -230,7 +230,7 @@ describe("articleBatchCreateSchema", () => {
     const result = articleBatchCreateSchema.safeParse(input);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("期數 ID 為必填");
+      expect(result.error.issues[0].message).toBe("單期 ID 為必填");
     }
   });
 

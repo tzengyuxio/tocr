@@ -151,13 +151,13 @@ function NewArticleForm() {
         <Card>
           <CardHeader>
             <CardTitle>新增文章</CardTitle>
-            <CardDescription>手動新增一篇文章到期數中</CardDescription>
+            <CardDescription>手動新增一篇文章到單期中</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* 選擇期數 */}
+            {/* 選擇單期 */}
             <div className="space-y-2">
               <Label>
-                期數 <span className="text-red-500">*</span>
+                單期 <span className="text-red-500">*</span>
               </Label>
               {loadingIssues ? (
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -174,7 +174,7 @@ function NewArticleForm() {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="選擇期數" />
+                    <SelectValue placeholder="選擇單期" />
                   </SelectTrigger>
                   <SelectContent>
                     {issues.map((issue) => (

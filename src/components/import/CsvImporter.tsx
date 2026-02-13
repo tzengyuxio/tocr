@@ -131,7 +131,7 @@ export function CsvImporter() {
             <div>
               <CardTitle>CSV 批次匯入</CardTitle>
               <CardDescription>
-                上傳 CSV 檔案，批次建立期刊與期數資料。已存在的期刊和期數將自動跳過。
+                上傳 CSV 檔案，批次建立期刊與單期資料。已存在的期刊和單期將自動跳過。
               </CardDescription>
               <div className="mt-3 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
                 <p className="mb-1 font-medium text-foreground">欄位說明</p>
@@ -185,7 +185,7 @@ export function CsvImporter() {
                 ` (${parseResult.magazines.length} 本期刊, ${parseResult.magazines.reduce(
                   (sum, m) => sum + m.issues.length,
                   0
-                )} 個期數)`}
+                )} 個單期)`}
             </Button>
           </div>
         </>

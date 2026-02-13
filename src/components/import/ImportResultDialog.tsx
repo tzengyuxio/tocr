@@ -43,11 +43,11 @@ export function ImportResultDialog({ result, open, onClose }: ImportResultDialog
             </div>
             <div className="rounded-lg border p-3 text-center">
               <div className="text-2xl font-bold text-green-600">{result.createdIssues}</div>
-              <div className="text-sm text-muted-foreground">新增期數</div>
+              <div className="text-sm text-muted-foreground">新增單期</div>
             </div>
             <div className="rounded-lg border p-3 text-center">
               <div className="text-2xl font-bold text-muted-foreground">{result.skippedIssues}</div>
-              <div className="text-sm text-muted-foreground">跳過期數</div>
+              <div className="text-sm text-muted-foreground">跳過單期</div>
             </div>
           </div>
 

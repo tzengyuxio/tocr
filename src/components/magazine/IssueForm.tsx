@@ -97,10 +97,10 @@ export function IssueForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>{mode === "create" ? "新增期數" : "編輯期數"}</CardTitle>
+          <CardTitle>{mode === "create" ? "新增單期" : "編輯單期"}</CardTitle>
           <CardDescription>
             {magazineName} -{" "}
-            {mode === "create" ? "填寫期數的基本資訊" : "修改期數的基本資訊"}
+            {mode === "create" ? "填寫單期的基本資訊" : "修改單期的基本資訊"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -245,7 +245,7 @@ export function IssueForm({
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {mode === "create" ? "建立期數" : "儲存變更"}
+              {mode === "create" ? "建立單期" : "儲存變更"}
             </Button>
             <Button
               type="button"

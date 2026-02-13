@@ -184,7 +184,7 @@ export default function ArticlesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>標題</TableHead>
-                    <TableHead>期刊 / 期數</TableHead>
+                    <TableHead>期刊 / 單期</TableHead>
                     <TableHead>分類</TableHead>
                     <TableHead>頁碼</TableHead>
                     <TableHead>作者</TableHead>

@@ -33,7 +33,7 @@ export default async function AdminDashboardPage() {
       <StatGrid
         items={[
           { label: "期刊", value: magazineCount, icon: BookOpen, href: "/admin/magazines" },
-          { label: "期數", value: issueCount, icon: Calendar, href: "/admin/magazines" },
+          { label: "單期", value: issueCount, icon: Calendar, href: "/admin/magazines" },
           { label: "文章", value: articleCount, icon: FileText, href: "/admin/articles" },
           { label: "遊戲", value: gameCount, icon: Gamepad2, href: "/admin/games" },
           { label: "標籤", value: tagCount, icon: Tags, href: "/admin/tags" },
@@ -51,7 +51,7 @@ export default async function AdminDashboardPage() {
               1. 首先建立期刊（例如：電玩通、電擊王等）
             </p>
             <p className="text-sm text-muted-foreground">
-              2. 為期刊新增期數（含出版日期、封面等）
+              2. 為期刊新增單期（含出版日期、封面等）
             </p>
             <p className="text-sm text-muted-foreground">
               3. 使用 AI 辨識功能上傳目錄頁，自動產生文章資料

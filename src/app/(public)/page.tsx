@@ -39,7 +39,7 @@ export default async function HomePage() {
       prisma.tag.count(),
     ]);
 
-  // 取得最新期數（含期刊資訊）
+  // 取得最新單期（含期刊資訊）
   const latestIssues = await prisma.issue.findMany({
     take: 6,
     orderBy: { publishDate: "desc" },
@@ -103,7 +103,7 @@ export default async function HomePage() {
         <StatGrid
           items={[
             { label: "期刊", value: magazineCount, icon: BookOpen },
-            { label: "期數", value: issueCount, icon: Calendar },
+            { label: "單期", value: issueCount, icon: Calendar },
             { label: "文章", value: articleCount, icon: FileText },
             { label: "遊戲", value: gameCount, icon: Gamepad2 },
             { label: "標籤", value: tagCount, icon: Tags },
@@ -114,7 +114,7 @@ export default async function HomePage() {
       {/* Latest Issues Section */}
       <section className="mb-12">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">最新期數</h2>
+          <h2 className="text-2xl font-bold">最新單期</h2>
           <Button variant="ghost" asChild>
             <Link href="/magazines">
               查看所有期刊
@@ -125,7 +125,7 @@ export default async function HomePage() {
         {latestIssues.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              尚無期數資料
+              尚無單期資料
             </CardContent>
           </Card>
         ) : (

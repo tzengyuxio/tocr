@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { issueCreateSchema } from "@/lib/validators/issue";
 
-// GET /api/issues - 取得期數列表
+// GET /api/issues - 取得單期列表
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/issues - 新增期數
+// POST /api/issues - 新增單期
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

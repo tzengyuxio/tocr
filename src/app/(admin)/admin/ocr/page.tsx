@@ -9,7 +9,7 @@ interface PageProps {
 export default async function OcrPage({ searchParams }: PageProps) {
   const { issueId } = await searchParams;
 
-  // 若有指定 issueId，取得期數資訊
+  // 若有指定 issueId，取得單期資訊
   let issue = null;
   if (issueId) {
     issue = await prisma.issue.findUnique({

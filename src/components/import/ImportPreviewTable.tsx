@@ -35,7 +35,7 @@ export function ImportPreviewTable({ result }: ImportPreviewTableProps) {
           {magazines.length} 本期刊
         </Badge>
         <Badge variant="secondary">
-          {magazines.reduce((sum, m) => sum + m.issues.length, 0)} 個期數
+          {magazines.reduce((sum, m) => sum + m.issues.length, 0)} 個單期
         </Badge>
         {errors.length > 0 && (
           <Badge variant="destructive">{errors.length} 個錯誤</Badge>
@@ -103,7 +103,7 @@ export function ImportPreviewTable({ result }: ImportPreviewTableProps) {
                 .filter(Boolean)
                 .join(" / ") || "無額外資訊"}
               {" · "}
-              {magazine.issues.length} 個期數
+              {magazine.issues.length} 個單期
             </CardDescription>
           </CardHeader>
           <CardContent>

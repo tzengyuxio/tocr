@@ -122,10 +122,10 @@ export default async function MagazineDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* 期數列表 */}
+      {/* 單期列表 */}
       <div>
         <h2 className="mb-4 text-2xl font-bold">
-          期數列表
+          單期列表
           <span className="ml-2 text-lg font-normal text-muted-foreground">
             （共 {magazine.issues.length} 期）
           </span>
@@ -133,7 +133,7 @@ export default async function MagazineDetailPage({ params }: PageProps) {
 
         {magazine.issues.length === 0 ? (
           <div className="rounded-lg border p-8 text-center">
-            <p className="text-muted-foreground">尚無期數資料</p>
+            <p className="text-muted-foreground">尚無單期資料</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

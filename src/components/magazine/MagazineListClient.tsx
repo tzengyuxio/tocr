@@ -45,7 +45,7 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
           <TableRow>
             <TableHead>期刊名稱</TableHead>
             <TableHead>出版社</TableHead>
-            <TableHead>期數</TableHead>
+            <TableHead>單期</TableHead>
             <TableHead>狀態</TableHead>
             <TableHead>建立日期</TableHead>
             <TableHead className="w-[120px]">操作</TableHead>
@@ -101,7 +101,7 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    title="新增期數"
+                    title="新增單期"
                     onClick={() =>
                       setDialogTarget({
                         id: magazine.id,

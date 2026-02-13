@@ -135,7 +135,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                   <TableHeader>
                     <TableRow>
                       <TableHead>期刊</TableHead>
-                      <TableHead>期數</TableHead>
+                      <TableHead>單期</TableHead>
                       <TableHead>出版日期</TableHead>
                       <TableHead>文章標題</TableHead>
                       <TableHead>分類</TableHead>

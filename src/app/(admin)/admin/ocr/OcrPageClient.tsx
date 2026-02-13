@@ -91,7 +91,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
 
   const handleSave = async (articles: OcrArticleResult[]) => {
     if (!selectedIssueId) {
-      throw new Error("請先選擇期數");
+      throw new Error("請先選擇單期");
     }
 
     // 批次建立文章
@@ -124,7 +124,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
 
     setIsSaved(true);
 
-    // 3 秒後跳轉到期數編輯頁
+    // 3 秒後跳轉到單期編輯頁
     setTimeout(() => {
       router.push(
         `/admin/magazines/${selectedMagazineId}/issues/${selectedIssueId}`
@@ -151,18 +151,18 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
               href={`/admin/magazines/${selectedMagazineId}/issues/${selectedIssueId}`}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              返回期數編輯
+              返回單期編輯
             </Link>
           </Button>
         )}
       </div>
 
-      {/* 期刊/期數選擇 */}
+      {/* 期刊/單期選擇 */}
       <Card>
         <CardHeader>
-          <CardTitle>選擇目標期數</CardTitle>
+          <CardTitle>選擇目標單期</CardTitle>
           <CardDescription>
-            辨識結果將儲存到所選期數的文章列表中
+            辨識結果將儲存到所選單期的文章列表中
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -180,14 +180,14 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>期數</Label>
+              <Label>單期</Label>
               <Combobox
                 options={issueOptions}
                 value={selectedIssueId}
                 onValueChange={handleIssueChange}
-                placeholder={selectedMagazineId ? "選擇期數" : "請先選擇期刊"}
-                searchPlaceholder="搜尋期數..."
-                emptyMessage="找不到期數"
+                placeholder={selectedMagazineId ? "選擇單期" : "請先選擇期刊"}
+                searchPlaceholder="搜尋單期..."
+                emptyMessage="找不到單期"
                 disabled={!selectedMagazineId}
               />
             </div>
@@ -212,7 +212,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
             </svg>
             <span className="font-medium">文章已成功儲存！</span>
           </div>
-          <p className="mt-1 text-sm">正在跳轉至期數編輯頁面...</p>
+          <p className="mt-1 text-sm">正在跳轉至單期編輯頁面...</p>
         </div>
       )}
 

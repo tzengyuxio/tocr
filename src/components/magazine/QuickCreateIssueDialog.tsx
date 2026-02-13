@@ -68,13 +68,13 @@ export function QuickCreateIssueDialog({
         throw new Error(err.error || "Failed to create issue");
       }
 
-      toast.success(`已新增期數：${data.issueNumber}`);
+      toast.success(`已新增單期：${data.issueNumber}`);
       reset();
       onOpenChange(false);
       router.refresh();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "新增期數失敗"
+        error instanceof Error ? error.message : "新增單期失敗"
       );
     } finally {
       setIsSubmitting(false);
@@ -85,7 +85,7 @@ export function QuickCreateIssueDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>新增期數 — {magazineName}</DialogTitle>
+          <DialogTitle>新增單期 — {magazineName}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">

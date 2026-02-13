@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,8 +47,28 @@ export function OcrUploader({
   const [error, setError] = useState<string | null>(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState("");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // 同步 initialImageUrls 變化（解決切換期數後 prop 變化但 state 不更新的問題）
+  // elapsed time counter during processing
+  useEffect(() => {
+    if (isProcessing) {
+      setElapsedSeconds(0);
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds((s) => s + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isProcessing]);
+
+  // 同步 initialImageUrls 變化（解決切換單期後 prop 變化但 state 不更新的問題）
   useEffect(() => {
     const urls = initialImageUrls || [];
     setImagePreviews(urls);
@@ -192,8 +212,29 @@ export function OcrUploader({
           </div>
         )}
 
+        {/* processing overlay */}
+        {isProcessing && (
+          <div className="rounded-lg border bg-muted/30 p-8">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="relative">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <Sparkles className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-primary" />
+              </div>
+              <div>
+                <p className="text-lg font-medium">AI 正在辨識目錄內容...</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  已經過 {elapsedSeconds} 秒，辨識多張圖片可能需要較長時間，請耐心等候
+                </p>
+              </div>
+              <div className="h-1.5 w-64 overflow-hidden rounded-full bg-muted">
+                <div className="h-full animate-[indeterminate_1.5s_ease-in-out_infinite] rounded-full bg-primary" />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 圖片預覽區 */}
-        {hasImages && (
+        {hasImages && !isProcessing && (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-3">
               {imagePreviews.map((src, index) => (

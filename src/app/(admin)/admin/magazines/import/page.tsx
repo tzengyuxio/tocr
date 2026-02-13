@@ -13,9 +13,9 @@ export default function MagazineImportPage() {
           </Link>
         </Button>
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">批次匯入期刊與期數</h2>
+          <h2 className="text-2xl font-bold tracking-tight">批次匯入期刊與單期</h2>
           <p className="text-muted-foreground">
-            使用 CSV 檔案一次匯入多本期刊及其期數資料
+            使用 CSV 檔案一次匯入多本期刊及其單期資料
           </p>
         </div>
       </div>

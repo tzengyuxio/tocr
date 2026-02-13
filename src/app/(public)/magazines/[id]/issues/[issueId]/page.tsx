@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { id: issueId },
     select: { issueNumber: true, magazine: { select: { name: true } } },
   });
-  if (!issue) return { title: "期數詳情" };
+  if (!issue) return { title: "單期詳情" };
   return { title: `${issue.issueNumber} - ${issue.magazine.name}` };
 }
 
@@ -83,7 +83,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
         </Link>
       </Button>
 
-      {/* 期數資訊 */}
+      {/* 單期資訊 */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row">
         {issue.coverImage ? (
           <img
@@ -111,7 +111,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
               <Link
                 href={`/admin/magazines/${id}/issues/${issueId}`}
                 className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                title="編輯此期數"
+                title="編輯此單期"
               >
                 <SquarePen className="h-4 w-4" />
               </Link>

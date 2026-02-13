@@ -125,7 +125,7 @@ function SortableRow({
       <TableCell>{issue._count.articles} 篇</TableCell>
       <TableCell>
         <div className="flex gap-1">
-          <Button asChild variant="ghost" size="icon" title="編輯期數">
+          <Button asChild variant="ghost" size="icon" title="編輯單期">
             <Link href={`/admin/magazines/${magazineId}/issues/${issue.id}`}>
               <Edit className="h-4 w-4" />
             </Link>
@@ -133,7 +133,7 @@ function SortableRow({
           <Button
             variant="ghost"
             size="icon"
-            title="刪除期數"
+            title="刪除單期"
             onClick={() => onDelete(issue)}
             className="text-destructive hover:text-destructive"
           >
@@ -197,7 +197,7 @@ export function IssueListClient({
       });
       if (!res.ok) throw new Error("Delete failed");
       setIssues((prev) => prev.filter((i) => i.id !== deleteTarget.id));
-      toast.success(`已刪除期數：${deleteTarget.issueNumber}`);
+      toast.success(`已刪除單期：${deleteTarget.issueNumber}`);
       router.refresh();
     } catch {
       toast.error("刪除失敗");
@@ -211,13 +211,13 @@ export function IssueListClient({
     <Card className="lg:col-span-2">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>期數列表</CardTitle>
+          <CardTitle>單期列表</CardTitle>
           <CardDescription>共 {issues.length} 期</CardDescription>
         </div>
         <Button asChild>
           <Link href={`/admin/magazines/${magazineId}/issues/new`}>
             <Plus className="mr-2 h-4 w-4" />
-            新增期數
+            新增單期
           </Link>
         </Button>
       </CardHeader>
@@ -225,9 +225,9 @@ export function IssueListClient({
         {issues.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <BookOpen className="h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">尚無期數資料</h3>
+            <h3 className="mt-4 text-lg font-semibold">尚無單期資料</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              點擊「新增期數」按鈕開始建立期數
+              點擊「新增單期」按鈕開始建立單期
             </p>
           </div>
         ) : (
@@ -274,11 +274,11 @@ export function IssueListClient({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>確定要刪除此期數？</AlertDialogTitle>
+            <AlertDialogTitle>確定要刪除此單期？</AlertDialogTitle>
             <AlertDialogDescription>
               {deleteTarget && deleteTarget._count.articles > 0
-                ? `此期數「${deleteTarget.issueNumber}」包含 ${deleteTarget._count.articles} 篇文章，刪除後將無法復原。`
-                : `確定要刪除期數「${deleteTarget?.issueNumber}」嗎？此操作無法復原。`}
+                ? `此單期「${deleteTarget.issueNumber}」包含 ${deleteTarget._count.articles} 篇文章，刪除後將無法復原。`
+                : `確定要刪除單期「${deleteTarget?.issueNumber}」嗎？此操作無法復原。`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

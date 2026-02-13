@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const articleCreateSchema = z.object({
-  issueId: z.string().min(1, "期數 ID 為必填"),
+  issueId: z.string().min(1, "單期 ID 為必填"),
   title: z.string().min(1, "標題為必填"),
   subtitle: z.string().optional().nullable(),
   authors: z.array(z.string()).default([]),
@@ -16,7 +16,7 @@ export const articleCreateSchema = z.object({
 export const articleUpdateSchema = articleCreateSchema.partial().omit({ issueId: true });
 
 export const articleBatchCreateSchema = z.object({
-  issueId: z.string().min(1, "期數 ID 為必填"),
+  issueId: z.string().min(1, "單期 ID 為必填"),
   articles: z.array(
     z.object({
       title: z.string().min(1, "標題為必填"),

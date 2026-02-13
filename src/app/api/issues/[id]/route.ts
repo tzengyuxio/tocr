@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { issueUpdateSchema } from "@/lib/validators/issue";
 
-// GET /api/issues/[id] - 取得單一期數
+// GET /api/issues/[id] - 取得單一單期
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -44,7 +44,7 @@ export async function GET(
   }
 }
 
-// PUT /api/issues/[id] - 更新期數
+// PUT /api/issues/[id] - 更新單期
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -75,7 +75,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/issues/[id] - 刪除期數
+// DELETE /api/issues/[id] - 刪除單期
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

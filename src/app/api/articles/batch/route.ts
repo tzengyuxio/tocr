@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = articleBatchCreateSchema.parse(body);
 
-    // 驗證期數存在
+    // 驗證單期存在
     const issue = await prisma.issue.findUnique({
       where: { id: validatedData.issueId },
     });
