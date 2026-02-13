@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IssueCard } from "@/components/IssueCard";
+import { StatGrid } from "@/components/StatGrid";
 import {
   BookOpen,
   Gamepad2,
@@ -99,23 +100,15 @@ export default async function HomePage() {
 
       {/* Stats Section */}
       <section className="mb-12">
-        <div className="grid grid-cols-5 gap-2">
-          {[
-            { label: "期刊", count: magazineCount, icon: BookOpen },
-            { label: "期數", count: issueCount, icon: Calendar },
-            { label: "文章", count: articleCount, icon: FileText },
-            { label: "遊戲", count: gameCount, icon: Gamepad2 },
-            { label: "標籤", count: tagCount, icon: Tags },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-lg border p-2 text-center sm:p-3"
-            >
-              <div className="text-xl font-bold sm:text-2xl">{stat.count}</div>
-              <div className="text-xs text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
-        </div>
+        <StatGrid
+          items={[
+            { label: "期刊", value: magazineCount, icon: BookOpen },
+            { label: "期數", value: issueCount, icon: Calendar },
+            { label: "文章", value: articleCount, icon: FileText },
+            { label: "遊戲", value: gameCount, icon: Gamepad2 },
+            { label: "標籤", value: tagCount, icon: Tags },
+          ]}
+        />
       </section>
 
       {/* Latest Issues Section */}

@@ -8,8 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { BookOpen, FileText, Tags, Gamepad2, Calendar } from "lucide-react";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { StatGrid } from "@/components/StatGrid";
 
 export default async function AdminDashboardPage() {
   const [magazineCount, issueCount, articleCount, tagCount, gameCount] =
@@ -21,44 +21,6 @@ export default async function AdminDashboardPage() {
       prisma.game.count(),
     ]);
 
-  const stats = [
-    {
-      title: "期刊",
-      value: magazineCount,
-      description: "已建立的期刊數量",
-      icon: BookOpen,
-      href: "/admin/magazines",
-    },
-    {
-      title: "期數",
-      value: issueCount,
-      description: "已建立的期數數量",
-      icon: Calendar,
-      href: "/admin/magazines",
-    },
-    {
-      title: "文章",
-      value: articleCount,
-      description: "已建立的文章數量",
-      icon: FileText,
-      href: "/admin/articles",
-    },
-    {
-      title: "遊戲",
-      value: gameCount,
-      description: "已建立的遊戲數量",
-      icon: Gamepad2,
-      href: "/admin/games",
-    },
-    {
-      title: "標籤",
-      value: tagCount,
-      description: "已建立的標籤數量",
-      icon: Tags,
-      href: "/admin/tags",
-    },
-  ];
-
   return (
     <div className="space-y-6">
       <div>
@@ -68,26 +30,15 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-        {stats.map((stat) => (
-          <Link key={stat.title} href={stat.href}>
-            <Card className="transition-colors hover:bg-muted/50">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stat.description}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
+      <StatGrid
+        items={[
+          { label: "期刊", value: magazineCount, icon: BookOpen, href: "/admin/magazines" },
+          { label: "期數", value: issueCount, icon: Calendar, href: "/admin/magazines" },
+          { label: "文章", value: articleCount, icon: FileText, href: "/admin/articles" },
+          { label: "遊戲", value: gameCount, icon: Gamepad2, href: "/admin/games" },
+          { label: "標籤", value: tagCount, icon: Tags, href: "/admin/tags" },
+        ]}
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
