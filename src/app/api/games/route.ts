@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { gameCreateSchema } from "@/lib/validators/game";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/games - 取得遊戲列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -65,6 +66,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const game = await prisma.game.create({
     data: validatedData,
   });
+
+  await logEdit("Game", game.id, "CREATE");
 
   return NextResponse.json(game, { status: 201 });
 }, "Create game");

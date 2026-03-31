@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { issueUpdateSchema } from "@/lib/validators/issue";
 import { withErrorHandler } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/issues/[id] - 取得單一單期
 export const GET = withErrorHandler(async (
@@ -51,6 +52,8 @@ export const PUT = withErrorHandler(async (
     data: validatedData,
   });
 
+  await logEdit("Issue", id, "UPDATE", validatedData);
+
   return NextResponse.json(issue);
 }, "Update issue");
 
@@ -64,6 +67,8 @@ export const DELETE = withErrorHandler(async (
   await prisma.issue.delete({
     where: { id },
   });
+
+  await logEdit("Issue", id, "DELETE");
 
   return NextResponse.json({ success: true });
 }, "Delete issue");

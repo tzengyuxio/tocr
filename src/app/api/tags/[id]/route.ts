@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { tagUpdateSchema } from "@/lib/validators/tag";
 import { withErrorHandler } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/tags/[id] - 取得單一標籤
 export const GET = withErrorHandler(async (
@@ -84,6 +85,8 @@ export const PUT = withErrorHandler(async (
     data: validatedData,
   });
 
+  await logEdit("Tag", id, "UPDATE", validatedData);
+
   return NextResponse.json(tag);
 }, "Update tag");
 
@@ -97,6 +100,8 @@ export const DELETE = withErrorHandler(async (
   await prisma.tag.delete({
     where: { id },
   });
+
+  await logEdit("Tag", id, "DELETE");
 
   return NextResponse.json({ success: true });
 }, "Delete tag");

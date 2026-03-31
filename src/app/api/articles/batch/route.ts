@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { articleBatchCreateSchema } from "@/lib/validators/article";
 import { TagType } from "@prisma/client";
 import { withErrorHandler } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // POST /api/articles/batch - 批次建立文章（AI 辨識後使用）
 export const POST = withErrorHandler(async (request: NextRequest) => {
@@ -127,6 +128,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     return createdArticles;
   });
+
+  await logEdit("Article", result[0]?.id ?? "", "CREATE", { count: result.length, issueId: validatedData.issueId });
 
   return NextResponse.json({
     success: true,
