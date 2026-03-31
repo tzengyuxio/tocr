@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { AdminSidebar } from "@/components/layout/AdminSidebar";
+import { AdminSidebar, AdminMobileMenuButton } from "@/components/layout/AdminSidebar";
 import { AdminHeader } from "@/components/layout/AdminHeader";
 import { isDevBypass, DEV_USER } from "@/lib/dev-auth";
 
@@ -31,8 +31,8 @@ export default async function AdminLayout({
     <div className="flex h-screen overflow-hidden">
       <AdminSidebar userRole={user.role} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <AdminHeader user={user} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <AdminHeader user={user} mobileMenu={<AdminMobileMenuButton userRole={user.role} />} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

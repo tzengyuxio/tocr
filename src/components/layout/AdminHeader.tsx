@@ -22,9 +22,10 @@ interface AdminHeaderProps {
     image?: string | null;
     role: string;
   };
+  mobileMenu?: React.ReactNode;
 }
 
-export function AdminHeader({ user }: AdminHeaderProps) {
+export function AdminHeader({ user, mobileMenu }: AdminHeaderProps) {
   const initials = user.name
     ? user.name
         .split(" ")
@@ -40,8 +41,9 @@ export function AdminHeader({ user }: AdminHeaderProps) {
   }[user.role] || user.role;
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-background px-6">
-      <div className="flex items-center gap-4">
+    <header className="flex h-14 items-center justify-between border-b bg-background px-4 sm:px-6">
+      <div className="flex items-center gap-2">
+        {mobileMenu}
         <h1 className="text-lg font-semibold">後台管理系統</h1>
       </div>
       <div className="flex items-center gap-3">
