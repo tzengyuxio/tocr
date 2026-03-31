@@ -1,4 +1,5 @@
-export const dynamic = "force-dynamic";
+// Revalidate homepage every 60 seconds (ISR)
+export const revalidate = 60;
 
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -29,62 +30,64 @@ export default async function HomePage() {
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
-  // 取得統計數據
-  const [magazineCount, issueCount, articleCount, gameCount, tagCount] =
-    await Promise.all([
-      prisma.magazine.count(),
-      prisma.issue.count(),
-      prisma.article.count(),
-      prisma.game.count(),
-      prisma.tag.count(),
-    ]);
-
-  // 取得最新單期（含期刊資訊）
-  const latestIssues = await prisma.issue.findMany({
-    take: 6,
-    orderBy: { publishDate: "desc" },
-    include: {
-      magazine: {
-        select: { id: true, name: true },
+  // Run all queries in parallel
+  const [
+    magazineCount,
+    issueCount,
+    articleCount,
+    gameCount,
+    tagCount,
+    latestIssues,
+    recentArticles,
+    popularGames,
+  ] = await Promise.all([
+    prisma.magazine.count(),
+    prisma.issue.count(),
+    prisma.article.count(),
+    prisma.game.count(),
+    prisma.tag.count(),
+    prisma.issue.findMany({
+      take: 6,
+      orderBy: { publishDate: "desc" },
+      include: {
+        magazine: {
+          select: { id: true, name: true },
+        },
+        _count: {
+          select: { articles: true },
+        },
       },
-      _count: {
-        select: { articles: true },
-      },
-    },
-  });
-
-  // 取得最近更新的文章
-  const recentArticles = await prisma.article.findMany({
-    take: 5,
-    orderBy: { updatedAt: "desc" },
-    include: {
-      issue: {
-        select: {
-          id: true,
-          issueNumber: true,
-          publishDate: true,
-          magazine: {
-            select: { id: true, name: true },
+    }),
+    prisma.article.findMany({
+      take: 5,
+      orderBy: { updatedAt: "desc" },
+      include: {
+        issue: {
+          select: {
+            id: true,
+            issueNumber: true,
+            publishDate: true,
+            magazine: {
+              select: { id: true, name: true },
+            },
           },
         },
       },
-    },
-  });
-
-  // 取得熱門遊戲（依相關文章數排序）
-  const popularGames = await prisma.game.findMany({
-    take: 8,
-    orderBy: {
-      articleGames: {
-        _count: "desc",
+    }),
+    prisma.game.findMany({
+      take: 8,
+      orderBy: {
+        articleGames: {
+          _count: "desc",
+        },
       },
-    },
-    include: {
-      _count: {
-        select: { articleGames: true },
+      include: {
+        _count: {
+          select: { articleGames: true },
+        },
       },
-    },
-  });
+    }),
+  ]);
 
   return (
     <div className="container mx-auto px-4 py-8">
