@@ -1,6 +1,7 @@
 export const revalidate = 60;
 
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -51,9 +52,12 @@ export default async function MagazinesPage() {
               <Card className="h-full transition-shadow hover:shadow-lg">
                 <CardHeader className="pb-3">
                   {magazine.coverImage ? (
-                    <img
+                    <Image
                       src={magazine.coverImage}
                       alt={magazine.name}
+                      width={400}
+                      height={192}
+                      unoptimized
                       className="mb-3 h-48 w-full rounded-lg object-cover"
                     />
                   ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,9 +58,12 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
               <TableCell>
                 <div className="flex items-center gap-3">
                   {magazine.coverImage ? (
-                    <img
+                    <Image
                       src={magazine.coverImage}
                       alt={magazine.name}
+                      width={32}
+                      height={40}
+                      unoptimized
                       className="h-10 w-8 rounded object-cover"
                     />
                   ) : (

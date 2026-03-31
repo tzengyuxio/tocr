@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
@@ -22,9 +23,12 @@ export function IssueCard({ issue, magazineId, magazineName }: IssueCardProps) {
     <Link href={`/magazines/${magazineId}/issues/${issue.id}`}>
       <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
         {issue.coverImage ? (
-          <img
+          <Image
             src={issue.coverImage}
             alt={issue.issueNumber}
+            width={400}
+            height={560}
+            unoptimized
             className="aspect-[3/4] w-full object-cover"
           />
         ) : (

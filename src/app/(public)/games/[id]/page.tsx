@@ -2,6 +2,7 @@ export const revalidate = 60;
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
@@ -87,9 +88,12 @@ export default async function GameDetailPage({ params }: PageProps) {
       {/* 遊戲資訊 */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row">
         {game.coverImage ? (
-          <img
+          <Image
             src={game.coverImage}
             alt={game.name}
+            width={144}
+            height={192}
+            unoptimized
             className="h-48 w-36 rounded-lg object-cover shadow-lg"
           />
         ) : (

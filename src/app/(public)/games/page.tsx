@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Card,
@@ -114,9 +115,12 @@ export default function GamesPage() {
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardContent className="flex items-center gap-3 p-3">
                     {game.coverImage ? (
-                      <img
+                      <Image
                         src={game.coverImage}
                         alt={game.name}
+                        width={56}
+                        height={56}
+                        unoptimized
                         className="h-14 w-14 shrink-0 rounded-md object-cover"
                       />
                     ) : (

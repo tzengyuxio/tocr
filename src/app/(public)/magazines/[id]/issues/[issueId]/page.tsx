@@ -2,6 +2,7 @@ export const revalidate = 60;
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
@@ -86,9 +87,12 @@ export default async function IssueDetailPage({ params }: PageProps) {
       {/* 單期資訊 */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row">
         {issue.coverImage ? (
-          <img
+          <Image
             src={issue.coverImage}
             alt={issue.issueNumber}
+            width={176}
+            height={256}
+            unoptimized
             className="h-64 w-44 rounded-lg object-cover shadow-lg"
           />
         ) : (

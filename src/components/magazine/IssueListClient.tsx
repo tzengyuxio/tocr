@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   DndContext,
@@ -104,9 +105,12 @@ function SortableRow({
       </TableCell>
       <TableCell>
         {issue.coverImage ? (
-          <img
+          <Image
             src={issue.coverImage}
             alt={issue.issueNumber}
+            width={36}
+            height={48}
+            unoptimized
             className="h-12 w-9 rounded object-cover"
           />
         ) : (

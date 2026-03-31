@@ -1,6 +1,7 @@
 // Revalidate homepage every 60 seconds (ISR)
 export const revalidate = 60;
 
+import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
@@ -234,9 +235,12 @@ export default async function HomePage() {
                 <Card className="h-full transition-shadow hover:shadow-lg">
                   <CardContent className="flex items-center gap-3 p-3">
                     {game.coverImage ? (
-                      <img
+                      <Image
                         src={game.coverImage}
                         alt={game.name}
+                        width={48}
+                        height={48}
+                        unoptimized
                         className="h-12 w-12 shrink-0 rounded object-cover"
                       />
                     ) : (
