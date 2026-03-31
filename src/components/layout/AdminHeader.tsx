@@ -12,7 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User } from "lucide-react";
+import { ExternalLink, LogOut, User } from "lucide-react";
+import Link from "next/link";
 
 interface AdminHeaderProps {
   user: {
@@ -43,7 +44,13 @@ export function AdminHeader({ user }: AdminHeaderProps) {
       <div className="flex items-center gap-4">
         <h1 className="text-lg font-semibold">後台管理系統</h1>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/">
+            <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+            前台
+          </Link>
+        </Button>
         <Badge variant="secondary">{roleLabel}</Badge>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
