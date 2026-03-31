@@ -3,10 +3,40 @@ import { prisma } from "@/lib/prisma";
 import { OcrProviderFactory } from "@/services/ai/ocr.factory";
 import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
 import { resolveImageUrl } from "@/lib/resolve-image-url";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+// Rate limit: 10 requests per minute per user/IP
+const OCR_RATE_LIMIT = {
+  maxRequests: 10,
+  windowMs: 60_000,
+};
 
 // POST /api/ocr - 執行 AI 辨識（支援多圖）
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting by IP (or forwarded IP behind proxy)
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+    const rateLimitResult = checkRateLimit(`ocr:${ip}`, OCR_RATE_LIMIT);
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: "Too many OCR requests. Please try again later.",
+          retryAfterMs: rateLimitResult.resetMs,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil(rateLimitResult.resetMs / 1000)),
+            "X-RateLimit-Remaining": "0",
+          },
+        }
+      );
+    }
+
     const formData = await request.formData();
     const provider =
       (formData.get("provider") as OcrProviderType) || "claude";
