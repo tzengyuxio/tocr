@@ -25,6 +25,7 @@ import { BookOpen, ArrowLeft, Calendar, FileText, SquarePen } from "lucide-react
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -77,6 +78,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: "/magazines/" + issue.magazineId }, { label: issue.issueNumber }]} />
       <Button asChild variant="ghost" className="mb-6">
         <Link href={`/magazines/${issue.magazineId}`}>
           <ArrowLeft className="mr-2 h-4 w-4" />

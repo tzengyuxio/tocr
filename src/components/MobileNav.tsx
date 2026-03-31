@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, BookOpen, Gamepad2, Tags, Search, Home, Settings } from "lucide-react";
+import { Menu, BookOpen, Gamepad2, Tags, Search, Home, Settings, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/games", label: "遊戲", icon: Gamepad2 },
   { href: "/tags", label: "標籤", icon: Tags },
   { href: "/search", label: "搜尋", icon: Search },
+  { href: "/contributors", label: "貢獻者", icon: Award },
 ];
 
 export function MobileNav() {
