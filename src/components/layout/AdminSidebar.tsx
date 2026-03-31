@@ -147,7 +147,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
     <aside
       className={cn(
         "hidden sm:flex h-screen flex-col border-r bg-muted/40 transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
+        collapsed ? "w-14" : "w-48"
       )}
     >
       <div className="flex h-14 items-center border-b px-4">
