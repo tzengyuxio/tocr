@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -20,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tags, ArrowLeft, FileText, SquarePen } from "lucide-react";
+import { Tags, FileText, SquarePen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
@@ -80,13 +79,6 @@ export default async function TagDetailPage({ params }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumb items={[{ label: "標籤", href: "/tags" }, { label: tag.name }]} />
-      <Button asChild variant="ghost" className="mb-6">
-        <Link href="/tags">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          返回標籤列表
-        </Link>
-      </Button>
-
       {/* 標籤資訊 */}
       <div className="mb-8">
         <div className="flex items-center gap-3">

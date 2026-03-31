@@ -152,8 +152,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       </div>
 
       {/* Search Form */}
-      <Card className="mb-8">
-        <CardContent className="pt-6">
+      <Card className="mb-6 py-3 gap-0">
+        <CardContent>
           <form action="/search" method="get">
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="relative flex-1">
@@ -260,10 +260,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {articles.map((article) => (
-            <Card key={article.id} className="transition-shadow hover:shadow-md">
-              <CardHeader className="pb-2">
+            <Card key={article.id} className="transition-shadow hover:shadow-md py-3 gap-2">
+              <CardHeader className="pb-0">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardDescription className="flex items-center gap-2">
@@ -316,7 +316,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </CardHeader>
               <CardContent>
                 {article.summary && (
-                  <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+                  <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
                     {article.summary}
                   </p>
                 )}

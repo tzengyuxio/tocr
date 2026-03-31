@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -21,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BookOpen, ArrowLeft, Calendar, FileText, SquarePen } from "lucide-react";
+import { BookOpen, Calendar, FileText, SquarePen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
@@ -79,13 +78,6 @@ export default async function IssueDetailPage({ params }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: "/magazines/" + issue.magazineId }, { label: issue.issueNumber }]} />
-      <Button asChild variant="ghost" className="mb-6">
-        <Link href={`/magazines/${issue.magazineId}`}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          返回 {issue.magazine.name}
-        </Link>
-      </Button>
-
       {/* 單期資訊 */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row">
         {issue.coverImage ? (

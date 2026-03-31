@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -21,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Gamepad2, ArrowLeft, Calendar, FileText, SquarePen } from "lucide-react";
+import { Gamepad2, Calendar, FileText, SquarePen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
@@ -80,13 +79,6 @@ export default async function GameDetailPage({ params }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumb items={[{ label: "遊戲", href: "/games" }, { label: game.name }]} />
-      <Button asChild variant="ghost" className="mb-6">
-        <Link href="/games">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          返回遊戲列表
-        </Link>
-      </Button>
-
       {/* 遊戲資訊 */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row">
         {game.coverImage ? (

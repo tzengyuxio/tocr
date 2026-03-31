@@ -46,38 +46,38 @@ export default async function MagazinesPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {magazines.map((magazine) => (
             <Link key={magazine.id} href={`/magazines/${magazine.id}`}>
-              <Card className="h-full transition-shadow hover:shadow-lg">
-                <CardHeader className="pb-3">
+              <Card className="h-full transition-shadow hover:shadow-lg gap-3">
+                <CardHeader className="pb-0 gap-1">
                   {magazine.coverImage ? (
                     <Image
                       src={magazine.coverImage}
                       alt={magazine.name}
                       width={400}
-                      height={192}
+                      height={160}
                       unoptimized
-                      className="mb-3 h-48 w-full rounded-lg object-cover"
+                      className="mb-2 h-40 w-full rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="mb-3 flex h-48 items-center justify-center rounded-lg bg-muted">
-                      <BookOpen className="h-16 w-16 text-muted-foreground/50" />
+                    <div className="mb-2 flex h-32 items-center justify-center rounded-lg bg-muted">
+                      <BookOpen className="h-12 w-12 text-muted-foreground/30" />
                     </div>
                   )}
-                  <CardTitle className="line-clamp-1">{magazine.name}</CardTitle>
+                  <CardTitle className="line-clamp-1 text-base">{magazine.name}</CardTitle>
                   {magazine.nameEn && (
-                    <CardDescription className="line-clamp-1">
+                    <CardDescription className="line-clamp-1 text-xs">
                       {magazine.nameEn}
                     </CardDescription>
                   )}
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {magazine.publisher || "未知出版社"}
                     </span>
-                    <Badge variant={magazine.isActive ? "default" : "secondary"}>
+                    <Badge variant={magazine.isActive ? "default" : "secondary"} className="text-xs">
                       {magazine._count.issues} 期
                     </Badge>
                   </div>
