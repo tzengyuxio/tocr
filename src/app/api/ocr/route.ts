@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { OcrProviderFactory } from "@/services/ai/ocr.factory";
 import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
-import { resolveImageUrl } from "@/lib/resolve-image-url";
+import { resolveImageUrl, isSafeImageUrl } from "@/lib/resolve-image-url";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 // Rate limit: 10 requests per minute per user/IP
@@ -75,6 +75,12 @@ export async function POST(request: NextRequest) {
     if (imageUrlsRaw) {
       const imageUrls: string[] = JSON.parse(imageUrlsRaw);
       for (const url of imageUrls) {
+        if (!isSafeImageUrl(url, origin)) {
+          return NextResponse.json(
+            { error: `URL not allowed: ${url}. Only same-origin and trusted storage URLs are permitted.` },
+            { status: 400 }
+          );
+        }
         const absoluteUrl = resolveImageUrl(url, origin);
         const response = await fetch(absoluteUrl);
         if (!response.ok) {
@@ -116,6 +122,12 @@ export async function POST(request: NextRequest) {
           mimeType: image.type,
         });
       } else if (imageUrl) {
+        if (!isSafeImageUrl(imageUrl, origin)) {
+          return NextResponse.json(
+            { error: `URL not allowed: ${imageUrl}. Only same-origin and trusted storage URLs are permitted.` },
+            { status: 400 }
+          );
+        }
         const absoluteImageUrl = resolveImageUrl(imageUrl, origin);
         const response = await fetch(absoluteImageUrl);
         if (!response.ok) {
