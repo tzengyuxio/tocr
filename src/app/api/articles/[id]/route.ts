@@ -1,148 +1,119 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { articleUpdateSchema } from "@/lib/validators/article";
+import { withErrorHandler } from "@/lib/api-utils";
 
 // GET /api/articles/[id] - 取得單一文章
-export async function GET(
+export const GET = withErrorHandler(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
+  context
+) => {
+  const { id } = await context!.params;
 
-    const article = await prisma.article.findUnique({
-      where: { id },
-      include: {
-        issue: {
-          select: {
-            id: true,
-            issueNumber: true,
-            publishDate: true,
-            magazine: {
-              select: { id: true, name: true },
-            },
-          },
-        },
-        articleGames: {
-          include: {
-            game: true,
-          },
-        },
-        articleTags: {
-          include: {
-            tag: true,
+  const article = await prisma.article.findUnique({
+    where: { id },
+    include: {
+      issue: {
+        select: {
+          id: true,
+          issueNumber: true,
+          publishDate: true,
+          magazine: {
+            select: { id: true, name: true },
           },
         },
       },
-    });
+      articleGames: {
+        include: {
+          game: true,
+        },
+      },
+      articleTags: {
+        include: {
+          tag: true,
+        },
+      },
+    },
+  });
 
-    if (!article) {
-      return NextResponse.json({ error: "Article not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(article);
-  } catch (error) {
-    console.error("Failed to fetch article:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch article" },
-      { status: 500 }
-    );
+  if (!article) {
+    return NextResponse.json({ error: "Article not found" }, { status: 404 });
   }
-}
+
+  return NextResponse.json(article);
+}, "Fetch article");
 
 // PUT /api/articles/[id] - 更新文章
-export async function PUT(
+export const PUT = withErrorHandler(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const body = await request.json();
+  context
+) => {
+  const { id } = await context!.params;
+  const body = await request.json();
 
-    // 分離關聯資料
-    const { gameIds, tagIds, ...articleData } = body;
-    const validatedData = articleUpdateSchema.parse(articleData);
+  // 分離關聯資料
+  const { gameIds, tagIds, ...articleData } = body;
+  const validatedData = articleUpdateSchema.parse(articleData);
 
-    // 使用 transaction 更新文章和關聯
-    const article = await prisma.$transaction(async (tx) => {
-      // 更新文章基本資料
-      const updated = await tx.article.update({
-        where: { id },
-        data: validatedData,
-      });
-
-      // 如果有提供 gameIds，更新遊戲關聯
-      if (gameIds !== undefined) {
-        // 刪除現有關聯
-        await tx.articleGame.deleteMany({
-          where: { articleId: id },
-        });
-        // 建立新關聯
-        if (gameIds.length > 0) {
-          await tx.articleGame.createMany({
-            data: gameIds.map((gameId: string, index: number) => ({
-              articleId: id,
-              gameId,
-              isPrimary: index === 0, // 第一個為主要遊戲
-            })),
-          });
-        }
-      }
-
-      // 如果有提供 tagIds，更新標籤關聯
-      if (tagIds !== undefined) {
-        // 刪除現有關聯
-        await tx.articleTag.deleteMany({
-          where: { articleId: id },
-        });
-        // 建立新關聯
-        if (tagIds.length > 0) {
-          await tx.articleTag.createMany({
-            data: tagIds.map((tagId: string) => ({
-              articleId: id,
-              tagId,
-            })),
-          });
-        }
-      }
-
-      return updated;
+  // 使用 transaction 更新文章和關聯
+  const article = await prisma.$transaction(async (tx) => {
+    // 更新文章基本資料
+    const updated = await tx.article.update({
+      where: { id },
+      data: validatedData,
     });
 
-    return NextResponse.json(article);
-  } catch (error) {
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json(
-        { error: "Validation failed", details: error },
-        { status: 400 }
-      );
+    // 如果有提供 gameIds，更新遊戲關聯
+    if (gameIds !== undefined) {
+      // 刪除現有關聯
+      await tx.articleGame.deleteMany({
+        where: { articleId: id },
+      });
+      // 建立新關聯
+      if (gameIds.length > 0) {
+        await tx.articleGame.createMany({
+          data: gameIds.map((gameId: string, index: number) => ({
+            articleId: id,
+            gameId,
+            isPrimary: index === 0, // 第一個為主要遊戲
+          })),
+        });
+      }
     }
-    console.error("Failed to update article:", error);
-    return NextResponse.json(
-      { error: "Failed to update article" },
-      { status: 500 }
-    );
-  }
-}
+
+    // 如果有提供 tagIds，更新標籤關聯
+    if (tagIds !== undefined) {
+      // 刪除現有關聯
+      await tx.articleTag.deleteMany({
+        where: { articleId: id },
+      });
+      // 建立新關聯
+      if (tagIds.length > 0) {
+        await tx.articleTag.createMany({
+          data: tagIds.map((tagId: string) => ({
+            articleId: id,
+            tagId,
+          })),
+        });
+      }
+    }
+
+    return updated;
+  });
+
+  return NextResponse.json(article);
+}, "Update article");
 
 // DELETE /api/articles/[id] - 刪除文章
-export async function DELETE(
+export const DELETE = withErrorHandler(async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
+  context
+) => {
+  const { id } = await context!.params;
 
-    await prisma.article.delete({
-      where: { id },
-    });
+  await prisma.article.delete({
+    where: { id },
+  });
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Failed to delete article:", error);
-    return NextResponse.json(
-      { error: "Failed to delete article" },
-      { status: 500 }
-    );
-  }
-}
+  return NextResponse.json({ success: true });
+}, "Delete article");
