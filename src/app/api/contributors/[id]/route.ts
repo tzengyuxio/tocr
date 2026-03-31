@@ -18,38 +18,33 @@ export const GET = withErrorHandler(async (
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // Total edit count
-  const totalEdits = await prisma.editLog.count({
-    where: { userId: id },
-  });
-
-  // Action breakdown
-  const actionBreakdown = await prisma.editLog.groupBy({
-    by: ["action"],
-    where: { userId: id },
-    _count: { id: true },
-  });
-
-  // Entity type breakdown
-  const entityBreakdown = await prisma.editLog.groupBy({
-    by: ["entityType"],
-    where: { userId: id },
-    _count: { id: true },
-  });
-
-  // Recent activity (last 20 edits)
-  const recentActivity = await prisma.editLog.findMany({
-    where: { userId: id },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-    select: {
-      id: true,
-      entityType: true,
-      entityId: true,
-      action: true,
-      createdAt: true,
-    },
-  });
+  const [totalEdits, actionBreakdown, entityBreakdown, recentActivity] = await Promise.all([
+    prisma.editLog.count({
+      where: { userId: id },
+    }),
+    prisma.editLog.groupBy({
+      by: ["action"],
+      where: { userId: id },
+      _count: { id: true },
+    }),
+    prisma.editLog.groupBy({
+      by: ["entityType"],
+      where: { userId: id },
+      _count: { id: true },
+    }),
+    prisma.editLog.findMany({
+      where: { userId: id },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        entityType: true,
+        entityId: true,
+        action: true,
+        createdAt: true,
+      },
+    }),
+  ]);
 
   return NextResponse.json({
     user,

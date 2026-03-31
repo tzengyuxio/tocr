@@ -1,7 +1,7 @@
 export const revalidate = 60;
 
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
+import { getContributorLeaderboard } from "@/lib/contributor-queries";
 import {
   Card,
   CardContent,
@@ -17,44 +17,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ContributorsPage() {
-  // Get contributors with edit counts
-  const editCounts = await prisma.editLog.groupBy({
-    by: ["userId"],
-    _count: { id: true },
-    orderBy: { _count: { id: "desc" } },
-    take: 50,
-  });
-
-  const userIds = editCounts.map((e) => e.userId);
-  const users = await prisma.user.findMany({
-    where: { id: { in: userIds } },
-    select: { id: true, name: true, image: true },
-  });
-  const userMap = new Map(users.map((u) => [u.id, u]));
-
-  // Action breakdown
-  const actionBreakdowns = await prisma.editLog.groupBy({
-    by: ["userId", "action"],
-    where: { userId: { in: userIds } },
-    _count: { id: true },
-  });
-
-  const breakdownMap = new Map<string, Record<string, number>>();
-  for (const row of actionBreakdowns) {
-    if (!breakdownMap.has(row.userId)) {
-      breakdownMap.set(row.userId, {});
-    }
-    breakdownMap.get(row.userId)![row.action] = row._count.id;
-  }
-
-  const contributors = editCounts.map((entry, index) => ({
-    rank: index + 1,
-    user: userMap.get(entry.userId),
-    totalEdits: entry._count.id,
-    breakdown: breakdownMap.get(entry.userId) || {},
-  }));
-
-  const totalEdits = editCounts.reduce((sum, e) => sum + e._count.id, 0);
+  const { contributors } = await getContributorLeaderboard({ take: 50 });
+  const totalEdits = contributors.reduce((sum, c) => sum + c.totalEdits, 0);
 
   return (
     <div className="container mx-auto px-4 py-8">

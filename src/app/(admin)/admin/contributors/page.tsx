@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatGrid } from "@/components/StatGrid";
-import { Users, FileEdit, Plus, Trash2, Award } from "lucide-react";
+import { Users, FileEdit, Award } from "lucide-react";
+import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
+import { getContributorLeaderboard } from "@/lib/contributor-queries";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 
@@ -20,92 +22,27 @@ export const metadata: Metadata = {
 };
 
 export default async function ContributorsPage() {
-  // Get overall stats
-  const [totalEdits, totalContributors, recentEditsCount] = await Promise.all([
+  const [
+    { contributors, totalContributors },
+    totalEdits,
+    recentEditsCount,
+    recentActivity,
+  ] = await Promise.all([
+    getContributorLeaderboard({ take: 20, includeEmail: true }),
     prisma.editLog.count(),
-    prisma.editLog.groupBy({ by: ["userId"] }).then((r) => r.length),
     prisma.editLog.count({
       where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
     }),
-  ]);
-
-  // Get top contributors (all time)
-  const editCounts = await prisma.editLog.groupBy({
-    by: ["userId"],
-    _count: { id: true },
-    orderBy: { _count: { id: "desc" } },
-    take: 20,
-  });
-
-  const userIds = editCounts.map((e) => e.userId);
-  const users = await prisma.user.findMany({
-    where: { id: { in: userIds } },
-    select: { id: true, name: true, email: true, image: true },
-  });
-  const userMap = new Map(users.map((u) => [u.id, u]));
-
-  // Get action breakdown per user
-  const actionBreakdowns = await prisma.editLog.groupBy({
-    by: ["userId", "action"],
-    where: { userId: { in: userIds } },
-    _count: { id: true },
-  });
-
-  const breakdownMap = new Map<string, Record<string, number>>();
-  for (const row of actionBreakdowns) {
-    if (!breakdownMap.has(row.userId)) {
-      breakdownMap.set(row.userId, {});
-    }
-    breakdownMap.get(row.userId)![row.action] = row._count.id;
-  }
-
-  // Get recent activity
-  const recentActivity = await prisma.editLog.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 30,
-    include: {
-      user: {
-        select: { id: true, name: true, email: true, image: true },
+    prisma.editLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, image: true },
+        },
       },
-    },
-  });
-
-  const contributors = editCounts.map((entry, index) => ({
-    rank: index + 1,
-    user: userMap.get(entry.userId),
-    totalEdits: entry._count.id,
-    breakdown: breakdownMap.get(entry.userId) || {},
-  }));
-
-  const actionIcon = (action: string) => {
-    switch (action) {
-      case "CREATE": return <Plus className="h-3 w-3 text-green-600" />;
-      case "UPDATE": return <FileEdit className="h-3 w-3 text-blue-600" />;
-      case "DELETE": return <Trash2 className="h-3 w-3 text-red-600" />;
-      default: return null;
-    }
-  };
-
-  const actionLabel = (action: string) => {
-    switch (action) {
-      case "CREATE": return "新增";
-      case "UPDATE": return "更新";
-      case "DELETE": return "刪除";
-      default: return action;
-    }
-  };
-
-  const entityLabel = (type: string) => {
-    switch (type) {
-      case "Magazine": return "期刊";
-      case "Issue": return "單期";
-      case "Article": return "文章";
-      case "Tag": return "標籤";
-      case "Game": return "遊戲";
-      case "User": return "使用者";
-      default: return type;
-    }
-  };
+    }),
+  ]);
 
   return (
     <div className="container mx-auto px-4 py-8">

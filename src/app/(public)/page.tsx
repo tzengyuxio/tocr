@@ -317,33 +317,19 @@ export default async function HomePage() {
         <section className="rounded-xl border bg-muted/30 p-5 md:p-6">
           <h2 className="mb-3 text-lg font-bold text-center">如何使用</h2>
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="text-center">
-              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Search className="h-5 w-5" />
+            {[
+              { icon: Search, title: "搜尋文章", desc: "輸入遊戲名稱、作者或關鍵字，快速找到跨期刊的相關報導" },
+              { icon: BookOpen, title: "瀏覽目錄", desc: "依期刊、期數瀏覽完整目錄，找回記憶中的那篇文章" },
+              { icon: ScanText, title: "協助建檔", desc: "上傳目錄頁掃描圖，AI 自動辨識文章資訊，協作完善資料庫" },
+            ].map((item) => (
+              <div key={item.title} className="text-center">
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <h3 className="font-medium mb-1">{item.title}</h3>
+                <p className="text-sm text-muted-foreground">{item.desc}</p>
               </div>
-              <h3 className="font-medium mb-1">搜尋文章</h3>
-              <p className="text-sm text-muted-foreground">
-                輸入遊戲名稱、作者或關鍵字，快速找到跨期刊的相關報導
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <BookOpen className="h-5 w-5" />
-              </div>
-              <h3 className="font-medium mb-1">瀏覽目錄</h3>
-              <p className="text-sm text-muted-foreground">
-                依期刊、期數瀏覽完整目錄，找回記憶中的那篇文章
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <ScanText className="h-5 w-5" />
-              </div>
-              <h3 className="font-medium mb-1">協助建檔</h3>
-              <p className="text-sm text-muted-foreground">
-                上傳目錄頁掃描圖，AI 自動辨識文章資訊，協作完善資料庫
-              </p>
-            </div>
+            ))}
           </div>
         </section>
 

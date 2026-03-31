@@ -5,7 +5,7 @@
  */
 export function resolveImageUrl(url: string, origin: string): string {
   if (!url) return url;
-  return url.startsWith("http") ? url : `${origin}${url}`;
+  return url.startsWith("http://") || url.startsWith("https://") ? url : `${origin}${url}`;
 }
 
 /**

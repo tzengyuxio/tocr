@@ -6,6 +6,7 @@
 
 interface RateLimitEntry {
   timestamps: number[];
+  windowMs: number;
 }
 
 interface RateLimitConfig {
@@ -21,12 +22,12 @@ const store = new Map<string, RateLimitEntry>();
 const CLEANUP_INTERVAL = 60_000; // 1 minute
 let cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
-function ensureCleanup(windowMs: number) {
+function ensureCleanup() {
   if (cleanupTimer) return;
   cleanupTimer = setInterval(() => {
     const now = Date.now();
     for (const [key, entry] of store) {
-      entry.timestamps = entry.timestamps.filter((t) => now - t < windowMs);
+      entry.timestamps = entry.timestamps.filter((t) => now - t < entry.windowMs);
       if (entry.timestamps.length === 0) {
         store.delete(key);
       }
@@ -48,10 +49,11 @@ export function checkRateLimit(
   key: string,
   config: RateLimitConfig
 ): RateLimitResult {
-  ensureCleanup(config.windowMs);
+  ensureCleanup();
 
   const now = Date.now();
-  const entry = store.get(key) || { timestamps: [] };
+  const entry = store.get(key) || { timestamps: [], windowMs: config.windowMs };
+  entry.windowMs = config.windowMs;
 
   // Remove timestamps outside the window
   entry.timestamps = entry.timestamps.filter(

@@ -2,7 +2,8 @@ import { prisma } from "./prisma";
 import { auth } from "./auth";
 import { isDevBypass, DEV_USER } from "./dev-auth";
 
-type EditAction = "CREATE" | "UPDATE" | "DELETE";
+export type EditAction = "CREATE" | "UPDATE" | "DELETE";
+export type EntityType = "Magazine" | "Issue" | "Article" | "Tag" | "Game" | "User";
 
 /**
  * Get the current authenticated user's ID.
@@ -30,13 +31,13 @@ export async function logEdit(
   const userId = await getCurrentUserId();
   if (!userId) return;
 
-  await prisma.editLog.create({
+  prisma.editLog.create({
     data: {
       userId,
       entityType,
       entityId,
       action,
-      changes: changes ?? undefined,
+      changes: changes as never,
     },
-  });
+  }).catch(console.error);
 }

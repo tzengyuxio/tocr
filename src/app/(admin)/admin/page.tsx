@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, FileText, Tags, Gamepad2, Calendar, ScanText, Upload, ArrowRight, Plus, FileEdit, Trash2 } from "lucide-react";
+import { BookOpen, FileText, Tags, Gamepad2, Calendar, ScanText, Upload, ArrowRight, Plus, FileEdit } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StatGrid } from "@/components/StatGrid";
+import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 
@@ -32,36 +33,6 @@ export default async function AdminDashboardPage() {
         },
       }),
     ]);
-
-  const entityLabel = (type: string) => {
-    switch (type) {
-      case "Magazine": return "期刊";
-      case "Issue": return "單期";
-      case "Article": return "文章";
-      case "Tag": return "標籤";
-      case "Game": return "遊戲";
-      case "User": return "使用者";
-      default: return type;
-    }
-  };
-
-  const actionIcon = (action: string) => {
-    switch (action) {
-      case "CREATE": return <Plus className="h-3 w-3 text-green-600" />;
-      case "UPDATE": return <FileEdit className="h-3 w-3 text-blue-600" />;
-      case "DELETE": return <Trash2 className="h-3 w-3 text-red-600" />;
-      default: return null;
-    }
-  };
-
-  const actionLabel = (action: string) => {
-    switch (action) {
-      case "CREATE": return "新增";
-      case "UPDATE": return "更新";
-      case "DELETE": return "刪除";
-      default: return action;
-    }
-  };
 
   const hasData = magazineCount > 0;
 

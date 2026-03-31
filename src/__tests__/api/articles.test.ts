@@ -3,15 +3,11 @@
  */
 import { prismaMock, resetPrismaMock } from "../__mocks__/prisma";
 import { GET, POST } from "@/app/api/articles/route";
-import { NextRequest } from "next/server";
+import { makeRequest } from "../helpers";
 
 beforeEach(() => {
   resetPrismaMock();
 });
-
-function makeRequest(url: string, init?: RequestInit) {
-  return new NextRequest(new URL(url, "http://localhost:3000"), init);
-}
 
 describe("GET /api/articles", () => {
   it("returns paginated articles", async () => {

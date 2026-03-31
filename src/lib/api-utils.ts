@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 type RouteHandler = (
   request: NextRequest,
@@ -19,7 +20,7 @@ export function withErrorHandler(
     try {
       return await handler(request, context);
     } catch (error) {
-      if (error instanceof Error && error.name === "ZodError") {
+      if (error instanceof ZodError) {
         return NextResponse.json(
           { error: "Validation failed", details: error },
           { status: 400 }
