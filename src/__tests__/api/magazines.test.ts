@@ -82,7 +82,7 @@ describe("GET /api/magazines", () => {
     const json = await res.json();
 
     expect(res.status).toBe(500);
-    expect(json.error).toBe("Failed to fetch magazines");
+    expect(json.error).toBe("Fetch magazines failed");
   });
 });
 
