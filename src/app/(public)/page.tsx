@@ -22,6 +22,7 @@ import {
   FileText,
   ArrowRight,
   Calendar,
+  Users,
 } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
@@ -265,7 +266,7 @@ export default async function HomePage() {
       {/* Quick Links */}
       <section>
         <h2 className="mb-6 text-2xl font-bold">快速導覽</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Link href="/magazines">
             <Card className="transition-shadow hover:shadow-lg">
               <CardHeader>
@@ -299,6 +300,15 @@ export default async function HomePage() {
                 <FileText className="mb-2 h-8 w-8" />
                 <CardTitle>搜尋文章</CardTitle>
                 <CardDescription>關鍵字搜尋所有文章</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+          <Link href="/contributors">
+            <Card className="transition-shadow hover:shadow-lg">
+              <CardHeader>
+                <Users className="mb-2 h-8 w-8" />
+                <CardTitle>貢獻者</CardTitle>
+                <CardDescription>感謝所有資料貢獻者</CardDescription>
               </CardHeader>
             </Card>
           </Link>
