@@ -69,6 +69,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       { title: { contains: query, mode: "insensitive" } },
       { subtitle: { contains: query, mode: "insensitive" } },
       { summary: { contains: query, mode: "insensitive" } },
+      { authors: { has: query } },
+      { articleGames: { some: { game: { name: { contains: query, mode: "insensitive" } } } } },
+      { articleTags: { some: { tag: { name: { contains: query, mode: "insensitive" } } } } },
     ];
   }
 

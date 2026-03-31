@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
           { title: { contains: search, mode: "insensitive" as const } },
           { subtitle: { contains: search, mode: "insensitive" as const } },
           { summary: { contains: search, mode: "insensitive" as const } },
+          { authors: { has: search } },
         ],
       }),
       ...(gameId && {
