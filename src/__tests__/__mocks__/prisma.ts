@@ -33,6 +33,11 @@ jest.mock("@/lib/prisma", () => ({
   prisma: prismaMock,
 }));
 
+jest.mock("@/lib/edit-log", () => ({
+  logEdit: jest.fn().mockResolvedValue(undefined),
+  getCurrentUserId: jest.fn().mockResolvedValue("test-user"),
+}));
+
 export function resetPrismaMock() {
   Object.values(prismaMock).forEach((model) => {
     if (typeof model === "object" && model !== null) {

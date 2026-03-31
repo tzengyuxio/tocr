@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { tagCreateSchema } from "@/lib/validators/tag";
 import { withErrorHandler, paginatedResponse } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/tags - 取得標籤列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -59,6 +60,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const tag = await prisma.tag.create({
     data: validatedData,
   });
+
+  await logEdit("Tag", tag.id, "CREATE");
 
   return NextResponse.json(tag, { status: 201 });
 }, "Create tag");

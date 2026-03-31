@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { isDevBypass } from "@/lib/dev-auth";
 import { withErrorHandler } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 const userUpdateSchema = z.object({
   role: z.enum(["VIEWER", "EDITOR", "ADMIN"]),
@@ -110,6 +111,8 @@ export const PUT = withErrorHandler(async (
       createdAt: true,
     },
   });
+
+  await logEdit("User", id, "UPDATE", validatedData);
 
   return NextResponse.json(user);
 }, "Update user");

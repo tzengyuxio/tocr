@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { reorderSchema } from "@/lib/validators/reorder";
 import { withErrorHandler } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 export const PUT = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
@@ -15,6 +16,8 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
       })
     )
   );
+
+  await logEdit("Issue", magazineId, "UPDATE", { action: "reorder", issueIds });
 
   return NextResponse.json({ success: true });
 }, "Reorder issues");

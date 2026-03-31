@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { magazineCreateSchema } from "@/lib/validators/magazine";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/magazines - 取得期刊列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -49,6 +50,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const magazine = await prisma.magazine.create({
     data: validatedData,
   });
+
+  await logEdit("Magazine", magazine.id, "CREATE");
 
   return NextResponse.json(magazine, { status: 201 });
 }, "Create magazine");

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { magazineUpdateSchema } from "@/lib/validators/magazine";
 import { withErrorHandler } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/magazines/[id] - 取得單一期刊
 export const GET = withErrorHandler(async (
@@ -47,6 +48,8 @@ export const PUT = withErrorHandler(async (
     data: validatedData,
   });
 
+  await logEdit("Magazine", id, "UPDATE", validatedData);
+
   return NextResponse.json(magazine);
 }, "Update magazine");
 
@@ -60,6 +63,8 @@ export const DELETE = withErrorHandler(async (
   await prisma.magazine.delete({
     where: { id },
   });
+
+  await logEdit("Magazine", id, "DELETE");
 
   return NextResponse.json({ success: true });
 }, "Delete magazine");

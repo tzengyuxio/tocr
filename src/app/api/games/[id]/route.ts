@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { gameUpdateSchema } from "@/lib/validators/game";
 import { withErrorHandler } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/games/[id] - 取得單一遊戲
 export const GET = withErrorHandler(async (
@@ -84,6 +85,8 @@ export const PUT = withErrorHandler(async (
     data: validatedData,
   });
 
+  await logEdit("Game", id, "UPDATE", validatedData);
+
   return NextResponse.json(game);
 }, "Update game");
 
@@ -97,6 +100,8 @@ export const DELETE = withErrorHandler(async (
   await prisma.game.delete({
     where: { id },
   });
+
+  await logEdit("Game", id, "DELETE");
 
   return NextResponse.json({ success: true });
 }, "Delete game");

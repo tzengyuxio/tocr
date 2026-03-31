@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { issueCreateSchema } from "@/lib/validators/issue";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/issues - 取得單期列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -51,6 +52,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const issue = await prisma.issue.create({
     data: validatedData,
   });
+
+  await logEdit("Issue", issue.id, "CREATE");
 
   return NextResponse.json(issue, { status: 201 });
 }, "Create issue");

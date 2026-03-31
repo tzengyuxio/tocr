@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { articleCreateSchema } from "@/lib/validators/article";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
+import { logEdit } from "@/lib/edit-log";
 
 // GET /api/articles - 取得文章列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -85,6 +86,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const article = await prisma.article.create({
     data: validatedData,
   });
+
+  await logEdit("Article", article.id, "CREATE");
 
   return NextResponse.json(article, { status: 201 });
 }, "Create article");
