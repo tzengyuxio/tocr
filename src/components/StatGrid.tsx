@@ -14,7 +14,7 @@ interface StatGridProps {
 
 export function StatGrid({ items }: StatGridProps) {
   return (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
       {items.map((item) => {
         const Icon = item.icon;
         const content = (

@@ -21,7 +21,7 @@ interface IssueCardProps {
 export function IssueCard({ issue, magazineId, magazineName }: IssueCardProps) {
   return (
     <Link href={`/magazines/${magazineId}/issues/${issue.id}`}>
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md gap-0 py-0">
         {issue.coverImage ? (
           <Image
             src={issue.coverImage}
@@ -36,7 +36,7 @@ export function IssueCard({ issue, magazineId, magazineName }: IssueCardProps) {
             <BookOpen className="h-10 w-10 text-muted-foreground/50" />
           </div>
         )}
-        <CardContent className="space-y-0.5 p-2.5">
+        <CardContent className="space-y-0.5 !p-2.5">
           {magazineName && (
             <p className="text-xs text-muted-foreground line-clamp-1">
               {magazineName}

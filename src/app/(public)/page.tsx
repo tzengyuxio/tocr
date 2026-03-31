@@ -138,7 +138,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-8 space-y-12">
+      <div className="container mx-auto px-4 py-8 space-y-14">
         {/* Latest Issues Section */}
         <section>
           <div className="mb-5 flex items-center justify-between">
@@ -168,7 +168,7 @@ export default async function HomePage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6 stagger-children">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 stagger-children">
               {latestIssues.map((issue) => (
                 <IssueCard
                   key={issue.id}
@@ -210,25 +210,25 @@ export default async function HomePage() {
               </CardContent>
             </Card>
           ) : (
-            <Card>
-              <CardContent className="p-0">
+            <Card className="py-0 gap-0">
+              <CardContent className="!p-0">
                 <div className="divide-y">
                   {recentArticles.map((article) => (
                     <div
                       key={article.id}
-                      className="flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
+                      className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/50"
                     >
                       <Link
                         href={`/magazines/${article.issue.magazine.id}/issues/${article.issue.id}`}
                         className="flex-1"
                       >
-                        <div className="font-medium">{article.title}</div>
+                        <div className="font-medium text-sm">{article.title}</div>
                         {article.subtitle && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             {article.subtitle}
                           </div>
                         )}
-                        <div className="mt-1 text-xs text-muted-foreground">
+                        <div className="mt-0.5 text-xs text-muted-foreground">
                           {article.issue.magazine.name} ·{" "}
                           {article.issue.issueNumber}
                         </div>
@@ -283,8 +283,8 @@ export default async function HomePage() {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
               {popularGames.map((game) => (
                 <Link key={game.id} href={`/games/${game.id}`}>
-                  <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-0.5">
-                    <CardContent className="flex items-center gap-3 p-3">
+                  <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-0.5 py-0 gap-0">
+                    <CardContent className="flex items-center gap-3 !p-3">
                       {game.coverImage ? (
                         <Image
                           src={game.coverImage}
@@ -314,11 +314,11 @@ export default async function HomePage() {
         </section>
 
         {/* How It Works - brief intro for new visitors */}
-        <section className="rounded-xl border bg-muted/30 p-6 md:p-8">
-          <h2 className="mb-4 text-xl font-bold text-center">如何使用</h2>
-          <div className="grid gap-6 sm:grid-cols-3">
+        <section className="rounded-xl border bg-muted/30 p-5 md:p-6">
+          <h2 className="mb-3 text-lg font-bold text-center">如何使用</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
             <div className="text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Search className="h-5 w-5" />
               </div>
               <h3 className="font-medium mb-1">搜尋文章</h3>
@@ -327,7 +327,7 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <BookOpen className="h-5 w-5" />
               </div>
               <h3 className="font-medium mb-1">瀏覽目錄</h3>
@@ -336,7 +336,7 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <ScanText className="h-5 w-5" />
               </div>
               <h3 className="font-medium mb-1">協助建檔</h3>
@@ -350,11 +350,11 @@ export default async function HomePage() {
         {/* Quick Links */}
         <section>
           <h2 className="mb-6 text-2xl font-bold">快速導覽</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             <Link href="/magazines">
               <Card className="transition-all hover:shadow-lg hover:-translate-y-0.5">
-                <CardHeader>
-                  <BookOpen className="mb-2 h-8 w-8 text-primary" />
+                <CardHeader className="gap-2 px-6">
+                  <BookOpen className="h-6 w-6 text-primary" />
                   <CardTitle>瀏覽期刊</CardTitle>
                   <CardDescription>查看所有收錄的遊戲雜誌</CardDescription>
                 </CardHeader>
@@ -362,8 +362,8 @@ export default async function HomePage() {
             </Link>
             <Link href="/games">
               <Card className="transition-all hover:shadow-lg hover:-translate-y-0.5">
-                <CardHeader>
-                  <Gamepad2 className="mb-2 h-8 w-8 text-primary" />
+                <CardHeader className="gap-2 px-6">
+                  <Gamepad2 className="h-6 w-6 text-primary" />
                   <CardTitle>遊戲索引</CardTitle>
                   <CardDescription>依遊戲名稱找相關報導</CardDescription>
                 </CardHeader>
@@ -371,8 +371,8 @@ export default async function HomePage() {
             </Link>
             <Link href="/tags">
               <Card className="transition-all hover:shadow-lg hover:-translate-y-0.5">
-                <CardHeader>
-                  <Tags className="mb-2 h-8 w-8 text-primary" />
+                <CardHeader className="gap-2 px-6">
+                  <Tags className="h-6 w-6 text-primary" />
                   <CardTitle>標籤分類</CardTitle>
                   <CardDescription>人物、活動、系列等分類</CardDescription>
                 </CardHeader>
@@ -380,8 +380,8 @@ export default async function HomePage() {
             </Link>
             <Link href="/search">
               <Card className="transition-all hover:shadow-lg hover:-translate-y-0.5">
-                <CardHeader>
-                  <FileText className="mb-2 h-8 w-8 text-primary" />
+                <CardHeader className="gap-2 px-6">
+                  <FileText className="h-6 w-6 text-primary" />
                   <CardTitle>搜尋文章</CardTitle>
                   <CardDescription>關鍵字搜尋所有文章</CardDescription>
                 </CardHeader>
@@ -389,8 +389,8 @@ export default async function HomePage() {
             </Link>
             <Link href="/contributors">
               <Card className="transition-all hover:shadow-lg hover:-translate-y-0.5">
-                <CardHeader>
-                  <Users className="mb-2 h-8 w-8 text-primary" />
+                <CardHeader className="gap-2 px-6">
+                  <Users className="h-6 w-6 text-primary" />
                   <CardTitle>貢獻者</CardTitle>
                   <CardDescription>感謝所有資料貢獻者</CardDescription>
                 </CardHeader>
