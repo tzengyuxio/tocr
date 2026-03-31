@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -78,6 +79,7 @@ export default async function TagDetailPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Breadcrumb items={[{ label: "標籤", href: "/tags" }, { label: tag.name }]} />
       <Button asChild variant="ghost" className="mb-6">
         <Link href="/tags">
           <ArrowLeft className="mr-2 h-4 w-4" />
