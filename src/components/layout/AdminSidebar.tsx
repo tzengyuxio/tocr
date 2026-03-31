@@ -12,6 +12,7 @@ import {
   Upload,
   Download,
   Users,
+  Award,
   LayoutDashboard,
   ChevronLeft,
   ChevronRight,
@@ -59,6 +60,11 @@ const navItems = [
     title: "資料匯出",
     href: "/admin/export",
     icon: Download,
+  },
+  {
+    title: "貢獻者",
+    href: "/admin/contributors",
+    icon: Award,
   },
   {
     title: "使用者管理",
