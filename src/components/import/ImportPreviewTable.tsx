@@ -96,7 +96,7 @@ export function ImportPreviewTable({ result }: ImportPreviewTableProps) {
             <CardTitle className="text-base">{magazine.name}</CardTitle>
             <CardDescription>
               {[
-                magazine.nameEn,
+                magazine.nameOriginal,
                 magazine.publisher && `出版社：${magazine.publisher}`,
                 magazine.issn && `ISSN：${magazine.issn}`,
               ]

@@ -51,24 +51,24 @@ export default async function MagazinesPage() {
             <Link key={magazine.id} href={`/magazines/${magazine.id}`}>
               <Card className="h-full transition-shadow hover:shadow-lg gap-3">
                 <CardHeader className="pb-0 gap-1">
-                  {magazine.coverImage ? (
-                    <Image
-                      src={magazine.coverImage}
-                      alt={magazine.name}
-                      width={400}
-                      height={160}
-                      unoptimized
-                      className="mb-2 h-40 w-full rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="mb-2 flex h-32 items-center justify-center rounded-lg bg-muted">
-                      <BookOpen className="h-12 w-12 text-muted-foreground/30" />
-                    </div>
-                  )}
+                  <div className="mb-2 flex h-20 items-center justify-center rounded-lg bg-muted/50">
+                    {magazine.logoImage ? (
+                      <Image
+                        src={magazine.logoImage}
+                        alt={magazine.name}
+                        width={300}
+                        height={80}
+                        unoptimized
+                        className="h-16 w-auto object-contain px-3"
+                      />
+                    ) : (
+                      <BookOpen className="h-10 w-10 text-muted-foreground/30" />
+                    )}
+                  </div>
                   <CardTitle className="line-clamp-1 text-base">{magazine.name}</CardTitle>
-                  {magazine.nameEn && (
+                  {magazine.nameOriginal && (
                     <CardDescription className="line-clamp-1 text-xs">
-                      {magazine.nameEn}
+                      {magazine.nameOriginal}
                     </CardDescription>
                   )}
                 </CardHeader>
