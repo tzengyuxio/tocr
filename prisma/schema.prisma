@@ -80,18 +80,19 @@ enum UserRole {
 // ==================== 期刊相關 ====================
 
 model Magazine {
-  id          String    @id @default(cuid())
-  name        String
-  nameEn      String?   @map("name_en")
-  publisher   String?
-  issn        String?   @unique
-  description String?   @db.Text
-  coverImage  String?   @map("cover_image")
-  foundedDate DateTime? @map("founded_date")
-  endedDate   DateTime? @map("ended_date")
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id             String    @id @default(cuid())
+  name           String
+  nameOriginal   String?   @map("name_original") // Original name (e.g. Japanese: ファミ通)
+  aliases        String[]  @default([]) // Other known names (English, historical, etc.)
+  publisher      String?
+  issn           String?   @unique
+  description    String?   @db.Text
+  logoImage      String?   @map("logo_image") // Masthead/title logo image
+  foundedDate    DateTime? @map("founded_date")
+  endedDate      DateTime? @map("ended_date")
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
   issues Issue[]

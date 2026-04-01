@@ -52,22 +52,20 @@ export default async function MagazineDetailPage({ params }: PageProps) {
       <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: magazine.name }]} />
 
       {/* 期刊資訊 */}
-      <div className="mb-8 flex flex-col gap-6 md:flex-row">
-        {magazine.coverImage ? (
-          <Image
-            src={magazine.coverImage}
-            alt={magazine.name}
-            width={192}
-            height={256}
-            unoptimized
-            className="h-64 w-48 rounded-lg object-cover shadow-lg"
-          />
-        ) : (
-          <div className="flex h-64 w-48 items-center justify-center rounded-lg bg-muted shadow-lg">
-            <BookOpen className="h-16 w-16 text-muted-foreground/50" />
+      <div className="mb-8">
+        {magazine.logoImage && (
+          <div className="mb-4 flex h-24 items-center rounded-lg bg-muted/30 px-4">
+            <Image
+              src={magazine.logoImage}
+              alt={magazine.name}
+              width={400}
+              height={120}
+              unoptimized
+              className="h-20 w-auto object-contain"
+            />
           </div>
         )}
-        <div className="flex-1">
+        <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold">{magazine.name}</h1>
             {canEdit && (
@@ -80,9 +78,14 @@ export default async function MagazineDetailPage({ params }: PageProps) {
               </Link>
             )}
           </div>
-          {magazine.nameEn && (
+          {magazine.nameOriginal && (
             <p className="mt-1 text-lg text-muted-foreground">
-              {magazine.nameEn}
+              {magazine.nameOriginal}
+            </p>
+          )}
+          {magazine.aliases && magazine.aliases.length > 0 && (
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {magazine.aliases.join(" / ")}
             </p>
           )}
           <div className="mt-4 space-y-2 text-sm">

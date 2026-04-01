@@ -21,9 +21,9 @@ import { QuickCreateIssueDialog } from "./QuickCreateIssueDialog";
 interface MagazineItem {
   id: string;
   name: string;
-  nameEn: string | null;
+  nameOriginal: string | null;
   publisher: string | null;
-  coverImage: string | null;
+  logoImage: string | null;
   isActive: boolean;
   createdAt: string | Date;
   _count: { issues: number };
@@ -57,9 +57,9 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
             <TableRow key={magazine.id}>
               <TableCell>
                 <div className="flex items-center gap-3">
-                  {magazine.coverImage ? (
+                  {magazine.logoImage ? (
                     <Image
-                      src={magazine.coverImage}
+                      src={magazine.logoImage}
                       alt={magazine.name}
                       width={32}
                       height={40}
@@ -73,9 +73,9 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                   )}
                   <div>
                     <div className="font-medium">{magazine.name}</div>
-                    {magazine.nameEn && (
+                    {magazine.nameOriginal && (
                       <div className="text-sm text-muted-foreground">
-                        {magazine.nameEn}
+                        {magazine.nameOriginal}
                       </div>
                     )}
                   </div>

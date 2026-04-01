@@ -16,11 +16,11 @@ describe("magazineCreateSchema", () => {
   it("should validate a complete magazine with all fields", () => {
     const input = {
       name: "電玩雜誌",
-      nameEn: "Game Magazine",
+      nameOriginal: "Game Magazine",
       publisher: "遊戲出版社",
       issn: "1234-5678",
       description: "遊戲資訊雜誌",
-      coverImage: "https://example.com/cover.jpg",
+      logoImage: "https://example.com/cover.jpg",
       foundedDate: "2000-01-01",
       endedDate: "2020-12-31",
       isActive: false,
@@ -29,7 +29,7 @@ describe("magazineCreateSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.name).toBe("電玩雜誌");
-      expect(result.data.nameEn).toBe("Game Magazine");
+      expect(result.data.nameOriginal).toBe("Game Magazine");
       expect(result.data.publisher).toBe("遊戲出版社");
       expect(result.data.issn).toBe("1234-5678");
       expect(result.data.isActive).toBe(false);
@@ -58,7 +58,7 @@ describe("magazineCreateSchema", () => {
   it("should accept null for optional fields", () => {
     const input = {
       name: "電玩雜誌",
-      nameEn: null,
+      nameOriginal: null,
       publisher: null,
       description: null,
     };

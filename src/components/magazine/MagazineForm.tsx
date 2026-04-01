@@ -42,11 +42,12 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
     resolver: zodResolver(magazineCreateSchema) as any,
     defaultValues: {
       name: initialData?.name || "",
-      nameEn: initialData?.nameEn || "",
+      nameOriginal: initialData?.nameOriginal || "",
+      aliases: initialData?.aliases || [],
       publisher: initialData?.publisher || "",
       issn: initialData?.issn || "",
       description: initialData?.description || "",
-      coverImage: initialData?.coverImage || "",
+      logoImage: initialData?.logoImage || "",
       foundedDate: initialData?.foundedDate || null,
       endedDate: initialData?.endedDate || null,
       isActive: initialData?.isActive ?? true,
@@ -118,13 +119,13 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               )}
             </div>
 
-            {/* 英文名稱 */}
+            {/* 原文名稱 */}
             <div className="space-y-2">
-              <Label htmlFor="nameEn">英文名稱</Label>
+              <Label htmlFor="nameOriginal">原文名稱</Label>
               <Input
-                id="nameEn"
+                id="nameOriginal"
                 placeholder="例如：Famitsu"
-                {...register("nameEn")}
+                {...register("nameOriginal")}
               />
             </div>
 
@@ -160,18 +161,46 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               <Input id="endedDate" type="date" {...register("endedDate")} />
             </div>
 
-            {/* 封面圖片 */}
+            {/* 別名 */}
             <div className="space-y-2 md:col-span-2">
               <Controller
-                name="coverImage"
+                name="aliases"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label>別名</Label>
+                    <Input
+                      placeholder="輸入別名，以逗號分隔（例如：ファミ通, fami通）"
+                      value={(field.value || []).join(", ")}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        field.onChange(
+                          val
+                            ? val.split(",").map((s) => s.trim()).filter(Boolean)
+                            : []
+                        );
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      可用於搜尋的替代名稱，以逗號分隔
+                    </p>
+                  </div>
+                )}
+              />
+            </div>
+
+            {/* Logo 圖片 */}
+            <div className="space-y-2 md:col-span-2">
+              <Controller
+                name="logoImage"
                 control={control}
                 render={({ field }) => (
                   <ImageUpload
-                    label="封面圖片"
+                    label="Logo 圖片"
                     value={field.value || ""}
                     onChange={field.onChange}
                     folder="magazines"
-                    description="期刊的代表封面圖片"
+                    description="期刊的 Logo 圖片"
                   />
                 )}
               />

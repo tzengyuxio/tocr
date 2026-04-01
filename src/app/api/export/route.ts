@@ -18,7 +18,7 @@ function formatDate(date: Date | null | undefined): string {
 
 const CSV_HEADERS = [
   "magazine_name",
-  "magazine_name_en",
+  "magazine_name_original",
   "publisher",
   "issn",
   "is_active",
@@ -72,7 +72,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   for (const mag of magazines) {
     const magFields: string[] = [
       mag.name,
-      mag.nameEn ?? "",
+      mag.nameOriginal ?? "",
       mag.publisher ?? "",
       mag.issn ?? "",
       mag.isActive ? "true" : "false",

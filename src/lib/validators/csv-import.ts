@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const csvRowSchema = z.object({
   magazine_name: z.string().min(1, "期刊名稱為必填"),
-  magazine_name_en: z.string().optional(),
+  magazine_name_original: z.string().optional(),
   publisher: z.string().optional(),
   issn: z.string().optional(),
   description: z.string().optional(),
@@ -31,7 +31,7 @@ export interface ParsedIssue {
 
 export interface ParsedMagazine {
   name: string;
-  nameEn?: string;
+  nameOriginal?: string;
   publisher?: string;
   issn?: string;
   description?: string;
@@ -44,7 +44,7 @@ export const importRequestSchema = z.object({
   magazines: z.array(
     z.object({
       name: z.string().min(1),
-      nameEn: z.string().optional(),
+      nameOriginal: z.string().optional(),
       publisher: z.string().optional(),
       issn: z.string().optional(),
       description: z.string().optional(),
