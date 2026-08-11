@@ -15,6 +15,8 @@ export class OpenAIOcrProvider implements IOcrProvider {
   constructor(apiKey?: string) {
     this.client = new OpenAI({
       apiKey: apiKey || process.env.OPENAI_API_KEY,
+      // Allows pointing at any OpenAI-compatible endpoint (vLLM, Ollama, ...)
+      baseURL: process.env.OPENAI_BASE_URL,
     });
   }
 
@@ -34,7 +36,7 @@ export class OpenAIOcrProvider implements IOcrProvider {
       }));
 
       const response = await this.client.chat.completions.create({
-        model: config?.model || "gpt-4o",
+        model: config?.model || process.env.OPENAI_MODEL || "gpt-4o",
         max_tokens: config?.maxTokens || 8192,
         temperature: config?.temperature ?? 0.1,
         messages: [
