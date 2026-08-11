@@ -1,0 +1,569 @@
+{
+  "$comment": "上游資料來自 gitlab.com/tzengyuxio/nostalibrary 的 content/magazines/。日期為 EDTF (ISO 8601-2)，保留實際已知的精度。source 欄保留原始字串供比對與重跑匯入。",
+  "generatedFrom": "nostalibrary@8a163a3f",
+  "magazines": [
+    {
+      "slug": "jxdn",
+      "name": "精訊電腦",
+      "issn": null,
+      "publisher": null,
+      "aliases": [],
+      "foundedDate": "1986-10-10",
+      "endedDate": null,
+      "isActive": false,
+      "description": "共 28 期；台灣第一本電腦遊戲雜誌",
+      "source": {
+        "slug": "jxdn",
+        "firstIssue": "1986-10-10 創刊",
+        "lastIssue": "第27期",
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "swm",
+      "name": "軟體世界雜誌",
+      "issn": "1605-2722",
+      "publisher": "智冠科技",
+      "aliases": [
+        "The Softworld",
+        "Soft World Magazine"
+      ],
+      "foundedDate": "1989-04-08",
+      "endedDate": "2006-22",
+      "isActive": false,
+      "description": "月刊；共 201 期（含試刊號與 2006 夏季號，其中 70+71 合併號以一期計）",
+      "source": {
+        "slug": "swm",
+        "firstIssue": "1989-03-08 試刊, 1989-04-08 創刊",
+        "lastIssue": "2006 夏季號",
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "ssm",
+      "name": "軟體之星",
+      "issn": null,
+      "publisher": "大宇",
+      "aliases": [],
+      "foundedDate": "1989-10-05",
+      "endedDate": null,
+      "isActive": false,
+      "description": "不定期；共 32 期",
+      "source": {
+        "slug": "ssm",
+        "firstIssue": "1989-10-05 創刊",
+        "lastIssue": "35.36期",
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "ace",
+      "name": "電腦玩家雜誌",
+      "issn": "1682-2994",
+      "publisher": "電腦玩家文化",
+      "aliases": [
+        "Amazing Computer Entertainment",
+        "PC GAMER"
+      ],
+      "foundedDate": "1991-08",
+      "endedDate": "2009-07",
+      "isActive": false,
+      "description": "月刊；共 216 期；台灣最後一本單機遊戲雜誌",
+      "source": {
+        "slug": "ace",
+        "firstIssue": "1991-08 創刊",
+        "lastIssue": "2009-07 216 期",
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "cgw",
+      "name": "電腦遊戲世界",
+      "issn": null,
+      "publisher": "智冠科技",
+      "aliases": [
+        "Computer Gaming World",
+        "遊戲世界"
+      ],
+      "foundedDate": "1991-08",
+      "endedDate": "2004-09",
+      "isActive": false,
+      "description": "月刊；共 158 期",
+      "source": {
+        "slug": "cgw",
+        "firstIssue": "1991-08 創刊, 首期為 85 期",
+        "lastIssue": "2004-09 第 242 期後停刊，與軟體世界合併",
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "sgm",
+      "name": "新遊戲時代雜誌",
+      "issn": "1023-2788",
+      "publisher": "第三波",
+      "aliases": [
+        "Style Game Magazine"
+      ],
+      "foundedDate": "1993-07",
+      "endedDate": null,
+      "isActive": false,
+      "description": "月刊；共 132 期",
+      "source": {
+        "slug": "sgm",
+        "firstIssue": "1993-07 創刊",
+        "lastIssue": null,
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "gf",
+      "name": "遊戲工場",
+      "issn": null,
+      "publisher": "漢堂",
+      "aliases": [],
+      "foundedDate": "1994-22",
+      "endedDate": null,
+      "isActive": false,
+      "description": "不定期；共 4 期",
+      "source": {
+        "slug": "gf",
+        "firstIssue": "1994 夏 創刊",
+        "lastIssue": "第三期",
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "gpeople",
+      "name": "電玩族雜誌",
+      "issn": null,
+      "publisher": "電玩族雜誌社",
+      "aliases": [],
+      "foundedDate": "1996-12",
+      "endedDate": null,
+      "isActive": false,
+      "description": "No.10 休刊號，共11本",
+      "source": {
+        "slug": "gpeople",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "next",
+      "name": "次世代遊戲情報",
+      "issn": "1029-9963",
+      "publisher": "協和國際多媒體",
+      "aliases": [],
+      "foundedDate": "1998-08-01",
+      "endedDate": null,
+      "isActive": false,
+      "description": "月刊；共 56 期",
+      "source": {
+        "slug": "next",
+        "firstIssue": "1998-08-01 創刊",
+        "lastIssue": null,
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "gd",
+      "name": "遊戲設計大師",
+      "issn": null,
+      "publisher": "智冠科技",
+      "aliases": [],
+      "foundedDate": "1998-09",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "gd",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "mania",
+      "name": "Mania 遊戲玩瘋誌",
+      "issn": "1680-5232",
+      "publisher": "遊戲橘子",
+      "aliases": [],
+      "foundedDate": "2000-03",
+      "endedDate": null,
+      "isActive": false,
+      "description": "月刊",
+      "source": {
+        "slug": "mania",
+        "firstIssue": "2000-03 創刊",
+        "lastIssue": null,
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "gwalker",
+      "name": "電遊人",
+      "issn": "1680-5364",
+      "publisher": "富利恒",
+      "aliases": [],
+      "foundedDate": "2000-07",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "gwalker",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "PC Game"
+      }
+    },
+    {
+      "slug": "htntd",
+      "name": "華泰任天堂秘笈",
+      "issn": null,
+      "publisher": "華泰",
+      "aliases": [
+        "任天堂程式解法大公開"
+      ],
+      "foundedDate": null,
+      "endedDate": null,
+      "isActive": false,
+      "description": "共 24 期；台灣最初的電玩雜誌；後更名 _電視遊樂快訊_",
+      "source": {
+        "slug": "htntd",
+        "firstIssue": "第5期",
+        "lastIssue": "第28期",
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "tvgm",
+      "name": "電視遊樂雜誌",
+      "issn": "1021-7894",
+      "publisher": "尖端",
+      "aliases": [],
+      "foundedDate": "1987-07",
+      "endedDate": null,
+      "isActive": false,
+      "description": "初名 _電視遊樂快訊_",
+      "source": {
+        "slug": "tvgm",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "tvgr",
+      "name": "電視遊樂報導",
+      "issn": "1121-7886",
+      "publisher": "尖端",
+      "aliases": [],
+      "foundedDate": "1988-08",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "tvgr",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": null,
+      "name": "星際遊樂雜誌",
+      "issn": null,
+      "publisher": null,
+      "aliases": [],
+      "foundedDate": null,
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": null,
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "vvkids",
+      "name": "勝利小子",
+      "issn": null,
+      "publisher": "尖端",
+      "aliases": [],
+      "foundedDate": "1993-06",
+      "endedDate": null,
+      "isActive": false,
+      "description": "試刊3期；正刊51期；特刊3期",
+      "source": {
+        "slug": "vvkids",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "tvgsg",
+      "name": "攻略快報",
+      "issn": "1022-4823",
+      "publisher": "攻略快報",
+      "aliases": [
+        "TV.Game Super Guide"
+      ],
+      "foundedDate": "1996",
+      "endedDate": null,
+      "isActive": false,
+      "description": "尖端",
+      "source": {
+        "slug": "tvgsg",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "tvgameinfo",
+      "name": "電遊通訊",
+      "issn": null,
+      "publisher": null,
+      "aliases": [],
+      "foundedDate": "1996-09",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "tvgameinfo",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "vboy",
+      "name": "勝利少年",
+      "issn": null,
+      "publisher": "勝利少年",
+      "aliases": [],
+      "foundedDate": "1997-07",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "vboy",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "gtimes",
+      "name": "電玩時代",
+      "issn": null,
+      "publisher": "龍勇",
+      "aliases": [],
+      "foundedDate": "1998-07",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "gtimes",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "dps-tw",
+      "name": "電擊PlayStation",
+      "issn": null,
+      "publisher": "青文",
+      "aliases": [
+        "電擊PS"
+      ],
+      "foundedDate": "1998-09",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "dps-tw",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "dss-tw",
+      "name": "電擊SEGA SATURN",
+      "issn": null,
+      "publisher": "青文",
+      "aliases": [],
+      "foundedDate": "1998",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "dss-tw",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "wolf",
+      "name": "疾風快報",
+      "issn": null,
+      "publisher": "疾風快報雜誌社",
+      "aliases": [],
+      "foundedDate": "1998",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "wolf",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "hps-tw",
+      "name": "新世紀 HYPER PlayStation",
+      "issn": null,
+      "publisher": "東立",
+      "aliases": [],
+      "foundedDate": "1999-01",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "hps-tw",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "fashion",
+      "name": "飛訊電玩周刊",
+      "issn": null,
+      "publisher": "飛訊電玩",
+      "aliases": [],
+      "foundedDate": "1999",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "fashion",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "game100",
+      "name": "電玩百分百週刊",
+      "issn": null,
+      "publisher": "次世代",
+      "aliases": [],
+      "foundedDate": "1999",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "game100",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "doh-tw",
+      "name": "電擊王",
+      "issn": "1561-8099",
+      "publisher": null,
+      "aliases": [],
+      "foundedDate": "2000-12",
+      "endedDate": null,
+      "isActive": false,
+      "description": "2003-02 更名 _Dengeki Games_",
+      "source": {
+        "slug": "doh-tw",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "egen",
+      "name": "電玩e世代",
+      "issn": "1684-4262",
+      "publisher": "銘顯文化",
+      "aliases": [],
+      "foundedDate": "2002-07",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "egen",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "oxm",
+      "name": "Official Xbox Magazine",
+      "issn": "1729-9438",
+      "publisher": null,
+      "aliases": [],
+      "foundedDate": "2003",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": "oxm",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": "fmt-tw",
+      "name": "電玩通",
+      "issn": "1561-8099",
+      "publisher": "青文",
+      "aliases": [
+        "法米通"
+      ],
+      "foundedDate": "2004-03",
+      "endedDate": null,
+      "isActive": false,
+      "description": "共469期",
+      "source": {
+        "slug": "fmt-tw",
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "TV Game"
+      }
+    },
+    {
+      "slug": null,
+      "name": "舊遊戲時代",
+      "issn": null,
+      "publisher": null,
+      "aliases": [],
+      "foundedDate": "2017-07",
+      "endedDate": null,
+      "isActive": false,
+      "description": null,
+      "source": {
+        "slug": null,
+        "firstIssue": null,
+        "lastIssue": null,
+        "section": "近期雜誌"
+      }
+    }
+  ]
+}
