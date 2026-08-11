@@ -46,3 +46,14 @@ next-env.d.ts
 
 # local uploads
 /public/uploads
+
+# agent tooling (skills are fetched on demand, not part of the app)
+/.claude
+/.agents
+/skills-lock.json
+
+# neonctl project link
+/.neon
+
+# playwright mcp scratch output
+/.playwright-mcp
