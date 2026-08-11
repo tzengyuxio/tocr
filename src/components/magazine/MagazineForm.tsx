@@ -48,8 +48,8 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
       issn: initialData?.issn || "",
       description: initialData?.description || "",
       logoImage: initialData?.logoImage || "",
-      foundedDate: initialData?.foundedDate || null,
-      endedDate: initialData?.endedDate || null,
+      foundedDate: initialData?.foundedDate || "",
+      endedDate: initialData?.endedDate || "",
       isActive: initialData?.isActive ?? true,
     },
   });
@@ -152,13 +152,34 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             {/* 創刊日期 */}
             <div className="space-y-2">
               <Label htmlFor="foundedDate">創刊日期</Label>
-              <Input id="foundedDate" type="date" {...register("foundedDate")} />
+              <Input
+                id="foundedDate"
+                placeholder="1989-04-08、1989-04、1989、1989-22"
+                {...register("foundedDate")}
+              />
+              <p className="text-xs text-muted-foreground">
+                知道多少寫多少：年、年-月、年-月-日；季別用 21 春、22 夏、23 秋、24 冬
+              </p>
+              {errors.foundedDate && (
+                <p className="text-sm text-destructive">
+                  {errors.foundedDate.message}
+                </p>
+              )}
             </div>
 
             {/* 停刊日期 */}
             <div className="space-y-2">
               <Label htmlFor="endedDate">停刊日期</Label>
-              <Input id="endedDate" type="date" {...register("endedDate")} />
+              <Input
+                id="endedDate"
+                placeholder="2006-22"
+                {...register("endedDate")}
+              />
+              {errors.endedDate && (
+                <p className="text-sm text-destructive">
+                  {errors.endedDate.message}
+                </p>
+              )}
             </div>
 
             {/* 別名 */}

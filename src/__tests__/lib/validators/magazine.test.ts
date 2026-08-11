@@ -33,8 +33,8 @@ describe("magazineCreateSchema", () => {
       expect(result.data.publisher).toBe("遊戲出版社");
       expect(result.data.issn).toBe("1234-5678");
       expect(result.data.isActive).toBe(false);
-      expect(result.data.foundedDate).toBeInstanceOf(Date);
-      expect(result.data.endedDate).toBeInstanceOf(Date);
+      expect(result.data.foundedDate).toBe("2000-01-01");
+      expect(result.data.endedDate).toBe("2020-12-31");
     }
   });
 
@@ -66,17 +66,23 @@ describe("magazineCreateSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("should coerce date strings to Date objects", () => {
-    const input = {
-      name: "電玩雜誌",
-      foundedDate: "2000-01-15",
-    };
-    const result = magazineCreateSchema.safeParse(input);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.foundedDate).toBeInstanceOf(Date);
-      expect(result.data.foundedDate?.getFullYear()).toBe(2000);
+  it("keeps EDTF dates as written, at whatever precision", () => {
+    for (const value of ["2000-01-15", "2000-01", "2000", "2000-22"]) {
+      const result = magazineCreateSchema.safeParse({
+        name: "電玩雜誌",
+        foundedDate: value,
+      });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.foundedDate).toBe(value);
     }
+  });
+
+  it("rejects a date that is not valid EDTF", () => {
+    const result = magazineCreateSchema.safeParse({
+      name: "電玩雜誌",
+      foundedDate: "2000年1月",
+    });
+    expect(result.success).toBe(false);
   });
 
   it("should treat an empty issn as null", () => {

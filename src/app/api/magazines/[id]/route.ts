@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { magazineUpdateSchema } from "@/lib/validators/magazine";
+import { magazineUpdateSchema, withFoundedSort } from "@/lib/validators/magazine";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 
@@ -45,7 +45,7 @@ export const PUT = withErrorHandler(async (
 
   const magazine = await prisma.magazine.update({
     where: { id },
-    data: validatedData,
+    data: withFoundedSort(validatedData),
   });
 
   await logEdit("Magazine", id, "UPDATE", validatedData);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { magazineCreateSchema } from "@/lib/validators/magazine";
+import { magazineCreateSchema, withFoundedSort } from "@/lib/validators/magazine";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 
@@ -49,7 +49,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   const validatedData = magazineCreateSchema.parse(body);
 
   const magazine = await prisma.magazine.create({
-    data: validatedData,
+    data: withFoundedSort(validatedData),
   });
 
   await logEdit("Magazine", magazine.id, "CREATE");

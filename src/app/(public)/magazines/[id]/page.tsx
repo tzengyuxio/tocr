@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { formatEdtf } from "@/lib/edtf";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IssueCard } from "@/components/IssueCard";
@@ -104,9 +105,13 @@ export default async function MagazineDetailPage({ params }: PageProps) {
             {magazine.foundedDate && (
               <p>
                 <span className="text-muted-foreground">創刊日期：</span>
-                {format(new Date(magazine.foundedDate), "yyyy 年 M 月", {
-                  locale: zhTW,
-                })}
+                {formatEdtf(magazine.foundedDate)}
+              </p>
+            )}
+            {magazine.endedDate && (
+              <p>
+                <span className="text-muted-foreground">停刊日期：</span>
+                {formatEdtf(magazine.endedDate)}
               </p>
             )}
             <p>
