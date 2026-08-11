@@ -5,6 +5,10 @@ import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
 import { resolveImageUrl, isSafeImageUrl } from "@/lib/resolve-image-url";
 import { checkRateLimit } from "@/lib/rate-limit";
 
+// Vision OCR on a full table-of-contents page routinely exceeds the platform
+// default timeout; 60s is the Vercel Hobby ceiling.
+export const maxDuration = 60;
+
 // Rate limit: 10 requests per minute per user/IP
 const OCR_RATE_LIMIT = {
   maxRequests: 10,
