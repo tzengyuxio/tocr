@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+// A blank number input submits "", which z.coerce.number() turns into 0 and
+// .positive() then rejects. Normalise to null so the field reads as absent.
+const blankToNull = (value: unknown) => (value === "" ? null : value);
+
+const optionalInt = z.preprocess(
+  blankToNull,
+  z.coerce.number().int().positive().nullable().optional()
+);
+
+const optionalDecimal = z.preprocess(
+  blankToNull,
+  z.coerce.number().positive().nullable().optional()
+);
+
 export const issueCreateSchema = z.object({
   magazineId: z.string().min(1, "期刊 ID 為必填"),
   issueNumber: z.string().min(1, "期號為必填"),
@@ -8,8 +22,8 @@ export const issueCreateSchema = z.object({
   publishDate: z.coerce.date({ message: "出版日期為必填" }),
   coverImage: z.string().optional().nullable(),
   tocImages: z.array(z.string()).default([]),
-  pageCount: z.coerce.number().int().positive().optional().nullable(),
-  price: z.coerce.number().positive().optional().nullable(),
+  pageCount: optionalInt,
+  price: optionalDecimal,
   notes: z.string().optional().nullable(),
   order: z.coerce.number().int().optional(),
 });

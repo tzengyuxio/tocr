@@ -78,6 +78,29 @@ describe("magazineCreateSchema", () => {
       expect(result.data.foundedDate?.getFullYear()).toBe(2000);
     }
   });
+
+  it("should treat an empty issn as null", () => {
+    const input = { name: "電玩雜誌", issn: "" };
+    const result = magazineCreateSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.issn).toBeNull();
+    }
+  });
+
+  it("should treat empty date strings as null", () => {
+    const input = {
+      name: "電玩雜誌",
+      foundedDate: "",
+      endedDate: "",
+    };
+    const result = magazineCreateSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.foundedDate).toBeNull();
+      expect(result.data.endedDate).toBeNull();
+    }
+  });
 });
 
 describe("magazineUpdateSchema", () => {

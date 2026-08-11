@@ -116,6 +116,22 @@ describe("issueCreateSchema", () => {
     }
   });
 
+  it("should treat empty pageCount and price as null", () => {
+    const input = {
+      magazineId: "mag-123",
+      issueNumber: "第1期",
+      publishDate: "2023-01-15",
+      pageCount: "",
+      price: "",
+    };
+    const result = issueCreateSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.pageCount).toBeNull();
+      expect(result.data.price).toBeNull();
+    }
+  });
+
   it("should fail when pageCount is negative", () => {
     const input = {
       magazineId: "mag-123",
