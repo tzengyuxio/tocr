@@ -1,6 +1,8 @@
+import { headers } from "next/headers";
 import { prisma } from "./prisma";
 import { auth } from "./auth";
 import { isDevBypass, DEV_USER } from "./dev-auth";
+import { API_USER, isValidApiToken } from "./api-token";
 
 export type EditAction = "CREATE" | "UPDATE" | "DELETE";
 export type EntityType = "Magazine" | "Issue" | "Article" | "Tag" | "Game" | "User";
@@ -15,34 +17,52 @@ export async function getCurrentUserId(): Promise<string | null> {
     return DEV_USER.id;
   }
   const session = await auth();
-  return session?.user?.id ?? null;
+  if (session?.user?.id) {
+    return session.user.id;
+  }
+  return (await isApiTokenRequest()) ? API_USER.id : null;
+}
+
+async function isApiTokenRequest(): Promise<boolean> {
+  try {
+    return isValidApiToken((await headers()).get("authorization"));
+  } catch {
+    // No request scope (scripts, tests) -- there is no token to read.
+    return false;
+  }
 }
 
 /**
- * Under DEV_BYPASS_AUTH there is no sign-in, so DEV_USER has no row in `users`
- * and every edit log hits the userId foreign key. Create the row on first use.
+ * DEV_USER and API_USER never sign in, so they have no row in `users` and every
+ * edit log hits the userId foreign key. Create the row on first use.
  */
-let devUserReady: Promise<void> | null = null;
+type SyntheticUser = typeof DEV_USER | typeof API_USER;
 
-function ensureDevUser(): Promise<void> {
-  devUserReady ??= prisma.user
-    .upsert({
-      where: { id: DEV_USER.id },
-      create: {
-        id: DEV_USER.id,
-        email: DEV_USER.email,
-        name: DEV_USER.name,
-        role: DEV_USER.role,
-      },
-      update: {},
-    })
-    .then(() => undefined)
-    .catch((error) => {
-      // Retry on the next write rather than caching the failure.
-      devUserReady = null;
-      throw error;
-    });
-  return devUserReady;
+const syntheticUsersReady = new Map<string, Promise<void>>();
+
+function ensureUser(user: SyntheticUser): Promise<void> {
+  let ready = syntheticUsersReady.get(user.id);
+  if (!ready) {
+    ready = prisma.user
+      .upsert({
+        where: { id: user.id },
+        create: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+        update: {},
+      })
+      .then(() => undefined)
+      .catch((error) => {
+        // Retry on the next write rather than caching the failure.
+        syntheticUsersReady.delete(user.id);
+        throw error;
+      });
+    syntheticUsersReady.set(user.id, ready);
+  }
+  return ready;
 }
 
 /**
@@ -58,7 +78,13 @@ export async function logEdit(
   const userId = await getCurrentUserId();
   if (!userId) return;
 
-  const ready = isDevBypass ? ensureDevUser() : Promise.resolve();
+  const synthetic =
+    userId === DEV_USER.id
+      ? DEV_USER
+      : userId === API_USER.id
+        ? API_USER
+        : null;
+  const ready = synthetic ? ensureUser(synthetic) : Promise.resolve();
 
   ready
     .then(() =>

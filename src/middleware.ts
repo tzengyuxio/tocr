@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { isDevBypass } from "@/lib/dev-auth";
+import { isValidApiToken } from "@/lib/api-token";
 
 export default auth((req) => {
   if (isDevBypass) {
@@ -36,6 +37,16 @@ export default auth((req) => {
     );
 
     if (isWriteOperation) {
+      // Scripted writes may authenticate with the API token instead of a
+      // session. User management stays session-only so a leaked token cannot
+      // be used to grant roles.
+      if (
+        !pathname.startsWith("/api/users") &&
+        isValidApiToken(req.headers.get("authorization"))
+      ) {
+        return NextResponse.next();
+      }
+
       if (!isLoggedIn) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
