@@ -72,7 +72,12 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                     </div>
                   )}
                   <div>
-                    <div className="font-medium">{magazine.name}</div>
+                    <Link
+                      href={`/admin/magazines/${magazine.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {magazine.name}
+                    </Link>
                     {magazine.nameOriginal && (
                       <div className="text-sm text-muted-foreground">
                         {magazine.nameOriginal}
