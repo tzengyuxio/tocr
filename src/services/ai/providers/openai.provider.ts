@@ -37,7 +37,8 @@ export class OpenAIOcrProvider implements IOcrProvider {
 
       const response = await this.client.chat.completions.create({
         model: config?.model || process.env.OPENAI_MODEL || "gpt-4o",
-        max_tokens: config?.maxTokens || 8192,
+        max_tokens:
+          config?.maxTokens || Number(process.env.OPENAI_MAX_TOKENS) || 8192,
         temperature: config?.temperature ?? 0.1,
         messages: [
           {
@@ -48,6 +49,12 @@ export class OpenAIOcrProvider implements IOcrProvider {
             ],
           },
         ],
+        // Ollama extension, not an OpenAI parameter -- only send it when the
+        // endpoint is known to understand it. Reasoning models otherwise spend
+        // the whole token budget on the chain and return empty content.
+        ...(process.env.OPENAI_DISABLE_THINKING === "true"
+          ? { think: false }
+          : {}),
       });
 
       const content = response.choices[0]?.message?.content || "";
