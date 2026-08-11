@@ -42,7 +42,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const [articles, total] = await Promise.all([
     prisma.article.findMany({
       where,
-      orderBy: [{ issue: { publishDate: "desc" } }, { sortOrder: "asc" }],
+      orderBy: [{ issue: { publishSort: "desc" } }, { sortOrder: "asc" }],
       skip,
       take: limit,
       include: {

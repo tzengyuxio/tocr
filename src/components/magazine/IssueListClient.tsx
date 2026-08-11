@@ -51,12 +51,13 @@ import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { formatEdtf } from "@/lib/edtf";
 
 interface IssueItem {
   id: string;
   issueNumber: string;
   title: string | null;
-  publishDate: string | Date;
+  publishDate: string;
   coverImage: string | null;
   order: number;
   _count: { articles: number };
@@ -122,9 +123,7 @@ function SortableRow({
       <TableCell className="font-medium">{issue.issueNumber}</TableCell>
       <TableCell>{issue.title || "-"}</TableCell>
       <TableCell>
-        {format(new Date(issue.publishDate), "yyyy/MM/dd", {
-          locale: zhTW,
-        })}
+        {formatEdtf(issue.publishDate)}
       </TableCell>
       <TableCell>{issue._count.articles} 篇</TableCell>
       <TableCell>

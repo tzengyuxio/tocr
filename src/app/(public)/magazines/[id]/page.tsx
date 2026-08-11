@@ -34,7 +34,7 @@ export default async function MagazineDetailPage({ params }: PageProps) {
     where: { id },
     include: {
       issues: {
-        orderBy: { publishDate: "desc" },
+        orderBy: { publishSort: "desc" },
         include: {
           _count: {
             select: { articles: true },

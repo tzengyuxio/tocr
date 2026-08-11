@@ -27,7 +27,7 @@ export default async function OcrPage({ searchParams }: PageProps) {
     orderBy: { name: "asc" },
     include: {
       issues: {
-        orderBy: { publishDate: "desc" },
+        orderBy: { publishSort: "desc" },
         select: {
           id: true,
           issueNumber: true,

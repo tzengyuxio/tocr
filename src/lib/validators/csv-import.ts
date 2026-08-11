@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidEdtf } from "../edtf";
 
 export const csvRowSchema = z.object({
   magazine_name: z.string().min(1, "期刊名稱為必填"),
@@ -55,7 +56,7 @@ export const importRequestSchema = z.object({
           issueNumber: z.string().min(1),
           volumeNumber: z.string().optional(),
           title: z.string().optional(),
-          publishDate: z.string().min(1),
+          publishDate: z.string().min(1).refine(isValidEdtf, "publish_date 需為 EDTF（例如 1999、1999-05、1999-05-20、1994-22）"),
           pageCount: z.coerce.number().int().positive().optional(),
           price: z.coerce.number().positive().optional(),
           notes: z.string().optional(),

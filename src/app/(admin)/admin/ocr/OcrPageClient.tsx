@@ -19,11 +19,12 @@ import { ArrowLeft } from "lucide-react";
 import type { OcrResult, OcrArticleResult } from "@/services/ai/ocr.interface";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { formatEdtf } from "@/lib/edtf";
 
 interface Issue {
   id: string;
   issueNumber: string;
-  publishDate: Date;
+  publishDate: string;
   tocImages: string[];
   magazine?: {
     id: string;
@@ -37,7 +38,7 @@ interface Magazine {
   issues: {
     id: string;
     issueNumber: string;
-    publishDate: Date;
+    publishDate: string;
     tocImages: string[];
   }[];
 }
@@ -70,7 +71,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
 
   const issueOptions = (selectedMagazine?.issues ?? []).map((issue) => ({
     value: issue.id,
-    label: `${issue.issueNumber}（${format(new Date(issue.publishDate), "yyyy/MM/dd", { locale: zhTW })}）${issue.tocImages.length > 0 ? ` [${issue.tocImages.length} 張目錄圖]` : ""}`,
+    label: `${issue.issueNumber}（${formatEdtf(issue.publishDate)}）${issue.tocImages.length > 0 ? ` [${issue.tocImages.length} 張目錄圖]` : ""}`,
   }));
 
   const handleMagazineChange = (value: string) => {

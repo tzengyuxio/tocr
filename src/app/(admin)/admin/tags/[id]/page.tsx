@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-articles";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
+import { formatEdtf } from "@/lib/edtf";
 
 export default function TagDetailPage() {
   const params = useParams<{ id: string }>();
@@ -140,7 +141,7 @@ export default function TagDetailPage() {
                               {issueGroup.issue.issueNumber}
                             </span>
                             <span className="text-muted-foreground">
-                              ({new Date(issueGroup.issue.publishDate).toLocaleDateString("zh-TW")})
+                              ({formatEdtf(issueGroup.issue.publishDate)})
                             </span>
                             <span className="text-muted-foreground">
                               — {issueGroup.articles.length} 篇

@@ -8,6 +8,7 @@ export interface ArticleData {
     id: string;
     issueNumber: string;
     publishDate: string;
+    publishSort: string | Date;
     magazine: { id: string; name: string };
   };
 }
@@ -15,14 +16,19 @@ export interface ArticleData {
 export interface GroupedData {
   magazine: { id: string; name: string };
   issues: {
-    issue: { id: string; issueNumber: string; publishDate: string };
+    issue: {
+      id: string;
+      issueNumber: string;
+      publishDate: string;
+      publishSort: string | Date;
+    };
     articles: ArticleData[];
   }[];
 }
 
 /**
  * Group articles by magazine and issue, sorting magazines alphabetically
- * and issues by publishDate descending within each magazine.
+ * and issues by publication date descending within each magazine.
  */
 export function groupArticles(articles: ArticleData[]): GroupedData[] {
   const magazineMap = new Map<string, GroupedData>();
@@ -43,6 +49,7 @@ export function groupArticles(articles: ArticleData[]): GroupedData[] {
           id: article.issue.id,
           issueNumber: article.issue.issueNumber,
           publishDate: article.issue.publishDate,
+          publishSort: article.issue.publishSort,
         },
         articles: [],
       };
@@ -51,12 +58,13 @@ export function groupArticles(articles: ArticleData[]): GroupedData[] {
     issueGroup.articles.push(article);
   }
 
-  // Sort issues by publishDate descending within each magazine
+  // Sort on publishSort, not publishDate: the latter is EDTF, where "1994"
+  // and "1994-22" cannot be compared as strings or parsed as dates.
   for (const group of magazineMap.values()) {
     group.issues.sort(
       (a, b) =>
-        new Date(b.issue.publishDate).getTime() -
-        new Date(a.issue.publishDate).getTime()
+        new Date(b.issue.publishSort).getTime() -
+        new Date(a.issue.publishSort).getTime()
     );
   }
 

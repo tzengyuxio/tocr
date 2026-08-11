@@ -26,6 +26,7 @@ import {
   FileText,
 } from "lucide-react";
 import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-articles";
+import { formatEdtf } from "@/lib/edtf";
 
 export default function GameDetailPage() {
   const params = useParams<{ id: string }>();
@@ -163,7 +164,7 @@ export default function GameDetailPage() {
                               {issueGroup.issue.issueNumber}
                             </span>
                             <span className="text-muted-foreground">
-                              ({new Date(issueGroup.issue.publishDate).toLocaleDateString("zh-TW")})
+                              ({formatEdtf(issueGroup.issue.publishDate)})
                             </span>
                             <span className="text-muted-foreground">
                               — {issueGroup.articles.length} 篇

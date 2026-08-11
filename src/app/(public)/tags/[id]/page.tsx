@@ -25,6 +25,7 @@ import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { formatEdtf } from "@/lib/edtf";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -48,7 +49,7 @@ export default async function TagDetailPage({ params }: PageProps) {
         orderBy: {
           article: {
             issue: {
-              publishDate: "desc",
+              publishSort: "desc",
             },
           },
         },
@@ -155,11 +156,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                           </Link>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {format(
-                            new Date(at.article.issue.publishDate),
-                            "yyyy/MM/dd",
-                            { locale: zhTW }
-                          )}
+                          {formatEdtf(at.article.issue.publishDate)}
                         </TableCell>
                         <TableCell>
                           <div className="font-medium">{at.article.title}</div>
@@ -197,7 +194,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                         {at.article.issue.issueNumber}
                       </Link>
                       <span>·</span>
-                      <span>{format(new Date(at.article.issue.publishDate), "yyyy/MM/dd", { locale: zhTW })}</span>
+                      <span>{formatEdtf(at.article.issue.publishDate)}</span>
                     </div>
                     {at.article.category && (
                       <Badge variant="outline" className="mt-1 text-xs">{at.article.category}</Badge>

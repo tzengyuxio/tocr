@@ -53,7 +53,7 @@ export function IssueForm({
       issueNumber: initialData?.issueNumber || "",
       volumeNumber: initialData?.volumeNumber || "",
       title: initialData?.title || "",
-      publishDate: initialData?.publishDate || new Date(),
+      publishDate: initialData?.publishDate || "",
       coverImage: initialData?.coverImage || "",
       tocImages: initialData?.tocImages || [],
       pageCount: initialData?.pageCount || null,
@@ -151,9 +151,12 @@ export function IssueForm({
               </Label>
               <Input
                 id="publishDate"
-                type="date"
+                placeholder="1999-05-20、1999-05、1999、1999-22"
                 {...register("publishDate")}
               />
+              <p className="text-xs text-muted-foreground">
+                知道多少寫多少：年、年-月、年-月-日；季別用 21 春、22 夏、23 秋、24 冬
+              </p>
               {errors.publishDate && (
                 <p className="text-sm text-red-500">
                   {errors.publishDate.message}

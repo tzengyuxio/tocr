@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { issueUpdateSchema } from "@/lib/validators/issue";
+import { issueUpdateSchema, withPublishSortIfPresent } from "@/lib/validators/issue";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 
@@ -49,7 +49,7 @@ export const PUT = withErrorHandler(async (
 
   const issue = await prisma.issue.update({
     where: { id },
-    data: validatedData,
+    data: withPublishSortIfPresent(validatedData),
   });
 
   await logEdit("Issue", id, "UPDATE", validatedData);

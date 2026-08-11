@@ -11,11 +11,6 @@ function escapeCsvField(value: string | null | undefined): string {
   return str;
 }
 
-function formatDate(date: Date | null | undefined): string {
-  if (!date) return "";
-  return date.toISOString().split("T")[0];
-}
-
 const CSV_HEADERS = [
   "magazine_name",
   "magazine_name_original",
@@ -49,7 +44,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     orderBy: { name: "asc" },
     include: {
       issues: {
-        orderBy: { publishDate: "asc" },
+        orderBy: { publishSort: "asc" },
         include: {
           articles: {
             orderBy: { sortOrder: "asc" },
@@ -89,7 +84,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         issue.issueNumber,
         issue.volumeNumber ?? "",
         issue.title ?? "",
-        formatDate(issue.publishDate),
+        issue.publishDate,
         issue.pageCount != null ? String(issue.pageCount) : "",
         issue.price != null ? String(issue.price) : "",
       ];

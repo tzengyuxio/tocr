@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { importRequestSchema, type ImportResult } from "@/lib/validators/csv-import";
 import { withErrorHandler } from "@/lib/api-utils";
 import { withFoundedSort } from "@/lib/validators/magazine";
+import { withPublishSort } from "@/lib/validators/issue";
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
@@ -77,7 +78,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
               issueNumber: iss.issueNumber,
               volumeNumber: iss.volumeNumber,
               title: iss.title,
-              publishDate: new Date(iss.publishDate),
+              ...withPublishSort({ publishDate: iss.publishDate }),
               pageCount: iss.pageCount,
               price: iss.price,
               notes: iss.notes,

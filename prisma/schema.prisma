@@ -113,7 +113,12 @@ model Issue {
   issueNumber  String   @map("issue_number") // "第 42 期" 或 "Vol.5 No.3"
   volumeNumber String?  @map("volume_number")
   title        String? // 本期特輯標題
-  publishDate  DateTime @map("publish_date")
+  // EDTF (ISO 8601-2), same as Magazine: an issue is often dated only to the
+  // month or the season. See docs/data-conventions.md.
+  publishDate  String   @map("publish_date")
+  // Start of the range publishDate covers. Derived on write; issues are
+  // ordered by this, never by the EDTF string.
+  publishSort  DateTime @map("publish_sort")
   coverImage   String?  @map("cover_image")
   tocImages    String[] @default([]) @map("toc_images") // 目錄頁掃描圖（可多張）
   pageCount    Int?     @map("page_count")
@@ -128,7 +133,7 @@ model Issue {
   articles Article[]
 
   @@unique([magazineId, issueNumber])
-  @@index([publishDate])
+  @@index([publishSort])
   @@map("issues")
 }
 

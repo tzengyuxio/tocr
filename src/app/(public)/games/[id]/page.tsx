@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { formatEdtf } from "@/lib/edtf";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -48,7 +49,7 @@ export default async function GameDetailPage({ params }: PageProps) {
         orderBy: {
           article: {
             issue: {
-              publishDate: "desc",
+              publishSort: "desc",
             },
           },
         },
@@ -223,11 +224,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                           </Link>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {format(
-                            new Date(ag.article.issue.publishDate),
-                            "yyyy/MM/dd",
-                            { locale: zhTW }
-                          )}
+                          {formatEdtf(ag.article.issue.publishDate)}
                         </TableCell>
                         <TableCell>
                           <div className="font-medium">{ag.article.title}</div>
@@ -268,7 +265,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                         {ag.article.issue.issueNumber}
                       </Link>
                       <span>·</span>
-                      <span>{format(new Date(ag.article.issue.publishDate), "yyyy/MM/dd", { locale: zhTW })}</span>
+                      <span>{formatEdtf(ag.article.issue.publishDate)}</span>
                       {ag.article.pageStart && <span>· p.{ag.article.pageStart}</span>}
                     </div>
                     {ag.article.category && (

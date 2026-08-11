@@ -27,6 +27,7 @@ import {
 import { Search, FileText, BookOpen, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { formatEdtf } from "@/lib/edtf";
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -90,7 +91,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     prisma.article.findMany({
       where,
       orderBy: [
-        { issue: { publishDate: "desc" } },
+        { issue: { publishSort: "desc" } },
         { sortOrder: "asc" },
       ],
       skip: (page - 1) * limit,
@@ -283,11 +284,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       </Link>
                       <span>·</span>
                       <span>
-                        {format(
-                          new Date(article.issue.publishDate),
-                          "yyyy/MM/dd",
-                          { locale: zhTW }
-                        )}
+                        {formatEdtf(article.issue.publishDate)}
                       </span>
                     </CardDescription>
                     <CardTitle className="mt-1 text-lg">

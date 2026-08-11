@@ -15,10 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { isValidEdtf } from "@/lib/edtf";
 
 const quickCreateSchema = z.object({
   issueNumber: z.string().min(1, "期號為必填"),
-  publishDate: z.string().min(1, "出版日期為必填"),
+  publishDate: z
+    .string()
+    .min(1, "出版日期為必填")
+    .refine(isValidEdtf, "日期格式無效，例如 1999、1999-05、1999-05-20、1994-22"),
   title: z.string().optional(),
 });
 
@@ -105,7 +109,7 @@ export function QuickCreateIssueDialog({
             <Label htmlFor="publishDate">出版日期 *</Label>
             <Input
               id="publishDate"
-              type="date"
+              placeholder="1999-05-20、1999-05、1999、1999-22"
               {...register("publishDate")}
             />
             {errors.publishDate && (

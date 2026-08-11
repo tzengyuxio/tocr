@@ -26,7 +26,7 @@ export const TOC_EXTRACTION_PROMPT = `你是一位專業的雜誌目錄資料整
   ],
   "metadata": {
     "issueTitle": "本期特輯標題（若有）",
-    "publishDate": "出版日期（格式 YYYY-MM-DD，若可辨識）",
+    "publishDate": "出版日期（EDTF：確知日期用 YYYY-MM-DD，只知年月用 YYYY-MM，只知年份用 YYYY，季刊用 YYYY-21/22/23/24 表春夏秋冬。不要補上封面沒有的日）",
     "pageInfo": "其他頁面資訊"
   }
 }

@@ -52,7 +52,7 @@ export default async function HomePage() {
     prisma.tag.count(),
     prisma.issue.findMany({
       take: 6,
-      orderBy: { publishDate: "desc" },
+      orderBy: { publishSort: "desc" },
       include: {
         magazine: {
           select: { id: true, name: true },

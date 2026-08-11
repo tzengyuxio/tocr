@@ -25,6 +25,7 @@ describe("groupArticles", () => {
           id: "iss-1",
           issueNumber: "第1期",
           publishDate: "2023-01-15",
+          publishSort: "2023-01-15",
           magazine: { id: "mag-1", name: "Magazine A" },
         },
       }),
@@ -43,6 +44,7 @@ describe("groupArticles", () => {
       id: "iss-1",
       issueNumber: "第1期",
       publishDate: "2023-01-15",
+      publishSort: "2023-01-15",
       magazine: { id: "mag-1", name: "Magazine A" },
     };
     const articles: ArticleData[] = [
@@ -63,12 +65,12 @@ describe("groupArticles", () => {
       makeArticle({
         id: "art-1",
         title: "Old",
-        issue: { id: "iss-1", issueNumber: "第1期", publishDate: "2023-01-01", magazine: mag },
+        issue: { id: "iss-1", issueNumber: "第1期", publishDate: "2023-01-01", publishSort: "2023-01-01", magazine: mag },
       }),
       makeArticle({
         id: "art-2",
         title: "New",
-        issue: { id: "iss-2", issueNumber: "第2期", publishDate: "2023-06-01", magazine: mag },
+        issue: { id: "iss-2", issueNumber: "第2期", publishDate: "2023-06-01", publishSort: "2023-06-01", magazine: mag },
       }),
     ];
 
@@ -89,6 +91,7 @@ describe("groupArticles", () => {
           id: "iss-1",
           issueNumber: "第1期",
           publishDate: "2023-01-01",
+          publishSort: "2023-01-01",
           magazine: { id: "mag-b", name: "Zebra Magazine" },
         },
       }),
@@ -99,6 +102,7 @@ describe("groupArticles", () => {
           id: "iss-2",
           issueNumber: "第1期",
           publishDate: "2023-01-01",
+          publishSort: "2023-01-01",
           magazine: { id: "mag-a", name: "Alpha Magazine" },
         },
       }),
@@ -117,22 +121,22 @@ describe("groupArticles", () => {
       makeArticle({
         id: "art-1",
         title: "A1",
-        issue: { id: "iss-a1", issueNumber: "第1期", publishDate: "2023-01-01", magazine: magA },
+        issue: { id: "iss-a1", issueNumber: "第1期", publishDate: "2023-01-01", publishSort: "2023-01-01", magazine: magA },
       }),
       makeArticle({
         id: "art-2",
         title: "A2",
-        issue: { id: "iss-a1", issueNumber: "第1期", publishDate: "2023-01-01", magazine: magA },
+        issue: { id: "iss-a1", issueNumber: "第1期", publishDate: "2023-01-01", publishSort: "2023-01-01", magazine: magA },
       }),
       makeArticle({
         id: "art-3",
         title: "A3",
-        issue: { id: "iss-a2", issueNumber: "第2期", publishDate: "2023-06-01", magazine: magA },
+        issue: { id: "iss-a2", issueNumber: "第2期", publishDate: "2023-06-01", publishSort: "2023-06-01", magazine: magA },
       }),
       makeArticle({
         id: "art-4",
         title: "B1",
-        issue: { id: "iss-b1", issueNumber: "第10期", publishDate: "2023-03-01", magazine: magB },
+        issue: { id: "iss-b1", issueNumber: "第10期", publishDate: "2023-03-01", publishSort: "2023-03-01", magazine: magB },
       }),
     ];
 

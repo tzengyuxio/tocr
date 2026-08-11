@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { formatEdtf } from "@/lib/edtf";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -122,9 +123,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
             <p className="flex items-center">
               <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">出版日期：</span>
-              {format(new Date(issue.publishDate), "yyyy 年 M 月 d 日", {
-                locale: zhTW,
-              })}
+              {formatEdtf(issue.publishDate)}
             </p>
             {issue.pageCount && (
               <p>

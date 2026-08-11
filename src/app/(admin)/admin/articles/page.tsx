@@ -30,6 +30,7 @@ import {
 import { Search, FileText, Loader2, Pencil, BookOpen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { formatEdtf } from "@/lib/edtf";
 
 interface Article {
   id: string;
@@ -222,9 +223,7 @@ export default function ArticlesPage() {
                           </Link>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {format(new Date(article.issue.publishDate), "yyyy/MM/dd", {
-                            locale: zhTW,
-                          })}
+                          {formatEdtf(article.issue.publishDate)}
                         </div>
                       </TableCell>
                       <TableCell>

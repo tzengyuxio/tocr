@@ -12,7 +12,7 @@ describe("issueCreateSchema", () => {
     if (result.success) {
       expect(result.data.magazineId).toBe("mag-123");
       expect(result.data.issueNumber).toBe("第1期");
-      expect(result.data.publishDate).toBeInstanceOf(Date);
+      expect(result.data.publishDate).toBe("2023-01-15");
     }
   });
 
@@ -74,18 +74,25 @@ describe("issueCreateSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("should coerce publishDate from string to Date", () => {
-    const input = {
+  it("keeps publishDate as EDTF, at whatever precision", () => {
+    for (const value of ["2023-12-25", "2023-12", "2023", "2023-22"]) {
+      const result = issueCreateSchema.safeParse({
+        magazineId: "mag-123",
+        issueNumber: "第1期",
+        publishDate: value,
+      });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.publishDate).toBe(value);
+    }
+  });
+
+  it("rejects a publishDate that is not valid EDTF", () => {
+    const result = issueCreateSchema.safeParse({
       magazineId: "mag-123",
       issueNumber: "第1期",
-      publishDate: "2023-12-25",
-    };
-    const result = issueCreateSchema.safeParse(input);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.publishDate).toBeInstanceOf(Date);
-      expect(result.data.publishDate.getFullYear()).toBe(2023);
-    }
+      publishDate: "2023年12月",
+    });
+    expect(result.success).toBe(false);
   });
 
   it("should coerce pageCount from string to number", () => {

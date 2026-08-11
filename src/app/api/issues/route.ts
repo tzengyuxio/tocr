@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { issueCreateSchema } from "@/lib/validators/issue";
+import { issueCreateSchema, withPublishSort } from "@/lib/validators/issue";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 
@@ -50,7 +50,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   const issue = await prisma.issue.create({
-    data: validatedData,
+    data: withPublishSort(validatedData),
   });
 
   await logEdit("Issue", issue.id, "CREATE");

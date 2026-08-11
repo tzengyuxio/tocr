@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { formatEdtf } from "@/lib/edtf";
 
 interface IssueCardProps {
   issue: {
@@ -11,7 +12,7 @@ interface IssueCardProps {
     coverImage: string | null;
     issueNumber: string;
     title?: string | null;
-    publishDate: Date | string;
+    publishDate: string;
     _count: { articles: number };
   };
   magazineId: string;
@@ -52,9 +53,7 @@ export function IssueCard({ issue, magazineId, magazineName }: IssueCardProps) {
           )}
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-0.5">
             <span>
-              {format(new Date(issue.publishDate), "yyyy/MM/dd", {
-                locale: zhTW,
-              })}
+              {formatEdtf(issue.publishDate)}
             </span>
             <span>{issue._count.articles} 篇</span>
           </div>
