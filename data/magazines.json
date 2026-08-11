@@ -6,7 +6,7 @@
       "slug": "jxdn",
       "name": "精訊電腦",
       "issn": null,
-      "publisher": null,
+      "publisher": "精訊資訊",
       "aliases": [],
       "foundedDate": "1986-10-10",
       "endedDate": null,
@@ -36,23 +36,6 @@
         "slug": "swm",
         "firstIssue": "1989-03-08 試刊, 1989-04-08 創刊",
         "lastIssue": "2006 夏季號",
-        "section": "PC Game"
-      }
-    },
-    {
-      "slug": "ssm",
-      "name": "軟體之星",
-      "issn": null,
-      "publisher": "大宇",
-      "aliases": [],
-      "foundedDate": "1989-10-05",
-      "endedDate": null,
-      "isActive": false,
-      "description": "不定期；共 32 期",
-      "source": {
-        "slug": "ssm",
-        "firstIssue": "1989-10-05 創刊",
-        "lastIssue": "35.36期",
         "section": "PC Game"
       }
     },
@@ -93,7 +76,8 @@
         "slug": "cgw",
         "firstIssue": "1991-08 創刊, 首期為 85 期",
         "lastIssue": "2004-09 第 242 期後停刊，與軟體世界合併",
-        "section": "PC Game"
+        "section": "PC Game",
+        "firstIssueNote": "首期即第 85 期，沿用所翻譯之美國雜誌期號"
       }
     },
     {
@@ -112,23 +96,6 @@
         "slug": "sgm",
         "firstIssue": "1993-07 創刊",
         "lastIssue": null,
-        "section": "PC Game"
-      }
-    },
-    {
-      "slug": "gf",
-      "name": "遊戲工場",
-      "issn": null,
-      "publisher": "漢堂",
-      "aliases": [],
-      "foundedDate": "1994-22",
-      "endedDate": null,
-      "isActive": false,
-      "description": "不定期；共 4 期",
-      "source": {
-        "slug": "gf",
-        "firstIssue": "1994 夏 創刊",
-        "lastIssue": "第三期",
         "section": "PC Game"
       }
     },
@@ -228,12 +195,13 @@
       "foundedDate": null,
       "endedDate": null,
       "isActive": false,
-      "description": "共 24 期；台灣最初的電玩雜誌；後更名 _電視遊樂快訊_",
+      "description": "共 24 期；台灣最初的電玩雜誌；後更名《電視遊樂快訊》",
       "source": {
         "slug": "htntd",
         "firstIssue": "第5期",
         "lastIssue": "第28期",
-        "section": "TV Game"
+        "section": "TV Game",
+        "firstIssueNote": "首期即第 5 期，沿用所翻譯之日本雜誌期號"
       }
     },
     {
@@ -245,7 +213,7 @@
       "foundedDate": "1987-07",
       "endedDate": null,
       "isActive": false,
-      "description": "初名 _電視遊樂快訊_",
+      "description": "初名《電視遊樂快訊》",
       "source": {
         "slug": "tvgm",
         "firstIssue": null,
@@ -487,7 +455,7 @@
       "foundedDate": "2000-12",
       "endedDate": null,
       "isActive": false,
-      "description": "2003-02 更名 _Dengeki Games_",
+      "description": "2003-02 更名《Dengeki Games》",
       "source": {
         "slug": "doh-tw",
         "firstIssue": null,
@@ -556,7 +524,7 @@
       "aliases": [],
       "foundedDate": "2017-07",
       "endedDate": null,
-      "isActive": false,
+      "isActive": true,
       "description": null,
       "source": {
         "slug": null,

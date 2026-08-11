@@ -190,6 +190,10 @@ Article N:N Tag  (ArticleTag)
 Article N:N Game (ArticleGame)
 ```
 
+### 建檔慣例
+
+日期採 EDTF、創刊日以創刊號為準、ISSN 不具唯一性等準則，見 [docs/data-conventions.md](docs/data-conventions.md)。
+
 ## 頁面路由
 
 ### 前台
