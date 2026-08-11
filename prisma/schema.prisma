@@ -85,7 +85,9 @@ model Magazine {
   nameOriginal   String?   @map("name_original") // Original name (e.g. Japanese: ファミ通)
   aliases        String[]  @default([]) // Other known names (English, historical, etc.)
   publisher      String?
-  issn           String?   @unique
+  // Not unique: a title change can carry the ISSN over, so two magazines
+  // legitimately share one (電擊王 and 電玩通 both use 1561-8099).
+  issn           String?
   description    String?   @db.Text
   logoImage      String?   @map("logo_image") // Masthead/title logo image
   foundedDate    DateTime? @map("founded_date")

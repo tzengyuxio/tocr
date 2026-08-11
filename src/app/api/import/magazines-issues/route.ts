@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { importRequestSchema, type ImportResult } from "@/lib/validators/csv-import";
 import { withErrorHandler } from "@/lib/api-utils";
+import { withFoundedSort } from "@/lib/validators/magazine";
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
@@ -21,8 +22,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       let magazineStatus: "created" | "existed" = "created";
 
       // 先查 ISSN，再查 name
+      // findFirst, not findUnique: an ISSN can be shared by two magazines after
+      // a title change, so it no longer identifies a single row.
       let existing = mag.issn
-        ? await tx.magazine.findUnique({ where: { issn: mag.issn } })
+        ? await tx.magazine.findFirst({ where: { issn: mag.issn } })
         : null;
 
       if (!existing) {
@@ -43,7 +46,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
             publisher: mag.publisher,
             issn: mag.issn,
             description: mag.description,
-            foundedDate: mag.foundedDate ? new Date(mag.foundedDate) : undefined,
+            ...withFoundedSort({ foundedDate: mag.foundedDate ?? null }),
             isActive: mag.isActive ?? true,
           },
         });
