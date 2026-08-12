@@ -34,7 +34,7 @@ import {
   Gauge,
 } from "lucide-react";
 import type { OcrArticleResult, OcrResult } from "@/services/ai/ocr.interface";
-import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
+import { getTagTypeColor, getTagTypeLabel, formatTagLabel } from "@/lib/tag-colors";
 import { formatTagInput, parseTagInput } from "@/lib/tag-input";
 
 interface OcrResultEditorProps {
@@ -248,7 +248,7 @@ function ArticleRow({
             <div className="flex flex-wrap gap-1 mt-1">
               {editingArticle.suggestedTags.map((tag, i) => (
                 <Badge key={i} className={`text-xs ${getTagTypeColor(tag.type)}`}>
-                  {tag.name} ({getTagTypeLabel(tag.type)})
+                  {formatTagLabel(tag)}
                 </Badge>
               ))}
             </div>
@@ -345,7 +345,7 @@ function ArticleRow({
                 })
               }
             >
-              {tag.name}
+              {formatTagLabel(tag)}
             </ChipWithRemove>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import { formatTagInput, parseTagInput } from "@/lib/tag-input";
+import { formatTagLabel } from "@/lib/tag-colors";
 
 describe("formatTagInput", () => {
   it("puts the type in front and leaves general tags bare", () => {
@@ -67,5 +68,18 @@ describe("parseTagInput", () => {
       { name: "封面", type: "GENERAL" },
     ];
     expect(parseTagInput(formatTagInput(tags))).toEqual(tags);
+  });
+});
+
+describe("formatTagLabel", () => {
+  it("reveals the type in parentheses", () => {
+    expect(formatTagLabel({ name: "SEGA", type: "COMPANY" })).toBe("SEGA (公司)");
+    expect(formatTagLabel({ name: "Panzer Dragoon", type: "SERIES" })).toBe(
+      "Panzer Dragoon (系列)"
+    );
+  });
+
+  it("leaves a general tag bare, since GENERAL is the absence of a type", () => {
+    expect(formatTagLabel({ name: "作弊", type: "GENERAL" })).toBe("作弊");
   });
 });
