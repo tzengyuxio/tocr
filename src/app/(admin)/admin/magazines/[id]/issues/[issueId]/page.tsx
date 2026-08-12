@@ -12,6 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ArrowLeft, ScanText } from "lucide-react";
+import { format } from "date-fns";
+import { zhTW } from "date-fns/locale";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -40,6 +42,14 @@ export default async function EditIssuePage({ params }: PageProps) {
   if (!issue || issue.magazineId !== id) {
     notFound();
   }
+
+  // A stored result means the recognition step is already done and what is left
+  // is the review, so the button should not read like it starts from scratch.
+  const savedOcr = await prisma.ocrRecord.findFirst({
+    where: { issueId, status: "COMPLETED" },
+    orderBy: { processedAt: "desc" },
+    select: { processedAt: true },
+  });
 
   const formData = {
     id: issue.id,
@@ -84,13 +94,15 @@ export default async function EditIssuePage({ params }: PageProps) {
           <div>
             <CardTitle>AI 目錄辨識</CardTitle>
             <CardDescription>
-              上傳目錄頁圖片，使用 AI 自動辨識文章資訊
+              {savedOcr
+                ? `已於 ${format(new Date(savedOcr.processedAt), "yyyy/MM/dd HH:mm", { locale: zhTW })} 辨識完成，尚待複查`
+                : "上傳目錄頁圖片，使用 AI 自動辨識文章資訊"}
             </CardDescription>
           </div>
           <Button asChild>
             <Link href={`/admin/ocr?issueId=${issue.id}`}>
               <ScanText className="mr-2 h-4 w-4" />
-              開始辨識
+              {savedOcr ? "複查辨識結果" : "開始辨識"}
             </Link>
           </Button>
         </CardHeader>
@@ -106,7 +118,9 @@ export default async function EditIssuePage({ params }: PageProps) {
                 />
               ))}
               <p className="text-sm text-muted-foreground">
-                已設定 {issue.tocImages.length} 張目錄頁圖片，點擊「開始辨識」使用 AI 分析
+                {savedOcr
+                  ? `已設定 ${issue.tocImages.length} 張目錄頁圖片，辨識結果已產生，點擊「複查辨識結果」確認後建立文章`
+                  : `已設定 ${issue.tocImages.length} 張目錄頁圖片，點擊「開始辨識」使用 AI 分析`}
               </p>
             </div>
           ) : (

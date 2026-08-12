@@ -12,6 +12,11 @@ describe("resolvePolicy", () => {
     expect(toc.maxEdge).toBeGreaterThan(cover.maxEdge);
     expect(resolvePolicy("magazines")).toEqual(cover);
   });
+
+  it("keeps OCR scans as JPEG, which the OCR backend can actually decode", () => {
+    expect(resolvePolicy("issues/toc").format).toBe("jpeg");
+    expect(resolvePolicy("issues/covers").format).toBe("webp");
+  });
 });
 
 describe("optimizeImage", () => {
@@ -32,6 +37,16 @@ describe("optimizeImage", () => {
     const meta = await sharp(result.data).metadata();
     expect(meta.format).toBe("webp");
     expect(meta.width).toBe(1600);
+  });
+
+  it("encodes TOC scans as JPEG", async () => {
+    const result = await optimizeImage(await pngFile(3000, 1000), "issues/toc");
+
+    expect(result.ext).toBe("jpg");
+    expect(result.contentType).toBe("image/jpeg");
+    const meta = await sharp(result.data).metadata();
+    expect(meta.format).toBe("jpeg");
+    expect(meta.width).toBe(2400);
   });
 
   it("leaves images smaller than the limit at their original size", async () => {

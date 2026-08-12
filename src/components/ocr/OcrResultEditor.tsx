@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Trash2,
@@ -26,12 +27,19 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  ZoomIn,
+  Maximize2,
   Check,
   X,
+  ArrowUp,
+  ArrowDown,
+  BetweenHorizontalStart,
+  FolderOpen,
+  Gamepad2,
+  Gauge,
 } from "lucide-react";
 import type { OcrArticleResult, OcrResult } from "@/services/ai/ocr.interface";
-import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
+import { getTagTypeColor, getTagTypeLabel, formatTagLabel } from "@/lib/tag-colors";
+import { formatTagInput, parseTagInput } from "@/lib/tag-input";
 
 interface OcrResultEditorProps {
   result: OcrResult;
@@ -39,6 +47,45 @@ interface OcrResultEditorProps {
   tocImages: string[];
   onSave: (articles: OcrArticleResult[]) => Promise<void>;
   onCancel: () => void;
+}
+
+/**
+ * A chip carrying its own remove button, so a wrong tag can go without opening
+ * the full editor. The click must not reach the row, which starts editing.
+ */
+function ChipWithRemove({
+  className,
+  title,
+  onRemove,
+  children,
+}: {
+  className?: string;
+  title: string;
+  onRemove: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    // overflow-visible: the badge clips its children by default, which would
+    // swallow a button sitting on the corner.
+    <Badge
+      variant="secondary"
+      title={title}
+      className={`group/chip relative overflow-visible text-xs font-normal ${className ?? ""}`}
+    >
+      {children}
+      <button
+        type="button"
+        aria-label={`移除 ${title}`}
+        className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-white opacity-0 shadow-sm transition-opacity focus-visible:opacity-100 group-hover/chip:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+      >
+        <X className="h-2.5 w-2.5" strokeWidth={3} />
+      </button>
+    </Badge>
+  );
 }
 
 function ArticleRow({
@@ -49,6 +96,8 @@ function ArticleRow({
   onSaveEdit,
   onCancelEdit,
   onDelete,
+  onInsert,
+  onQuickChange,
   editingArticle,
   onEditChange,
 }: {
@@ -59,6 +108,8 @@ function ArticleRow({
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onDelete: () => void;
+  onInsert: (position: "before" | "after") => void;
+  onQuickChange: (article: OcrArticleResult) => void;
   editingArticle: OcrArticleResult | null;
   onEditChange: (article: OcrArticleResult) => void;
 }) {
@@ -184,22 +235,15 @@ function ArticleRow({
         </div>
 
         <div className="space-y-1">
-          <Label className="text-xs">建議標籤（逗號分隔，格式：名稱 或 名稱:類型）</Label>
+          <Label className="text-xs">
+            建議標籤（逗號分隔，格式：名稱 或 類型:名稱，例如 SERIES:Panzer Dragoon）
+          </Label>
           <Input
-            value={editingArticle.suggestedTags?.map((t) => t.type !== "GENERAL" ? `${t.name}:${t.type}` : t.name).join(", ") || ""}
+            value={formatTagInput(editingArticle.suggestedTags)}
             onChange={(e) =>
               onEditChange({
                 ...editingArticle,
-                suggestedTags: e.target.value
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-                  .map((s) => {
-                    const parts = s.split(":");
-                    return parts.length > 1
-                      ? { name: parts[0].trim(), type: parts[1].trim().toUpperCase() }
-                      : { name: s, type: "GENERAL" };
-                  }),
+                suggestedTags: parseTagInput(e.target.value),
               })
             }
             onKeyDown={(e) => {
@@ -210,7 +254,7 @@ function ArticleRow({
             <div className="flex flex-wrap gap-1 mt-1">
               {editingArticle.suggestedTags.map((tag, i) => (
                 <Badge key={i} className={`text-xs ${getTagTypeColor(tag.type)}`}>
-                  {tag.name} ({getTagTypeLabel(tag.type)})
+                  {formatTagLabel(tag)}
                 </Badge>
               ))}
             </div>
@@ -263,45 +307,109 @@ function ArticleRow({
             {article.subtitle}
           </div>
         )}
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-2 text-xs text-muted-foreground">
           {article.authors && article.authors.length > 0 && (
-            <span>{article.authors.join(", ")}</span>
+            <span className="mr-0.5">{article.authors.join(", ")}</span>
           )}
+          {/* Three families of chip, told apart by shape rather than only hue:
+              the category outlined, games filled with an icon, tags filled. */}
           {article.category && (
-            <Badge variant="outline" className="text-xs">
+            <ChipWithRemove
+              className="bg-amber-400 font-medium text-amber-950"
+              title={`分類：${article.category}`}
+              onRemove={() => onQuickChange({ ...article, category: undefined })}
+            >
+              <FolderOpen className="h-3 w-3" />
               {article.category}
-            </Badge>
+            </ChipWithRemove>
           )}
           {article.suggestedGames?.map((game, i) => (
-            <Badge key={`game-${i}`} variant="secondary" className="text-xs">
+            <ChipWithRemove
+              key={`game-${i}`}
+              className="bg-violet-600 font-medium text-white"
+              title={`遊戲：${game}`}
+              onRemove={() =>
+                onQuickChange({
+                  ...article,
+                  suggestedGames: article.suggestedGames?.filter((_, j) => j !== i),
+                })
+              }
+            >
+              <Gamepad2 className="h-3 w-3" />
               {game}
-            </Badge>
+            </ChipWithRemove>
           ))}
           {article.suggestedTags?.map((tag, i) => (
-            <Badge key={`tag-${i}`} className={`text-xs ${getTagTypeColor(tag.type)}`}>
-              {tag.name}
-            </Badge>
+            <ChipWithRemove
+              key={`tag-${i}`}
+              className={getTagTypeColor(tag.type)}
+              title={`${getTagTypeLabel(tag.type)}標籤：${tag.name}`}
+              onRemove={() =>
+                onQuickChange({
+                  ...article,
+                  suggestedTags: article.suggestedTags?.filter((_, j) => j !== i),
+                })
+              }
+            >
+              {formatTagLabel(tag)}
+            </ChipWithRemove>
           ))}
         </div>
       </div>
-      <Badge
-        variant="secondary"
-        className={`shrink-0 ${getConfidenceColor(article.confidence)}`}
-      >
-        {Math.round(article.confidence * 100)}%
-      </Badge>
-      <Button
-        variant="ghost"
-        size="icon"
-        title="刪除"
-        className="shrink-0 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      {/* Stacked, so the actions borrow the row's existing height instead of
+          reserving a wide strip that reads as blank until hovered. */}
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <Badge
+          variant="secondary"
+          title="辨識信心度：AI 對這筆結果的把握程度，越低越需要人工確認"
+          className={`gap-1 font-normal ${getConfidenceColor(article.confidence)}`}
+        >
+          <Gauge className="h-3 w-3" />
+          信心 {Math.round(article.confidence * 100)}%
+        </Badge>
+        {/* Insert where the gap actually is: a missed entry belongs next to
+            its neighbours, not appended to the end of 61 rows. */}
+        <div className="flex opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-auto gap-0 px-1.5"
+            title="在此列上方新增文章"
+            onClick={(e) => {
+              e.stopPropagation();
+              onInsert("before");
+            }}
+          >
+            <BetweenHorizontalStart className="h-4 w-4" />
+            <ArrowUp className="-ml-0.5 h-2.5 w-2.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-auto gap-0 px-1.5"
+            title="在此列下方新增文章"
+            onClick={(e) => {
+              e.stopPropagation();
+              onInsert("after");
+            }}
+          >
+            <BetweenHorizontalStart className="h-4 w-4" />
+            <ArrowDown className="-ml-0.5 h-2.5 w-2.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-destructive hover:text-destructive"
+            title="刪除"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -341,6 +449,11 @@ export function OcrResultEditor({
     setEditingArticle(null);
   };
 
+  /** Edits made straight from a row's chips, without entering the full editor. */
+  const handleQuickChange = (index: number, next: OcrArticleResult) => {
+    setArticles(articles.map((article, i) => (i === index ? next : article)));
+  };
+
   const handleDelete = (index: number) => {
     setArticles(articles.filter((_, i) => i !== index));
     if (editingIndex === index) {
@@ -349,16 +462,27 @@ export function OcrResultEditor({
     }
   };
 
-  const handleAdd = () => {
-    const newArticle: OcrArticleResult = {
-      title: "",
-      authors: [],
-      confidence: 1,
-    };
-    setArticles([...articles, newArticle]);
-    setEditingIndex(articles.length);
-    setEditingArticle(newArticle);
+  const blankArticle = (): OcrArticleResult => ({
+    title: "",
+    authors: [],
+    confidence: 1,
+  });
+
+  const insertAt = (position: number) => {
+    const article = blankArticle();
+    setArticles([
+      ...articles.slice(0, position),
+      article,
+      ...articles.slice(position),
+    ]);
+    setEditingIndex(position);
+    setEditingArticle(article);
   };
+
+  const handleAdd = () => insertAt(articles.length);
+
+  const handleInsert = (index: number, position: "before" | "after") =>
+    insertAt(position === "before" ? index : index + 1);
 
   const handleSaveAll = async () => {
     const invalidArticles = articles.filter((a) => !a.title.trim());
@@ -395,12 +519,6 @@ export function OcrResultEditor({
                 共辨識出 {articles.length} 篇文章，處理時間{" "}
                 {(result.processingTime / 1000).toFixed(2)} 秒
               </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleAdd}>
-                <Plus className="mr-2 h-4 w-4" />
-                新增文章
-              </Button>
             </div>
           </div>
         </CardHeader>
@@ -443,47 +561,61 @@ export function OcrResultEditor({
             {/* Left: TOC image viewer (sticky) */}
             {hasTocImages && (
               <div className="w-2/5 shrink-0">
-                <div className="sticky top-4 space-y-3">
-                  <div className="overflow-hidden rounded-lg border bg-muted/30">
+                {/* A sticky block taller than its scrollport can never reach
+                    its own bottom, which used to hide the foot of the scan
+                    until the article list ran out. The scrollport is the admin
+                    <main>: the viewport less its 3.5rem header, less main's
+                    padding at both ends, less this block's own top offset. */}
+                <div className="sticky top-4 flex max-h-[calc(100vh-8rem)] flex-col gap-3">
+                  {/* The cap lives on the image, in viewport units. A
+                      percentage height -- h-full or max-h-full -- resolves
+                      against a flex-derived height that is not definite, so the
+                      scan overflowed and got clipped rather than scaled: the
+                      viewport less the header, main's padding, the sticky
+                      offset and the controls below. */}
+                  <div className="flex min-h-0 justify-center overflow-hidden rounded-lg border bg-muted/30">
                     <img
                       src={tocImages[currentImageIndex]}
                       alt={`目錄頁 ${currentImageIndex + 1}`}
-                      className="w-full cursor-pointer object-contain"
+                      className="max-h-[calc(100vh-11rem)] w-auto max-w-full cursor-pointer object-contain"
                       onClick={() => setIsZoomed(true)}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex shrink-0 items-center gap-2">
+                    {tocImages.length > 1 && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={currentImageIndex === 0}
+                          onClick={() => setCurrentImageIndex((i) => i - 1)}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm text-muted-foreground">
+                          {currentImageIndex + 1} / {tocImages.length}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={currentImageIndex === tocImages.length - 1}
+                          onClick={() => setCurrentImageIndex((i) => i + 1)}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      disabled={currentImageIndex === 0}
-                      onClick={() => setCurrentImageIndex((i) => i - 1)}
+                      className="ml-auto"
+                      onClick={() => setIsZoomed(true)}
                     >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm text-muted-foreground">
-                      {currentImageIndex + 1} / {tocImages.length}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={currentImageIndex === tocImages.length - 1}
-                      onClick={() => setCurrentImageIndex((i) => i + 1)}
-                    >
-                      <ChevronRight className="h-4 w-4" />
+                      <Maximize2 className="mr-2 h-4 w-4" />
+                      全螢幕檢視
                     </Button>
                   </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => setIsZoomed(true)}
-                  >
-                    <ZoomIn className="mr-2 h-4 w-4" />
-                    放大檢視
-                  </Button>
                 </div>
               </div>
             )}
@@ -491,8 +623,12 @@ export function OcrResultEditor({
             {/* Right: Article list with in-place editing */}
             <div className="min-w-0 flex-1 space-y-2">
               {articles.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                <div className="flex flex-col items-center justify-center gap-3 py-12 text-center text-muted-foreground">
                   <p>尚無辨識結果</p>
+                  <Button variant="outline" onClick={handleAdd}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    新增文章
+                  </Button>
                 </div>
               ) : (
                 articles.map((article, index) => (
@@ -505,6 +641,8 @@ export function OcrResultEditor({
                     onSaveEdit={handleSaveEdit}
                     onCancelEdit={handleCancelEdit}
                     onDelete={() => handleDelete(index)}
+                    onInsert={(position) => handleInsert(index, position)}
+                    onQuickChange={(next) => handleQuickChange(index, next)}
                     editingArticle={editingIndex === index ? editingArticle : null}
                     onEditChange={setEditingArticle}
                   />
@@ -537,12 +675,30 @@ export function OcrResultEditor({
       {/* Zoom dialog */}
       {hasTocImages && (
         <Dialog open={isZoomed} onOpenChange={setIsZoomed}>
-          <DialogContent className="max-w-4xl max-h-[90vh] p-2">
-            <div className="relative">
+          {/* A lightbox, not a panel: the content is transparent so the dim
+              overlay shows the page behind, and a click anywhere off the image
+              closes it. */}
+          <DialogContent
+            showCloseButton={false}
+            className="flex h-screen w-screen max-w-none items-center justify-center border-0 bg-black/[0.64] p-0 shadow-none sm:max-w-none"
+            onClick={() => setIsZoomed(false)}
+          >
+            <DialogTitle className="sr-only">
+              目錄頁 {currentImageIndex + 1} / {tocImages.length}
+            </DialogTitle>
+            <button
+              type="button"
+              aria-label="關閉"
+              className="absolute right-4 top-4 rounded-full bg-black/60 p-2 text-white transition-colors hover:bg-black/80"
+              onClick={() => setIsZoomed(false)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
               <img
                 src={tocImages[currentImageIndex]}
                 alt={`目錄頁 ${currentImageIndex + 1}`}
-                className="w-full object-contain max-h-[85vh]"
+                className="max-h-[94vh] w-auto max-w-[94vw] object-contain"
               />
               {tocImages.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 rounded-full bg-black/60 px-4 py-2 text-white">

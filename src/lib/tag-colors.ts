@@ -27,3 +27,14 @@ export function getTagTypeColor(type: string): string {
 export function getTagTypeLabel(type: string): string {
   return TAG_TYPES.find((t) => t.value === type)?.label || type;
 }
+
+/**
+ * How a tag reads on screen: the type in parentheses, so "SEGA" is visibly a
+ * company rather than a name the colour alone has to explain. GENERAL is the
+ * absence of a type, so it stays bare -- the same rule the tag input uses.
+ */
+export function formatTagLabel(tag: { name: string; type: string }): string {
+  return tag.type === "GENERAL"
+    ? tag.name
+    : `${tag.name} (${getTagTypeLabel(tag.type)})`;
+}
