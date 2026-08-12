@@ -675,15 +675,30 @@ export function OcrResultEditor({
       {/* Zoom dialog */}
       {hasTocImages && (
         <Dialog open={isZoomed} onOpenChange={setIsZoomed}>
-          <DialogContent className="max-w-[96vw] sm:max-w-[96vw] max-h-[96vh] p-2">
+          {/* A lightbox, not a panel: the content is transparent so the dim
+              overlay shows the page behind, and a click anywhere off the image
+              closes it. */}
+          <DialogContent
+            showCloseButton={false}
+            className="flex h-screen w-screen max-w-none items-center justify-center border-0 bg-black/[0.64] p-0 shadow-none sm:max-w-none"
+            onClick={() => setIsZoomed(false)}
+          >
             <DialogTitle className="sr-only">
               目錄頁 {currentImageIndex + 1} / {tocImages.length}
             </DialogTitle>
-            <div className="relative">
+            <button
+              type="button"
+              aria-label="關閉"
+              className="absolute right-4 top-4 rounded-full bg-black/60 p-2 text-white transition-colors hover:bg-black/80"
+              onClick={() => setIsZoomed(false)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
               <img
                 src={tocImages[currentImageIndex]}
                 alt={`目錄頁 ${currentImageIndex + 1}`}
-                className="mx-auto max-h-[92vh] w-auto max-w-full object-contain"
+                className="max-h-[94vh] w-auto max-w-[94vw] object-contain"
               />
               {tocImages.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 rounded-full bg-black/60 px-4 py-2 text-white">
