@@ -260,7 +260,7 @@ Article N:N Game (ArticleGame)
 |------|------|------|
 | POST | `/api/ocr` | AI 目錄辨識 |
 | GET | `/api/ocr` | 取得可用 AI Provider 列表 |
-| POST | `/api/upload` | 圖片上傳 |
+| POST | `/api/upload` | 圖片上傳（自動縮圖並轉為 WebP；目錄頁掃描圖長邊上限 2400px，其餘 1600px，GIF 原樣保留） |
 | POST | `/api/import/magazines-issues` | CSV 批次匯入 |
 
 ## 部署
