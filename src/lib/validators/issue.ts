@@ -32,6 +32,9 @@ export const issueCreateSchema = z.object({
   price: optionalDecimal,
   notes: z.string().optional().nullable(),
   order: z.coerce.number().int().optional(),
+  // A flag rather than the stored timestamp: the caller states that a person
+  // checked the table of contents, the server decides when that happened.
+  tocReviewed: z.boolean().optional(),
 });
 
 // .partial() makes fields optional but keeps their defaults, so a partial
@@ -62,6 +65,30 @@ export function withPublishSortIfPresent<T extends { publishDate?: string }>(
   data: T
 ): T & { publishSort?: Date } {
   return data.publishDate ? withPublishSort({ ...data, publishDate: data.publishDate }) : data;
+}
+
+/**
+ * Turn the caller's `tocReviewed` flag into the stored timestamp.
+ *
+ * Only a human session may set it -- scripted writes go through the API token
+ * and have not read the scans, so their flag is dropped rather than trusted.
+ *
+ * The timestamp only moves on a transition. Re-saving an already-reviewed
+ * issue to fix an unrelated field would otherwise reset the date to today and
+ * lose when the review actually happened.
+ */
+export function withTocReviewedAt<T extends { tocReviewed?: boolean }>(
+  data: T,
+  { isHuman, current }: { isHuman: boolean; current: Date | null }
+): Omit<T, "tocReviewed"> & { tocReviewedAt?: Date | null } {
+  const { tocReviewed, ...rest } = data;
+  if (tocReviewed === undefined || !isHuman) {
+    return rest;
+  }
+  if (tocReviewed) {
+    return current ? rest : { ...rest, tocReviewedAt: new Date() };
+  }
+  return current ? { ...rest, tocReviewedAt: null } : rest;
 }
 
 export type IssueCreateInput = z.infer<typeof issueCreateSchema>;

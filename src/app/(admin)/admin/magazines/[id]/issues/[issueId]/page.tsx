@@ -53,6 +53,7 @@ export default async function EditIssuePage({ params }: PageProps) {
     pageCount: issue.pageCount,
     price: issue.price ? Number(issue.price) : null,
     notes: issue.notes,
+    tocReviewed: issue.tocReviewedAt !== null,
   };
 
   return (

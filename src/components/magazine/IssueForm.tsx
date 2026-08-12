@@ -40,6 +40,8 @@ export function IssueForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const initialTocReviewed = initialData?.tocReviewed ?? false;
+
   const {
     register,
     handleSubmit,
@@ -59,12 +61,19 @@ export function IssueForm({
       pageCount: initialData?.pageCount || null,
       price: initialData?.price || null,
       notes: initialData?.notes || "",
+      tocReviewed: initialTocReviewed,
     },
   });
 
   const onSubmit = async (data: IssueCreateInput) => {
     setIsSubmitting(true);
     setError(null);
+
+    // Only send the review flag when this editor actually changed it, so a page
+    // left open does not undo a review somebody else made in the meantime.
+    if (data.tocReviewed === initialTocReviewed) {
+      delete data.tocReviewed;
+    }
 
     try {
       const url =
@@ -229,6 +238,23 @@ export function IssueForm({
                   />
                 )}
               />
+            </div>
+
+            {/* 目錄複查狀態 */}
+            <div className="space-y-2 md:col-span-2">
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 accent-primary"
+                  {...register("tocReviewed")}
+                />
+                <span>
+                  <span className="font-medium">目錄已人工複查</span>
+                  <span className="block text-xs text-muted-foreground">
+                    確認過目錄內容與掃描圖相符。透過 API 辨識建立的目錄不會自動標記
+                  </span>
+                </span>
+              </label>
             </div>
 
             {/* 備註 */}
