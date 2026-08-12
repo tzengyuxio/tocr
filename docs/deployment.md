@@ -59,7 +59,8 @@
 
 | 變數名稱 | 說明 | 必填 |
 |----------|------|------|
-| `DATABASE_URL` | PostgreSQL 連線字串 | ✓ |
+| `DATABASE_URL` | PostgreSQL 連線字串（pooled） | ✓ |
+| `DATABASE_URL_UNPOOLED` | 直連字串，build 時跑 migration 用 | ✓ |
 | `AUTH_SECRET` | Auth.js 密鑰（至少 32 字元） | ✓ |
 | `AUTH_GOOGLE_ID` | Google OAuth Client ID | ✓ |
 | `AUTH_GOOGLE_SECRET` | Google OAuth Client Secret | ✓ |
@@ -103,21 +104,29 @@ https://your-domain.com/api/auth/callback/google
 
 ---
 
-### 步驟 7：初始化資料庫
+### 步驟 7：資料庫 migration
 
-部署完成後，需要將 Schema 推送到資料庫：
+**production 部署會在 build 時自動跑 `prisma migrate deploy`**（見 `package.json` 的 `build`）。
+
+它用 `VERCEL_ENV = production` 擋住 preview：Vercel 對每個 PR 都會自動建 preview，若 preview 與 production 共用同一個 `DATABASE_URL`，沒有這道判斷就等於每開一個 PR 就對正式庫跑 migration。
+
+migration 走 `DATABASE_URL_UNPOOLED`（Neon 的 pooler 不適合跑 DDL），沒設的話會退回 `DATABASE_URL`。
+
+要手動補跑（例如自動化上線前累積的 migration）：
 
 ```bash
-# 在本地端設定 DATABASE_URL 為 production 資料庫
-DATABASE_URL="your-production-database-url" npx prisma db push
+DATABASE_URL="<production-unpooled-url>" npx prisma migrate deploy
 ```
 
-或在 Vercel 專案中使用 CLI：
+> 不要用 `prisma db push`。本專案的 migration 歷史是補基準線來的，`db push` 會讓它與資料庫脫節。
 
-```bash
-vercel env pull .env.production.local
-npx prisma db push
-```
+---
+
+### 執行區域
+
+`vercel.json` 把 serverless function 釘在 `sin1`（新加坡），與 Neon 的 `aws-ap-southeast-1` 同區。
+
+跨區的代價很實際：function 在 iad1、資料庫在新加坡時，量測到函式實例第一次碰 DB 要 1.8–2.3 秒，之後每次暖查詢仍要 436–446ms。注意 Vercel log 裡 middleware 那幾筆顯示的是使用者最近的邊緣節點，不反映這個設定——要看 `type=function` 的 `region` 欄位。
 
 ---
 
