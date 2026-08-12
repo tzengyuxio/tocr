@@ -2,10 +2,12 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "搜尋文章",
+  title: "搜尋",
 };
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   Card,
@@ -24,14 +26,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, FileText, BookOpen, Filter } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { Search, FileText, BookOpen, Gamepad2, Filter } from "lucide-react";
 import { formatEdtf } from "@/lib/edtf";
+
+const PAGE_SIZE = 20;
+
+const RESULT_TYPES = [
+  { key: "article", label: "文章" },
+  { key: "magazine", label: "雜誌" },
+  { key: "game", label: "遊戲" },
+] as const;
+
+type ResultType = (typeof RESULT_TYPES)[number]["key"];
+
+function isResultType(value: string): value is ResultType {
+  return RESULT_TYPES.some((type) => type.key === value);
+}
 
 interface SearchPageProps {
   searchParams: Promise<{
     q?: string;
+    type?: string;
     magazine?: string;
     category?: string;
     page?: string;
@@ -41,10 +57,11 @@ interface SearchPageProps {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const query = params.q || "";
+  const type: ResultType =
+    params.type && isResultType(params.type) ? params.type : "article";
   const magazineId = params.magazine === "__all__" ? "" : (params.magazine || "");
   const category = params.category === "__all__" ? "" : (params.category || "");
-  const page = parseInt(params.page || "1");
-  const limit = 20;
+  const page = Math.max(1, parseInt(params.page || "1") || 1);
 
   // 取得所有期刊供篩選
   const magazines = await prisma.magazine.findMany({
@@ -86,52 +103,111 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     where.category = category;
   }
 
-  // 搜尋文章
-  const [articles, total] = await Promise.all([
-    prisma.article.findMany({
-      where,
-      orderBy: [
-        { issue: { publishSort: "desc" } },
-        { sortOrder: "asc" },
-      ],
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        issue: {
-          select: {
-            id: true,
-            issueNumber: true,
-            publishDate: true,
-            magazine: {
-              select: { id: true, name: true },
-            },
-          },
-        },
-        articleGames: {
-          include: {
-            game: {
-              select: { id: true, name: true },
-            },
-          },
-        },
-        articleTags: {
-          include: {
-            tag: {
-              select: { id: true, name: true, type: true },
-            },
-          },
-        },
-      },
-    }),
+  // 期刊與遊戲各自比對自己的名稱欄位；aliases 是陣列，只能整串比對
+  const magazineWhere: Prisma.MagazineWhereInput = query
+    ? {
+        OR: [
+          { name: { contains: query, mode: "insensitive" } },
+          { nameOriginal: { contains: query, mode: "insensitive" } },
+          { publisher: { contains: query, mode: "insensitive" } },
+          { aliases: { has: query } },
+        ],
+      }
+    : {};
+
+  const gameWhere: Prisma.GameWhereInput = query
+    ? {
+        OR: [
+          { name: { contains: query, mode: "insensitive" } },
+          { nameOriginal: { contains: query, mode: "insensitive" } },
+          { nameEn: { contains: query, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  // 三個頁籤都要顯示筆數，所以計數一律全算；只有目前頁籤才抓內容
+  const [articleCount, magazineCount, gameCount] = await Promise.all([
     prisma.article.count({ where }),
+    prisma.magazine.count({ where: magazineWhere }),
+    prisma.game.count({ where: gameWhere }),
   ]);
 
-  const totalPages = Math.ceil(total / limit);
+  const totalOf: Record<ResultType, number> = {
+    article: articleCount,
+    magazine: magazineCount,
+    game: gameCount,
+  };
+  const total = totalOf[type];
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const skip = (page - 1) * PAGE_SIZE;
+
+  const articles =
+    type === "article"
+      ? await prisma.article.findMany({
+          where,
+          orderBy: [{ issue: { publishSort: "desc" } }, { sortOrder: "asc" }],
+          skip,
+          take: PAGE_SIZE,
+          include: {
+            issue: {
+              select: {
+                id: true,
+                issueNumber: true,
+                publishDate: true,
+                magazine: {
+                  select: { id: true, name: true },
+                },
+              },
+            },
+            articleGames: {
+              include: {
+                game: {
+                  select: { id: true, name: true },
+                },
+              },
+            },
+            articleTags: {
+              include: {
+                tag: {
+                  select: { id: true, name: true, type: true },
+                },
+              },
+            },
+          },
+        })
+      : [];
+
+  const foundMagazines =
+    type === "magazine"
+      ? await prisma.magazine.findMany({
+          where: magazineWhere,
+          orderBy: { name: "asc" },
+          skip,
+          take: PAGE_SIZE,
+          include: {
+            _count: { select: { issues: true } },
+          },
+        })
+      : [];
+
+  const games =
+    type === "game"
+      ? await prisma.game.findMany({
+          where: gameWhere,
+          orderBy: { name: "asc" },
+          skip,
+          take: PAGE_SIZE,
+          include: {
+            _count: { select: { articleGames: true } },
+          },
+        })
+      : [];
 
   // 建立 URL 參數
   const buildUrl = (newParams: Record<string, string>) => {
     const urlParams = new URLSearchParams();
     if (query && !("q" in newParams)) urlParams.set("q", query);
+    if (type !== "article" && !("type" in newParams)) urlParams.set("type", type);
     if (magazineId && !("magazine" in newParams))
       urlParams.set("magazine", magazineId);
     if (category && !("category" in newParams))
@@ -146,9 +222,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">搜尋文章</h1>
+        <h1 className="text-3xl font-bold">搜尋</h1>
         <p className="mt-2 text-muted-foreground">
-          在所有期刊文章中搜尋關鍵字
+          在所有期刊、遊戲與文章目錄中搜尋關鍵字
         </p>
       </div>
 
@@ -156,6 +232,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <Card className="mb-6 py-3 gap-0">
         <CardContent>
           <form action="/search" method="get">
+            {/* Switching tabs is a link; the form keeps the current one. */}
+            {type !== "article" && <input type="hidden" name="type" value={type} />}
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -167,32 +245,36 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   className="pl-10"
                 />
               </div>
-              <Select name="magazine" defaultValue={magazineId || "__all__"}>
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="所有期刊" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">所有期刊</SelectItem>
-                  {magazines.map((mag) => (
-                    <SelectItem key={mag.id} value={mag.id}>
-                      {mag.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select name="category" defaultValue={category || "__all__"}>
-                <SelectTrigger className="w-full md:w-[150px]">
-                  <SelectValue placeholder="所有分類" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">所有分類</SelectItem>
-                  {uniqueCategories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {type === "article" && (
+                <>
+                  <Select name="magazine" defaultValue={magazineId || "__all__"}>
+                    <SelectTrigger className="w-full md:w-[200px]">
+                      <SelectValue placeholder="所有期刊" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">所有期刊</SelectItem>
+                      {magazines.map((mag) => (
+                        <SelectItem key={mag.id} value={mag.id}>
+                          {mag.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select name="category" defaultValue={category || "__all__"}>
+                    <SelectTrigger className="w-full md:w-[150px]">
+                      <SelectValue placeholder="所有分類" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">所有分類</SelectItem>
+                      {uniqueCategories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              )}
               <Button type="submit">
                 <Search className="mr-2 h-4 w-4" />
                 搜尋
@@ -202,8 +284,29 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </CardContent>
       </Card>
 
+      {/* Result type tabs */}
+      <div className="mb-6 flex flex-wrap gap-1 border-b">
+        {RESULT_TYPES.map((resultType) => (
+          <Link
+            key={resultType.key}
+            href={buildUrl({ type: resultType.key, page: "" })}
+            className={cn(
+              "-mb-px border-b-2 px-4 py-2 text-sm transition-colors",
+              resultType.key === type
+                ? "border-primary font-medium text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {resultType.label}
+            <span className="ml-1.5 text-xs text-muted-foreground">
+              {totalOf[resultType.key]}
+            </span>
+          </Link>
+        ))}
+      </div>
+
       {/* Active Filters */}
-      {(query || magazineId || category) && (
+      {(query || (type === "article" && (magazineId || category))) && (
         <div className="mb-6 flex flex-wrap items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">篩選條件：</span>
@@ -215,7 +318,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </Link>
             </Badge>
           )}
-          {magazineId && (
+          {type === "article" && magazineId && (
             <Badge variant="secondary">
               期刊：{magazines.find((m) => m.id === magazineId)?.name}
               <Link
@@ -226,7 +329,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </Link>
             </Badge>
           )}
-          {category && (
+          {type === "article" && category && (
             <Badge variant="secondary">
               分類：{category}
               <Link
@@ -245,21 +348,109 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       {/* Results Count */}
       <div className="mb-4 text-sm text-muted-foreground">
-        共找到 {total} 篇文章
+        共找到 {total} {type === "article" ? "篇文章" : type === "magazine" ? "本期刊" : "款遊戲"}
         {totalPages > 1 && `，第 ${page} / ${totalPages} 頁`}
       </div>
 
       {/* Results */}
-      {articles.length === 0 ? (
+      {total === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <FileText className="h-16 w-16 text-muted-foreground/50" />
-            <h2 className="mt-4 text-xl font-semibold">找不到相關文章</h2>
+            {type === "magazine" ? (
+              <BookOpen className="h-16 w-16 text-muted-foreground/50" />
+            ) : type === "game" ? (
+              <Gamepad2 className="h-16 w-16 text-muted-foreground/50" />
+            ) : (
+              <FileText className="h-16 w-16 text-muted-foreground/50" />
+            )}
+            <h2 className="mt-4 text-xl font-semibold">找不到相關結果</h2>
             <p className="mt-2 text-muted-foreground">
-              {query ? "請嘗試其他關鍵字或調整篩選條件" : "開始輸入關鍵字搜尋"}
+              {query ? "請嘗試其他關鍵字或切換上方的類型" : "開始輸入關鍵字搜尋"}
             </p>
           </CardContent>
         </Card>
+      ) : type === "magazine" ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {foundMagazines.map((magazine) => (
+            <Link key={magazine.id} href={`/magazines/${magazine.id}`}>
+              <Card className="h-full transition-shadow hover:shadow-lg gap-3">
+                <CardHeader className="pb-0 gap-1">
+                  <div className="mb-2 flex h-20 items-center justify-center rounded-lg bg-muted/50">
+                    {magazine.logoImage ? (
+                      <Image
+                        src={magazine.logoImage}
+                        alt={magazine.name}
+                        width={300}
+                        height={80}
+                        unoptimized
+                        className="h-16 w-auto object-contain px-3"
+                      />
+                    ) : (
+                      <BookOpen className="h-10 w-10 text-muted-foreground/30" />
+                    )}
+                  </div>
+                  <CardTitle className="line-clamp-1 text-base">
+                    {magazine.name}
+                  </CardTitle>
+                  {magazine.nameOriginal && (
+                    <CardDescription className="line-clamp-1 text-xs">
+                      {magazine.nameOriginal}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground text-xs">
+                      {magazine.publisher || "未知出版社"}
+                    </span>
+                    <Badge
+                      variant={magazine.isActive ? "default" : "secondary"}
+                      className="text-xs"
+                    >
+                      {magazine._count.issues} 期
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      ) : type === "game" ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {games.map((game) => (
+            <Link key={game.id} href={`/games/${game.id}`}>
+              <Card className="h-full transition-shadow hover:shadow-md">
+                <CardContent className="flex items-center gap-3 p-3">
+                  {game.coverImage ? (
+                    <Image
+                      src={game.coverImage}
+                      alt={game.name}
+                      width={56}
+                      height={56}
+                      unoptimized
+                      className="h-14 w-14 shrink-0 rounded-md object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-muted">
+                      <Gamepad2 className="h-6 w-6 text-muted-foreground/50" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium line-clamp-1">{game.name}</div>
+                    {(game.nameOriginal || game.nameEn) && (
+                      <div className="text-sm text-muted-foreground line-clamp-1">
+                        {game.nameOriginal || game.nameEn}
+                      </div>
+                    )}
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {game._count.articleGames} 篇相關文章
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       ) : (
         <div className="space-y-3">
           {articles.map((article) => (

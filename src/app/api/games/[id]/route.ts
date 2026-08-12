@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { gameUpdateSchema } from "@/lib/validators/game";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { diffChanges } from "@/lib/edit-log-diff";
 
 // GET /api/games/[id] - 取得單一遊戲
 export const GET = withErrorHandler(async (
@@ -80,12 +81,14 @@ export const PUT = withErrorHandler(async (
     }
   }
 
+  const before = await prisma.game.findUnique({ where: { id } });
+
   const game = await prisma.game.update({
     where: { id },
     data: validatedData,
   });
 
-  await logEdit("Game", id, "UPDATE", validatedData);
+  await logEdit("Game", id, "UPDATE", diffChanges(before, game));
 
   return NextResponse.json(game);
 }, "Update game");

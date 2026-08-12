@@ -16,8 +16,9 @@ import {
   ClipboardCheck,
   History,
   LayoutDashboard,
-  ChevronLeft,
-  ChevronRight,
+  Home,
+  PanelLeftClose,
+  PanelLeftOpen,
   Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -93,16 +94,17 @@ function NavLinks({
         })}
       </nav>
       <div className="border-t p-2">
+        {/* Home, not a chevron: a chevron here reads as the collapse toggle. */}
         <Link
           href="/"
           onClick={onNavigate}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted",
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted",
             collapsed && "justify-center px-2"
           )}
           title={collapsed ? "返回前台" : undefined}
         >
-          <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+          <Home className="h-4 w-4 flex-shrink-0" />
           {!collapsed && <span>返回前台</span>}
         </Link>
       </div>
@@ -166,12 +168,14 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
           size="icon"
           className={cn("ml-auto", collapsed && "mx-auto")}
           onClick={() => setCollapsed(!collapsed)}
+          title={collapsed ? "展開側欄" : "收合側欄"}
         >
           {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <PanelLeftOpen className="h-4 w-4" />
           ) : (
-            <ChevronLeft className="h-4 w-4" />
+            <PanelLeftClose className="h-4 w-4" />
           )}
+          <span className="sr-only">{collapsed ? "展開側欄" : "收合側欄"}</span>
         </Button>
       </div>
       <NavLinks

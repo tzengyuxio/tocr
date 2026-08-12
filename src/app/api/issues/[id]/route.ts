@@ -7,6 +7,7 @@ import {
 } from "@/lib/validators/issue";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { diffChanges } from "@/lib/edit-log-diff";
 import { isValidApiToken } from "@/lib/api-token";
 
 // GET /api/issues/[id] - 取得單一單期
@@ -53,13 +54,8 @@ export const PUT = withErrorHandler(async (
   const validatedData = issueUpdateSchema.parse(body);
 
   const isHuman = !isValidApiToken(request.headers.get("authorization"));
-  const existing = await prisma.issue.findUnique({
-    where: { id },
-    select: { tocReviewedAt: true },
-  });
+  const existing = await prisma.issue.findUnique({ where: { id } });
 
-  // Log what was written, not what was asked for: a token write's tocReviewed
-  // flag is dropped, and the history should not claim otherwise.
   const data = withTocReviewedAt(withPublishSortIfPresent(validatedData), {
     isHuman,
     current: existing?.tocReviewedAt ?? null,
@@ -67,7 +63,10 @@ export const PUT = withErrorHandler(async (
 
   const issue = await prisma.issue.update({ where: { id }, data });
 
-  await logEdit("Issue", id, "UPDATE", data);
+  // Diffing the stored rows logs what was written, not what was asked for: a
+  // token write's tocReviewed flag is dropped, and the history should not
+  // claim otherwise.
+  await logEdit("Issue", id, "UPDATE", diffChanges(existing, issue));
 
   return NextResponse.json(issue);
 }, "Update issue");
