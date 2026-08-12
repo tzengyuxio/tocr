@@ -29,6 +29,8 @@ import {
   ZoomIn,
   Check,
   X,
+  BetweenHorizontalStart,
+  BetweenHorizontalEnd,
   FolderOpen,
   Gamepad2,
   Gauge,
@@ -92,6 +94,7 @@ function ArticleRow({
   onSaveEdit,
   onCancelEdit,
   onDelete,
+  onInsert,
   onQuickChange,
   editingArticle,
   onEditChange,
@@ -103,6 +106,7 @@ function ArticleRow({
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onDelete: () => void;
+  onInsert: (position: "before" | "after") => void;
   onQuickChange: (article: OcrArticleResult) => void;
   editingArticle: OcrArticleResult | null;
   onEditChange: (article: OcrArticleResult) => void;
@@ -358,18 +362,44 @@ function ArticleRow({
         <Gauge className="h-3 w-3" />
         信心 {Math.round(article.confidence * 100)}%
       </Badge>
-      <Button
-        variant="ghost"
-        size="icon"
-        title="刪除"
-        className="shrink-0 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      {/* Insert where the gap actually is: a missed entry belongs next to its
+          neighbours, not appended to the end of 61 rows. */}
+      <div className="flex shrink-0 opacity-0 transition-opacity group-hover:opacity-100">
+        <Button
+          variant="ghost"
+          size="icon"
+          title="在此列上方新增文章"
+          onClick={(e) => {
+            e.stopPropagation();
+            onInsert("before");
+          }}
+        >
+          <BetweenHorizontalStart className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          title="在此列下方新增文章"
+          onClick={(e) => {
+            e.stopPropagation();
+            onInsert("after");
+          }}
+        >
+          <BetweenHorizontalEnd className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          title="刪除"
+          className="text-destructive hover:text-destructive"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -422,16 +452,27 @@ export function OcrResultEditor({
     }
   };
 
-  const handleAdd = () => {
-    const newArticle: OcrArticleResult = {
-      title: "",
-      authors: [],
-      confidence: 1,
-    };
-    setArticles([...articles, newArticle]);
-    setEditingIndex(articles.length);
-    setEditingArticle(newArticle);
+  const blankArticle = (): OcrArticleResult => ({
+    title: "",
+    authors: [],
+    confidence: 1,
+  });
+
+  const insertAt = (position: number) => {
+    const article = blankArticle();
+    setArticles([
+      ...articles.slice(0, position),
+      article,
+      ...articles.slice(position),
+    ]);
+    setEditingIndex(position);
+    setEditingArticle(article);
   };
+
+  const handleAdd = () => insertAt(articles.length);
+
+  const handleInsert = (index: number, position: "before" | "after") =>
+    insertAt(position === "before" ? index : index + 1);
 
   const handleSaveAll = async () => {
     const invalidArticles = articles.filter((a) => !a.title.trim());
@@ -516,17 +557,22 @@ export function OcrResultEditor({
             {/* Left: TOC image viewer (sticky) */}
             {hasTocImages && (
               <div className="w-2/5 shrink-0">
-                <div className="sticky top-4 space-y-3">
-                  <div className="overflow-hidden rounded-lg border bg-muted/30">
+                {/* A sticky block taller than its scrollport can never reach
+                    its own bottom, which used to hide the foot of the scan
+                    until the article list ran out. The scrollport here is the
+                    admin <main>, so the viewport less the 3.5rem header, its
+                    padding and this block's own top offset. */}
+                <div className="sticky top-4 flex max-h-[calc(100vh-5rem)] flex-col gap-3">
+                  <div className="min-h-0 flex-1 overflow-hidden rounded-lg border bg-muted/30">
                     <img
                       src={tocImages[currentImageIndex]}
                       alt={`目錄頁 ${currentImageIndex + 1}`}
-                      className="w-full cursor-pointer object-contain"
+                      className="h-full w-full cursor-pointer object-contain"
                       onClick={() => setIsZoomed(true)}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex shrink-0 items-center justify-between">
                     <Button
                       variant="outline"
                       size="sm"
@@ -551,7 +597,7 @@ export function OcrResultEditor({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full"
+                    className="w-full shrink-0"
                     onClick={() => setIsZoomed(true)}
                   >
                     <ZoomIn className="mr-2 h-4 w-4" />
@@ -578,11 +624,25 @@ export function OcrResultEditor({
                     onSaveEdit={handleSaveEdit}
                     onCancelEdit={handleCancelEdit}
                     onDelete={() => handleDelete(index)}
+                    onInsert={(position) => handleInsert(index, position)}
                     onQuickChange={(next) => handleQuickChange(index, next)}
                     editingArticle={editingIndex === index ? editingArticle : null}
                     onEditChange={setEditingArticle}
                   />
                 ))
+              )}
+
+              {/* The list runs to dozens of rows; the header button is a long
+                  way back up by the time you reach the end. */}
+              {articles.length > 0 && (
+                <Button
+                  variant="outline"
+                  className="w-full border-dashed"
+                  onClick={handleAdd}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  在最後新增文章
+                </Button>
               )}
             </div>
           </div>
