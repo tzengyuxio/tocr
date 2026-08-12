@@ -29,9 +29,13 @@ import {
   ZoomIn,
   Check,
   X,
+  FolderOpen,
+  Gamepad2,
+  Gauge,
 } from "lucide-react";
 import type { OcrArticleResult, OcrResult } from "@/services/ai/ocr.interface";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
+import { formatTagInput, parseTagInput } from "@/lib/tag-input";
 
 interface OcrResultEditorProps {
   result: OcrResult;
@@ -39,6 +43,43 @@ interface OcrResultEditorProps {
   tocImages: string[];
   onSave: (articles: OcrArticleResult[]) => Promise<void>;
   onCancel: () => void;
+}
+
+/**
+ * A chip carrying its own remove button, so a wrong tag can go without opening
+ * the full editor. The click must not reach the row, which starts editing.
+ */
+function ChipWithRemove({
+  className,
+  title,
+  onRemove,
+  children,
+}: {
+  className?: string;
+  title: string;
+  onRemove: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Badge
+      variant="secondary"
+      title={title}
+      className={`group/chip gap-0 py-0 pr-0.5 text-xs font-normal ${className ?? ""}`}
+    >
+      <span className="flex items-center">{children}</span>
+      <button
+        type="button"
+        aria-label={`移除 ${title}`}
+        className="ml-0.5 rounded-full p-0.5 opacity-40 transition-opacity hover:bg-black/10 hover:opacity-100 group-hover/chip:opacity-70"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+      >
+        <X className="h-2.5 w-2.5" />
+      </button>
+    </Badge>
+  );
 }
 
 function ArticleRow({
@@ -49,6 +90,7 @@ function ArticleRow({
   onSaveEdit,
   onCancelEdit,
   onDelete,
+  onQuickChange,
   editingArticle,
   onEditChange,
 }: {
@@ -59,6 +101,7 @@ function ArticleRow({
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onDelete: () => void;
+  onQuickChange: (article: OcrArticleResult) => void;
   editingArticle: OcrArticleResult | null;
   onEditChange: (article: OcrArticleResult) => void;
 }) {
@@ -184,22 +227,15 @@ function ArticleRow({
         </div>
 
         <div className="space-y-1">
-          <Label className="text-xs">建議標籤（逗號分隔，格式：名稱 或 名稱:類型）</Label>
+          <Label className="text-xs">
+            建議標籤（逗號分隔，格式：名稱 或 類型:名稱，例如 SERIES:Panzer Dragoon）
+          </Label>
           <Input
-            value={editingArticle.suggestedTags?.map((t) => t.type !== "GENERAL" ? `${t.name}:${t.type}` : t.name).join(", ") || ""}
+            value={formatTagInput(editingArticle.suggestedTags)}
             onChange={(e) =>
               onEditChange({
                 ...editingArticle,
-                suggestedTags: e.target.value
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-                  .map((s) => {
-                    const parts = s.split(":");
-                    return parts.length > 1
-                      ? { name: parts[0].trim(), type: parts[1].trim().toUpperCase() }
-                      : { name: s, type: "GENERAL" };
-                  }),
+                suggestedTags: parseTagInput(e.target.value),
               })
             }
             onKeyDown={(e) => {
@@ -263,32 +299,62 @@ function ArticleRow({
             {article.subtitle}
           </div>
         )}
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           {article.authors && article.authors.length > 0 && (
-            <span>{article.authors.join(", ")}</span>
+            <span className="mr-0.5">{article.authors.join(", ")}</span>
           )}
+          {/* Three families of chip, told apart by shape rather than only hue:
+              the category outlined, games filled with an icon, tags filled. */}
           {article.category && (
-            <Badge variant="outline" className="text-xs">
+            <ChipWithRemove
+              className="border border-dashed bg-transparent text-foreground"
+              title={`分類：${article.category}`}
+              onRemove={() => onQuickChange({ ...article, category: undefined })}
+            >
+              <FolderOpen className="mr-1 h-3 w-3 opacity-70" />
               {article.category}
-            </Badge>
+            </ChipWithRemove>
           )}
           {article.suggestedGames?.map((game, i) => (
-            <Badge key={`game-${i}`} variant="secondary" className="text-xs">
+            <ChipWithRemove
+              key={`game-${i}`}
+              className="bg-violet-100 text-violet-900"
+              title={`遊戲：${game}`}
+              onRemove={() =>
+                onQuickChange({
+                  ...article,
+                  suggestedGames: article.suggestedGames?.filter((_, j) => j !== i),
+                })
+              }
+            >
+              <Gamepad2 className="mr-1 h-3 w-3" />
               {game}
-            </Badge>
+            </ChipWithRemove>
           ))}
           {article.suggestedTags?.map((tag, i) => (
-            <Badge key={`tag-${i}`} className={`text-xs ${getTagTypeColor(tag.type)}`}>
+            <ChipWithRemove
+              key={`tag-${i}`}
+              className={getTagTypeColor(tag.type)}
+              title={`${getTagTypeLabel(tag.type)}標籤：${tag.name}`}
+              onRemove={() =>
+                onQuickChange({
+                  ...article,
+                  suggestedTags: article.suggestedTags?.filter((_, j) => j !== i),
+                })
+              }
+            >
               {tag.name}
-            </Badge>
+            </ChipWithRemove>
           ))}
         </div>
       </div>
       <Badge
         variant="secondary"
-        className={`shrink-0 ${getConfidenceColor(article.confidence)}`}
+        title="辨識信心度：AI 對這筆結果的把握程度，越低越需要人工確認"
+        className={`shrink-0 gap-1 font-normal ${getConfidenceColor(article.confidence)}`}
       >
-        {Math.round(article.confidence * 100)}%
+        <Gauge className="h-3 w-3" />
+        信心 {Math.round(article.confidence * 100)}%
       </Badge>
       <Button
         variant="ghost"
@@ -339,6 +405,11 @@ export function OcrResultEditor({
   const handleCancelEdit = () => {
     setEditingIndex(null);
     setEditingArticle(null);
+  };
+
+  /** Edits made straight from a row's chips, without entering the full editor. */
+  const handleQuickChange = (index: number, next: OcrArticleResult) => {
+    setArticles(articles.map((article, i) => (i === index ? next : article)));
   };
 
   const handleDelete = (index: number) => {
@@ -505,6 +576,7 @@ export function OcrResultEditor({
                     onSaveEdit={handleSaveEdit}
                     onCancelEdit={handleCancelEdit}
                     onDelete={() => handleDelete(index)}
+                    onQuickChange={(next) => handleQuickChange(index, next)}
                     editingArticle={editingIndex === index ? editingArticle : null}
                     onEditChange={setEditingArticle}
                   />
