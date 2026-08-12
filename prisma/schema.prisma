@@ -104,6 +104,13 @@ model Magazine {
   // Relations
   issues Issue[]
 
+  @@index([issn])
+  @@index([foundedSort])
+  // Trigram indexes for ILIKE search. `map` keeps the names the SQL migration
+  // created; idx_magazines_name_en_trgm predates the name_en -> name_original
+  // rename and Postgres carried the old index name over.
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_magazines_name_trgm")
+  @@index([nameOriginal(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_magazines_name_en_trgm")
   @@map("magazines")
 }
 
@@ -164,6 +171,9 @@ model Article {
 
   // Full-text search
   @@index([title])
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_articles_title_trgm")
+  @@index([subtitle(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_articles_subtitle_trgm")
+  @@index([summary(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_articles_summary_trgm")
   @@map("articles")
 }
 
@@ -183,6 +193,7 @@ model Tag {
   articleTags ArticleTag[]
 
   @@index([type])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_tags_name_trgm")
   @@map("tags")
 }
 
@@ -216,6 +227,8 @@ model Game {
   articleGames ArticleGame[]
 
   @@index([releaseDate])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_games_name_trgm")
+  @@index([nameEn(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_games_name_en_trgm")
   @@map("games")
 }
 
