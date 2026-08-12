@@ -61,22 +61,24 @@ function ChipWithRemove({
   children: React.ReactNode;
 }) {
   return (
+    // overflow-visible: the badge clips its children by default, which would
+    // swallow a button sitting on the corner.
     <Badge
       variant="secondary"
       title={title}
-      className={`group/chip gap-0 py-0 pr-0.5 text-xs font-normal ${className ?? ""}`}
+      className={`group/chip relative overflow-visible text-xs font-normal ${className ?? ""}`}
     >
-      <span className="flex items-center">{children}</span>
+      {children}
       <button
         type="button"
         aria-label={`移除 ${title}`}
-        className="ml-0.5 rounded-full p-0.5 opacity-40 transition-opacity hover:bg-black/10 hover:opacity-100 group-hover/chip:opacity-70"
+        className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-white opacity-0 shadow-sm transition-opacity focus-visible:opacity-100 group-hover/chip:opacity-100"
         onClick={(e) => {
           e.stopPropagation();
           onRemove();
         }}
       >
-        <X className="h-2.5 w-2.5" />
+        <X className="h-2.5 w-2.5" strokeWidth={3} />
       </button>
     </Badge>
   );
@@ -299,7 +301,7 @@ function ArticleRow({
             {article.subtitle}
           </div>
         )}
-        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-2 text-xs text-muted-foreground">
           {article.authors && article.authors.length > 0 && (
             <span className="mr-0.5">{article.authors.join(", ")}</span>
           )}
@@ -307,18 +309,18 @@ function ArticleRow({
               the category outlined, games filled with an icon, tags filled. */}
           {article.category && (
             <ChipWithRemove
-              className="border border-dashed bg-transparent text-foreground"
+              className="border-dashed border-muted-foreground/50 bg-transparent text-muted-foreground"
               title={`分類：${article.category}`}
               onRemove={() => onQuickChange({ ...article, category: undefined })}
             >
-              <FolderOpen className="mr-1 h-3 w-3 opacity-70" />
+              <FolderOpen className="h-3 w-3" />
               {article.category}
             </ChipWithRemove>
           )}
           {article.suggestedGames?.map((game, i) => (
             <ChipWithRemove
               key={`game-${i}`}
-              className="bg-violet-100 text-violet-900"
+              className="bg-violet-600 font-medium text-white"
               title={`遊戲：${game}`}
               onRemove={() =>
                 onQuickChange({
@@ -327,7 +329,7 @@ function ArticleRow({
                 })
               }
             >
-              <Gamepad2 className="mr-1 h-3 w-3" />
+              <Gamepad2 className="h-3 w-3" />
               {game}
             </ChipWithRemove>
           ))}
