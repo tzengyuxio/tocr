@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { issueCreateSchema, withPublishSort } from "@/lib/validators/issue";
+import {
+  issueCreateSchema,
+  withPublishSort,
+  withTocReviewedAt,
+} from "@/lib/validators/issue";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { isValidApiToken } from "@/lib/api-token";
 
 // GET /api/issues - 取得單期列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -49,8 +54,9 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     validatedData.order = (maxOrder._max.order ?? -1) + 1;
   }
 
+  const isHuman = !isValidApiToken(request.headers.get("authorization"));
   const issue = await prisma.issue.create({
-    data: withPublishSort(validatedData),
+    data: withTocReviewedAt(withPublishSort(validatedData), { isHuman }),
   });
 
   await logEdit("Issue", issue.id, "CREATE");

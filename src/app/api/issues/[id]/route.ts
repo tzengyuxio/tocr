@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { issueUpdateSchema, withPublishSortIfPresent } from "@/lib/validators/issue";
+import {
+  issueUpdateSchema,
+  withPublishSortIfPresent,
+  withTocReviewedAt,
+} from "@/lib/validators/issue";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { isValidApiToken } from "@/lib/api-token";
 
 // GET /api/issues/[id] - 取得單一單期
 export const GET = withErrorHandler(async (
@@ -47,9 +52,10 @@ export const PUT = withErrorHandler(async (
   const body = await request.json();
   const validatedData = issueUpdateSchema.parse(body);
 
+  const isHuman = !isValidApiToken(request.headers.get("authorization"));
   const issue = await prisma.issue.update({
     where: { id },
-    data: withPublishSortIfPresent(validatedData),
+    data: withTocReviewedAt(withPublishSortIfPresent(validatedData), { isHuman }),
   });
 
   await logEdit("Issue", id, "UPDATE", validatedData);

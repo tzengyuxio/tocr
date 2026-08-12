@@ -67,3 +67,11 @@
 `Magazine.description` 等描述欄位以**純文字**渲染，不經過 markdown 處理。
 
 期刊名稱請用中文書名號 `《》`，不要用 `_斜體_` 或 `*粗體*` —— 那些符號會原樣顯示。
+
+## 目錄複查
+
+`Issue.tocReviewedAt` 記錄**有人確認過目錄內容**的時間，`null` 代表尚未複查。
+
+會寫入這個欄位的只有帶 session 的後台操作（單期編輯表單的「目錄已人工複查」）。帶 `Authorization: Bearer` 的腳本寫入即使送出 `tocReviewed: true` 也會被忽略——機器沒有看過掃描圖，不能自稱複查過。
+
+因此「有目錄圖但 `tocReviewedAt` 為 null」就是待人工檢查的清單，後台 `/admin/issues` 依此篩選。

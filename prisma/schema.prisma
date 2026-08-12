@@ -121,6 +121,9 @@ model Issue {
   publishSort  DateTime @map("publish_sort")
   coverImage   String?  @map("cover_image")
   tocImages    String[] @default([]) @map("toc_images") // 目錄頁掃描圖（可多張）
+  // When a person confirmed the table of contents. OCR run through the API
+  // token leaves this null, so unreviewed issues can be found and checked.
+  tocReviewedAt DateTime? @map("toc_reviewed_at")
   pageCount    Int?     @map("page_count")
   price        Decimal? @db.Decimal(10, 2)
   notes        String?  @db.Text
