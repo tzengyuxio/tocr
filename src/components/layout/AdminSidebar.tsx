@@ -13,6 +13,7 @@ import {
   Download,
   Users,
   Award,
+  History,
   LayoutDashboard,
   ChevronLeft,
   ChevronRight,
@@ -38,6 +39,7 @@ const navItems = [
   { title: "批次匯入", href: "/admin/magazines/import", icon: Upload },
   { title: "資料匯出", href: "/admin/export", icon: Download },
   { title: "貢獻者", href: "/admin/contributors", icon: Award },
+  { title: "編輯紀錄", href: "/admin/edit-logs", icon: History, adminOnly: true },
   { title: "使用者管理", href: "/admin/users", icon: Users, adminOnly: true },
 ];
 

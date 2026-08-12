@@ -226,7 +226,8 @@ Article N:N Game (ArticleGame)
 | `/admin/games` | 遊戲管理 |
 | `/admin/games/[id]` | 遊戲詳情 + 關聯文章 |
 | `/admin/ocr` | AI 目錄辨識 |
-| `/admin/users` | 使用者管理 |
+| `/admin/users` | 使用者管理（僅 ADMIN） |
+| `/admin/edit-logs` | 編輯紀錄檢視（僅 ADMIN，可依使用者／類型／動作篩選） |
 
 ## API 端點
 
