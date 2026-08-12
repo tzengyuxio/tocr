@@ -12,26 +12,29 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, FileText, Tags, Gamepad2, Calendar, ScanText, Upload, ArrowRight, Plus, FileEdit } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { measure } from "@/lib/perf";
 import { StatGrid } from "@/components/StatGrid";
 import { resolveEditLogTargets } from "@/lib/edit-log-targets";
 import { EditLogEntry } from "@/components/EditLogEntry";
 
 export default async function AdminDashboardPage() {
   const [magazineCount, issueCount, articleCount, tagCount, gameCount, recentLogs] =
-    await Promise.all([
-      prisma.magazine.count(),
-      prisma.issue.count(),
-      prisma.article.count(),
-      prisma.tag.count(),
-      prisma.game.count(),
-      prisma.editLog.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 10,
-        include: {
-          user: { select: { name: true, email: true } },
-        },
-      }),
-    ]);
+    await measure("admin/dashboard", () =>
+      Promise.all([
+        prisma.magazine.count(),
+        prisma.issue.count(),
+        prisma.article.count(),
+        prisma.tag.count(),
+        prisma.game.count(),
+        prisma.editLog.findMany({
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          include: {
+            user: { select: { name: true, email: true } },
+          },
+        }),
+      ])
+    );
 
   const targetOf = await resolveEditLogTargets(recentLogs);
 
