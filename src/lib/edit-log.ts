@@ -34,7 +34,8 @@ async function isApiTokenRequest(): Promise<boolean> {
 
 /**
  * DEV_USER and API_USER never sign in, so they have no row in `users` and every
- * edit log hits the userId foreign key. Create the row on first use.
+ * edit log hits the userId foreign key. Create the row on first use, and keep
+ * its name in sync so renaming them in code reaches existing deployments too.
  */
 type SyntheticUser = typeof DEV_USER | typeof API_USER;
 
@@ -52,7 +53,10 @@ function ensureUser(user: SyntheticUser): Promise<void> {
           name: user.name,
           role: user.role,
         },
-        update: {},
+        update: {
+          email: user.email,
+          name: user.name,
+        },
       })
       .then(() => undefined)
       .catch((error) => {

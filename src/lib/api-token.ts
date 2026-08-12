@@ -10,8 +10,8 @@ import { createHash, timingSafeEqual } from "node:crypto";
 // which changes came from a batch import rather than a person.
 export const API_USER = {
   id: "api-token",
-  email: "api-token@localhost",
-  name: "API Token",
+  email: "librarian@localhost",
+  name: "司書(NPC)",
   role: "ADMIN" as const,
 };
 
