@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { tagUpdateSchema } from "@/lib/validators/tag";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { diffChanges } from "@/lib/edit-log-diff";
 
 // GET /api/tags/[id] - 取得單一標籤
 export const GET = withErrorHandler(async (
@@ -80,12 +81,14 @@ export const PUT = withErrorHandler(async (
     }
   }
 
+  const before = await prisma.tag.findUnique({ where: { id } });
+
   const tag = await prisma.tag.update({
     where: { id },
     data: validatedData,
   });
 
-  await logEdit("Tag", id, "UPDATE", validatedData);
+  await logEdit("Tag", id, "UPDATE", diffChanges(before, tag));
 
   return NextResponse.json(tag);
 }, "Update tag");

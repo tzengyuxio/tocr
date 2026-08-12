@@ -24,6 +24,7 @@ import {
 import { FileEdit } from "lucide-react";
 import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
 import { resolveEditLogTargets } from "@/lib/edit-log-targets";
+import type { FieldDiff } from "@/lib/edit-log-diff";
 import { EditLogTargetLink } from "@/components/EditLogEntry";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
@@ -38,13 +39,61 @@ const PAGE_SIZE = 50;
 const ACTIONS = ["CREATE", "UPDATE", "DELETE"];
 const ENTITY_TYPES = ["Magazine", "Issue", "Article", "Tag", "Game", "User"];
 
-/** Which fields an UPDATE touched -- the full payload is too wide for a table. */
-function changedFields(changes: Prisma.JsonValue): string {
-  if (!changes || typeof changes !== "object" || Array.isArray(changes)) {
-    return "—";
+const MAX_VALUE_LENGTH = 40;
+
+/** Logs written before the diff landed carry the new value alone. */
+function isFieldDiff(value: unknown): value is FieldDiff {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    "from" in value &&
+    "to" in value
+  );
+}
+
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "（空）";
+  if (Array.isArray(value)) {
+    return value.length === 0 ? "（空）" : value.join("、");
   }
-  const keys = Object.keys(changes);
-  return keys.length === 0 ? "—" : keys.join("、");
+  const text = typeof value === "object" ? JSON.stringify(value) : String(value);
+  return text.length > MAX_VALUE_LENGTH
+    ? `${text.slice(0, MAX_VALUE_LENGTH)}…`
+    : text;
+}
+
+/** Which fields an UPDATE touched and how -- the full payload is too wide. */
+function ChangeSummary({ changes }: { changes: Prisma.JsonValue }) {
+  if (!changes || typeof changes !== "object" || Array.isArray(changes)) {
+    return <>—</>;
+  }
+  const entries = Object.entries(changes);
+  if (entries.length === 0) return <>—</>;
+
+  // Pre-diff logs carry no before/after, so a row per field would only be a
+  // tall list of names.
+  if (!entries.every(([, value]) => isFieldDiff(value))) {
+    return <span className="truncate">{entries.map(([f]) => f).join("、")}</span>;
+  }
+
+  return (
+    <ul className="space-y-0.5">
+      {entries.map(([field, value]) => (
+        <li key={field} className="truncate">
+          <span className="font-medium text-foreground">{field}</span>
+          {isFieldDiff(value) && (
+            <>
+              {" "}
+              <span className="line-through">{formatValue(value.from)}</span>
+              {" → "}
+              <span>{formatValue(value.to)}</span>
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export default async function EditLogsPage({
@@ -165,8 +214,8 @@ export default async function EditLogsPage({
                     <TableCell className="max-w-xs truncate">
                       <EditLogTargetLink target={targetOf(log)} />
                     </TableCell>
-                    <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
-                      {changedFields(log.changes)}
+                    <TableCell className="max-w-xs text-sm text-muted-foreground">
+                      <ChangeSummary changes={log.changes} />
                     </TableCell>
                   </TableRow>
                 ))}

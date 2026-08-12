@@ -5,6 +5,7 @@ import { z } from "zod";
 import { isDevBypass } from "@/lib/dev-auth";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { diffChanges } from "@/lib/edit-log-diff";
 
 const userUpdateSchema = z.object({
   role: z.enum(["VIEWER", "EDITOR", "ADMIN"]),
@@ -99,6 +100,11 @@ export const PUT = withErrorHandler(async (
   const body = await request.json();
   const validatedData = userUpdateSchema.parse(body);
 
+  const before = await prisma.user.findUnique({
+    where: { id },
+    select: { role: true },
+  });
+
   const user = await prisma.user.update({
     where: { id },
     data: { role: validatedData.role },
@@ -112,7 +118,7 @@ export const PUT = withErrorHandler(async (
     },
   });
 
-  await logEdit("User", id, "UPDATE", validatedData);
+  await logEdit("User", id, "UPDATE", diffChanges(before, { role: user.role }));
 
   return NextResponse.json(user);
 }, "Update user");

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { articleUpdateSchema } from "@/lib/validators/article";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { diffChanges } from "@/lib/edit-log-diff";
 
 // GET /api/articles/[id] - 取得單一文章
 export const GET = withErrorHandler(async (
@@ -56,6 +57,8 @@ export const PUT = withErrorHandler(async (
   const { gameIds, tagIds, ...articleData } = body;
   const validatedData = articleUpdateSchema.parse(articleData);
 
+  const before = await prisma.article.findUnique({ where: { id } });
+
   // 使用 transaction 更新文章和關聯
   const article = await prisma.$transaction(async (tx) => {
     // 更新文章基本資料
@@ -102,7 +105,7 @@ export const PUT = withErrorHandler(async (
     return updated;
   });
 
-  await logEdit("Article", id, "UPDATE", validatedData);
+  await logEdit("Article", id, "UPDATE", diffChanges(before, article));
 
   return NextResponse.json(article);
 }, "Update article");
