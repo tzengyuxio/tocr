@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, LogOut, User } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import Link from "next/link";
 
 interface AdminHeaderProps {
@@ -47,10 +47,12 @@ export function AdminHeader({ user, mobileMenu }: AdminHeaderProps) {
         <h1 className="text-lg font-semibold">後台管理系統</h1>
       </div>
       <div className="flex items-center gap-3">
+        {/* Same icon and wording as the sidebar's link, so the two entrances
+            read as one thing rather than two different destinations. */}
         <Button variant="outline" size="sm" asChild>
           <Link href="/">
-            <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-            前台
+            <Home className="mr-1.5 h-3.5 w-3.5" />
+            返回前台
           </Link>
         </Button>
         <Badge variant="secondary">{roleLabel}</Badge>
@@ -72,13 +74,6 @@ export function AdminHeader({ user, mobileMenu }: AdminHeaderProps) {
                 </p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <a href="/" className="flex items-center">
-                <User className="mr-2 h-4 w-4" />
-                前往前台
-              </a>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-red-600 focus:text-red-600"
