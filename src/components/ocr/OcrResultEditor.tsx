@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Trash2,
@@ -26,11 +27,12 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  ZoomIn,
+  Maximize2,
   Check,
   X,
+  ArrowUp,
+  ArrowDown,
   BetweenHorizontalStart,
-  BetweenHorizontalEnd,
   FolderOpen,
   Gamepad2,
   Gauge,
@@ -354,51 +356,59 @@ function ArticleRow({
           ))}
         </div>
       </div>
-      <Badge
-        variant="secondary"
-        title="辨識信心度：AI 對這筆結果的把握程度，越低越需要人工確認"
-        className={`shrink-0 gap-1 font-normal ${getConfidenceColor(article.confidence)}`}
-      >
-        <Gauge className="h-3 w-3" />
-        信心 {Math.round(article.confidence * 100)}%
-      </Badge>
-      {/* Insert where the gap actually is: a missed entry belongs next to its
-          neighbours, not appended to the end of 61 rows. */}
-      <div className="flex shrink-0 opacity-0 transition-opacity group-hover:opacity-100">
-        <Button
-          variant="ghost"
-          size="icon"
-          title="在此列上方新增文章"
-          onClick={(e) => {
-            e.stopPropagation();
-            onInsert("before");
-          }}
+      {/* Stacked, so the actions borrow the row's existing height instead of
+          reserving a wide strip that reads as blank until hovered. */}
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <Badge
+          variant="secondary"
+          title="辨識信心度：AI 對這筆結果的把握程度，越低越需要人工確認"
+          className={`gap-1 font-normal ${getConfidenceColor(article.confidence)}`}
         >
-          <BetweenHorizontalStart className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          title="在此列下方新增文章"
-          onClick={(e) => {
-            e.stopPropagation();
-            onInsert("after");
-          }}
-        >
-          <BetweenHorizontalEnd className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          title="刪除"
-          className="text-destructive hover:text-destructive"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+          <Gauge className="h-3 w-3" />
+          信心 {Math.round(article.confidence * 100)}%
+        </Badge>
+        {/* Insert where the gap actually is: a missed entry belongs next to
+            its neighbours, not appended to the end of 61 rows. */}
+        <div className="flex opacity-0 transition-opacity group-hover:opacity-100">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-auto gap-0 px-1.5"
+            title="在此列上方新增文章"
+            onClick={(e) => {
+              e.stopPropagation();
+              onInsert("before");
+            }}
+          >
+            <BetweenHorizontalStart className="h-4 w-4" />
+            <ArrowUp className="-ml-0.5 h-2.5 w-2.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-auto gap-0 px-1.5"
+            title="在此列下方新增文章"
+            onClick={(e) => {
+              e.stopPropagation();
+              onInsert("after");
+            }}
+          >
+            <BetweenHorizontalStart className="h-4 w-4" />
+            <ArrowDown className="-ml-0.5 h-2.5 w-2.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-destructive hover:text-destructive"
+            title="刪除"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -510,12 +520,6 @@ export function OcrResultEditor({
                 {(result.processingTime / 1000).toFixed(2)} 秒
               </CardDescription>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleAdd}>
-                <Plus className="mr-2 h-4 w-4" />
-                新增文章
-              </Button>
-            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -559,50 +563,59 @@ export function OcrResultEditor({
               <div className="w-2/5 shrink-0">
                 {/* A sticky block taller than its scrollport can never reach
                     its own bottom, which used to hide the foot of the scan
-                    until the article list ran out. The scrollport here is the
-                    admin <main>, so the viewport less the 3.5rem header, its
-                    padding and this block's own top offset. */}
-                <div className="sticky top-4 flex max-h-[calc(100vh-5rem)] flex-col gap-3">
-                  <div className="min-h-0 flex-1 overflow-hidden rounded-lg border bg-muted/30">
+                    until the article list ran out. The scrollport is the admin
+                    <main>: the viewport less its 3.5rem header, less main's
+                    padding at both ends, less this block's own top offset. */}
+                <div className="sticky top-4 flex max-h-[calc(100vh-8rem)] flex-col gap-3">
+                  {/* The cap lives on the image, in viewport units. A
+                      percentage height -- h-full or max-h-full -- resolves
+                      against a flex-derived height that is not definite, so the
+                      scan overflowed and got clipped rather than scaled: the
+                      viewport less the header, main's padding, the sticky
+                      offset and the controls below. */}
+                  <div className="flex min-h-0 justify-center overflow-hidden rounded-lg border bg-muted/30">
                     <img
                       src={tocImages[currentImageIndex]}
                       alt={`目錄頁 ${currentImageIndex + 1}`}
-                      className="h-full w-full cursor-pointer object-contain"
+                      className="max-h-[calc(100vh-11rem)] w-auto max-w-full cursor-pointer object-contain"
                       onClick={() => setIsZoomed(true)}
                     />
                   </div>
 
-                  <div className="flex shrink-0 items-center justify-between">
+                  <div className="flex shrink-0 items-center gap-2">
+                    {tocImages.length > 1 && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={currentImageIndex === 0}
+                          onClick={() => setCurrentImageIndex((i) => i - 1)}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm text-muted-foreground">
+                          {currentImageIndex + 1} / {tocImages.length}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={currentImageIndex === tocImages.length - 1}
+                          onClick={() => setCurrentImageIndex((i) => i + 1)}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      disabled={currentImageIndex === 0}
-                      onClick={() => setCurrentImageIndex((i) => i - 1)}
+                      className="ml-auto"
+                      onClick={() => setIsZoomed(true)}
                     >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-sm text-muted-foreground">
-                      {currentImageIndex + 1} / {tocImages.length}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={currentImageIndex === tocImages.length - 1}
-                      onClick={() => setCurrentImageIndex((i) => i + 1)}
-                    >
-                      <ChevronRight className="h-4 w-4" />
+                      <Maximize2 className="mr-2 h-4 w-4" />
+                      全螢幕檢視
                     </Button>
                   </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full shrink-0"
-                    onClick={() => setIsZoomed(true)}
-                  >
-                    <ZoomIn className="mr-2 h-4 w-4" />
-                    放大檢視
-                  </Button>
                 </div>
               </div>
             )}
@@ -610,8 +623,12 @@ export function OcrResultEditor({
             {/* Right: Article list with in-place editing */}
             <div className="min-w-0 flex-1 space-y-2">
               {articles.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                <div className="flex flex-col items-center justify-center gap-3 py-12 text-center text-muted-foreground">
                   <p>尚無辨識結果</p>
+                  <Button variant="outline" onClick={handleAdd}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    新增文章
+                  </Button>
                 </div>
               ) : (
                 articles.map((article, index) => (
@@ -630,19 +647,6 @@ export function OcrResultEditor({
                     onEditChange={setEditingArticle}
                   />
                 ))
-              )}
-
-              {/* The list runs to dozens of rows; the header button is a long
-                  way back up by the time you reach the end. */}
-              {articles.length > 0 && (
-                <Button
-                  variant="outline"
-                  className="w-full border-dashed"
-                  onClick={handleAdd}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  在最後新增文章
-                </Button>
               )}
             </div>
           </div>
@@ -671,12 +675,15 @@ export function OcrResultEditor({
       {/* Zoom dialog */}
       {hasTocImages && (
         <Dialog open={isZoomed} onOpenChange={setIsZoomed}>
-          <DialogContent className="max-w-4xl max-h-[90vh] p-2">
+          <DialogContent className="max-w-[96vw] sm:max-w-[96vw] max-h-[96vh] p-2">
+            <DialogTitle className="sr-only">
+              目錄頁 {currentImageIndex + 1} / {tocImages.length}
+            </DialogTitle>
             <div className="relative">
               <img
                 src={tocImages[currentImageIndex]}
                 alt={`目錄頁 ${currentImageIndex + 1}`}
-                className="w-full object-contain max-h-[85vh]"
+                className="mx-auto max-h-[92vh] w-auto max-w-full object-contain"
               />
               {tocImages.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 rounded-full bg-black/60 px-4 py-2 text-white">
