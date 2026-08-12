@@ -35,9 +35,14 @@ const FILTERS = [
   {
     key: "pending",
     label: "待複查",
-    description: "已有目錄頁掃描圖，但沒有人確認過內容",
-    // Issues with no scans have nothing to review yet.
-    where: { tocReviewedAt: null, NOT: { tocImages: { isEmpty: true } } },
+    description: "已有目錄資料，但沒有人確認過內容",
+    // An issue with neither scans nor articles has nothing to review yet.
+    // Articles count on their own: OCR can be run on images that were never
+    // attached to the issue.
+    where: {
+      tocReviewedAt: null,
+      OR: [{ NOT: { tocImages: { isEmpty: true } } }, { articles: { some: {} } }],
+    },
   },
   {
     key: "reviewed",

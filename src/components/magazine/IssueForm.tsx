@@ -40,6 +40,8 @@ export function IssueForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const initialTocReviewed = initialData?.tocReviewed ?? false;
+
   const {
     register,
     handleSubmit,
@@ -59,13 +61,19 @@ export function IssueForm({
       pageCount: initialData?.pageCount || null,
       price: initialData?.price || null,
       notes: initialData?.notes || "",
-      tocReviewed: initialData?.tocReviewed ?? false,
+      tocReviewed: initialTocReviewed,
     },
   });
 
   const onSubmit = async (data: IssueCreateInput) => {
     setIsSubmitting(true);
     setError(null);
+
+    // Only send the review flag when this editor actually changed it, so a page
+    // left open does not undo a review somebody else made in the meantime.
+    if (data.tocReviewed === initialTocReviewed) {
+      delete data.tocReviewed;
+    }
 
     try {
       const url =

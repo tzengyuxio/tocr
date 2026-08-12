@@ -68,19 +68,27 @@ export function withPublishSortIfPresent<T extends { publishDate?: string }>(
 }
 
 /**
- * Turn the caller's `tocReviewed` flag into the stored timestamp. Only a human
- * session may set it -- scripted writes go through the API token and have not
- * read the scans, so their flag is dropped rather than trusted.
+ * Turn the caller's `tocReviewed` flag into the stored timestamp.
+ *
+ * Only a human session may set it -- scripted writes go through the API token
+ * and have not read the scans, so their flag is dropped rather than trusted.
+ *
+ * The timestamp only moves on a transition. Re-saving an already-reviewed
+ * issue to fix an unrelated field would otherwise reset the date to today and
+ * lose when the review actually happened.
  */
 export function withTocReviewedAt<T extends { tocReviewed?: boolean }>(
   data: T,
-  { isHuman }: { isHuman: boolean }
+  { isHuman, current }: { isHuman: boolean; current: Date | null }
 ): Omit<T, "tocReviewed"> & { tocReviewedAt?: Date | null } {
   const { tocReviewed, ...rest } = data;
   if (tocReviewed === undefined || !isHuman) {
     return rest;
   }
-  return { ...rest, tocReviewedAt: tocReviewed ? new Date() : null };
+  if (tocReviewed) {
+    return current ? rest : { ...rest, tocReviewedAt: new Date() };
+  }
+  return current ? { ...rest, tocReviewedAt: null } : rest;
 }
 
 export type IssueCreateInput = z.infer<typeof issueCreateSchema>;

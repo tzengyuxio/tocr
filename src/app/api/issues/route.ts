@@ -56,7 +56,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const isHuman = !isValidApiToken(request.headers.get("authorization"));
   const issue = await prisma.issue.create({
-    data: withTocReviewedAt(withPublishSort(validatedData), { isHuman }),
+    data: withTocReviewedAt(withPublishSort(validatedData), {
+      isHuman,
+      current: null,
+    }),
   });
 
   await logEdit("Issue", issue.id, "CREATE");

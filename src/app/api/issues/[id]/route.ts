@@ -53,12 +53,21 @@ export const PUT = withErrorHandler(async (
   const validatedData = issueUpdateSchema.parse(body);
 
   const isHuman = !isValidApiToken(request.headers.get("authorization"));
-  const issue = await prisma.issue.update({
+  const existing = await prisma.issue.findUnique({
     where: { id },
-    data: withTocReviewedAt(withPublishSortIfPresent(validatedData), { isHuman }),
+    select: { tocReviewedAt: true },
   });
 
-  await logEdit("Issue", id, "UPDATE", validatedData);
+  // Log what was written, not what was asked for: a token write's tocReviewed
+  // flag is dropped, and the history should not claim otherwise.
+  const data = withTocReviewedAt(withPublishSortIfPresent(validatedData), {
+    isHuman,
+    current: existing?.tocReviewedAt ?? null,
+  });
+
+  const issue = await prisma.issue.update({ where: { id }, data });
+
+  await logEdit("Issue", id, "UPDATE", data);
 
   return NextResponse.json(issue);
 }, "Update issue");
