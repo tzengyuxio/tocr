@@ -34,7 +34,12 @@ export const issueCreateSchema = z.object({
   order: z.coerce.number().int().optional(),
 });
 
-export const issueUpdateSchema = issueCreateSchema.partial().omit({ magazineId: true });
+// .partial() makes fields optional but keeps their defaults, so a partial
+// update that omits tocImages would silently wipe the scans already attached.
+export const issueUpdateSchema = issueCreateSchema
+  .partial()
+  .omit({ magazineId: true })
+  .extend({ tocImages: z.array(z.string()).optional() });
 
 /**
  * publishSort is derived, never supplied by the caller, so that the ordering

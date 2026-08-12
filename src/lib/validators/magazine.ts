@@ -34,7 +34,13 @@ export const magazineCreateSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const magazineUpdateSchema = magazineCreateSchema.partial();
+// .partial() makes fields optional but keeps their defaults, so a partial
+// update that omits these would silently reset them -- isActive back to true,
+// aliases back to empty. Drop the defaults for updates.
+export const magazineUpdateSchema = magazineCreateSchema.partial().extend({
+  aliases: z.array(z.string()).optional(),
+  isActive: z.boolean().optional(),
+});
 
 /**
  * foundedSort is derived, never supplied by the caller. Add it whenever

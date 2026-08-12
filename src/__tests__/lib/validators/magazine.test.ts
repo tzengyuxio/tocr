@@ -135,3 +135,14 @@ describe("magazineUpdateSchema", () => {
     }
   });
 });
+
+describe("magazineUpdateSchema defaults", () => {
+  it("leaves isActive and aliases alone when they are not supplied", () => {
+    const result = magazineUpdateSchema.safeParse({ publisher: "某出版社" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).not.toHaveProperty("isActive");
+      expect(result.data).not.toHaveProperty("aliases");
+    }
+  });
+});

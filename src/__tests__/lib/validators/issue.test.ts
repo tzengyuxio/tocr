@@ -270,3 +270,13 @@ describe("issueUpdateSchema", () => {
     }
   });
 });
+
+describe("issueUpdateSchema defaults", () => {
+  it("leaves tocImages alone when it is not supplied", () => {
+    const result = issueUpdateSchema.safeParse({ price: 120 });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).not.toHaveProperty("tocImages");
+    }
+  });
+});
