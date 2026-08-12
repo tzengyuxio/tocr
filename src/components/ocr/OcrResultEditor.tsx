@@ -309,7 +309,7 @@ function ArticleRow({
               the category outlined, games filled with an icon, tags filled. */}
           {article.category && (
             <ChipWithRemove
-              className="border-dashed border-muted-foreground/50 bg-transparent text-muted-foreground"
+              className="bg-amber-400 font-medium text-amber-950"
               title={`分類：${article.category}`}
               onRemove={() => onQuickChange({ ...article, category: undefined })}
             >
