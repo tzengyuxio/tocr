@@ -9,6 +9,6 @@
   - **精選導向**：人工挑幾期已建好目錄的當櫥窗，其他區塊先收起來。畫面最好看，但要有人維護挑選名單
 - [ ] **前後台切換的入口位置不直覺** — 後台側欄的收攏「<」按鈕容易被誤認成回前台，而真正的「返回前台」在右上角，跟一般習慣不同；首頁的「後台管理」按鈕也太顯眼，看能不能改用圖示或其他方式弱化（沒有合適做法就維持現狀）（2026-08-12）
 - [ ] **後台頁面切換明顯卡頓** — 本機量測顯示頁面自身的查詢不慢：production build 各頁資料載入 2–14ms，dev 暖機後 60–90ms（#18）。但每次導覽還會經過 `auth()` 的 session 查詢（database session），那才是 cold start 會卡住的地方。已加上 `PERF_LOG=1` 量測（含 `admin/session`），待在實際部署收數據（2026-08-12）
-- [ ] **編輯紀錄要記下前後值** — 對象名稱與連結已補上（#16），但 `edit_logs.changes` 只存寫入的新值，看不出改動前是什麼。要有真正的 diff，得在各 UPDATE route 先讀舊值再比對（2026-08-12）
+- [ ] **編輯紀錄要記下前後值** — `edit_logs.changes` 只存寫入的新值，看不出改動前是什麼。要有真正的 diff，得在各 UPDATE route 先讀舊值再比對（2026-08-12）
 - [ ] **製作 favicon**（2026-08-12）
-- [ ] **schema.prisma 沒有宣告 SQL migration 建的索引** — `prisma migrate dev` 會把 trgm 全文索引與 `magazines_issn_idx` 等視為 drift 並產生 DROP（做 #17 時踩到，已手動復原）。之後改 schema 前務必檢查產出的 migration，或想辦法讓 schema 涵蓋這些索引（2026-08-12）
+- [ ] **schema.prisma 沒有宣告 SQL migration 建的索引** — `prisma migrate dev` 會把 trgm 全文索引與 `magazines_issn_idx` 等視為 drift 並產生 DROP（已踩過一次並手動復原）。之後改 schema 前務必檢查產出的 migration，或想辦法讓 schema 涵蓋這些索引（2026-08-12）
