@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { measure } from "@/lib/perf";
 import {
   Card,
   CardContent,
@@ -26,24 +27,28 @@ export default async function ContributorsPage() {
     totalEdits,
     recentEditsCount,
     recentActivity,
-  ] = await Promise.all([
-    getContributorLeaderboard({ take: 20, includeEmail: true }),
-    prisma.editLog.count(),
-    prisma.editLog.count({
-      where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
-    }),
-    prisma.editLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 30,
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, image: true },
+  ] = await measure("admin/contributors", () =>
+    Promise.all([
+      getContributorLeaderboard({ take: 20, includeEmail: true }),
+      prisma.editLog.count(),
+      prisma.editLog.count({
+        where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+      }),
+      prisma.editLog.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 30,
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, image: true },
+          },
         },
-      },
-    }),
-  ]);
+      }),
+    ])
+  );
 
-  const targetOf = await resolveEditLogTargets(recentActivity);
+  const targetOf = await measure("admin/contributors:targets", () =>
+    resolveEditLogTargets(recentActivity)
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">

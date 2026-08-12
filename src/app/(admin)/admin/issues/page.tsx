@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { measure } from "@/lib/perf";
 import {
   Card,
   CardContent,
@@ -70,20 +71,22 @@ export default async function IssueReviewPage({
   const pageParam = Array.isArray(params.page) ? params.page[0] : params.page;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  const [issues, total, pendingCount] = await Promise.all([
-    prisma.issue.findMany({
-      where: filter.where,
-      orderBy: { publishSort: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      include: {
-        magazine: { select: { id: true, name: true } },
-        _count: { select: { articles: true } },
-      },
-    }),
-    prisma.issue.count({ where: filter.where }),
-    prisma.issue.count({ where: FILTERS[0].where }),
-  ]);
+  const [issues, total, pendingCount] = await measure("admin/issues", () =>
+    Promise.all([
+      prisma.issue.findMany({
+        where: filter.where,
+        orderBy: { publishSort: "desc" },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+        include: {
+          magazine: { select: { id: true, name: true } },
+          _count: { select: { articles: true } },
+        },
+      }),
+      prisma.issue.count({ where: filter.where }),
+      prisma.issue.count({ where: FILTERS[0].where }),
+    ])
+  );
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const pageHref = (target: number) =>

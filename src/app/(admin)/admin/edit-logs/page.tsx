@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { measure } from "@/lib/perf";
 import {
   Card,
   CardContent,
@@ -68,24 +69,28 @@ export default async function EditLogsPage({
     ...(action && ACTIONS.includes(action) && { action }),
   };
 
-  const [logs, total, users] = await Promise.all([
-    prisma.editLog.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      include: { user: { select: { id: true, name: true, email: true } } },
-    }),
-    prisma.editLog.count({ where }),
-    prisma.user.findMany({
-      where: { editLogs: { some: {} } },
-      select: { id: true, name: true, email: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  const [logs, total, users] = await measure("admin/edit-logs", () =>
+    Promise.all([
+      prisma.editLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+        include: { user: { select: { id: true, name: true, email: true } } },
+      }),
+      prisma.editLog.count({ where }),
+      prisma.user.findMany({
+        where: { editLogs: { some: {} } },
+        select: { id: true, name: true, email: true },
+        orderBy: { name: "asc" },
+      }),
+    ])
+  );
 
   // This page is ADMIN-only, so target names may include user accounts.
-  const targetOf = await resolveEditLogTargets(logs, { revealUsers: true });
+  const targetOf = await measure("admin/edit-logs:targets", () =>
+    resolveEditLogTargets(logs, { revealUsers: true })
+  );
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
