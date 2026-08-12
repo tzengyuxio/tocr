@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { optimizeImage } from "@/lib/image-optimize";
 
 async function uploadLocal(
   filename: string,
-  file: File
+  buffer: Buffer
 ): Promise<{ url: string; pathname: string }> {
-  const buffer = Buffer.from(await file.arrayBuffer());
   const filePath = path.join(process.cwd(), "public", filename);
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, buffer);
@@ -42,18 +42,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 縮圖與轉檔，避免累積未優化的原檔
+    const optimized = await optimizeImage(file, folder);
+
     // 產生檔案名稱
     const timestamp = Date.now();
-    const ext = file.name.split(".").pop();
-    const filename = `${folder}/${timestamp}-${Math.random().toString(36).substring(7)}.${ext}`;
+    const filename = `${folder}/${timestamp}-${Math.random().toString(36).substring(7)}.${optimized.ext}`;
 
     // 有 Vercel Blob token 時上傳到 Blob，否則存到本地 public/
     // placeholder token 長度遠小於真正的 token，以此判斷是否為有效 token
     const token = process.env.BLOB_READ_WRITE_TOKEN;
     const useLocalStorage = !token || token.length < 50;
     const result = useLocalStorage
-      ? await uploadLocal(filename, file)
-      : await put(filename, file, { access: "public" });
+      ? await uploadLocal(filename, optimized.data)
+      : await put(filename, optimized.data, {
+          access: "public",
+          contentType: optimized.contentType,
+        });
 
     return NextResponse.json({
       url: result.url,

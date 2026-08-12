@@ -23,8 +23,12 @@ export default auth((req) => {
       return NextResponse.redirect(new URL("/auth/unauthorized", req.url));
     }
 
-    // 使用者管理只有 ADMIN 可存取
-    if (pathname.startsWith("/admin/users") && userRole !== "ADMIN") {
+    // 使用者管理與編輯紀錄只有 ADMIN 可存取
+    if (
+      (pathname.startsWith("/admin/users") ||
+        pathname.startsWith("/admin/edit-logs")) &&
+      userRole !== "ADMIN"
+    ) {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
   }
