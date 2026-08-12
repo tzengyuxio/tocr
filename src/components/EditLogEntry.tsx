@@ -1,0 +1,59 @@
+import { ExternalLink } from "lucide-react";
+import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
+import type { EditLogTarget } from "@/lib/edit-log-targets";
+import { format } from "date-fns";
+import { zhTW } from "date-fns/locale";
+
+/**
+ * The edited record, linked when it still exists. Opens in a new tab so
+ * reviewing a change never loses the log you were reading.
+ */
+export function EditLogTargetLink({ target }: { target: EditLogTarget }) {
+  if (!target.href) {
+    return <span className="text-muted-foreground">{target.label}</span>;
+  }
+  return (
+    <a
+      href={target.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-medium hover:underline"
+    >
+      {target.label}
+      <ExternalLink className="ml-1 inline h-3 w-3 align-[-1px]" />
+    </a>
+  );
+}
+
+export interface EditLogEntryLog {
+  action: string;
+  entityType: string;
+  createdAt: Date;
+  user: { name: string | null; email: string };
+}
+
+/** One line of edit history: who did what, to which record. */
+export function EditLogEntry({
+  log,
+  target,
+}: {
+  log: EditLogEntryLog;
+  target: EditLogTarget;
+}) {
+  return (
+    <div className="flex items-center gap-2.5 rounded border px-3 py-2 text-sm">
+      <div className="shrink-0">{actionIcon(log.action)}</div>
+      <div className="min-w-0 flex-1 truncate">
+        <span className="font-medium">{log.user.name || log.user.email}</span>
+        <span className="text-muted-foreground">
+          {" "}
+          {actionLabel(log.action)}了{entityLabel(log.entityType)}{" "}
+        </span>
+        <EditLogTargetLink target={target} />
+      </div>
+      <span className="shrink-0 text-xs text-muted-foreground">
+        {format(new Date(log.createdAt), "MM/dd HH:mm", { locale: zhTW })}
+      </span>
+    </div>
+  );
+}

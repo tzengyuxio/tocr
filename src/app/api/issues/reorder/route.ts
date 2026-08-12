@@ -17,7 +17,9 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
     )
   );
 
-  await logEdit("Issue", magazineId, "UPDATE", { action: "reorder", issueIds });
+  // The edited record is the magazine whose issue order changed -- logging this
+  // as an Issue would point the id at a magazine.
+  await logEdit("Magazine", magazineId, "UPDATE", { action: "reorder", issueIds });
 
   return NextResponse.json({ success: true });
 }, "Reorder issues");

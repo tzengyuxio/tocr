@@ -13,9 +13,8 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, FileText, Tags, Gamepad2, Calendar, ScanText, Upload, ArrowRight, Plus, FileEdit } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { StatGrid } from "@/components/StatGrid";
-import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { resolveEditLogTargets } from "@/lib/edit-log-targets";
+import { EditLogEntry } from "@/components/EditLogEntry";
 
 export default async function AdminDashboardPage() {
   const [magazineCount, issueCount, articleCount, tagCount, gameCount, recentLogs] =
@@ -33,6 +32,8 @@ export default async function AdminDashboardPage() {
         },
       }),
     ]);
+
+  const targetOf = await resolveEditLogTargets(recentLogs);
 
   const hasData = magazineCount > 0;
 
@@ -162,23 +163,11 @@ export default async function AdminDashboardPage() {
             ) : (
               <div className="space-y-2">
                 {recentLogs.map((log) => (
-                  <div
+                  <EditLogEntry
                     key={log.id}
-                    className="flex items-center gap-2.5 rounded border px-3 py-2 text-sm"
-                  >
-                    <div className="shrink-0">{actionIcon(log.action)}</div>
-                    <div className="min-w-0 flex-1 truncate">
-                      <span className="font-medium">
-                        {log.user.name || log.user.email}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {" "}{actionLabel(log.action)}了{entityLabel(log.entityType)}
-                      </span>
-                    </div>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {format(new Date(log.createdAt), "MM/dd HH:mm", { locale: zhTW })}
-                    </span>
-                  </div>
+                    log={log}
+                    target={targetOf(log)}
+                  />
                 ))}
               </div>
             )}

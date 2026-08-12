@@ -12,10 +12,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { StatGrid } from "@/components/StatGrid";
 import { Users, FileEdit, Award } from "lucide-react";
-import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
+import { resolveEditLogTargets } from "@/lib/edit-log-targets";
+import { EditLogEntry } from "@/components/EditLogEntry";
 import { getContributorLeaderboard } from "@/lib/contributor-queries";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
 
 export const metadata: Metadata = {
   title: "貢獻者 - Admin",
@@ -43,6 +42,8 @@ export default async function ContributorsPage() {
       },
     }),
   ]);
+
+  const targetOf = await resolveEditLogTargets(recentActivity);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -132,25 +133,11 @@ export default async function ContributorsPage() {
             ) : (
               <div className="space-y-2">
                 {recentActivity.map((log) => (
-                  <div
+                  <EditLogEntry
                     key={log.id}
-                    className="flex items-center gap-3 rounded border px-3 py-2 text-sm"
-                  >
-                    <div className="shrink-0">
-                      {actionIcon(log.action)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="font-medium">
-                        {log.user.name || log.user.email}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {" "}{actionLabel(log.action)}了{entityLabel(log.entityType)}
-                      </span>
-                    </div>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {format(new Date(log.createdAt), "MM/dd HH:mm", { locale: zhTW })}
-                    </span>
-                  </div>
+                    log={log}
+                    target={targetOf(log)}
+                  />
                 ))}
               </div>
             )}

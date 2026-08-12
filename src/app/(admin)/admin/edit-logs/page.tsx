@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/table";
 import { FileEdit } from "lucide-react";
 import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
+import { resolveEditLogTargets } from "@/lib/edit-log-targets";
+import { EditLogTargetLink } from "@/components/EditLogEntry";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { EditLogFilters } from "./EditLogFilters";
@@ -81,6 +83,9 @@ export default async function EditLogsPage({
       orderBy: { name: "asc" },
     }),
   ]);
+
+  // This page is ADMIN-only, so target names may include user accounts.
+  const targetOf = await resolveEditLogTargets(logs, { revealUsers: true });
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -152,8 +157,8 @@ export default async function EditLogsPage({
                       </span>
                     </TableCell>
                     <TableCell>{entityLabel(log.entityType)}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {log.entityId}
+                    <TableCell className="max-w-xs truncate">
+                      <EditLogTargetLink target={targetOf(log)} />
                     </TableCell>
                     <TableCell className="max-w-xs truncate text-sm text-muted-foreground">
                       {changedFields(log.changes)}
