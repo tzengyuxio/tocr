@@ -52,6 +52,11 @@ export default async function HomePage() {
     prisma.tag.count(),
     prisma.issue.findMany({
       take: 6,
+      // Most of the 549 imported issues are still bare records with nothing but
+      // a number and a date -- showing those reads as a broken page.
+      where: {
+        OR: [{ coverImage: { not: null } }, { articles: { some: {} } }],
+      },
       orderBy: { publishSort: "desc" },
       include: {
         magazine: {
