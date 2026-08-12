@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
 import { Combobox } from "@/components/ui/combobox";
 import { OcrUploader } from "@/components/ocr/OcrUploader";
 import { OcrResultEditor } from "@/components/ocr/OcrResultEditor";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, History, Loader2, RefreshCw } from "lucide-react";
 import type { OcrResult, OcrArticleResult } from "@/services/ai/ocr.interface";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
@@ -58,6 +58,9 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
   );
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  // When the shown result came from a stored record rather than a fresh run.
+  const [loadedAt, setLoadedAt] = useState<string | null>(null);
+  const [isLoadingSaved, setIsLoadingSaved] = useState(false);
 
   const selectedMagazine = magazines.find((m) => m.id === selectedMagazineId);
   const selectedIssue = selectedMagazine?.issues.find(
@@ -74,20 +77,51 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
     label: `${issue.issueNumber}（${formatEdtf(issue.publishDate)}）${issue.tocImages.length > 0 ? ` [${issue.tocImages.length} 張目錄圖]` : ""}`,
   }));
 
+  /**
+   * Load the issue's last stored result, so arriving from 單期複查 lands on the
+   * review step instead of asking for another recognition run.
+   */
+  const loadSavedResult = useCallback(async (issueId: string) => {
+    setIsLoadingSaved(true);
+    try {
+      const response = await fetch(`/api/issues/${issueId}/ocr`);
+      if (!response.ok) return; // 404 just means nothing has been recognised yet
+      const data = await response.json();
+      setOcrResult(data.result as OcrResult);
+      setLoadedAt(data.processedAt);
+    } catch {
+      // Falling back to the uploader is the right failure mode here.
+    } finally {
+      setIsLoadingSaved(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedIssueId) loadSavedResult(selectedIssueId);
+  }, [selectedIssueId, loadSavedResult]);
+
   const handleMagazineChange = (value: string) => {
     setSelectedMagazineId(value);
     setSelectedIssueId("");
     setOcrResult(null);
+    setLoadedAt(null);
   };
 
   const handleIssueChange = (value: string) => {
     setSelectedIssueId(value);
     setOcrResult(null);
+    setLoadedAt(null);
   };
 
   const handleOcrResult = (result: OcrResult) => {
     setOcrResult(result);
+    setLoadedAt(null);
     setIsSaved(false);
+  };
+
+  const handleRerun = () => {
+    setOcrResult(null);
+    setLoadedAt(null);
   };
 
   const handleSave = async (articles: OcrArticleResult[]) => {
@@ -217,8 +251,33 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
         </div>
       )}
 
+      {/* 已存的辨識結果 */}
+      {loadedAt && ocrResult && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 p-4">
+          <div className="flex items-center gap-2 text-sm">
+            <History className="h-4 w-4 text-muted-foreground" />
+            <span>
+              載入了{" "}
+              <strong>
+                {format(new Date(loadedAt), "yyyy/MM/dd HH:mm", { locale: zhTW })}
+              </strong>{" "}
+              的辨識結果，共 {ocrResult.articles.length} 篇，可直接複查後儲存
+            </span>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleRerun}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            重新辨識
+          </Button>
+        </div>
+      )}
+
       {/* OCR 上傳或結果 */}
-      {!ocrResult ? (
+      {isLoadingSaved ? (
+        <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          讀取先前的辨識結果...
+        </div>
+      ) : !ocrResult ? (
         <OcrUploader
           issueId={selectedIssueId}
           initialImageUrls={selectedIssue?.tocImages}
