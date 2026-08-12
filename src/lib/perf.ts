@@ -5,7 +5,7 @@
  * actually chasing a slowdown. Timings go to stdout, which is where the
  * platform's log viewer picks them up.
  */
-const enabled = process.env.PERF_LOG === "1";
+const enabled = ["1", "true"].includes(process.env.PERF_LOG ?? "");
 
 export async function measure<T>(label: string, load: () => Promise<T>): Promise<T> {
   if (!enabled) return load();

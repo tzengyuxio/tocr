@@ -46,7 +46,9 @@ export default async function ContributorsPage() {
     ])
   );
 
-  const targetOf = await resolveEditLogTargets(recentActivity);
+  const targetOf = await measure("admin/contributors:targets", () =>
+    resolveEditLogTargets(recentActivity)
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">

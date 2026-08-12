@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { measure } from "@/lib/perf";
 import { redirect } from "next/navigation";
 import { AdminSidebar, AdminMobileMenuButton } from "@/components/layout/AdminSidebar";
 import { AdminHeader } from "@/components/layout/AdminHeader";
@@ -14,7 +15,9 @@ export default async function AdminLayout({
   if (isDevBypass) {
     user = DEV_USER;
   } else {
-    const session = await auth();
+    // Database-backed sessions, so this is a DB round trip on every admin
+    // navigation -- measured because it is the cost the page timings miss.
+    const session = await measure("admin/session", () => auth());
 
     if (!session?.user) {
       redirect("/auth/signin");

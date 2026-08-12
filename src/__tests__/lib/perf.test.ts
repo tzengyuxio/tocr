@@ -12,7 +12,11 @@ describe("measure", () => {
 
   afterEach(() => {
     log.mockRestore();
-    process.env.PERF_LOG = originalEnv;
+    if (originalEnv === undefined) {
+      delete process.env.PERF_LOG;
+    } else {
+      process.env.PERF_LOG = originalEnv;
+    }
   });
 
   async function loadMeasure() {
@@ -20,15 +24,15 @@ describe("measure", () => {
   }
 
   it("stays silent unless PERF_LOG is on", async () => {
-    process.env.PERF_LOG = undefined;
+    delete process.env.PERF_LOG;
     const measure = await loadMeasure();
 
     await expect(measure("page", async () => "data")).resolves.toBe("data");
     expect(log).not.toHaveBeenCalled();
   });
 
-  it("logs the label and a duration when enabled", async () => {
-    process.env.PERF_LOG = "1";
+  it.each(["1", "true"])("logs the label and a duration when PERF_LOG=%s", async (value) => {
+    process.env.PERF_LOG = value;
     const measure = await loadMeasure();
 
     await expect(measure("admin/dashboard", async () => 42)).resolves.toBe(42);

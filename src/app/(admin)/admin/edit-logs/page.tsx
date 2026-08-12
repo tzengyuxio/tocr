@@ -88,7 +88,9 @@ export default async function EditLogsPage({
   );
 
   // This page is ADMIN-only, so target names may include user accounts.
-  const targetOf = await resolveEditLogTargets(logs, { revealUsers: true });
+  const targetOf = await measure("admin/edit-logs:targets", () =>
+    resolveEditLogTargets(logs, { revealUsers: true })
+  );
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 

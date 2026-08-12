@@ -36,7 +36,9 @@ export default async function AdminDashboardPage() {
       ])
     );
 
-  const targetOf = await resolveEditLogTargets(recentLogs);
+  const targetOf = await measure("admin/dashboard:targets", () =>
+    resolveEditLogTargets(recentLogs)
+  );
 
   const hasData = magazineCount > 0;
 
