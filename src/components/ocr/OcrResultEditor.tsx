@@ -40,6 +40,8 @@ import {
 import type { OcrArticleResult, OcrResult } from "@/services/ai/ocr.interface";
 import { getTagTypeColor, getTagTypeLabel, formatTagLabel } from "@/lib/tag-colors";
 import { formatTagInput, parseTagInput } from "@/lib/tag-input";
+import { ARTICLE_CATEGORIES, categoryLabel } from "@/lib/article-categories";
+import type { ArticleCategory } from "@/lib/article-categories";
 
 interface OcrResultEditorProps {
   result: OcrResult;
@@ -185,15 +187,28 @@ function ArticleRow({
           </div>
           <div className="space-y-1">
             <Label className="text-xs">分類</Label>
-            <Input
+            <select
+              className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-none"
               value={editingArticle.category || ""}
               onChange={(e) =>
-                onEditChange({ ...editingArticle, category: e.target.value })
+                onEditChange({
+                  ...editingArticle,
+                  category: e.target.value
+                    ? (e.target.value as ArticleCategory)
+                    : undefined,
+                })
               }
               onKeyDown={(e) => {
                 if (e.key === "Escape") onCancelEdit();
               }}
-            />
+            >
+              <option value="">未分類</option>
+              {ARTICLE_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="space-y-1">
             <Label className="text-xs">作者（逗號分隔）</Label>
@@ -316,11 +331,11 @@ function ArticleRow({
           {article.category && (
             <ChipWithRemove
               className="bg-amber-400 font-medium text-amber-950"
-              title={`分類：${article.category}`}
+              title={`分類：${categoryLabel(article.category)}`}
               onRemove={() => onQuickChange({ ...article, category: undefined })}
             >
               <FolderOpen className="h-3 w-3" />
-              {article.category}
+              {categoryLabel(article.category)}
             </ChipWithRemove>
           )}
           {article.suggestedGames?.map((game, i) => (

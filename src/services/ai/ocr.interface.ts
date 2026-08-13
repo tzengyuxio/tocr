@@ -1,3 +1,5 @@
+import type { ArticleCategory } from "@/lib/article-categories";
+
 /**
  * AI OCR 服務介面定義
  * 設計為可抽換架構，支援 Claude、OpenAI、Gemini 等不同 Provider
@@ -8,7 +10,7 @@ export interface OcrArticleResult {
   title: string;
   subtitle?: string;
   authors?: string[];
-  category?: string;
+  category?: ArticleCategory;
   pageStart?: number;
   pageEnd?: number;
   summary?: string;

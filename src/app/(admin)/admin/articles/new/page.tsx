@@ -63,7 +63,7 @@ function NewArticleForm() {
       issueId: preselectedIssueId,
       title: "",
       subtitle: "",
-      category: "",
+      category: null,
       pageStart: null,
       pageEnd: null,
       summary: "",

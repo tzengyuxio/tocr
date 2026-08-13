@@ -26,7 +26,7 @@ describe("articleCreateSchema", () => {
       title: "遊戲評測：薩爾達傳說",
       subtitle: "王國之淚完整攻略",
       authors: ["王小明", "李大華"],
-      category: "遊戲評測",
+      category: "REVIEW",
       pageStart: 10,
       pageEnd: 25,
       summary: "本期封面故事",
@@ -266,7 +266,7 @@ describe("articleBatchCreateSchema", () => {
           title: "完整文章",
           subtitle: "副標題",
           authors: ["作者1", "作者2"],
-          category: "評測",
+          category: "REVIEW",
           pageStart: 10,
           pageEnd: 20,
           summary: "摘要",
@@ -283,7 +283,7 @@ describe("articleBatchCreateSchema", () => {
       expect(article.title).toBe("完整文章");
       expect(article.subtitle).toBe("副標題");
       expect(article.authors).toEqual(["作者1", "作者2"]);
-      expect(article.category).toBe("評測");
+      expect(article.category).toBe("REVIEW");
       expect(article.pageStart).toBe(10);
       expect(article.pageEnd).toBe(20);
       expect(article.sortOrder).toBe(1);

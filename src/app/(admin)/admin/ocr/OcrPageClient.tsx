@@ -58,6 +58,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
   );
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
   const [isSaved, setIsSaved] = useState(false);
+  const [markedReviewed, setMarkedReviewed] = useState(false);
   // When the shown result came from a stored record rather than a fresh run.
   const [loadedAt, setLoadedAt] = useState<string | null>(null);
   const [isLoadingSaved, setIsLoadingSaved] = useState(false);
@@ -152,11 +153,12 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
       }),
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      const data = await response.json();
       throw new Error(data.error || "儲存失敗");
     }
 
+    setMarkedReviewed(!!data.markedReviewed);
     setIsSaved(true);
 
     // 3 秒後跳轉到單期編輯頁
@@ -245,7 +247,9 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
                 clipRule="evenodd"
               />
             </svg>
-            <span className="font-medium">文章已成功儲存！</span>
+            <span className="font-medium">
+              文章已成功儲存{markedReviewed ? "，本期已標記為完成複查" : ""}！
+            </span>
           </div>
           <p className="mt-1 text-sm">正在跳轉至單期編輯頁面...</p>
         </div>

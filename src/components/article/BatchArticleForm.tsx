@@ -14,12 +14,13 @@ import {
 } from "@/components/ui/table";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import type { ArticleCategory } from "@/lib/article-categories";
 
 interface ArticleRow {
   key: number;
   title: string;
   subtitle: string;
-  category: string;
+  category: ArticleCategory | "";
   pageStart: string;
   pageEnd: string;
   authors: string;

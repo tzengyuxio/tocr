@@ -26,6 +26,7 @@ import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
+import { categoryLabel } from "@/lib/article-categories";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -199,7 +200,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell>
                           {article.category ? (
-                            <Badge variant="outline">{article.category}</Badge>
+                            <Badge variant="outline">{categoryLabel(article.category)}</Badge>
                           ) : (
                             "-"
                           )}
@@ -271,7 +272,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-1">
                       {article.category && (
-                        <Badge variant="outline" className="text-xs">{article.category}</Badge>
+                        <Badge variant="outline" className="text-xs">{categoryLabel(article.category)}</Badge>
                       )}
                       {article.articleGames.map((ag) => (
                         <Link key={ag.game.id} href={`/games/${ag.game.id}`}>

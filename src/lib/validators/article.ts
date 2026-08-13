@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { ARTICLE_CATEGORY_VALUES } from "@/lib/article-categories";
 
 export const articleCreateSchema = z.object({
   issueId: z.string().min(1, "單期 ID 為必填"),
   title: z.string().min(1, "標題為必填"),
   subtitle: z.string().optional().nullable(),
   authors: z.array(z.string()).default([]),
-  category: z.string().optional().nullable(),
+  category: z.enum(ARTICLE_CATEGORY_VALUES).optional().nullable(),
   pageStart: z.coerce.number().int().positive().optional().nullable(),
   pageEnd: z.coerce.number().int().positive().optional().nullable(),
   summary: z.string().optional().nullable(),
@@ -22,7 +23,7 @@ export const articleBatchCreateSchema = z.object({
       title: z.string().min(1, "標題為必填"),
       subtitle: z.string().optional().nullable(),
       authors: z.array(z.string()).default([]),
-      category: z.string().optional().nullable(),
+      category: z.enum(ARTICLE_CATEGORY_VALUES).optional().nullable(),
       pageStart: z.coerce.number().int().positive().optional().nullable(),
       pageEnd: z.coerce.number().int().positive().optional().nullable(),
       summary: z.string().optional().nullable(),

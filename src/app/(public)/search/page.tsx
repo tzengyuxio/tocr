@@ -29,6 +29,11 @@ import {
 import { cn } from "@/lib/utils";
 import { Search, FileText, BookOpen, Gamepad2, Filter } from "lucide-react";
 import { formatEdtf } from "@/lib/edtf";
+import {
+  ARTICLE_CATEGORIES,
+  categoryLabel,
+  isArticleCategory,
+} from "@/lib/article-categories";
 
 const PAGE_SIZE = 20;
 
@@ -60,7 +65,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const type: ResultType =
     params.type && isResultType(params.type) ? params.type : "article";
   const magazineId = params.magazine === "__all__" ? "" : (params.magazine || "");
-  const category = params.category === "__all__" ? "" : (params.category || "");
+  const rawCategory = params.category === "__all__" ? "" : (params.category || "");
+  // A hand-edited URL must not reach the enum column with a bad value.
+  const category = isArticleCategory(rawCategory) ? rawCategory : "";
   const page = Math.max(1, parseInt(params.page || "1") || 1);
 
   // 取得所有期刊供篩選
@@ -68,16 +75,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     orderBy: { name: "asc" },
     select: { id: true, name: true },
   });
-
-  // 取得所有分類供篩選
-  const categories = await prisma.article.findMany({
-    where: { category: { not: null } },
-    select: { category: true },
-    distinct: ["category"],
-  });
-  const uniqueCategories = categories
-    .map((c) => c.category)
-    .filter((c): c is string => c !== null);
 
   // 建立搜尋條件
   const where: Record<string, unknown> = {};
@@ -266,9 +263,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__all__">所有分類</SelectItem>
-                      {uniqueCategories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
+                      {ARTICLE_CATEGORIES.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -331,7 +328,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           )}
           {type === "article" && category && (
             <Badge variant="secondary">
-              分類：{category}
+              分類：{categoryLabel(category)}
               <Link
                 href={buildUrl({ category: "" })}
                 className="ml-1 hover:text-destructive"
@@ -511,7 +508,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <div className="flex flex-wrap items-center gap-2">
                   {article.category && (
                     <Link href={buildUrl({ category: article.category })}>
-                      <Badge variant="outline">{article.category}</Badge>
+                      <Badge variant="outline">
+                        {categoryLabel(article.category)}
+                      </Badge>
                     </Link>
                   )}
                   {article.authors.length > 0 && (

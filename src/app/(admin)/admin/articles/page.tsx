@@ -31,13 +31,15 @@ import { Search, FileText, Loader2, Pencil, BookOpen } from "lucide-react";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { formatEdtf } from "@/lib/edtf";
+import { categoryLabel } from "@/lib/article-categories";
+import type { ArticleCategory } from "@/lib/article-categories";
 
 interface Article {
   id: string;
   title: string;
   subtitle: string | null;
   authors: string[];
-  category: string | null;
+  category: ArticleCategory | null;
   pageStart: number | null;
   pageEnd: number | null;
   sortOrder: number;
@@ -228,7 +230,7 @@ export default function ArticlesPage() {
                       </TableCell>
                       <TableCell>
                         {article.category && (
-                          <Badge variant="outline">{article.category}</Badge>
+                          <Badge variant="outline">{categoryLabel(article.category)}</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
