@@ -1,4 +1,8 @@
-export const revalidate = 60;
+// Rendered per request: under ISR the first visit after an edit still serves
+// the stale copy while it regenerates, so someone who just finished a review
+// looks up their own name and does not find it. The leaderboard is two
+// in-region queries, so paying for them each time is cheaper than the doubt.
+export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { getContributorLeaderboard } from "@/lib/contributor-queries";

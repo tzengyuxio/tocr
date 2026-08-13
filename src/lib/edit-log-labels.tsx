@@ -21,6 +21,30 @@ export function actionLabel(action: string) {
   }
 }
 
+/**
+ * How many records a log row stands for. Batch saves write one row for the
+ * whole batch and put the size in `changes`, so a 50-article review would
+ * otherwise read as a single new article.
+ */
+export function editedCount(changes: unknown): number {
+  if (changes && typeof changes === "object" && "count" in changes) {
+    const count = (changes as { count: unknown }).count;
+    if (typeof count === "number" && count > 1) return count;
+  }
+  return 1;
+}
+
+/**
+ * Marking an issue as reviewed is a side effect of saving the recognised
+ * contents, not something anyone edited by hand. Saying "更新了單期" invites
+ * the reader to look for an edit that never happened.
+ */
+export function isTocReviewMark(entityType: string, changes: unknown): boolean {
+  if (entityType !== "Issue" || !changes || typeof changes !== "object") return false;
+  const keys = Object.keys(changes);
+  return keys.length === 1 && keys[0] === "tocReviewedAt";
+}
+
 export function entityLabel(type: string) {
   switch (type) {
     case "Magazine": return "期刊";
