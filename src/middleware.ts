@@ -33,18 +33,24 @@ export default auth((req) => {
     }
   }
 
-  // API 路由權限檢查（寫入操作）
+  // API 路由權限檢查（寫入操作，以及少數需要保護的讀取）
   if (pathname.startsWith("/api/") && !pathname.startsWith("/api/auth")) {
     const method = req.method;
     const isWriteOperation = ["POST", "PUT", "PATCH", "DELETE"].includes(
       method
     );
 
-    if (isWriteOperation) {
+    // The CSV export dumps the whole catalogue in one request. The data is
+    // public, but serving it to anyone is a cost the site should not carry.
+    const isProtectedRead = pathname.startsWith("/api/export");
+
+    if (isWriteOperation || isProtectedRead) {
       // Scripted writes may authenticate with the API token instead of a
       // session. User management stays session-only so a leaked token cannot
-      // be used to grant roles.
+      // be used to grant roles, and the token buys no reads at all -- it
+      // exists for unattended imports, not for pulling data out.
       if (
+        isWriteOperation &&
         !pathname.startsWith("/api/users") &&
         isValidApiToken(req.headers.get("authorization"))
       ) {

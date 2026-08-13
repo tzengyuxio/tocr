@@ -1,132 +1,99 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/api-utils";
-import { escapeCsvField } from "@/lib/csv/escape";
+import {
+  headerLine,
+  rowsFor,
+  type ExportIssue,
+} from "@/lib/csv/export-rows";
 
-const CSV_HEADERS = [
-  "magazine_name",
-  "magazine_name_original",
-  "publisher",
-  "issn",
-  "is_active",
-  "issue_number",
-  "volume_number",
-  "issue_title",
-  "publish_date",
-  "page_count",
-  "price",
-  "article_title",
-  "article_subtitle",
-  "authors",
-  "category",
-  "page_start",
-  "page_end",
-  "summary",
-  "tags",
-  "games",
-];
+// Issues are read a batch at a time so peak memory stays flat regardless of
+// how much has been catalogued. 549 issues is roughly 11 queries.
+const ISSUE_BATCH_SIZE = 50;
+
+const ARTICLE_INCLUDE = {
+  articles: {
+    orderBy: { sortOrder: "asc" },
+    include: {
+      articleTags: { include: { tag: true } },
+      articleGames: { include: { game: true } },
+    },
+  },
+} as const;
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const magazineId = request.nextUrl.searchParams.get("magazineId");
 
-  const where = magazineId ? { id: magazineId } : {};
-
   const magazines = await prisma.magazine.findMany({
-    where,
+    where: magazineId ? { id: magazineId } : {},
     orderBy: { name: "asc" },
-    include: {
-      issues: {
-        orderBy: { publishSort: "asc" },
-        include: {
-          articles: {
-            orderBy: { sortOrder: "asc" },
-            include: {
-              articleTags: {
-                include: { tag: true },
-              },
-              articleGames: {
-                include: { game: true },
-              },
-            },
-          },
-        },
-      },
+    select: {
+      id: true,
+      name: true,
+      nameOriginal: true,
+      publisher: true,
+      issn: true,
+      isActive: true,
     },
   });
 
-  const rows: string[][] = [];
+  const encoder = new TextEncoder();
 
-  for (const mag of magazines) {
-    const magFields: string[] = [
-      mag.name,
-      mag.nameOriginal ?? "",
-      mag.publisher ?? "",
-      mag.issn ?? "",
-      mag.isActive ? "true" : "false",
-    ];
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        // BOM so Excel opens the file as UTF-8.
+        controller.enqueue(encoder.encode("\uFEFF" + headerLine()));
 
-    if (mag.issues.length === 0) {
-      // Magazine with no issues
-      rows.push([...magFields, "", "", "", "", "", "", "", "", "", "", "", "", "", ""]);
-      continue;
-    }
+        for (const magazine of magazines) {
+          let cursor: string | undefined;
+          let seenAny = false;
 
-    for (const issue of mag.issues) {
-      const issueFields: string[] = [
-        issue.issueNumber,
-        issue.volumeNumber ?? "",
-        issue.title ?? "",
-        issue.publishDate,
-        issue.pageCount != null ? String(issue.pageCount) : "",
-        issue.price != null ? String(issue.price) : "",
-      ];
+          for (;;) {
+            const issues = await prisma.issue.findMany({
+              where: { magazineId: magazine.id },
+              // The id tiebreak is what makes batching safe: publishSort alone
+              // leaves same-day issues in an arbitrary order, and an unstable
+              // order across queries drops or repeats rows at batch edges.
+              orderBy: [{ publishSort: "asc" }, { id: "asc" }],
+              take: ISSUE_BATCH_SIZE,
+              ...(cursor && { cursor: { id: cursor }, skip: 1 }),
+              include: ARTICLE_INCLUDE,
+            });
 
-      if (issue.articles.length === 0) {
-        // Issue with no articles
-        rows.push([...magFields, ...issueFields, "", "", "", "", "", "", "", "", ""]);
-        continue;
+            if (issues.length === 0) break;
+
+            seenAny = true;
+            const lines = rowsFor(magazine, issues as ExportIssue[]);
+            controller.enqueue(encoder.encode("\r\n" + lines.join("\r\n")));
+
+            if (issues.length < ISSUE_BATCH_SIZE) break;
+            cursor = issues[issues.length - 1].id;
+          }
+
+          // A magazine with no issues still gets its own row.
+          if (!seenAny) {
+            const lines = rowsFor(magazine, []);
+            controller.enqueue(encoder.encode("\r\n" + lines.join("\r\n")));
+          }
+        }
+
+        controller.close();
+      } catch (error) {
+        // Headers are already sent, so this cannot become a 500 -- the client
+        // sees a truncated file. Logged so the cause is not lost.
+        console.error("Export CSV failed mid-stream:", error);
+        controller.error(error);
       }
-
-      for (const article of issue.articles) {
-        const tags = article.articleTags
-          .map((at) => `${at.tag.name}[${at.tag.type}]`)
-          .join(";");
-
-        const games = article.articleGames
-          .map((ag) => ag.game.name)
-          .join(";");
-
-        const articleFields: string[] = [
-          article.title,
-          article.subtitle ?? "",
-          article.authors.join(";"),
-          article.category ?? "",
-          article.pageStart != null ? String(article.pageStart) : "",
-          article.pageEnd != null ? String(article.pageEnd) : "",
-          article.summary ?? "",
-          tags,
-          games,
-        ];
-
-        rows.push([...magFields, ...issueFields, ...articleFields]);
-      }
-    }
-  }
-
-  const csvLines = [
-    CSV_HEADERS.map(escapeCsvField).join(","),
-    ...rows.map((row) => row.map(escapeCsvField).join(",")),
-  ];
-
-  const csvContent = "\uFEFF" + csvLines.join("\r\n");
+    },
+  });
 
   const today = new Date().toISOString().split("T")[0];
-  const filename = `tocr-export-${today}.csv`;
 
-  return new NextResponse(csvContent, {
+  return new NextResponse(stream, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `attachment; filename="tocr-export-${today}.csv"`,
     },
   });
 }, "Export CSV");
