@@ -290,10 +290,16 @@ model EditLog {
   changes    Json? // 變更的欄位與值
   createdAt  DateTime @default(now()) @map("created_at")
 
+  // 一次批次儲存的每筆記錄共用 batchId，只有第一筆帶 batchSize。
+  // 前者讓每篇文章都留下自己的來歷，後者讓活動流用一行帶過整批。
+  batchId   String? @map("batch_id")
+  batchSize Int?    @map("batch_size")
+
   user User @relation(fields: [userId], references: [id])
 
   @@index([entityType, entityId])
   @@index([userId])
+  @@index([batchId])
   @@map("edit_logs")
 }
 

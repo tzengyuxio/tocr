@@ -22,11 +22,13 @@ export function actionLabel(action: string) {
 }
 
 /**
- * How many records a log row stands for. Batch saves write one row for the
- * whole batch and put the size in `changes`, so a 50-article review would
- * otherwise read as a single new article.
+ * How many records a log row stands for: the batch it leads, or just itself.
+ *
+ * `changes.count` is how batches were recorded before each record got its own
+ * row. Those logs are still readable, so keep understanding them.
  */
-export function editedCount(changes: unknown): number {
+export function editedCount(batchSize: number | null | undefined, changes: unknown): number {
+  if (typeof batchSize === "number" && batchSize > 1) return batchSize;
   if (changes && typeof changes === "object" && "count" in changes) {
     const count = (changes as { count: unknown }).count;
     if (typeof count === "number" && count > 1) return count;

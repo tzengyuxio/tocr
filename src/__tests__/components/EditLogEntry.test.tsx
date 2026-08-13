@@ -34,7 +34,7 @@ describe("EditLogEntry", () => {
   it("counts the whole batch when one log covers many records", () => {
     render(
       <EditLogEntry
-        log={{ ...log, action: "CREATE", entityType: "Article", changes: { count: 50 } }}
+        log={{ ...log, action: "CREATE", entityType: "Article", batchSize: 50 }}
         target={{ label: "編輯視窗", href: "/admin/articles/a1" }}
       />
     );
@@ -45,7 +45,7 @@ describe("EditLogEntry", () => {
   it("says a batch of articles came from a review", () => {
     render(
       <EditLogEntry
-        log={{ ...log, action: "CREATE", entityType: "Article", changes: { count: 50 } }}
+        log={{ ...log, action: "CREATE", entityType: "Article", batchSize: 50 }}
         target={{ label: "編輯視窗", href: "/admin/articles/a1" }}
       />
     );

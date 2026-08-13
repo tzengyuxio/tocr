@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { measure } from "@/lib/perf";
+import { FEED_SCOPE } from "@/lib/edit-log";
 import {
   Card,
   CardContent,
@@ -113,6 +114,7 @@ export default async function EditLogsPage({
   const page = Math.max(1, Number(single("page")) || 1);
 
   const where: Prisma.EditLogWhereInput = {
+    ...FEED_SCOPE,
     ...(userId && { userId }),
     ...(entityType && ENTITY_TYPES.includes(entityType) && { entityType }),
     ...(action && ACTIONS.includes(action) && { action }),

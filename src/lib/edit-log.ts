@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+import type { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 import { prisma } from "./prisma";
 import { auth } from "./auth";
@@ -5,7 +7,18 @@ import { isDevBypass, DEV_USER } from "./dev-auth";
 import { API_USER, isValidApiToken } from "./api-token";
 
 export type EditAction = "CREATE" | "UPDATE" | "DELETE";
+
 export type EntityType = "Magazine" | "Issue" | "Article" | "Tag" | "Game" | "User";
+
+/**
+ * Activity feeds show one line per action, not one per record: a 50-article
+ * review would otherwise push everything else off the page. Only the leading
+ * row of a batch carries batchSize, so this keeps that row and hides its
+ * siblings -- which stay in the table, holding each record's own history.
+ */
+export const FEED_SCOPE: Prisma.EditLogWhereInput = {
+  OR: [{ batchId: null }, { batchSize: { not: null } }],
+};
 
 /**
  * Get the current authenticated user's ID.
@@ -100,6 +113,51 @@ export async function logEdit(
           action,
           changes: changes as never,
         },
+      })
+    )
+    .catch(console.error);
+}
+
+/**
+ * Log one row per record for a batch that a person saved in one go.
+ *
+ * A single summary row would leave every record but the first with no history
+ * at all, and that cannot be reconstructed later. The rows share a batchId so
+ * the activity feed can still show the batch as one line: only the first
+ * carries batchSize, which is what the feed filters on.
+ */
+export async function logEditBatch(
+  entityType: string,
+  entityIds: string[],
+  action: EditAction,
+  changes?: Record<string, unknown>
+) {
+  if (entityIds.length === 0) return;
+
+  const userId = await getCurrentUserId();
+  if (!userId) return;
+
+  const synthetic =
+    userId === DEV_USER.id
+      ? DEV_USER
+      : userId === API_USER.id
+        ? API_USER
+        : null;
+  const ready = synthetic ? ensureUser(synthetic) : Promise.resolve();
+  const batchId = randomUUID();
+
+  ready
+    .then(() =>
+      prisma.editLog.createMany({
+        data: entityIds.map((entityId, index) => ({
+          userId,
+          entityType,
+          entityId,
+          action,
+          changes: changes as never,
+          batchId,
+          batchSize: index === 0 ? entityIds.length : null,
+        })),
       })
     )
     .catch(console.error);
