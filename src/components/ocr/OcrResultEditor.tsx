@@ -115,12 +115,6 @@ function ArticleRow({
   editingArticle: OcrArticleResult | null;
   onEditChange: (article: OcrArticleResult) => void;
 }) {
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.9) return "bg-green-100 text-green-800";
-    if (confidence >= 0.7) return "bg-yellow-100 text-yellow-800";
-    return "bg-red-100 text-red-800";
-  };
-
   if (isEditing && editingArticle) {
     return (
       <div className="rounded-lg border-2 border-primary/30 bg-muted/30 p-4 space-y-3">
@@ -374,10 +368,13 @@ function ArticleRow({
       {/* Stacked, so the actions borrow the row's existing height instead of
           reserving a wide strip that reads as blank until hovered. */}
       <div className="flex shrink-0 flex-col items-end gap-1">
+        {/* Shown as a bare number, not colour-coded. Every entry recognised so
+            far scored 1.0, so green/yellow/red only ever rendered green --
+            worse than no signal, because it reads as "checked and fine". */}
         <Badge
           variant="secondary"
-          title="辨識信心度：AI 對這筆結果的把握程度，越低越需要人工確認"
-          className={`gap-1 font-normal ${getConfidenceColor(article.confidence)}`}
+          title="辨識信心度：AI 對這筆結果的自評把握程度，僅供參考，不代表已經過檢查"
+          className="gap-1 font-normal"
         >
           <Gauge className="h-3 w-3" />
           信心 {Math.round(article.confidence * 100)}%
