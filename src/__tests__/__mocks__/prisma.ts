@@ -3,7 +3,35 @@
  * Each model method is a jest.fn() that can be configured per test.
  */
 
-const createMockModel = () => ({
+interface MockModel {
+  findMany: jest.Mock;
+  findUnique: jest.Mock;
+  findFirst: jest.Mock;
+  create: jest.Mock;
+  update: jest.Mock;
+  delete: jest.Mock;
+  count: jest.Mock;
+  aggregate: jest.Mock;
+}
+
+// `$transaction` hands the callback the mock itself, so inferring the type
+// would be circular. Declaring it explicitly breaks the cycle.
+type TransactionCallback = (tx: PrismaMock) => Promise<unknown>;
+
+interface PrismaMock {
+  magazine: MockModel;
+  issue: MockModel;
+  article: MockModel;
+  tag: MockModel;
+  game: MockModel;
+  articleTag: MockModel;
+  articleGame: MockModel;
+  ocrRecord: MockModel;
+  user: MockModel;
+  $transaction: jest.Mock;
+}
+
+const createMockModel = (): MockModel => ({
   findMany: jest.fn(),
   findUnique: jest.fn(),
   findFirst: jest.fn(),
@@ -14,7 +42,7 @@ const createMockModel = () => ({
   aggregate: jest.fn(),
 });
 
-export const prismaMock = {
+export const prismaMock: PrismaMock = {
   magazine: createMockModel(),
   issue: createMockModel(),
   article: createMockModel(),
@@ -24,9 +52,7 @@ export const prismaMock = {
   articleGame: createMockModel(),
   ocrRecord: createMockModel(),
   user: createMockModel(),
-  $transaction: jest.fn((fn: (tx: typeof prismaMock) => Promise<unknown>) =>
-    fn(prismaMock)
-  ),
+  $transaction: jest.fn((fn: TransactionCallback) => fn(prismaMock)),
 };
 
 jest.mock("@/lib/prisma", () => ({
@@ -49,7 +75,7 @@ export function resetPrismaMock() {
     }
   });
   prismaMock.$transaction.mockReset();
-  prismaMock.$transaction.mockImplementation(
-    (fn: (tx: typeof prismaMock) => Promise<unknown>) => fn(prismaMock)
+  prismaMock.$transaction.mockImplementation((fn: TransactionCallback) =>
+    fn(prismaMock)
   );
 }

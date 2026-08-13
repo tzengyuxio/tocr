@@ -14,6 +14,18 @@ export interface ContributorEntry {
   breakdown: Record<string, number>;
 }
 
+/**
+ * Edits made in the last `days` days.
+ *
+ * Lives here rather than inline in the page: reading the clock is impure, and
+ * the React Compiler rejects it in a component body.
+ */
+export async function countRecentEdits(days: number): Promise<number> {
+  return prisma.editLog.count({
+    where: { createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) } },
+  });
+}
+
 export async function getContributorLeaderboard(options: ContributorOptions = {}): Promise<{
   contributors: ContributorEntry[];
   totalContributors: number;
