@@ -44,7 +44,9 @@ export default async function HomePage() {
       where: {
         OR: [{ coverImage: { not: null } }, { articles: { some: {} } }],
       },
-      orderBy: { publishSort: "desc" },
+      // Recently touched, not recently published: an issue that just had its
+      // contents filled in is the interesting one, whatever year it came out.
+      orderBy: { updatedAt: "desc" },
       include: {
         magazine: {
           select: { id: true, name: true },
@@ -113,7 +115,7 @@ export default async function HomePage() {
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">最新單期</h2>
-              <p className="text-sm text-muted-foreground">最近新增的雜誌期數</p>
+              <p className="text-sm text-muted-foreground">最近更新的雜誌期數</p>
             </div>
             <Button variant="ghost" asChild>
               <Link href="/magazines">
