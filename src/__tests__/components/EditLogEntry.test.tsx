@@ -42,6 +42,17 @@ describe("EditLogEntry", () => {
     expect(screen.getByText(/等 50 篇/)).toBeInTheDocument();
   });
 
+  it("says a batch of articles came from a review", () => {
+    render(
+      <EditLogEntry
+        log={{ ...log, action: "CREATE", entityType: "Article", changes: { count: 50 } }}
+        target={{ label: "編輯視窗", href: "/admin/articles/a1" }}
+      />
+    );
+
+    expect(screen.getByText(/（目錄複查）/)).toBeInTheDocument();
+  });
+
   it("reads a review mark as a review, not an edit", () => {
     render(
       <EditLogEntry
