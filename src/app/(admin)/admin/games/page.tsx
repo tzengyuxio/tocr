@@ -31,6 +31,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Loader2, Gamepad2, Search, Eye, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { categoryLabel } from "@/lib/article-categories";
+import type { ArticleCategory } from "@/lib/article-categories";
 
 interface Game {
   id: string;
@@ -80,7 +82,7 @@ export default function GamesPage() {
       article: {
         id: string;
         title: string;
-        category: string | null;
+        category: ArticleCategory | null;
         pageStart: number | null;
         pageEnd: number | null;
         issue: {
@@ -431,7 +433,7 @@ export default function GamesPage() {
                                 </span>
                                 {ag.article.category && (
                                   <Badge variant="outline" className="text-xs shrink-0">
-                                    {ag.article.category}
+                                    {categoryLabel(ag.article.category)}
                                   </Badge>
                                 )}
                               </div>

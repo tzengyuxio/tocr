@@ -1,7 +1,8 @@
+import type { ArticleCategory } from "@/lib/article-categories";
 export interface ArticleData {
   id: string;
   title: string;
-  category: string | null;
+  category: ArticleCategory | null;
   pageStart: number | null;
   pageEnd: number | null;
   issue: {

@@ -37,7 +37,8 @@ import { Loader2, X, Plus, Gamepad2, Tags, Check, ChevronsUpDown } from "lucide-
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
-import { ARTICLE_CATEGORIES, isKnownCategory } from "@/lib/article-categories";
+import { ARTICLE_CATEGORIES } from "@/lib/article-categories";
+import type { ArticleCategory } from "@/lib/article-categories";
 
 interface Game {
   id: string;
@@ -60,7 +61,7 @@ interface ArticleFormProps {
     title: string;
     subtitle?: string | null;
     authors: string[];
-    category?: string | null;
+    category?: ArticleCategory | null;
     pageStart?: number | null;
     pageEnd?: number | null;
     summary?: string | null;
@@ -115,7 +116,7 @@ export function ArticleForm({
     defaultValues: {
       title: initialData.title,
       subtitle: initialData.subtitle || "",
-      category: initialData.category || "",
+      category: initialData.category ?? null,
       pageStart: initialData.pageStart,
       pageEnd: initialData.pageEnd,
       summary: initialData.summary || "",
@@ -342,10 +343,8 @@ export function ArticleForm({
             {/* 分類 */}
             <div className="space-y-2">
               <Label htmlFor="category">分類</Label>
-              {/* A list rather than free text: the vocabulary drifted once and
-                  had to be migrated back together. A value that predates the
-                  current list stays selectable so editing an old article does
-                  not silently reclassify it. */}
+              {/* A list rather than free text: the column is an enum, so a
+                  typed-in name could never be stored anyway. */}
               <select
                 id="category"
                 className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-none"
@@ -354,14 +353,9 @@ export function ArticleForm({
                 <option value="">未分類</option>
                 {ARTICLE_CATEGORIES.map((category) => (
                   <option key={category.value} value={category.value}>
-                    {category.value}
+                    {category.label}
                   </option>
                 ))}
-                {initialData.category && !isKnownCategory(initialData.category) && (
-                  <option value={initialData.category}>
-                    {initialData.category}（舊分類）
-                  </option>
-                )}
               </select>
             </div>
 

@@ -28,6 +28,7 @@ import {
 import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-articles";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 import { formatEdtf } from "@/lib/edtf";
+import { categoryLabel } from "@/lib/article-categories";
 
 export default function TagDetailPage() {
   const params = useParams<{ id: string }>();
@@ -165,7 +166,7 @@ export default function TagDetailPage() {
                                   </span>
                                   {article.category && (
                                     <Badge variant="outline" className="text-xs shrink-0">
-                                      {article.category}
+                                      {categoryLabel(article.category)}
                                     </Badge>
                                   )}
                                 </Link>

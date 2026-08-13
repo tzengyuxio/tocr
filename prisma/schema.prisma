@@ -155,7 +155,9 @@ model Article {
   title     String
   subtitle  String?
   authors   String[] // 作者可能有多位
-  category  String? // 欄目分類（如：攻略、新聞、評測）
+  // Stored as a stable key so the Chinese label can be reworded without a
+  // data migration -- it was reworded twice before this existed.
+  category  ArticleCategory?
   pageStart Int?     @map("page_start")
   pageEnd   Int?     @map("page_end")
   summary   String?  @db.Text
@@ -175,6 +177,22 @@ model Article {
   @@index([subtitle(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_articles_subtitle_trgm")
   @@index([summary(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_articles_summary_trgm")
   @@map("articles")
+}
+
+enum ArticleCategory {
+  FEATURE          // 特輯
+  PREVIEW          // 新作預覽
+  REVIEW           // 遊戲評測
+  WALKTHROUGH      // 攻略
+  NEWS             // 新聞
+  INTERVIEW        // 訪談
+  HARDWARE         // 硬體
+  COMIC            // 漫畫
+  RANKING          // 排行榜
+  RELEASE_SCHEDULE // 預定發售表
+  READER           // 讀者投稿
+  SERIAL           // 連載
+  OTHER            // 其他
 }
 
 // ==================== Tag 系統 ====================

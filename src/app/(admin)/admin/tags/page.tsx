@@ -39,6 +39,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit, Trash2, Loader2, Tags, Eye, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { TAG_TYPES, getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
+import { categoryLabel } from "@/lib/article-categories";
+import type { ArticleCategory } from "@/lib/article-categories";
 
 interface Tag {
   id: string;
@@ -71,7 +73,7 @@ export default function TagsPage() {
       article: {
         id: string;
         title: string;
-        category: string | null;
+        category: ArticleCategory | null;
         pageStart: number | null;
         pageEnd: number | null;
         issue: {
@@ -330,7 +332,7 @@ export default function TagsPage() {
                                     </span>
                                     {at.article.category && (
                                       <Badge variant="outline" className="text-xs shrink-0">
-                                        {at.article.category}
+                                        {categoryLabel(at.article.category)}
                                       </Badge>
                                     )}
                                   </div>

@@ -173,18 +173,17 @@ export default async function IssueReviewPage({
                     className="relative cursor-pointer hover:bg-muted/50"
                   >
                     {/* The magazine and its number name one thing, so they
-                        share a cell. The link stretches over the row: the
-                        number alone was a small target for the one action
-                        this table exists to start. */}
+                        read as one line at one size -- stacking them shrank the
+                        legible half and enlarged the digits. The link stretches
+                        over the row: the number alone was a small target for
+                        the one action this table exists to start. */}
                     <TableCell>
                       <Link
                         href={`/admin/magazines/${issue.magazine.id}/issues/${issue.id}`}
                         className="after:absolute after:inset-0"
                       >
-                        <span className="text-xs text-muted-foreground">
-                          {issue.magazine.name}
-                        </span>
-                        <span className="block font-medium">
+                        {issue.magazine.name}{" "}
+                        <span className="font-semibold">
                           {issue.issueNumber}
                         </span>
                       </Link>

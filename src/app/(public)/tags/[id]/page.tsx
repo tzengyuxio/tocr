@@ -26,6 +26,7 @@ import { auth } from "@/lib/auth";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
+import { categoryLabel } from "@/lib/article-categories";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -168,7 +169,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell>
                           {at.article.category ? (
-                            <Badge variant="outline">{at.article.category}</Badge>
+                            <Badge variant="outline">{categoryLabel(at.article.category)}</Badge>
                           ) : (
                             "-"
                           )}
@@ -197,7 +198,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                       <span>{formatEdtf(at.article.issue.publishDate)}</span>
                     </div>
                     {at.article.category && (
-                      <Badge variant="outline" className="mt-1 text-xs">{at.article.category}</Badge>
+                      <Badge variant="outline" className="mt-1 text-xs">{categoryLabel(at.article.category)}</Badge>
                     )}
                   </div>
                 ))}

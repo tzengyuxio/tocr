@@ -13,13 +13,15 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
+import { ARTICLE_CATEGORIES, categoryLabel } from "@/lib/article-categories";
+import type { ArticleCategory } from "@/lib/article-categories";
 
 interface ArticleItem {
   id: string;
   title: string;
   subtitle: string | null;
   authors: string[];
-  category: string | null;
+  category: ArticleCategory | null;
   pageStart: number | null;
   pageEnd: number | null;
   articleGames: Array<{
@@ -30,7 +32,7 @@ interface ArticleItem {
 interface ArticleUpdatePayload {
   title: string;
   subtitle: string | null;
-  category: string | null;
+  category: ArticleCategory | null;
   pageStart: number | null;
   pageEnd: number | null;
   authors: string[];
@@ -168,16 +170,24 @@ export function EditableArticleRow({
           </div>
           <div className="space-y-1">
             <Label className="text-xs">分類</Label>
-            <Input
-              value={formData.category || ""}
+            <select
+              className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-none"
+              value={formData.category ?? ""}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  category: e.target.value || null,
+                  category: (e.target.value as ArticleCategory) || null,
                 })
               }
               onKeyDown={handleKeyDown}
-            />
+            >
+              <option value="">未分類</option>
+              {ARTICLE_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="space-y-1">
             <Label className="text-xs">作者（逗號分隔）</Label>
@@ -273,7 +283,7 @@ export function EditableArticleRow({
         <div className="flex flex-wrap gap-1 mt-1">
           {article.category && (
             <Badge variant="outline" className="text-xs">
-              {article.category}
+              {categoryLabel(article.category)}
             </Badge>
           )}
           {article.authors.length > 0 && (

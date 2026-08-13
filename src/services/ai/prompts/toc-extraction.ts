@@ -8,7 +8,7 @@ import { ARTICLE_CATEGORIES } from "@/lib/article-categories";
 // Built from the shared vocabulary so the prompt and the editing UI cannot
 // offer different categories.
 const CATEGORY_LIST = ARTICLE_CATEGORIES.map(
-  (category) => `- ${category.value}（${category.hint}）`
+  (category) => `- ${category.value}：${category.label}（${category.hint}）`
 ).join("\n");
 
 export const TOC_EXTRACTION_PROMPT = `你是一位專業的雜誌目錄資料整理專家，專門處理遊戲雜誌（尤其是台灣早期遊戲雜誌）的目錄頁。請仔細分析圖片中的目錄頁，並提取所有文章資訊。
@@ -23,7 +23,7 @@ export const TOC_EXTRACTION_PROMPT = `你是一位專業的雜誌目錄資料整
       "title": "文章標題",
       "subtitle": "副標題（若有）",
       "authors": ["作者1", "作者2"],
-      "category": "欄目分類",
+      "category": "欄目分類代碼，如 REVIEW",
       "pageStart": 起始頁碼,
       "pageEnd": 結束頁碼或null,
       "summary": "從標題和上下文推測的簡短摘要",
@@ -59,10 +59,10 @@ export const TOC_EXTRACTION_PROMPT = `你是一位專業的雜誌目錄資料整
 - 注意：部分雜誌使用連續頁碼，部分使用區段編號
 
 ### 欄目分類 (category)
-依文章內容判斷，**從下列選一個原樣填入**，不要自創、不要附加英文對照：
+依文章內容判斷，**填入下列的英文代碼**（冒號左邊那個），不要填中文名稱、不要自創代碼：
 ${CATEGORY_LIST}
 
-**新作預覽與遊戲評測的差別在於作品是否已上市**：上市前的搶先介紹一律歸「新作預覽」，已上市作品的評分與評論歸「遊戲評測」。各家雜誌的欄目名稱不同（先睹為快、新片評鑑⋯⋯），請依性質判斷而非照抄欄目名。
+**PREVIEW 與 REVIEW 的差別在於作品是否已上市**：上市前的搶先介紹一律歸 PREVIEW，已上市作品的評分與評論歸 REVIEW。各家雜誌的欄目名稱不同（先睹為快、新片評鑑⋯⋯），請依性質判斷而非照抄欄目名。
 
 ### 遊戲名稱 (suggestedGames)
 - 辨識文章中提到的遊戲名稱，保留原始文字

@@ -1,9 +1,11 @@
 import type { OcrResult, OcrArticleResult } from "./ocr.interface";
+import { isArticleCategory } from "@/lib/article-categories";
 
 /**
  * Parse AI response text into structured OCR result.
  * Shared across all providers (Claude, OpenAI, Gemini).
  */
+
 export function parseOcrResponse(
   text: string
 ): Omit<OcrResult, "provider" | "processingTime"> {
@@ -35,7 +37,9 @@ function normalizeArticles(articles: unknown[]): OcrArticleResult[] {
       title: String(a.title || ""),
       subtitle: a.subtitle ? String(a.subtitle) : undefined,
       authors: Array.isArray(a.authors) ? a.authors.map(String) : [],
-      category: a.category ? String(a.category) : undefined,
+      // The model is given the keys, but a hallucinated one must not reach
+      // the database, where the column only accepts the enum.
+      category: isArticleCategory(a.category) ? a.category : undefined,
       pageStart: typeof a.pageStart === "number" ? a.pageStart : undefined,
       pageEnd: typeof a.pageEnd === "number" ? a.pageEnd : undefined,
       summary: a.summary ? String(a.summary) : undefined,
