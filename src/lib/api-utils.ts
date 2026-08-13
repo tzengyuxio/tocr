@@ -68,11 +68,31 @@ export function paginatedResponse<T>(
   });
 }
 
+/** Upper bound on `limit` so a single request cannot ask for the whole table. */
+export const MAX_PAGE_SIZE = 100;
+
 /**
  * Parse common pagination params from search params.
+ *
+ * Both values are clamped: these routes are reachable without a session, and a
+ * non-numeric `page` used to reach Prisma as NaN and surface as a 500.
  */
-export function parsePagination(searchParams: URLSearchParams) {
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+export function parsePagination(
+  searchParams: URLSearchParams,
+  defaultLimit = 20
+) {
+  const page = clamp(searchParams.get("page"), 1, 1, Number.MAX_SAFE_INTEGER);
+  const limit = clamp(searchParams.get("limit"), defaultLimit, 1, MAX_PAGE_SIZE);
   return { page, limit, skip: (page - 1) * limit };
+}
+
+function clamp(
+  raw: string | null,
+  fallback: number,
+  min: number,
+  max: number
+): number {
+  const parsed = Number.parseInt(raw ?? "", 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
 }
