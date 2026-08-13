@@ -55,8 +55,13 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData();
+    // The admin UI always names a provider; scripts calling the API do not,
+    // and defaulting them to Claude sends the request somewhere this
+    // deployment may not even have a key for. GET reports the same default.
     const provider =
-      (formData.get("provider") as OcrProviderType) || "claude";
+      (formData.get("provider") as OcrProviderType) ||
+      (process.env.DEFAULT_OCR_PROVIDER as OcrProviderType) ||
+      "claude";
     const issueId = formData.get("issueId") as string | null;
     const origin = new URL(request.url).origin;
 
