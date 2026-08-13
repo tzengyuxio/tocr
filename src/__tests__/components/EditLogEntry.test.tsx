@@ -30,4 +30,27 @@ describe("EditLogEntry", () => {
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
     expect(screen.getByText("（已刪除）")).toBeInTheDocument();
   });
+
+  it("counts the whole batch when one log covers many records", () => {
+    render(
+      <EditLogEntry
+        log={{ ...log, action: "CREATE", entityType: "Article", changes: { count: 50 } }}
+        target={{ label: "編輯視窗", href: "/admin/articles/a1" }}
+      />
+    );
+
+    expect(screen.getByText(/等 50 篇/)).toBeInTheDocument();
+  });
+
+  it("reads a review mark as a review, not an edit", () => {
+    render(
+      <EditLogEntry
+        log={{ ...log, changes: { tocReviewedAt: { from: null, to: "2026-08-13T10:53:30.486Z" } } }}
+        target={{ label: "電腦玩家雜誌 96", href: "/admin/magazines/m1/issues/i1" }}
+      />
+    );
+
+    expect(screen.getByText(/複查了/)).toBeInTheDocument();
+    expect(screen.queryByText(/更新了/)).not.toBeInTheDocument();
+  });
 });

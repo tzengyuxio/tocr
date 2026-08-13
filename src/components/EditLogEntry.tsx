@@ -1,5 +1,11 @@
 import { ExternalLink } from "lucide-react";
-import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
+import {
+  actionIcon,
+  actionLabel,
+  editedCount,
+  entityLabel,
+  isTocReviewMark,
+} from "@/lib/edit-log-labels";
 import type { EditLogTarget } from "@/lib/edit-log-targets";
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
@@ -29,6 +35,7 @@ export interface EditLogEntryLog {
   action: string;
   entityType: string;
   createdAt: Date;
+  changes?: unknown;
   user: { name: string | null; email: string };
 }
 
@@ -40,16 +47,35 @@ export function EditLogEntry({
   log: EditLogEntryLog;
   target: EditLogTarget;
 }) {
+  const count = editedCount(log.changes);
+  const reviewMark = isTocReviewMark(log.entityType, log.changes);
+
   return (
     <div className="flex items-center gap-2.5 rounded border px-3 py-2 text-sm">
       <div className="shrink-0">{actionIcon(log.action)}</div>
       <div className="min-w-0 flex-1 truncate">
         <span className="font-medium">{log.user.name || log.user.email}</span>
-        <span className="text-muted-foreground">
-          {" "}
-          {actionLabel(log.action)}了{entityLabel(log.entityType)}{" "}
-        </span>
-        <EditLogTargetLink target={target} />
+        {reviewMark ? (
+          <>
+            <span className="text-muted-foreground"> 複查了 </span>
+            <EditLogTargetLink target={target} />
+            <span className="text-muted-foreground"> 的目錄</span>
+          </>
+        ) : (
+          <>
+            <span className="text-muted-foreground">
+              {" "}
+              {actionLabel(log.action)}了{entityLabel(log.entityType)}{" "}
+            </span>
+            <EditLogTargetLink target={target} />
+            {count > 1 && (
+              <span className="text-muted-foreground">
+                {" "}
+                等 {count} {log.entityType === "Article" ? "篇" : "筆"}
+              </span>
+            )}
+          </>
+        )}
       </div>
       <span className="shrink-0 text-xs text-muted-foreground">
         {format(new Date(log.createdAt), "MM/dd HH:mm", { locale: zhTW })}
