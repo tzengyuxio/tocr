@@ -88,6 +88,28 @@ export default async function IssueReviewPage({
     ])
   );
 
+  // Latest recognition per issue: Prisma has no "greatest per group", so take
+  // them newest first and keep the first of each.
+  const recognisedAt = await measure("admin/issues:ocr", async () => {
+    const byIssue = new Map<string, Date>();
+    if (issues.length > 0) {
+      const records = await prisma.ocrRecord.findMany({
+        where: {
+          issueId: { in: issues.map((issue) => issue.id) },
+          status: "COMPLETED",
+        },
+        select: { issueId: true, processedAt: true },
+        orderBy: { processedAt: "desc" },
+      });
+      for (const record of records) {
+        if (record.issueId && !byIssue.has(record.issueId)) {
+          byIssue.set(record.issueId, record.processedAt);
+        }
+      }
+    }
+    return byIssue;
+  });
+
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const pageHref = (target: number) =>
     `/admin/issues?filter=${filter.key}${target > 1 ? `&page=${target}` : ""}`;
@@ -136,26 +158,35 @@ export default async function IssueReviewPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>期刊</TableHead>
-                  <TableHead>期號</TableHead>
+                  <TableHead>單期</TableHead>
                   <TableHead className="w-28">出版日期</TableHead>
                   <TableHead className="w-20">目錄圖</TableHead>
                   <TableHead className="w-20">文章</TableHead>
-                  <TableHead className="w-36">複查狀態</TableHead>
+                  <TableHead className="w-28">辨識日期</TableHead>
+                  <TableHead className="w-32">複查狀態</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {issues.map((issue) => (
-                  <TableRow key={issue.id}>
-                    <TableCell className="text-muted-foreground">
-                      {issue.magazine.name}
-                    </TableCell>
+                  <TableRow
+                    key={issue.id}
+                    className="relative cursor-pointer hover:bg-muted/50"
+                  >
+                    {/* The magazine and its number name one thing, so they
+                        share a cell. The link stretches over the row: the
+                        number alone was a small target for the one action
+                        this table exists to start. */}
                     <TableCell>
                       <Link
                         href={`/admin/magazines/${issue.magazine.id}/issues/${issue.id}`}
-                        className="font-medium hover:underline"
+                        className="after:absolute after:inset-0"
                       >
-                        {issue.issueNumber}
+                        <span className="text-xs text-muted-foreground">
+                          {issue.magazine.name}
+                        </span>
+                        <span className="block font-medium">
+                          {issue.issueNumber}
+                        </span>
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -163,6 +194,13 @@ export default async function IssueReviewPage({
                     </TableCell>
                     <TableCell>{issue.tocImages.length}</TableCell>
                     <TableCell>{issue._count.articles}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {recognisedAt.has(issue.id)
+                        ? format(new Date(recognisedAt.get(issue.id)!), "yyyy/MM/dd", {
+                            locale: zhTW,
+                          })
+                        : "—"}
+                    </TableCell>
                     <TableCell>
                       {issue.tocReviewedAt ? (
                         <Badge variant="secondary">
