@@ -9,11 +9,24 @@ import { checkRateLimit } from "@/lib/rate-limit";
 // default timeout; 60s is the Vercel Hobby ceiling.
 export const maxDuration = 60;
 
-// Rate limit: 10 requests per minute per user/IP
+// Best-effort only: the limiter keeps its counters in memory, so on Vercel each
+// function instance counts on its own and the real ceiling is higher than this.
+// It smooths accidental repeat submissions; it is not a defence against abuse.
 const OCR_RATE_LIMIT = {
   maxRequests: 10,
   windowMs: 60_000,
 };
+
+// A table of contents runs to a handful of pages. Anything beyond this is a
+// mistake or abuse, and each image is a billed model call against a 60s budget.
+const MAX_IMAGES = 10;
+
+function tooManyImages(count: number) {
+  return NextResponse.json(
+    { error: `Too many images: ${count}. Maximum is ${MAX_IMAGES} per request.` },
+    { status: 400 }
+  );
+}
 
 // POST /api/ocr - 執行 AI 辨識（支援多圖）
 export async function POST(request: NextRequest) {
@@ -58,6 +71,9 @@ export async function POST(request: NextRequest) {
 
     // 多圖：FormData 中多個 "images" 欄位
     const imageFiles = formData.getAll("images") as File[];
+    if (imageFiles.length > MAX_IMAGES) {
+      return tooManyImages(imageFiles.length);
+    }
     if (imageFiles.length > 0) {
       for (const file of imageFiles) {
         if (!allowedTypes.includes(file.type)) {
@@ -78,6 +94,9 @@ export async function POST(request: NextRequest) {
     const imageUrlsRaw = formData.get("imageUrls") as string | null;
     if (imageUrlsRaw) {
       const imageUrls: string[] = JSON.parse(imageUrlsRaw);
+      if (images.length + imageUrls.length > MAX_IMAGES) {
+        return tooManyImages(images.length + imageUrls.length);
+      }
       for (const url of imageUrls) {
         if (!isSafeImageUrl(url, origin)) {
           return NextResponse.json(
@@ -182,16 +201,12 @@ export async function POST(request: NextRequest) {
       result,
     });
   } catch (error) {
+    // Logged in full, reported generically: the message comes from the
+    // self-hosted model backend and can carry internal URLs and configuration.
     console.error("OCR Error:", error);
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-
     return NextResponse.json(
-      {
-        error: "OCR processing failed",
-        details: errorMessage,
-      },
+      { error: "OCR processing failed" },
       { status: 500 }
     );
   }
