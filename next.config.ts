@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
   // own error handling runs. Vercel traces the files itself, so leave it off.
   output: process.env.VERCEL ? undefined : "standalone",
   devIndicators: false,
+  // File tracing follows JS requires, so it never sees the libvips shared
+  // object that sharp's native addon dlopens at runtime. Name it explicitly,
+  // via pnpm's real directories rather than the symlinked node_modules root.
+  outputFileTracingIncludes: {
+    "/api/upload": [
+      "./node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/lib/*",
+    ],
+  },
   images: {
     remotePatterns: [
       {
