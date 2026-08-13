@@ -62,6 +62,21 @@ export async function POST(request: NextRequest) {
       (formData.get("provider") as OcrProviderType) ||
       (process.env.DEFAULT_OCR_PROVIDER as OcrProviderType) ||
       "claude";
+    // Asking for a provider this deployment has no key for fails deep inside
+    // the SDK, and the handler reports that as a generic "OCR processing
+    // failed" -- an afternoon of debugging for a request that was answerable
+    // up front. GET /api/ocr lists the same set.
+    const availableProviders = OcrProviderFactory.getAvailableProviders();
+    if (!availableProviders.includes(provider)) {
+      return NextResponse.json(
+        {
+          error: `OCR provider not available: ${provider}`,
+          available: availableProviders,
+        },
+        { status: 400 }
+      );
+    }
+
     const issueId = formData.get("issueId") as string | null;
     const origin = new URL(request.url).origin;
 

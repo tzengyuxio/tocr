@@ -11,11 +11,13 @@ jest.mock("@/services/ai/ocr.factory", () => ({
     getProvider: jest.fn(() => ({
       extractTableOfContents: jest.fn().mockResolvedValue({ articles: [] }),
     })),
-    getAvailableProviders: jest.fn(() => []),
+    getAvailableProviders: jest.fn(() => ["claude", "openai", "gemini"]),
   },
 }));
 
 const getProvider = OcrProviderFactory.getProvider as jest.Mock;
+const getAvailableProviders =
+  OcrProviderFactory.getAvailableProviders as jest.Mock;
 
 function requestWith(fields: Record<string, string>) {
   const body = new FormData();
@@ -34,6 +36,7 @@ function requestWith(fields: Record<string, string>) {
 beforeEach(() => {
   resetPrismaMock();
   getProvider.mockClear();
+  getAvailableProviders.mockReturnValue(["claude", "openai", "gemini"]);
   prismaMock.ocrRecord.create.mockResolvedValue({ id: "ocr-1" });
 });
 
@@ -60,5 +63,16 @@ describe("POST /api/ocr provider selection", () => {
     await POST(requestWith({}));
 
     expect(getProvider).toHaveBeenCalledWith("claude");
+  });
+
+  it("rejects a provider this deployment has no key for", async () => {
+    getAvailableProviders.mockReturnValue(["openai"]);
+
+    const res = await POST(requestWith({ provider: "claude" }));
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.available).toEqual(["openai"]);
+    expect(getProvider).not.toHaveBeenCalled();
   });
 });
