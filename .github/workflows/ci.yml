@@ -6,10 +6,12 @@ on:
   push:
     branches: [main]
 
-# A newer push to the same PR makes the in-flight run irrelevant.
+# A newer push to the same PR makes the in-flight run irrelevant, but every
+# commit on main should keep its own result -- merging twice in quick
+# succession used to cancel the first merge's run and leave a gap.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
