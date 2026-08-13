@@ -83,6 +83,40 @@ function ensureUser(user: SyntheticUser): Promise<void> {
 }
 
 /**
+ * Resolve who is writing, making sure the row exists for the synthetic users.
+ * Returns null when there is nobody to attribute the edit to.
+ */
+async function resolveAuthor(): Promise<string | null> {
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+
+  const synthetic =
+    userId === DEV_USER.id
+      ? DEV_USER
+      : userId === API_USER.id
+        ? API_USER
+        : null;
+  if (synthetic) await ensureUser(synthetic);
+
+  return userId;
+}
+
+/**
+ * Write the log, but never fail the edit over it: the record the caller asked
+ * for is already saved, and refusing to acknowledge that would be worse than
+ * a gap in the history. The write is awaited rather than left running, so on
+ * a serverless platform it finishes before the response ends -- and so does
+ * its error reporting, which used to be lost with it.
+ */
+async function writeLog(write: () => Promise<unknown>) {
+  try {
+    await write();
+  } catch (error) {
+    console.error("Edit log write failed:", error);
+  }
+}
+
+/**
  * Log an edit action to the EditLog table.
  * Silently skips if no user ID is available (e.g. during migration scripts).
  */
@@ -92,30 +126,20 @@ export async function logEdit(
   action: EditAction,
   changes?: Record<string, unknown>
 ) {
-  const userId = await getCurrentUserId();
+  const userId = await resolveAuthor();
   if (!userId) return;
 
-  const synthetic =
-    userId === DEV_USER.id
-      ? DEV_USER
-      : userId === API_USER.id
-        ? API_USER
-        : null;
-  const ready = synthetic ? ensureUser(synthetic) : Promise.resolve();
-
-  ready
-    .then(() =>
-      prisma.editLog.create({
-        data: {
-          userId,
-          entityType,
-          entityId,
-          action,
-          changes: changes as never,
-        },
-      })
-    )
-    .catch(console.error);
+  await writeLog(() =>
+    prisma.editLog.create({
+      data: {
+        userId,
+        entityType,
+        entityId,
+        action,
+        changes: changes as never,
+      },
+    })
+  );
 }
 
 /**
@@ -134,31 +158,22 @@ export async function logEditBatch(
 ) {
   if (entityIds.length === 0) return;
 
-  const userId = await getCurrentUserId();
+  const userId = await resolveAuthor();
   if (!userId) return;
 
-  const synthetic =
-    userId === DEV_USER.id
-      ? DEV_USER
-      : userId === API_USER.id
-        ? API_USER
-        : null;
-  const ready = synthetic ? ensureUser(synthetic) : Promise.resolve();
   const batchId = randomUUID();
 
-  ready
-    .then(() =>
-      prisma.editLog.createMany({
-        data: entityIds.map((entityId, index) => ({
-          userId,
-          entityType,
-          entityId,
-          action,
-          changes: changes as never,
-          batchId,
-          batchSize: index === 0 ? entityIds.length : null,
-        })),
-      })
-    )
-    .catch(console.error);
+  await writeLog(() =>
+    prisma.editLog.createMany({
+      data: entityIds.map((entityId, index) => ({
+        userId,
+        entityType,
+        entityId,
+        action,
+        changes: changes as never,
+        batchId,
+        batchSize: index === 0 ? entityIds.length : null,
+      })),
+    })
+  );
 }
