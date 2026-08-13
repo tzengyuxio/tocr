@@ -10,8 +10,6 @@
 
   **但先不要動手**：目前看到的特殊刊號（`創刊號`、`試刊號`、`創刊驚嘆號`、`70+71`）只來自 3 本雜誌，而已匯入 30 本、還有 27 本沒進來。等更多期刊的刊號樣貌浮現，再一次決定規則會更完整——現在定案等於用不到十分之一的樣本立規矩（2026-08-13）
 
-- [ ] **編輯記錄是 fire-and-forget，在 serverless 上可能靜默丟失** — `logEdit` / `logEditBatch` 都沒有 await 那個 insert（`ready.then(...).catch(console.error)`），回應送出後 pending promise 在 Vercel 上可能被凍結。目前觀察到的寫入都有成功，但這個形狀的失敗完全無聲：2026-08-13 在本機就發生過一次（dev server 持有 migration 前的 Prisma client，3 篇文章建出來了、edit log 一列都沒寫，沒有任何跡象）。要嘛改成 await，要嘛用 `waitUntil`（2026-08-13）
-
 ## 2026-08-13 code review 待辦
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。
