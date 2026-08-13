@@ -2,14 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // 啟用 standalone 輸出，用於 Docker 部署
-  output: "standalone",
+  // Standalone output is for the Docker image. On Vercel it copies pnpm's
+  // symlinked node_modules into the function, which drops sharp's libvips
+  // shared object -- /api/upload then dies with ERR_DLOPEN_FAILED before its
+  // own error handling runs. Vercel traces the files itself, so leave it off.
+  output: process.env.VERCEL ? undefined : "standalone",
   devIndicators: false,
-  // sharp's native addon dlopens libvips from a sibling package, which file
-  // tracing cannot see: the upload route then dies with ERR_DLOPEN_FAILED on
-  // libvips-cpp.so. Ship the whole @img tree with the routes that use sharp.
-  outputFileTracingIncludes: {
-    "/api/upload": ["./node_modules/.pnpm/@img+*/node_modules/@img/**/*"],
-  },
   images: {
     remotePatterns: [
       {
