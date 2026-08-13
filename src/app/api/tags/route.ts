@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { tagCreateSchema } from "@/lib/validators/tag";
-import { withErrorHandler, paginatedResponse } from "@/lib/api-utils";
+import {
+  withErrorHandler,
+  paginatedResponse,
+  parsePagination,
+} from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 
 // GET /api/tags - 取得標籤列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
   const searchParams = request.nextUrl.searchParams;
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "50");
+  const { page, limit, skip } = parsePagination(searchParams, 50);
   const type = searchParams.get("type");
   const search = searchParams.get("search") || "";
 
@@ -26,7 +29,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     prisma.tag.findMany({
       where,
       orderBy: { name: "asc" },
-      skip: (page - 1) * limit,
+      skip,
       take: limit,
       include: {
         _count: {

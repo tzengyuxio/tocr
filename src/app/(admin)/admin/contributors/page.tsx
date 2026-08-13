@@ -15,7 +15,10 @@ import { StatGrid } from "@/components/StatGrid";
 import { Users, FileEdit, Award } from "lucide-react";
 import { resolveEditLogTargets } from "@/lib/edit-log-targets";
 import { EditLogEntry } from "@/components/EditLogEntry";
-import { getContributorLeaderboard } from "@/lib/contributor-queries";
+import {
+  countRecentEdits,
+  getContributorLeaderboard,
+} from "@/lib/contributor-queries";
 
 export const metadata: Metadata = {
   title: "貢獻者 - Admin",
@@ -31,9 +34,7 @@ export default async function ContributorsPage() {
     Promise.all([
       getContributorLeaderboard({ take: 20, includeEmail: true }),
       prisma.editLog.count(),
-      prisma.editLog.count({
-        where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
-      }),
+      countRecentEdits(7),
       prisma.editLog.findMany({
         orderBy: { createdAt: "desc" },
         take: 30,
