@@ -90,9 +90,11 @@ docker compose -f docker-compose.dev.yml down -v
 # 產生 Prisma Client
 npx prisma generate
 
-# 推送 Schema 到資料庫
-npx prisma db push
+# 套用 migration
+npx prisma migrate dev
 ```
+
+> 不要用 `prisma db push`。本專案的 migration 歷史是補基準線來的，`db push` 會讓它與資料庫脫節。
 
 ### 6. 啟動開發伺服器
 
@@ -247,7 +249,7 @@ npx prisma generate
 2. **開發過程中**
    - 使用 Prisma Studio 檢視資料
    - 使用 `npm run test:watch` 監聽測試
-   - 修改 Schema 後執行 `npx prisma db push`
+   - 修改 Schema 後執行 `npx prisma migrate dev --name <描述>`
 
 3. **提交前**
    - 執行 `npm run lint` 檢查程式碼風格
