@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/api-utils";
-
-function escapeCsvField(value: string | null | undefined): string {
-  if (value == null || value === "") return "";
-  const str = String(value);
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
+import { escapeCsvField } from "@/lib/csv/escape";
 
 const CSV_HEADERS = [
   "magazine_name",
