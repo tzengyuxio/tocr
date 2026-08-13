@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { articleBatchCreateSchema } from "@/lib/validators/article";
 import { TagType } from "@prisma/client";
 import { withErrorHandler } from "@/lib/api-utils";
-import { logEdit } from "@/lib/edit-log";
+import { logEdit, logEditBatch } from "@/lib/edit-log";
 import { isValidApiToken } from "@/lib/api-token";
 
 // POST /api/articles/batch - 批次建立文章（AI 辨識後使用）
@@ -130,7 +130,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     return createdArticles;
   });
 
-  await logEdit("Article", result[0]?.id ?? "", "CREATE", { count: result.length, issueId: validatedData.issueId });
+  await logEditBatch(
+    "Article",
+    result.map((article) => article.id),
+    "CREATE",
+    { issueId: validatedData.issueId }
+  );
 
   // Saving here is the last step of a person comparing the recognised list
   // against the scan, so the issue leaves the review queue. Token writes are

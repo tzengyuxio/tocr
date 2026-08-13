@@ -4,6 +4,7 @@
 import { prismaMock, resetPrismaMock } from "../__mocks__/prisma";
 import { POST } from "@/app/api/articles/batch/route";
 import { NextRequest } from "next/server";
+import { logEditBatch } from "@/lib/edit-log";
 
 beforeEach(() => {
   resetPrismaMock();
@@ -46,6 +47,28 @@ describe("POST /api/articles/batch", () => {
     expect(res.status).toBe(201);
     expect(json.success).toBe(true);
     expect(json.count).toBe(1);
+  });
+
+  it("logs every article it created, not just the first", async () => {
+    prismaMock.issue.findUnique.mockResolvedValue({ id: "iss-1" });
+    prismaMock.article.create
+      .mockResolvedValueOnce({ id: "art-1" })
+      .mockResolvedValueOnce({ id: "art-2" })
+      .mockResolvedValueOnce({ id: "art-3" });
+
+    await POST(
+      makeRequest({
+        issueId: "iss-1",
+        articles: [{ title: "A" }, { title: "B" }, { title: "C" }],
+      })
+    );
+
+    expect(logEditBatch).toHaveBeenCalledWith(
+      "Article",
+      ["art-1", "art-2", "art-3"],
+      "CREATE",
+      { issueId: "iss-1" }
+    );
   });
 
   it("returns 404 when issue does not exist", async () => {

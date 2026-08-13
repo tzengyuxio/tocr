@@ -61,7 +61,9 @@ jest.mock("@/lib/prisma", () => ({
 
 jest.mock("@/lib/edit-log", () => ({
   logEdit: jest.fn().mockResolvedValue(undefined),
+  logEditBatch: jest.fn().mockResolvedValue(undefined),
   getCurrentUserId: jest.fn().mockResolvedValue("test-user"),
+  FEED_SCOPE: { OR: [{ batchId: null }, { batchSize: { not: null } }] },
 }));
 
 export function resetPrismaMock() {

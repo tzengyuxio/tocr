@@ -36,6 +36,7 @@ export interface EditLogEntryLog {
   entityType: string;
   createdAt: Date;
   changes?: unknown;
+  batchSize?: number | null;
   user: { name: string | null; email: string };
 }
 
@@ -47,7 +48,7 @@ export function EditLogEntry({
   log: EditLogEntryLog;
   target: EditLogTarget;
 }) {
-  const count = editedCount(log.changes);
+  const count = editedCount(log.batchSize, log.changes);
   const reviewMark = isTocReviewMark(log.entityType, log.changes);
 
   return (
