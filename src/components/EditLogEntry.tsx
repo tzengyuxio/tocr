@@ -72,6 +72,9 @@ export function EditLogEntry({
               <span className="text-muted-foreground">
                 {" "}
                 等 {count} {log.entityType === "Article" ? "篇" : "筆"}
+                {/* Only the review save writes a batch of articles, and
+                    "新增了 50 篇文章" otherwise reads as 50 typed by hand. */}
+                {log.entityType === "Article" && "（目錄複查）"}
               </span>
             )}
           </>
