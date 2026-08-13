@@ -37,6 +37,7 @@ import { Loader2, X, Plus, Gamepad2, Tags, Check, ChevronsUpDown } from "lucide-
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
+import { ARTICLE_CATEGORIES, isKnownCategory } from "@/lib/article-categories";
 
 interface Game {
   id: string;
@@ -341,11 +342,27 @@ export function ArticleForm({
             {/* 分類 */}
             <div className="space-y-2">
               <Label htmlFor="category">分類</Label>
-              <Input
+              {/* A list rather than free text: the vocabulary drifted once and
+                  had to be migrated back together. A value that predates the
+                  current list stays selectable so editing an old article does
+                  not silently reclassify it. */}
+              <select
                 id="category"
-                placeholder="例如：評測、攻略、新聞"
+                className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:outline-none"
                 {...register("category")}
-              />
+              >
+                <option value="">未分類</option>
+                {ARTICLE_CATEGORIES.map((category) => (
+                  <option key={category.value} value={category.value}>
+                    {category.value}
+                  </option>
+                ))}
+                {initialData.category && !isKnownCategory(initialData.category) && (
+                  <option value={initialData.category}>
+                    {initialData.category}（舊分類）
+                  </option>
+                )}
+              </select>
             </div>
 
             {/* 排序 */}

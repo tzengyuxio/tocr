@@ -3,6 +3,14 @@
  * 針對台灣早期遊戲雜誌（1980s-2000s）及現代遊戲雜誌目錄頁優化
  */
 
+import { ARTICLE_CATEGORIES } from "@/lib/article-categories";
+
+// Built from the shared vocabulary so the prompt and the editing UI cannot
+// offer different categories.
+const CATEGORY_LIST = ARTICLE_CATEGORIES.map(
+  (category) => `- ${category.value}（${category.hint}）`
+).join("\n");
+
 export const TOC_EXTRACTION_PROMPT = `你是一位專業的雜誌目錄資料整理專家，專門處理遊戲雜誌（尤其是台灣早期遊戲雜誌）的目錄頁。請仔細分析圖片中的目錄頁，並提取所有文章資訊。
 
 ## 輸出格式
@@ -52,19 +60,7 @@ export const TOC_EXTRACTION_PROMPT = `你是一位專業的雜誌目錄資料整
 
 ### 欄目分類 (category)
 依文章內容判斷，**從下列選一個原樣填入**，不要自創、不要附加英文對照：
-- 特輯（大篇幅主題報導，如專題企劃、封面物語、專題報導）
-- 新作預覽（尚未上市作品的搶先介紹，如「先睹為快」「遊戲情報網」「每月新Game」）
-- 遊戲評測（已上市作品的評分與評論，如「遊戲評析」「新片評鑑」「比較評論」）
-- 攻略（遊戲攻略、密技、過關法）
-- 新聞（業界消息、新作發表）
-- 訪談（製作人或業界人士專訪）
-- 硬體（主機、周邊設備介紹）
-- 漫畫（漫畫作品，如「漫畫街」）
-- 排行榜（銷售或人氣排行）
-- 預定發售表（近期發售預定一覽）
-- 讀者投稿（讀者來信、投稿園地、意見調查）
-- 連載（分期連載的文字專欄）
-- 其他（無法歸類的欄目，如編輯室手記）
+${CATEGORY_LIST}
 
 **新作預覽與遊戲評測的差別在於作品是否已上市**：上市前的搶先介紹一律歸「新作預覽」，已上市作品的評分與評論歸「遊戲評測」。各家雜誌的欄目名稱不同（先睹為快、新片評鑑⋯⋯），請依性質判斷而非照抄欄目名。
 

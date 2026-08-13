@@ -4,6 +4,7 @@ import { articleBatchCreateSchema } from "@/lib/validators/article";
 import { TagType } from "@prisma/client";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { isValidApiToken } from "@/lib/api-token";
 
 // POST /api/articles/batch - 批次建立文章（AI 辨識後使用）
 export const POST = withErrorHandler(async (request: NextRequest) => {
@@ -131,9 +132,27 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   await logEdit("Article", result[0]?.id ?? "", "CREATE", { count: result.length, issueId: validatedData.issueId });
 
+  // Saving here is the last step of a person comparing the recognised list
+  // against the scan, so the issue leaves the review queue. Token writes are
+  // unattended and must not claim a human checked anything -- the same rule
+  // the issue route applies. An existing timestamp is left alone: it records
+  // when the contents were first confirmed.
+  const isHuman = !isValidApiToken(request.headers.get("authorization"));
+  const markedReviewed = isHuman && !issue.tocReviewedAt;
+  if (markedReviewed) {
+    await prisma.issue.update({
+      where: { id: validatedData.issueId },
+      data: { tocReviewedAt: new Date() },
+    });
+    await logEdit("Issue", validatedData.issueId, "UPDATE", {
+      tocReviewedAt: { from: null, to: new Date().toISOString() },
+    });
+  }
+
   return NextResponse.json({
     success: true,
     count: result.length,
     articles: result,
+    markedReviewed,
   }, { status: 201 });
 }, "Batch create articles");
