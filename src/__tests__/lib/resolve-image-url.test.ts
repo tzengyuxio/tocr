@@ -76,6 +76,17 @@ describe("isSafeImageUrl", () => {
     expect(isSafeImageUrl("not-a-url")).toBe(false);
   });
 
+  it("accepts the project's production domain when that is not the site origin", () => {
+    process.env.VERCEL_URL = "tocr-abc123.vercel.app";
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "tocr.simagame.me";
+
+    expect(isSafeImageUrl("https://tocr.simagame.me/issues/toc/a.jpg")).toBe(true);
+    expect(isSafeImageUrl("https://evil.com/steal-data")).toBe(false);
+
+    delete process.env.VERCEL_URL;
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  });
+
   // The point of the change: the anchor is the configured origin, so a host the
   // request claims -- previously the whole basis of the same-origin branch --
   // buys nothing.

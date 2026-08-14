@@ -38,3 +38,22 @@ function normalize(value: unknown): unknown {
   }
   return value;
 }
+
+/**
+ * Diff a set of related ids (an article's tags, its games).
+ *
+ * Relations are written separately from the row, so diffChanges -- which reads
+ * the row -- cannot see them. Without this, an edit that only adds a tag has an
+ * empty diff, and an empty diff now means "wrote nothing" and is not logged.
+ *
+ * Order is not meaningful, so both sides are sorted before comparing.
+ */
+export function diffIds(
+  before: string[],
+  after: string[]
+): FieldDiff | null {
+  const from = [...before].sort();
+  const to = [...after].sort();
+  if (JSON.stringify(from) === JSON.stringify(to)) return null;
+  return { from, to };
+}

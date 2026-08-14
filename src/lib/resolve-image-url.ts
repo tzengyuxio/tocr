@@ -1,4 +1,4 @@
-import { getSiteOrigin } from "./site-origin";
+import { getSiteOrigin, getTrustedOrigins } from "./site-origin";
 
 /**
  * Resolve a potentially relative image URL to an absolute URL.
@@ -34,8 +34,8 @@ export function isSafeImageUrl(url: string): boolean {
   try {
     const parsed = new URL(resolved);
 
-    // Allow same-origin
-    if (parsed.origin === getSiteOrigin()) {
+    // Allow our own origins
+    if (getTrustedOrigins().includes(parsed.origin)) {
       return true;
     }
 

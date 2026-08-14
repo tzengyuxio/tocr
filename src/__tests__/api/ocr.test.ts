@@ -4,7 +4,15 @@
 import { prismaMock, resetPrismaMock } from "../__mocks__/prisma";
 import { POST } from "@/app/api/ocr/route";
 import { OcrProviderFactory } from "@/services/ai/ocr.factory";
-import { NextRequest } from "next/server";
+import { requireEditor } from "@/lib/require-editor";
+import { NextRequest, NextResponse } from "next/server";
+
+// The route's authorisation layer pulls in next-auth, which is ESM and cannot
+// be loaded here. These cases are about provider selection; the layer itself is
+// covered in require-editor.test.ts.
+jest.mock("@/lib/require-editor", () => ({
+  requireEditor: jest.fn().mockResolvedValue(null),
+}));
 
 jest.mock("@/services/ai/ocr.factory", () => ({
   OcrProviderFactory: {
@@ -15,6 +23,7 @@ jest.mock("@/services/ai/ocr.factory", () => ({
   },
 }));
 
+const requireEditorMock = requireEditor as jest.Mock;
 const getProvider = OcrProviderFactory.getProvider as jest.Mock;
 const getAvailableProviders =
   OcrProviderFactory.getAvailableProviders as jest.Mock;
@@ -35,6 +44,7 @@ function requestWith(fields: Record<string, string>) {
 
 beforeEach(() => {
   resetPrismaMock();
+  requireEditorMock.mockClear().mockResolvedValue(null);
   getProvider.mockClear();
   getAvailableProviders.mockReturnValue(["claude", "openai", "gemini"]);
   prismaMock.ocrRecord.create.mockResolvedValue({ id: "ocr-1" });
@@ -73,6 +83,21 @@ describe("POST /api/ocr provider selection", () => {
 
     expect(res.status).toBe(400);
     expect(json.available).toEqual(["openai"]);
+    expect(getProvider).not.toHaveBeenCalled();
+  });
+});
+
+// The route calls a paid model, so it repeats the check middleware already
+// makes -- see require-editor.ts for why one layer is not enough.
+describe("POST /api/ocr authorisation", () => {
+  it("stops before the model call when the caller is not allowed", async () => {
+    requireEditorMock.mockResolvedValue(
+      NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    );
+
+    const response = await POST(requestWith({}));
+
+    expect(response.status).toBe(401);
     expect(getProvider).not.toHaveBeenCalled();
   });
 });

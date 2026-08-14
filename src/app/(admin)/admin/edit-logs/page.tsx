@@ -66,19 +66,9 @@ function ChangeSummary({ changes }: { changes: Prisma.JsonValue }) {
     return <span className="truncate">{entries.map(([f]) => f).join("、")}</span>;
   }
 
-  // A field whose two sides render the same reads as a change that is not
-  // there. It is the rendering that lost the difference, so drop the row
-  // rather than print `x A → A`.
-  const visible = entries.filter(
-    ([, value]) =>
-      !isFieldDiff(value) ||
-      formatValue(value.from) !== formatValue(value.to)
-  );
-  if (visible.length === 0) return <>—</>;
-
   return (
     <ul className="space-y-0.5">
-      {visible.map(([field, value]) => (
+      {entries.map(([field, value]) => (
         <li key={field} className="truncate">
           <span className="font-medium text-foreground">{field}</span>
           {isFieldDiff(value) && (

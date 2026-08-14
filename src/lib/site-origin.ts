@@ -23,3 +23,24 @@ export function getSiteOrigin(): string {
 
   return "http://localhost:3000";
 }
+
+/**
+ * Every origin that counts as "this site" when deciding whether a URL is our
+ * own.
+ *
+ * getSiteOrigin answers "where do I fetch my own files from", and on Vercel
+ * with nothing configured that is the deployment host (tocr-<hash>.vercel.app).
+ * A URL written with the project's real domain is equally ours, so accept it
+ * too rather than making the answer depend on an optional env var.
+ */
+export function getTrustedOrigins(): string[] {
+  const origins = [getSiteOrigin()];
+
+  const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (productionHost) {
+    const productionOrigin = `https://${productionHost}`;
+    if (!origins.includes(productionOrigin)) origins.push(productionOrigin);
+  }
+
+  return origins;
+}
