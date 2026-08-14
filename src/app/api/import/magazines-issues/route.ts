@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { importRequestSchema, type ImportResult } from "@/lib/validators/csv-import";
 import { withErrorHandler } from "@/lib/api-utils";
+import { requireEditor } from "@/lib/require-editor";
 import { withFoundedSort } from "@/lib/validators/magazine";
 import { withPublishSort } from "@/lib/validators/issue";
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
+  const denied = await requireEditor(request);
+  if (denied) return denied;
+
   const body = await request.json();
   const validatedData = importRequestSchema.parse(body);
 

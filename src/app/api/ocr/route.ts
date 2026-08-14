@@ -4,6 +4,7 @@ import { OcrProviderFactory } from "@/services/ai/ocr.factory";
 import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
 import { resolveImageUrl, isSafeImageUrl } from "@/lib/resolve-image-url";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { requireEditor } from "@/lib/require-editor";
 
 // Vision OCR on a full table-of-contents page routinely exceeds the platform
 // default timeout; 60s is the Vercel Hobby ceiling.
@@ -31,6 +32,9 @@ function tooManyImages(count: number) {
 // POST /api/ocr - 執行 AI 辨識（支援多圖）
 export async function POST(request: NextRequest) {
   try {
+    const denied = await requireEditor(request);
+    if (denied) return denied;
+
     // Rate limiting by IP (or forwarded IP behind proxy)
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
