@@ -20,8 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tags, FileText, SquarePen } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
 import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 import { Breadcrumb } from "@/components/Breadcrumb";

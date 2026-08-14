@@ -110,6 +110,8 @@ export default async function EditIssuePage({ params }: PageProps) {
           {issue.tocImages.length > 0 ? (
             <div className="flex items-center gap-4">
               {issue.tocImages.map((url, index) => (
+                /* eslint-disable-next-line @next/next/no-img-element -- an
+                   admin-only thumbnail strip; the optimizer buys little here. */
                 <img
                   key={index}
                   src={url}

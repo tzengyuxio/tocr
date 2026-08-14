@@ -21,8 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { BookOpen, Calendar, FileText, SquarePen } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";

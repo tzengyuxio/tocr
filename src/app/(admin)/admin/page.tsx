@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookOpen, FileText, Tags, Gamepad2, Calendar, ScanText, Upload, ArrowRight, Plus, FileEdit } from "lucide-react";
 import { prisma } from "@/lib/prisma";

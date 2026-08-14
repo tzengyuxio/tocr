@@ -224,6 +224,9 @@ export default function UsersPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {user.image ? (
+                          // A Google avatar URL; that host is not in the
+                          // remotePatterns allowlist.
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={user.image}
                             alt={user.name || "User"}
@@ -285,6 +288,9 @@ export default function UsersPage() {
           <div className="space-y-4 py-4">
             <div className="flex items-center gap-3">
               {editingUser?.image ? (
+                // A Google avatar URL; that host is not in the remotePatterns
+                // allowlist.
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={editingUser.image}
                   alt={editingUser.name || "User"}

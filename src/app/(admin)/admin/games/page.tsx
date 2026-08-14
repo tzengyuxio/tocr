@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useCallback, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -116,7 +116,7 @@ export default function GamesPage() {
     }
   };
 
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({ limit: "100" });
@@ -131,12 +131,12 @@ export default function GamesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchQuery]);
 
   useEffect(() => {
     const timer = setTimeout(fetchGames, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [fetchGames]);
 
   const handleOpenCreate = () => {
     setEditingGame(null);
@@ -642,6 +642,9 @@ export default function GamesPage() {
                 </Button>
               </div>
               {formData.coverImage && (
+                // The cover URL can point at RAWG, which is not in the
+                // remotePatterns allowlist next/image enforces.
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={formData.coverImage}
                   alt="Cover preview"

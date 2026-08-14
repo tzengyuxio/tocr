@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,7 +107,7 @@ export default function TagsPage() {
     }
   };
 
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({ limit: "100" });
@@ -122,11 +122,11 @@ export default function TagsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activeType]);
 
   useEffect(() => {
     fetchTags();
-  }, [activeType]);
+  }, [fetchTags]);
 
   const handleOpenCreate = () => {
     setEditingTag(null);
