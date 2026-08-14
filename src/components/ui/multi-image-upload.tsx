@@ -98,6 +98,8 @@ export function MultiImageUpload({
         <div className="flex flex-wrap gap-2">
           {value.map((url, index) => (
             <div key={`${url}-${index}`} className="relative inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element -- the
+                  value may still be a blob: preview of an unsaved file. */}
               <img
                 src={url}
                 alt={`已上傳 ${index + 1}`}

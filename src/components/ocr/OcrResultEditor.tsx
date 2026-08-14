@@ -582,6 +582,9 @@ export function OcrResultEditor({
                       viewport less the header, main's padding, the sticky
                       offset and the controls below. */}
                   <div className="flex min-h-0 justify-center overflow-hidden rounded-lg border bg-muted/30">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- the
+                        height is a viewport calculation; next/image would need
+                        fixed dimensions or fill, and this is admin-only. */}
                     <img
                       src={tocImages[currentImageIndex]}
                       alt={`目錄頁 ${currentImageIndex + 1}`}
@@ -702,6 +705,8 @@ export function OcrResultEditor({
               <X className="h-5 w-5" />
             </button>
             <div className="relative" onClick={(e) => e.stopPropagation()}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- the
+                  lightbox sizes itself to the viewport; see the note above. */}
               <img
                 src={tocImages[currentImageIndex]}
                 alt={`目錄頁 ${currentImageIndex + 1}`}

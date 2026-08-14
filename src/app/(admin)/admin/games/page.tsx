@@ -639,6 +639,9 @@ export default function GamesPage() {
                 </Button>
               </div>
               {formData.coverImage && (
+                // The cover URL can point at RAWG, which is not in the
+                // remotePatterns allowlist next/image enforces.
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={formData.coverImage}
                   alt="Cover preview"

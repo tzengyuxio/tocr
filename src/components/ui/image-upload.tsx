@@ -91,6 +91,8 @@ export function ImageUpload({
 
       {value ? (
         <div className="relative inline-block">
+          {/* eslint-disable-next-line @next/next/no-img-element -- the value
+              may still be a blob: preview of an unsaved file. */}
           <img
             src={value}
             alt="Uploaded"

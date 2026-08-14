@@ -239,6 +239,9 @@ export function OcrUploader({
             <div className="flex flex-wrap gap-3">
               {imagePreviews.map((src, index) => (
                 <div key={`${src.slice(0, 30)}-${index}`} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a
+                      preview of the file just picked, served from a blob: URL
+                      that next/image cannot fetch. */}
                   <img
                     src={src}
                     alt={`目錄頁 ${index + 1}`}
