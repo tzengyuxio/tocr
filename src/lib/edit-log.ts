@@ -126,6 +126,13 @@ export async function logEdit(
   action: EditAction,
   changes?: Record<string, unknown>
 ) {
+  // An UPDATE whose diff is empty wrote nothing. Logging it puts a line in the
+  // feed and a point on the contributor board for a save that changed no
+  // field. CREATE and DELETE carry meaning without a diff, so they still log.
+  if (action === "UPDATE" && changes && Object.keys(changes).length === 0) {
+    return;
+  }
+
   const userId = await resolveAuthor();
   if (!userId) return;
 

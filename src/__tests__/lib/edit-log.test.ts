@@ -43,6 +43,27 @@ describe("logEdit", () => {
     expect(editLogMock.create).toHaveBeenCalledTimes(1);
   });
 
+  // A save that wrote nothing is not history: it reads as an edit in the feed
+  // and in the contributor counts while naming no field anyone changed.
+  it("writes nothing for an UPDATE that changed no field", async () => {
+    await logEdit("Game", "game-1", "UPDATE", {});
+
+    expect(editLogMock.create).not.toHaveBeenCalled();
+  });
+
+  it("still records an UPDATE that changed something", async () => {
+    await logEdit("Game", "game-1", "UPDATE", { name: { from: "a", to: "b" } });
+
+    expect(editLogMock.create).toHaveBeenCalledTimes(1);
+  });
+
+  // CREATE and DELETE say something on their own; only UPDATE needs a field.
+  it("still records a CREATE with no diff", async () => {
+    await logEdit("Game", "game-1", "CREATE", {});
+
+    expect(editLogMock.create).toHaveBeenCalledTimes(1);
+  });
+
   it("does not fail the edit when the log write fails", async () => {
     const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
     editLogMock.create.mockRejectedValue(new Error("connection lost"));

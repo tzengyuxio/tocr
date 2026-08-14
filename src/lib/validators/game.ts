@@ -1,17 +1,18 @@
 import { z } from "zod";
+import { optionalText } from "./fields";
 
 export const gameCreateSchema = z.object({
   name: z.string().min(1, "遊戲名稱為必填"),
-  nameOriginal: z.string().optional().nullable(),
-  nameEn: z.string().optional().nullable(),
+  nameOriginal: optionalText,
+  nameEn: optionalText,
   slug: z.string().min(1, "Slug 為必填").regex(/^[a-z0-9\u4e00-\u9fff-]+$/, "Slug 只能包含小寫字母、數字、中文和連字號"),
   releaseDate: z.coerce.date().optional().nullable(),
   platforms: z.array(z.string()).default([]),
-  developer: z.string().optional().nullable(),
-  publisher: z.string().optional().nullable(),
+  developer: optionalText,
+  publisher: optionalText,
   genres: z.array(z.string()).default([]),
-  coverImage: z.string().optional().nullable(),
-  description: z.string().optional().nullable(),
+  coverImage: optionalText,
+  description: optionalText,
 });
 
 export const gameUpdateSchema = gameCreateSchema.partial();
