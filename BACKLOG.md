@@ -18,6 +18,24 @@
   2. **期刊與單期併成一欄**。注意：單期連結**其實已經有**（「單期」欄連到 `/magazines/[id]/issues/[id]`），幫助不大的是「期刊」欄那個連到 `/magazines/[id]` 的連結。所以要做的是把兩欄併成一個指向單期的欄位，而不是「補上單期連結」。`/admin/issues` 那頁已經是這個形狀（`電腦玩家雜誌 96`，整列連到單期），可以沿用
 
   桌機是 `<Table>`、手機是卡片列表，**兩處都要改**（2026-08-14）
+- [ ] **「從 RAWG 抓取」的實作檢查** — 2026-08-14 讀了一遍，四個問題（都還沒修）：
+
+  1. **正式站根本沒有 `RAWG_API_KEY`**（`vercel env ls production` 查證），所以那顆按鈕在線上一律回 500 `RAWG API key not configured`
+  2. **而且使用者看不到任何錯誤**：`handleFetchCover` 只寫了 `if (res.ok) { ... }`，沒有 else。非 2xx 時 spinner 停下、畫面什麼都不變，連「失敗了」都不知道
+  3. **抓到的網址直接存進 `coverImage`**，那是 `api.rawg.io` 的遠端 URL，而 `next.config.ts` 的 `remotePatterns` 只允許 `*.public.blob.vercel-storage.com`——用 `next/image` 顯示會被擋。要嘛把圖抓下來丟 Blob（跟封面既有慣例一致），要嘛把 rawg 加進 allowlist
+  4. **`page_size=1` 直接取第一筆**，沒有確認步驟。中文遊戲名（《軒轅劍3》這類）在 RAWG 的英文資料庫幾乎不會命中，第一筆很可能是不相干的遊戲。另外取的欄位是 `background_image`，那是 RAWG 的美術圖／截圖，不是盒裝封面
+
+  順帶一提，這個功能對這個專案的意義要先想清楚：這裡的「封面」是要給雜誌索引用的辨識圖，跟 RAWG 的遊戲宣傳圖不是同一種東西（2026-08-14）
+- [ ] **沒有實際變更的儲存不該留下編輯記錄** — 正式站 2026-08-14 00:58 有一筆 Game UPDATE，六個欄位全是 `null → ""`（`nameEn`、`nameOriginal`、`developer`、`publisher`、`description`、`coverImage`）。
+
+  **根因不是「記錄了 no-op」，而是那次儲存真的寫入了東西**：表單把沒填的選填欄位送成空字串，於是資料庫裡的 NULL 被改成 `""`，`diffChanges` 忠實地報告了這個變化。所以每個遊戲第一次被打開儲存，都會平白改寫六個欄位。
+
+  兩層要修：
+
+  1. **資料面**：選填文字欄位在寫入前把 `""` 正規化成 `null`（validator 或 route 皆可），否則同一個「沒有值」在資料庫裡有兩種表示
+  2. **記錄面**：`diffChanges` 算完若是空物件，就整筆不要寫。UPDATE 路由都已經在用它了，補一個「空的就 return」即可
+
+  至於「只顯示有變更的欄位」——`diffChanges` **已經只存有變更的欄位**（`edit-log-diff.ts`），上面那筆之所以顯示六個，是因為那六個真的被改了。修掉第 1 點，顯示問題會跟著消失（2026-08-14）
 - [ ] [#35] **`pg-connection-string` 的 SSL mode 警告** — 線上 log 有這則：`prefer`/`require`/`verify-ca` 之後會被當成 `verify-full`，pg-connection-string v3.0.0 / pg v9.0.0 起是 breaking change。目前不影響，升級前要處理（2026-08-12）
 - [ ] [#34] **純數字期號加上「第 N 期」** — 549 期裡 544 期的 `issueNumber` 是純數字，單獨顯示「216」讀起來不像期號。建議抽 `formatIssueNumber()` 放在 `formatEdtf` 旁邊：純數字才加「第 N 期」，`創刊號`、`試刊號`、`70+71` 這類原樣保留。不要只改一處——`issueNumber` 散落在 32 個檔案，只改單期複查會讓同一期在不同頁面長得不一樣。不用 `Vol.`／`No.`：前者會跟另一個獨立欄位 `volumeNumber` 混淆，後者偏西式。
 
