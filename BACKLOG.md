@@ -18,12 +18,11 @@
   2. **期刊與單期併成一欄**。注意：單期連結**其實已經有**（「單期」欄連到 `/magazines/[id]/issues/[id]`），幫助不大的是「期刊」欄那個連到 `/magazines/[id]` 的連結。所以要做的是把兩欄併成一個指向單期的欄位，而不是「補上單期連結」。`/admin/issues` 那頁已經是這個形狀（`電腦玩家雜誌 96`，整列連到單期），可以沿用
 
   桌機是 `<Table>`、手機是卡片列表，**兩處都要改**（2026-08-14）
-- [ ] **「從 RAWG 抓取」的實作檢查** — 2026-08-14 讀了一遍，四個問題（都還沒修）：
+- [ ] **「從 RAWG 抓取」的實作檢查** — 2026-08-14 讀了一遍，四個問題，其中「使用者看不到錯誤」已修（`handleFetchCover` 補上非 2xx 分支），剩下三個：
 
-  1. **正式站根本沒有 `RAWG_API_KEY`**（`vercel env ls production` 查證），所以那顆按鈕在線上一律回 500 `RAWG API key not configured`
-  2. ~~**而且使用者看不到任何錯誤**~~（已修：`handleFetchCover` 補上非 2xx 分支，顯示後端的 error 訊息）
-  3. **抓到的網址直接存進 `coverImage`**，那是 `api.rawg.io` 的遠端 URL，而 `next.config.ts` 的 `remotePatterns` 只允許 `*.public.blob.vercel-storage.com`——用 `next/image` 顯示會被擋。要嘛把圖抓下來丟 Blob（跟封面既有慣例一致），要嘛把 rawg 加進 allowlist
-  4. **`page_size=1` 直接取第一筆**，沒有確認步驟。中文遊戲名（《軒轅劍3》這類）在 RAWG 的英文資料庫幾乎不會命中，第一筆很可能是不相干的遊戲。另外取的欄位是 `background_image`，那是 RAWG 的美術圖／截圖，不是盒裝封面
+  1. **正式站根本沒有 `RAWG_API_KEY`**（`vercel env ls production` 查證），所以那顆按鈕在線上一律回 500 `RAWG API key not configured`——現在至少看得到這句話了
+  2. **抓到的網址直接存進 `coverImage`**，那是 `api.rawg.io` 的遠端 URL，而 `next.config.ts` 的 `remotePatterns` 只允許 `*.public.blob.vercel-storage.com`——用 `next/image` 顯示會被擋。要嘛把圖抓下來丟 Blob（跟封面既有慣例一致），要嘛把 rawg 加進 allowlist
+  3. **`page_size=1` 直接取第一筆**，沒有確認步驟。中文遊戲名（《軒轅劍3》這類）在 RAWG 的英文資料庫幾乎不會命中，第一筆很可能是不相干的遊戲。另外取的欄位是 `background_image`，那是 RAWG 的美術圖／截圖，不是盒裝封面
 
   順帶一提，這個功能對這個專案的意義要先想清楚：這裡的「封面」是要給雜誌索引用的辨識圖，跟 RAWG 的遊戲宣傳圖不是同一種東西（2026-08-14）
 - [ ] **沒有實際變更的儲存不該留下編輯記錄** — 正式站 2026-08-14 00:58 有一筆 Game UPDATE，六個欄位全是 `null → ""`（`nameEn`、`nameOriginal`、`developer`、`publisher`、`description`、`coverImage`）。
@@ -59,12 +58,6 @@
 
 - [ ] [#26] **匯入腳本沒有進版控，每次都要重寫** — 已匯入 30 本、還有 27 本沒進來，而每次要用都得重寫一次。等資料面的決定收斂、開始在 production 上傳目錄頁時，這支腳本會被反覆使用，屆時「上次是怎麼跑的」會變成實際問題。動手時順帶決定三件事：放 `scripts/`、資料來源怎麼取（Google Sheet 是正本）、以及用 API token 還是直接連 DB（2026-08-13）
 - [ ] [#27] **授權只有 middleware 一層** — 18 個 route handler 自己完全不檢查身分，全靠 `src/middleware.ts` 擋。集中在一處本身合理，但 Next.js middleware 出過 header 偽造的 bypass（CVE-2025-29927，16.1.6 已修），「唯一防線」這個形狀仍然脆弱。建議抽 `requireEditor(request)`，至少在會花錢或寫檔的 `/api/upload`、`/api/ocr`、`/api/import` 補第二層（2026-08-13）
-- [x] [#28] **`/api/export` 一次載入整個資料庫** — 已改成每 50 期一批的串流輸出（2026-08-13）
-- [x] [#29] **匯出的 CSV 有 formula injection** — `src/lib/csv/escape.ts` 已對 `=` `+` `-` `@` `\t` `\r` 開頭補單引號（2026-08-13）
-- [x] [#30] **`/api/ocr` 把上游錯誤原樣吐出** — 已改成 log 保留、response 回通用訊息（2026-08-13）
-- [x] [#31] **OCR 的 rate limit 在 Vercel 上形同虛設** — 已補 `MAX_IMAGES = 10`，並把註解改成誠實描述 in-memory 限制（2026-08-13）
 - [ ] [#32] **`isSafeImageUrl` 的信任錨點來自 Host header** — `origin` 是呼叫端用 `new URL(request.url).origin` 算出來傳進去的，same-origin 分支等於「凡是 Host 說了算」，把 allowlist 的意義稀釋掉。實際利用需要能偽造 Host 且已通過 editor 驗證，風險不高，但應該改成用設定的正式網域（2026-08-13）
 - [ ] [#36] **清掉 34 個 eslint warning，然後把門檻設成 `--max-warnings 0`** — 其中 12 個是 `format` / `zhTW` 的 unused import，散在 6 個檔案，是改掉日期顯示邏輯後留下的 orphan；其餘多為 `<img>` vs `next/image`。清完把 CI 的 lint 步驟改成 `eslint --max-warnings 0`（`.github/workflows/ci.yml` 有註解標記位置），warning 才不會累積回來（2026-08-13）
-- [x] [#37] **`.gitignore` 最後一行 `.env*` 與上面的 env 區塊重複** — 已刪除該行（2026-08-13）
-- [x] [#38] **`upload/route.ts` 的檔名亂數可能是空字串** — 改成 `slice(2).padEnd(6, "0").slice(0, 6)`，長度固定 6（2026-08-13）
 - [ ] [#39] **三個檔案超過 650 行** — `src/components/ocr/OcrResultEditor.tsx` 746、`src/app/(admin)/admin/games/page.tsx` 671、`src/components/article/ArticleForm.tsx` 666。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構（2026-08-14 覆核行數）
