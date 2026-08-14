@@ -18,12 +18,11 @@
   2. **期刊與單期併成一欄**。注意：單期連結**其實已經有**（「單期」欄連到 `/magazines/[id]/issues/[id]`），幫助不大的是「期刊」欄那個連到 `/magazines/[id]` 的連結。所以要做的是把兩欄併成一個指向單期的欄位，而不是「補上單期連結」。`/admin/issues` 那頁已經是這個形狀（`電腦玩家雜誌 96`，整列連到單期），可以沿用
 
   桌機是 `<Table>`、手機是卡片列表，**兩處都要改**（2026-08-14）
-- [ ] **「從 RAWG 抓取」的實作檢查** — 2026-08-14 讀了一遍，四個問題（都還沒修）：
+- [ ] **「從 RAWG 抓取」的實作檢查** — 2026-08-14 讀了一遍，四個問題，其中「使用者看不到錯誤」已修（`handleFetchCover` 補上非 2xx 分支），剩下三個：
 
-  1. **正式站根本沒有 `RAWG_API_KEY`**（`vercel env ls production` 查證），所以那顆按鈕在線上一律回 500 `RAWG API key not configured`
-  2. **而且使用者看不到任何錯誤**：`handleFetchCover` 只寫了 `if (res.ok) { ... }`，沒有 else。非 2xx 時 spinner 停下、畫面什麼都不變，連「失敗了」都不知道
-  3. **抓到的網址直接存進 `coverImage`**，那是 `api.rawg.io` 的遠端 URL，而 `next.config.ts` 的 `remotePatterns` 只允許 `*.public.blob.vercel-storage.com`——用 `next/image` 顯示會被擋。要嘛把圖抓下來丟 Blob（跟封面既有慣例一致），要嘛把 rawg 加進 allowlist
-  4. **`page_size=1` 直接取第一筆**，沒有確認步驟。中文遊戲名（《軒轅劍3》這類）在 RAWG 的英文資料庫幾乎不會命中，第一筆很可能是不相干的遊戲。另外取的欄位是 `background_image`，那是 RAWG 的美術圖／截圖，不是盒裝封面
+  1. **正式站根本沒有 `RAWG_API_KEY`**（`vercel env ls production` 查證），所以那顆按鈕在線上一律回 500 `RAWG API key not configured`——現在至少看得到這句話了
+  2. **抓到的網址直接存進 `coverImage`**，那是 `api.rawg.io` 的遠端 URL，而 `next.config.ts` 的 `remotePatterns` 只允許 `*.public.blob.vercel-storage.com`——用 `next/image` 顯示會被擋。要嘛把圖抓下來丟 Blob（跟封面既有慣例一致），要嘛把 rawg 加進 allowlist
+  3. **`page_size=1` 直接取第一筆**，沒有確認步驟。中文遊戲名（《軒轅劍3》這類）在 RAWG 的英文資料庫幾乎不會命中，第一筆很可能是不相干的遊戲。另外取的欄位是 `background_image`，那是 RAWG 的美術圖／截圖，不是盒裝封面
 
   順帶一提，這個功能對這個專案的意義要先想清楚：這裡的「封面」是要給雜誌索引用的辨識圖，跟 RAWG 的遊戲宣傳圖不是同一種東西（2026-08-14）
 - [ ] **沒有實際變更的儲存不該留下編輯記錄** — 正式站 2026-08-14 00:58 有一筆 Game UPDATE，六個欄位全是 `null → ""`（`nameEn`、`nameOriginal`、`developer`、`publisher`、`description`、`coverImage`）。
@@ -57,14 +56,8 @@
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。
 
-- [ ] [#26] **匯入腳本沒有進版控，每次都要重寫** — 已匯入 30 本、還有 27 本沒進來，而每次要用都得重寫一次。等資料面的決定收斂、開始在 production 上傳目錄頁時，這支腳本會被反覆使用，屆時「上次是怎麼跑的」會變成實際問題（2026-08-13）
+- [ ] [#26] **匯入腳本沒有進版控，每次都要重寫** — 已匯入 30 本、還有 27 本沒進來，而每次要用都得重寫一次。等資料面的決定收斂、開始在 production 上傳目錄頁時，這支腳本會被反覆使用，屆時「上次是怎麼跑的」會變成實際問題。動手時順帶決定三件事：放 `scripts/`、資料來源怎麼取（Google Sheet 是正本）、以及用 API token 還是直接連 DB（2026-08-13）
 - [ ] [#27] **授權只有 middleware 一層** — 18 個 route handler 自己完全不檢查身分，全靠 `src/middleware.ts` 擋。集中在一處本身合理，但 Next.js middleware 出過 header 偽造的 bypass（CVE-2025-29927，16.1.6 已修），「唯一防線」這個形狀仍然脆弱。建議抽 `requireEditor(request)`，至少在會花錢或寫檔的 `/api/upload`、`/api/ocr`、`/api/import` 補第二層（2026-08-13）
-- [ ] [#28] **`/api/export` 匿名可打，而且一次載入整個資料庫** — middleware 只擋寫入，所以這支 GET 沒有任何驗證；query 是 magazines → issues → articles → tags + games 全展開、無分頁。現在資料空的所以沒事，549 期 × 每期數十篇進來之後必然 OOM 或 timeout。**趁資料還空的時候決定要不要串流／分批**（2026-08-13）
-- [ ] [#29] **匯出的 CSV 有 formula injection** — `export/route.ts` 的 `escapeCsvField` 處理了引號與逗號，沒處理 `=` `+` `-` `@` 開頭。文章標題直接來自 OCR，而匯出檔的用途就是給 Excel 開。前綴補一個單引號即可（2026-08-13）
-- [ ] [#30] **`/api/ocr` 把上游錯誤原樣吐出** — 500 的 response 帶 `details: error.message`，自架 Qwen 後端的錯誤訊息（含內部 URL）會外流給呼叫端。log 保留、response 換成通用訊息（2026-08-13）
-- [ ] [#31] **OCR 的 rate limit 在 Vercel 上形同虛設** — `rate-limit.ts` 是 in-memory Map，每個 lambda 實例各數各的。檔頭有誠實說明，但 `ocr/route.ts` 的註解寫「10 requests per minute per user/IP」，讀的人會以為有保護。另外 `images` 陣列沒有張數上限，一次送 50 張就是 50 張的模型帳單。至少補張數上限並改掉那句註解（2026-08-13）
 - [ ] [#32] **`isSafeImageUrl` 的信任錨點來自 Host header** — `origin` 是呼叫端用 `new URL(request.url).origin` 算出來傳進去的，same-origin 分支等於「凡是 Host 說了算」，把 allowlist 的意義稀釋掉。實際利用需要能偽造 Host 且已通過 editor 驗證，風險不高，但應該改成用設定的正式網域（2026-08-13）
-- [ ] [#36] **清掉 34 個 eslint warning** — 其中 12 個是 `format` / `zhTW` 的 unused import，散在 6 個檔案，是改掉日期顯示邏輯後留下的 orphan；其餘多為 `<img>` vs `next/image`（2026-08-13）
-- [ ] [#37] **`.gitignore` 最後一行 `.env*` 與上面的 env 區塊重複** — 且語意上涵蓋了已 tracked 的 `.env.example`。不影響行為，但矛盾（2026-08-13）
-- [ ] [#38] **`upload/route.ts` 的檔名亂數可能是空字串** — `Math.random().toString(36).substring(7)` 在隨機字串本身不夠長時回傳 `""`。timestamp 大致擋住碰撞，但這寫法是誤用（2026-08-13）
-- [ ] [#39] **三個檔案超過 650 行** — `OcrResultEditor.tsx` 749、`admin/games/page.tsx` 668、`ArticleForm.tsx` 666。不急，但下次動到它們時順手拆（2026-08-13）
+- [ ] [#36] **清掉 34 個 eslint warning，然後把門檻設成 `--max-warnings 0`** — 其中 12 個是 `format` / `zhTW` 的 unused import，散在 6 個檔案，是改掉日期顯示邏輯後留下的 orphan；其餘多為 `<img>` vs `next/image`。清完把 CI 的 lint 步驟改成 `eslint --max-warnings 0`（`.github/workflows/ci.yml` 有註解標記位置），warning 才不會累積回來（2026-08-13）
+- [ ] [#39] **三個檔案超過 650 行** — `src/components/ocr/OcrResultEditor.tsx` 746、`src/app/(admin)/admin/games/page.tsx` 671、`src/components/article/ArticleForm.tsx` 666。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構（2026-08-14 覆核行數）

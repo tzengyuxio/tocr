@@ -45,9 +45,11 @@ export async function POST(request: NextRequest) {
     // 縮圖與轉檔，避免累積未優化的原檔
     const optimized = await optimizeImage(file, folder);
 
-    // 產生檔案名稱
+    // 產生檔案名稱。slice(2) 取小數部分，padEnd 補足短亂數（小數位數不固定，
+    // 太短時裁切會得到空字串）
     const timestamp = Date.now();
-    const filename = `${folder}/${timestamp}-${Math.random().toString(36).substring(7)}.${optimized.ext}`;
+    const suffix = Math.random().toString(36).slice(2).padEnd(6, "0").slice(0, 6);
+    const filename = `${folder}/${timestamp}-${suffix}.${optimized.ext}`;
 
     // 有 Vercel Blob token 時上傳到 Blob，否則存到本地 public/
     // placeholder token 長度遠小於真正的 token，以此判斷是否為有效 token
