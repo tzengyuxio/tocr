@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AdminSidebar, AdminMobileMenuButton } from "@/components/layout/AdminSidebar";
 import { AdminHeader } from "@/components/layout/AdminHeader";
 import { isDevBypass, DEV_USER } from "@/lib/dev-auth";
+import { countPendingReview } from "@/lib/issue-review";
 
 export default async function AdminLayout({
   children,
@@ -30,11 +31,26 @@ export default async function AdminLayout({
     user = session.user;
   }
 
+  // One count per admin navigation, alongside the session round trip already
+  // paid here. It has to live in the layout: the badge is on the sidebar, and
+  // the sidebar outlives the page being viewed.
+  const pendingReviewCount = await measure("admin/pending-review", () =>
+    countPendingReview()
+  );
+
   return (
     <div className="flex h-screen overflow-hidden">
-      <AdminSidebar userRole={user.role} />
+      <AdminSidebar userRole={user.role} pendingReviewCount={pendingReviewCount} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <AdminHeader user={user} mobileMenu={<AdminMobileMenuButton userRole={user.role} />} />
+        <AdminHeader
+          user={user}
+          mobileMenu={
+            <AdminMobileMenuButton
+              userRole={user.role}
+              pendingReviewCount={pendingReviewCount}
+            />
+          }
+        />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
