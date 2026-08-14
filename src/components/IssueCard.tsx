@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
 import { formatEdtf } from "@/lib/edtf";
 
 interface IssueCardProps {

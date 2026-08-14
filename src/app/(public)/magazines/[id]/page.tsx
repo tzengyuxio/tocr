@@ -7,11 +7,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatEdtf } from "@/lib/edtf";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { IssueCard } from "@/components/IssueCard";
-import { BookOpen, ArrowLeft, Calendar, SquarePen } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 

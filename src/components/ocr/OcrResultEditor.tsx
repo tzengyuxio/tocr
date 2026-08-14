@@ -45,7 +45,6 @@ import type { ArticleCategory } from "@/lib/article-categories";
 
 interface OcrResultEditorProps {
   result: OcrResult;
-  issueId: string;
   tocImages: string[];
   onSave: (articles: OcrArticleResult[]) => Promise<void>;
   onCancel: () => void;
@@ -92,7 +91,6 @@ function ChipWithRemove({
 
 function ArticleRow({
   article,
-  index,
   isEditing,
   onStartEdit,
   onSaveEdit,
@@ -104,7 +102,6 @@ function ArticleRow({
   onEditChange,
 }: {
   article: OcrArticleResult;
-  index: number;
   isEditing: boolean;
   onStartEdit: () => void;
   onSaveEdit: () => void;
@@ -428,7 +425,6 @@ function ArticleRow({
 
 export function OcrResultEditor({
   result,
-  issueId,
   tocImages,
   onSave,
   onCancel,
@@ -647,7 +643,6 @@ export function OcrResultEditor({
                   <ArticleRow
                     key={index}
                     article={article}
-                    index={index}
                     isEditing={editingIndex === index}
                     onStartEdit={() => handleStartEdit(index)}
                     onSaveEdit={handleSaveEdit}

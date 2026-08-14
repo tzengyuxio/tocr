@@ -28,8 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, FileText, Loader2, Pencil, BookOpen } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
 import { formatEdtf } from "@/lib/edtf";
 import { categoryLabel } from "@/lib/article-categories";
 import type { ArticleCategory } from "@/lib/article-categories";
