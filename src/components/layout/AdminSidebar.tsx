@@ -46,8 +46,12 @@ const navItems = [
   { title: "使用者管理", href: "/admin/users", icon: Users, adminOnly: true },
 ];
 
+/** The one nav entry that carries a count of outstanding work. */
+const BADGED_HREF = "/admin/issues";
+
 interface AdminSidebarProps {
   userRole: string;
+  pendingReviewCount?: number;
 }
 
 function NavLinks({
@@ -55,11 +59,13 @@ function NavLinks({
   pathname,
   collapsed,
   onNavigate,
+  pendingReviewCount = 0,
 }: {
   userRole: string;
   pathname: string;
   collapsed?: boolean;
   onNavigate?: () => void;
+  pendingReviewCount?: number;
 }) {
   const filteredNavItems = navItems.filter(
     (item) => !item.adminOnly || userRole === "ADMIN"
@@ -73,22 +79,49 @@ function NavLinks({
             item.href === "/admin"
               ? pathname === "/admin"
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const badge = item.href === BADGED_HREF ? pendingReviewCount : 0;
           return (
             <Link
               key={item.href}
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted",
                 collapsed && "justify-center px-2"
               )}
-              title={collapsed ? item.title : undefined}
+              title={
+                collapsed
+                  ? badge > 0
+                    ? `${item.title}（${badge} 期待複查）`
+                    : item.title
+                  : undefined
+              }
             >
               <item.icon className="h-4 w-4 flex-shrink-0" />
               {!collapsed && <span>{item.title}</span>}
+              {badge > 0 &&
+                (collapsed ? (
+                  // No room for the number: a dot says "something is waiting",
+                  // and the title attribute carries the count.
+                  <span
+                    aria-label={`${badge} 期待複查`}
+                    className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber-500"
+                  />
+                ) : (
+                  <span
+                    className={cn(
+                      "ml-auto rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums",
+                      isActive
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100"
+                    )}
+                  >
+                    {badge}
+                  </span>
+                ))}
             </Link>
           );
         })}
@@ -113,7 +146,10 @@ function NavLinks({
 }
 
 // Mobile: hamburger button rendered in header area
-export function AdminMobileMenuButton({ userRole }: { userRole: string }) {
+export function AdminMobileMenuButton({
+  userRole,
+  pendingReviewCount,
+}: AdminSidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -137,6 +173,7 @@ export function AdminMobileMenuButton({ userRole }: { userRole: string }) {
             userRole={userRole}
             pathname={pathname}
             onNavigate={() => setOpen(false)}
+            pendingReviewCount={pendingReviewCount}
           />
         </div>
       </SheetContent>
@@ -145,7 +182,7 @@ export function AdminMobileMenuButton({ userRole }: { userRole: string }) {
 }
 
 // Desktop: persistent sidebar
-export function AdminSidebar({ userRole }: AdminSidebarProps) {
+export function AdminSidebar({ userRole, pendingReviewCount }: AdminSidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -182,6 +219,7 @@ export function AdminSidebar({ userRole }: AdminSidebarProps) {
         userRole={userRole}
         pathname={pathname}
         collapsed={collapsed}
+        pendingReviewCount={pendingReviewCount}
       />
     </aside>
   );

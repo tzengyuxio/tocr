@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { measure } from "@/lib/perf";
+import { PENDING_REVIEW_WHERE } from "@/lib/issue-review";
 import {
   Card,
   CardContent,
@@ -37,13 +38,7 @@ const FILTERS = [
     key: "pending",
     label: "待複查",
     description: "已有目錄資料，但沒有人確認過內容",
-    // An issue with neither scans nor articles has nothing to review yet.
-    // Articles count on their own: OCR can be run on images that were never
-    // attached to the issue.
-    where: {
-      tocReviewedAt: null,
-      OR: [{ NOT: { tocImages: { isEmpty: true } } }, { articles: { some: {} } }],
-    },
+    where: PENDING_REVIEW_WHERE,
   },
   {
     key: "reviewed",
