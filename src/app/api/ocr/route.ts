@@ -78,7 +78,6 @@ export async function POST(request: NextRequest) {
     }
 
     const issueId = formData.get("issueId") as string | null;
-    const origin = new URL(request.url).origin;
 
     const allowedTypes = [
       "image/jpeg",
@@ -118,13 +117,13 @@ export async function POST(request: NextRequest) {
         return tooManyImages(images.length + imageUrls.length);
       }
       for (const url of imageUrls) {
-        if (!isSafeImageUrl(url, origin)) {
+        if (!isSafeImageUrl(url)) {
           return NextResponse.json(
             { error: `URL not allowed: ${url}. Only same-origin and trusted storage URLs are permitted.` },
             { status: 400 }
           );
         }
-        const absoluteUrl = resolveImageUrl(url, origin);
+        const absoluteUrl = resolveImageUrl(url);
         const response = await fetch(absoluteUrl);
         if (!response.ok) {
           return NextResponse.json(
@@ -165,13 +164,13 @@ export async function POST(request: NextRequest) {
           mimeType: image.type,
         });
       } else if (imageUrl) {
-        if (!isSafeImageUrl(imageUrl, origin)) {
+        if (!isSafeImageUrl(imageUrl)) {
           return NextResponse.json(
             { error: `URL not allowed: ${imageUrl}. Only same-origin and trusted storage URLs are permitted.` },
             { status: 400 }
           );
         }
-        const absoluteImageUrl = resolveImageUrl(imageUrl, origin);
+        const absoluteImageUrl = resolveImageUrl(imageUrl);
         const response = await fetch(absoluteImageUrl);
         if (!response.ok) {
           return NextResponse.json(
