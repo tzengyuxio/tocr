@@ -47,6 +47,7 @@
   最直接的接點是**遊戲**：TOCR 的 `Game` 與 cdosgame 的條目、以及雜誌書目與 nostalibrary 的館藏（見 [[nostalibrary-data-sources]] 的來源比較）。但關聯要怎麼建立（外部 id 欄位？slug 對照表？單向連結或雙向？）沒有討論過。
 
   **等資料量多了再討論**（yuxio 2026-08-14）。現在 TOCR 正式站只有 4 期有目錄、遊戲條目多半是 OCR 產生的暫時資料，此時定對照規則會用太小的樣本立規矩——與 [#34] 期號格式押後的理由相同（2026-08-14）
+- [ ] **`gameUpdateSchema` 的 `.partial()` 保留了陣列 default** — `gameCreateSchema` 的 `platforms` / `genres` 有 `.default([])`，`.partial()` 只讓欄位變成選填、不會拿掉 default，所以一個沒帶這兩個欄位的 PUT 會把既有的平台與類型**清成空陣列**。`magazine.ts` 已經踩過同一件事並在註解裡寫明（用 `.extend()` 拿掉 default），`issue.ts` 對 `tocImages` 也是。後台表單每次都送完整欄位，所以目前不會觸發；用 API 做部分更新才會。修法照 magazine 的形狀（2026-08-14，做 no-op 編輯記錄時發現）
 - [ ] [#35] **`pg-connection-string` 的 SSL mode 警告** — 線上 log 有這則：`prefer`/`require`/`verify-ca` 之後會被當成 `verify-full`，pg-connection-string v3.0.0 / pg v9.0.0 起是 breaking change。目前不影響，升級前要處理（2026-08-12）
 - [ ] [#34] **純數字期號加上「第 N 期」** — 549 期裡 544 期的 `issueNumber` 是純數字，單獨顯示「216」讀起來不像期號。建議抽 `formatIssueNumber()` 放在 `formatEdtf` 旁邊：純數字才加「第 N 期」，`創刊號`、`試刊號`、`70+71` 這類原樣保留。不要只改一處——`issueNumber` 散落在 32 個檔案，只改單期複查會讓同一期在不同頁面長得不一樣。不用 `Vol.`／`No.`：前者會跟另一個獨立欄位 `volumeNumber` 混淆，後者偏西式。
 
