@@ -15,7 +15,16 @@ export const articleCreateSchema = z.object({
   sortOrder: z.coerce.number().int().default(0),
 });
 
-export const articleUpdateSchema = articleCreateSchema.partial().omit({ issueId: true });
+// .partial() makes fields optional but keeps their defaults, so a partial
+// update that omits these would silently reset them. Drop the defaults for
+// updates -- see magazine.ts, which hit this first.
+export const articleUpdateSchema = articleCreateSchema
+  .partial()
+  .omit({ issueId: true })
+  .extend({
+    authors: z.array(z.string()).optional(),
+    sortOrder: z.coerce.number().int().optional(),
+  });
 
 export const articleBatchCreateSchema = z.object({
   issueId: z.string().min(1, "單期 ID 為必填"),

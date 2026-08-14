@@ -8,7 +8,14 @@ export const tagCreateSchema = z.object({
   description: optionalText,
 });
 
-export const tagUpdateSchema = tagCreateSchema.partial();
+// .partial() makes fields optional but keeps their defaults, so a partial
+// update that omits these would silently reset them. Drop the defaults for
+// updates -- see magazine.ts, which hit this first.
+export const tagUpdateSchema = tagCreateSchema.partial().extend({
+  type: z
+    .enum(["GENERAL", "PERSON", "EVENT", "SERIES", "COMPANY", "PLATFORM"])
+    .optional(),
+});
 
 export type TagCreateInput = z.infer<typeof tagCreateSchema>;
 export type TagUpdateInput = z.infer<typeof tagUpdateSchema>;

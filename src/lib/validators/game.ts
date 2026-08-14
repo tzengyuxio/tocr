@@ -15,7 +15,13 @@ export const gameCreateSchema = z.object({
   description: optionalText,
 });
 
-export const gameUpdateSchema = gameCreateSchema.partial();
+// .partial() makes fields optional but keeps their defaults, so a partial
+// update that omits these would silently reset them. Drop the defaults for
+// updates -- see magazine.ts, which hit this first.
+export const gameUpdateSchema = gameCreateSchema.partial().extend({
+  platforms: z.array(z.string()).optional(),
+  genres: z.array(z.string()).optional(),
+});
 
 export type GameCreateInput = z.infer<typeof gameCreateSchema>;
 export type GameUpdateInput = z.infer<typeof gameUpdateSchema>;
