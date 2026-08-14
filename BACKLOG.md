@@ -57,14 +57,14 @@
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。
 
-- [ ] [#26] **匯入腳本沒有進版控，每次都要重寫** — 已匯入 30 本、還有 27 本沒進來，而每次要用都得重寫一次。等資料面的決定收斂、開始在 production 上傳目錄頁時，這支腳本會被反覆使用，屆時「上次是怎麼跑的」會變成實際問題（2026-08-13）
+- [ ] [#26] **匯入腳本沒有進版控，每次都要重寫** — 已匯入 30 本、還有 27 本沒進來，而每次要用都得重寫一次。等資料面的決定收斂、開始在 production 上傳目錄頁時，這支腳本會被反覆使用，屆時「上次是怎麼跑的」會變成實際問題。動手時順帶決定三件事：放 `scripts/`、資料來源怎麼取（Google Sheet 是正本）、以及用 API token 還是直接連 DB（2026-08-13）
 - [ ] [#27] **授權只有 middleware 一層** — 18 個 route handler 自己完全不檢查身分，全靠 `src/middleware.ts` 擋。集中在一處本身合理，但 Next.js middleware 出過 header 偽造的 bypass（CVE-2025-29927，16.1.6 已修），「唯一防線」這個形狀仍然脆弱。建議抽 `requireEditor(request)`，至少在會花錢或寫檔的 `/api/upload`、`/api/ocr`、`/api/import` 補第二層（2026-08-13）
 - [x] [#28] **`/api/export` 一次載入整個資料庫** — 已改成每 50 期一批的串流輸出（2026-08-13）
 - [x] [#29] **匯出的 CSV 有 formula injection** — `src/lib/csv/escape.ts` 已對 `=` `+` `-` `@` `\t` `\r` 開頭補單引號（2026-08-13）
 - [x] [#30] **`/api/ocr` 把上游錯誤原樣吐出** — 已改成 log 保留、response 回通用訊息（2026-08-13）
 - [x] [#31] **OCR 的 rate limit 在 Vercel 上形同虛設** — 已補 `MAX_IMAGES = 10`，並把註解改成誠實描述 in-memory 限制（2026-08-13）
 - [ ] [#32] **`isSafeImageUrl` 的信任錨點來自 Host header** — `origin` 是呼叫端用 `new URL(request.url).origin` 算出來傳進去的，same-origin 分支等於「凡是 Host 說了算」，把 allowlist 的意義稀釋掉。實際利用需要能偽造 Host 且已通過 editor 驗證，風險不高，但應該改成用設定的正式網域（2026-08-13）
-- [ ] [#36] **清掉 34 個 eslint warning** — 其中 12 個是 `format` / `zhTW` 的 unused import，散在 6 個檔案，是改掉日期顯示邏輯後留下的 orphan；其餘多為 `<img>` vs `next/image`（2026-08-13）
+- [ ] [#36] **清掉 34 個 eslint warning，然後把門檻設成 `--max-warnings 0`** — 其中 12 個是 `format` / `zhTW` 的 unused import，散在 6 個檔案，是改掉日期顯示邏輯後留下的 orphan；其餘多為 `<img>` vs `next/image`。清完把 CI 的 lint 步驟改成 `eslint --max-warnings 0`（`.github/workflows/ci.yml` 有註解標記位置），warning 才不會累積回來（2026-08-13）
 - [x] [#37] **`.gitignore` 最後一行 `.env*` 與上面的 env 區塊重複** — 已刪除該行（2026-08-13）
 - [x] [#38] **`upload/route.ts` 的檔名亂數可能是空字串** — 改成 `slice(2).padEnd(6, "0").slice(0, 6)`，長度固定 6（2026-08-13）
-- [ ] [#39] **三個檔案超過 650 行** — `OcrResultEditor.tsx` 749、`admin/games/page.tsx` 668、`ArticleForm.tsx` 666。不急，但下次動到它們時順手拆（2026-08-13）
+- [ ] [#39] **三個檔案超過 650 行** — `src/components/ocr/OcrResultEditor.tsx` 746、`src/app/(admin)/admin/games/page.tsx` 671、`src/components/article/ArticleForm.tsx` 666。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構（2026-08-14 覆核行數）
