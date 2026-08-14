@@ -46,7 +46,9 @@ function normalize(value: unknown): unknown {
  * the row -- cannot see them. Without this, an edit that only adds a tag has an
  * empty diff, and an empty diff now means "wrote nothing" and is not logged.
  *
- * Order is not meaningful, so both sides are sorted before comparing.
+ * Order is not compared: the read order of a relation is whatever Postgres
+ * returns. Where position carries meaning -- an article's primary game -- the
+ * caller diffs that separately.
  */
 export function diffIds(
   before: string[],

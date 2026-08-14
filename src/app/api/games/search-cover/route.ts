@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withErrorHandler } from "@/lib/api-utils";
+import { requireEditor } from "@/lib/require-editor";
 
 // POST /api/games/search-cover - Search RAWG for game cover image
 export const POST = withErrorHandler(async (request: NextRequest) => {
+  // Spends a third-party quota, so it repeats the middleware check like the
+  // other routes that cost something -- see require-editor.ts.
+  const denied = await requireEditor(request);
+  if (denied) return denied;
+
   const { name } = await request.json();
 
   if (!name || typeof name !== "string") {

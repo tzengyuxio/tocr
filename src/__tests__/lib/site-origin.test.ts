@@ -41,6 +41,14 @@ describe("getSiteOrigin", () => {
     expect(getSiteOrigin()).toBe("https://tocr-preview-abc.vercel.app");
   });
 
+  // The per-deployment host is what Deployment Protection guards, so fetching
+  // our own files through it would meet the auth wall.
+  it("prefers the project domain over the deployment host", () => {
+    process.env.VERCEL_URL = "tocr-abc123.vercel.app";
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "tocr.simagame.me";
+    expect(getSiteOrigin()).toBe("https://tocr.simagame.me");
+  });
+
   it("falls back past a malformed configured URL", () => {
     process.env.NEXTAUTH_URL = "not-a-url";
     process.env.VERCEL_URL = "tocr.vercel.app";
@@ -60,13 +68,13 @@ describe("getTrustedOrigins", () => {
   // With no NEXTAUTH_URL -- which is how production runs today -- the site
   // origin is the deployment host, and the project's own domain would
   // otherwise read as somebody else's.
-  it("also trusts the project's production domain", () => {
+  it("trusts both the project domain and the deployment host", () => {
     process.env.VERCEL_URL = "tocr-abc123.vercel.app";
     process.env.VERCEL_PROJECT_PRODUCTION_URL = "tocr.simagame.me";
 
     expect(getTrustedOrigins()).toEqual([
-      "https://tocr-abc123.vercel.app",
       "https://tocr.simagame.me",
+      "https://tocr-abc123.vercel.app",
     ]);
   });
 

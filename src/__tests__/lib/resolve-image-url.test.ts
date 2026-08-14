@@ -1,14 +1,30 @@
 import { resolveImageUrl, isSafeImageUrl } from "@/lib/resolve-image-url";
 
-// Nothing is configured in the test environment, so getSiteOrigin falls back to
-// localhost -- the same origin these tests used to pass in by hand.
-const ORIGINAL_NEXTAUTH_URL = process.env.NEXTAUTH_URL;
+// next/jest loads .env files, so a developer with any of these set locally
+// would otherwise see the localhost expectations fail. Clear them per test and
+// put them back afterwards, and the cases below say what they depend on.
+const ENV_KEYS = [
+  "NEXTAUTH_URL",
+  "AUTH_URL",
+  "VERCEL_URL",
+  "VERCEL_PROJECT_PRODUCTION_URL",
+] as const;
+const original: Record<string, string | undefined> = {};
+
+beforeEach(() => {
+  for (const key of ENV_KEYS) {
+    original[key] = process.env[key];
+    delete process.env[key];
+  }
+});
 
 afterEach(() => {
-  if (ORIGINAL_NEXTAUTH_URL === undefined) {
-    delete process.env.NEXTAUTH_URL;
-  } else {
-    process.env.NEXTAUTH_URL = ORIGINAL_NEXTAUTH_URL;
+  for (const key of ENV_KEYS) {
+    if (original[key] === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = original[key];
+    }
   }
 });
 
@@ -76,15 +92,15 @@ describe("isSafeImageUrl", () => {
     expect(isSafeImageUrl("not-a-url")).toBe(false);
   });
 
-  it("accepts the project's production domain when that is not the site origin", () => {
+  it("accepts both the production domain and the deployment host", () => {
     process.env.VERCEL_URL = "tocr-abc123.vercel.app";
     process.env.VERCEL_PROJECT_PRODUCTION_URL = "tocr.simagame.me";
 
     expect(isSafeImageUrl("https://tocr.simagame.me/issues/toc/a.jpg")).toBe(true);
+    expect(isSafeImageUrl("https://tocr-abc123.vercel.app/issues/toc/a.jpg")).toBe(
+      true
+    );
     expect(isSafeImageUrl("https://evil.com/steal-data")).toBe(false);
-
-    delete process.env.VERCEL_URL;
-    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
   });
 
   // The point of the change: the anchor is the configured origin, so a host the

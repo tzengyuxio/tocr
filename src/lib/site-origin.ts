@@ -16,8 +16,12 @@ export function getSiteOrigin(): string {
     }
   }
 
-  // Set by Vercel for every deployment, preview builds included, so a preview
-  // resolves its own assets instead of production's.
+  // The project's own domain, preferred over the per-deployment host: that
+  // host is what Vercel Deployment Protection guards, so fetching our own
+  // image through it would meet the auth wall.
+  const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (productionHost) return `https://${productionHost}`;
+
   const vercelHost = process.env.VERCEL_URL;
   if (vercelHost) return `https://${vercelHost}`;
 
@@ -28,18 +32,21 @@ export function getSiteOrigin(): string {
  * Every origin that counts as "this site" when deciding whether a URL is our
  * own.
  *
- * getSiteOrigin answers "where do I fetch my own files from", and on Vercel
- * with nothing configured that is the deployment host (tocr-<hash>.vercel.app).
- * A URL written with the project's real domain is equally ours, so accept it
- * too rather than making the answer depend on an optional env var.
+ * getSiteOrigin answers "where do I fetch my own files from" and can only be
+ * one host. A deployment is reachable on more than one -- the project domain
+ * and the per-deployment URL -- and a stored image URL may name either, so
+ * both count as ours.
  */
 export function getTrustedOrigins(): string[] {
   const origins = [getSiteOrigin()];
 
-  const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (productionHost) {
-    const productionOrigin = `https://${productionHost}`;
-    if (!origins.includes(productionOrigin)) origins.push(productionOrigin);
+  for (const host of [
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL,
+  ]) {
+    if (!host) continue;
+    const origin = `https://${host}`;
+    if (!origins.includes(origin)) origins.push(origin);
   }
 
   return origins;

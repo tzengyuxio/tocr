@@ -62,7 +62,7 @@ export const PUT = withErrorHandler(async (
   const before = await prisma.article.findUnique({
     where: { id },
     include: {
-      articleGames: { select: { gameId: true } },
+      articleGames: { select: { gameId: true, isPrimary: true } },
       articleTags: { select: { tagId: true } },
     },
   });
@@ -115,8 +115,17 @@ export const PUT = withErrorHandler(async (
 
   const changes: Record<string, unknown> = diffChanges(before, article);
   if (gameIds !== undefined) {
-    const diff = diffIds(before?.articleGames.map((g) => g.gameId) ?? [], gameIds);
+    const beforeGames = before?.articleGames ?? [];
+    const diff = diffIds(beforeGames.map((g) => g.gameId), gameIds);
     if (diff) changes.gameIds = diff;
+
+    // The write above makes the first id the primary game, so the same games
+    // in a new order still changes something the set diff cannot see.
+    const primaryFrom = beforeGames.find((g) => g.isPrimary)?.gameId ?? null;
+    const primaryTo = (gameIds as string[])[0] ?? null;
+    if (primaryFrom !== primaryTo) {
+      changes.primaryGameId = { from: primaryFrom, to: primaryTo };
+    }
   }
   if (tagIds !== undefined) {
     const diff = diffIds(before?.articleTags.map((t) => t.tagId) ?? [], tagIds);
