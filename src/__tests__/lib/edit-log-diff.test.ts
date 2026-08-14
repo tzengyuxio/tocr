@@ -1,4 +1,4 @@
-import { diffChanges } from "@/lib/edit-log-diff";
+import { diffChanges, diffIds } from "@/lib/edit-log-diff";
 
 describe("diffChanges", () => {
   it("records the previous and the new value of a changed field", () => {
@@ -65,5 +65,25 @@ describe("diffChanges", () => {
     expect(diffChanges({ price: null }, { price })).toEqual({
       price: { from: null, to: "380" },
     });
+  });
+});
+
+describe("diffIds", () => {
+  it("reports nothing when the same ids are present", () => {
+    expect(diffIds(["a", "b"], ["b", "a"])).toBeNull();
+  });
+
+  it("reports an added id", () => {
+    expect(diffIds(["a"], ["a", "b"])).toEqual({ from: ["a"], to: ["a", "b"] });
+  });
+
+  it("reports a removed id", () => {
+    expect(diffIds(["a", "b"], [])).toEqual({ from: ["a", "b"], to: [] });
+  });
+
+  it("does not mutate its arguments", () => {
+    const before = ["b", "a"];
+    diffIds(before, []);
+    expect(before).toEqual(["b", "a"]);
   });
 });

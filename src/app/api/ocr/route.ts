@@ -4,6 +4,7 @@ import { OcrProviderFactory } from "@/services/ai/ocr.factory";
 import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
 import { resolveImageUrl, isSafeImageUrl } from "@/lib/resolve-image-url";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { requireEditor } from "@/lib/require-editor";
 
 // Vision OCR on a full table-of-contents page routinely exceeds the platform
 // default timeout; 60s is the Vercel Hobby ceiling.
@@ -31,6 +32,9 @@ function tooManyImages(count: number) {
 // POST /api/ocr - 執行 AI 辨識（支援多圖）
 export async function POST(request: NextRequest) {
   try {
+    const denied = await requireEditor(request);
+    if (denied) return denied;
+
     // Rate limiting by IP (or forwarded IP behind proxy)
     const ip =
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
@@ -78,7 +82,6 @@ export async function POST(request: NextRequest) {
     }
 
     const issueId = formData.get("issueId") as string | null;
-    const origin = new URL(request.url).origin;
 
     const allowedTypes = [
       "image/jpeg",
@@ -118,13 +121,13 @@ export async function POST(request: NextRequest) {
         return tooManyImages(images.length + imageUrls.length);
       }
       for (const url of imageUrls) {
-        if (!isSafeImageUrl(url, origin)) {
+        if (!isSafeImageUrl(url)) {
           return NextResponse.json(
             { error: `URL not allowed: ${url}. Only same-origin and trusted storage URLs are permitted.` },
             { status: 400 }
           );
         }
-        const absoluteUrl = resolveImageUrl(url, origin);
+        const absoluteUrl = resolveImageUrl(url);
         const response = await fetch(absoluteUrl);
         if (!response.ok) {
           return NextResponse.json(
@@ -165,13 +168,13 @@ export async function POST(request: NextRequest) {
           mimeType: image.type,
         });
       } else if (imageUrl) {
-        if (!isSafeImageUrl(imageUrl, origin)) {
+        if (!isSafeImageUrl(imageUrl)) {
           return NextResponse.json(
             { error: `URL not allowed: ${imageUrl}. Only same-origin and trusted storage URLs are permitted.` },
             { status: 400 }
           );
         }
-        const absoluteImageUrl = resolveImageUrl(imageUrl, origin);
+        const absoluteImageUrl = resolveImageUrl(imageUrl);
         const response = await fetch(absoluteImageUrl);
         if (!response.ok) {
           return NextResponse.json(

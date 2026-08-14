@@ -1,32 +1,42 @@
 import { z } from "zod";
 import { ARTICLE_CATEGORY_VALUES } from "@/lib/article-categories";
+import { optionalText } from "./fields";
 
 export const articleCreateSchema = z.object({
   issueId: z.string().min(1, "單期 ID 為必填"),
   title: z.string().min(1, "標題為必填"),
-  subtitle: z.string().optional().nullable(),
+  subtitle: optionalText,
   authors: z.array(z.string()).default([]),
   category: z.enum(ARTICLE_CATEGORY_VALUES).optional().nullable(),
   pageStart: z.coerce.number().int().positive().optional().nullable(),
   pageEnd: z.coerce.number().int().positive().optional().nullable(),
-  summary: z.string().optional().nullable(),
-  content: z.string().optional().nullable(),
+  summary: optionalText,
+  content: optionalText,
   sortOrder: z.coerce.number().int().default(0),
 });
 
-export const articleUpdateSchema = articleCreateSchema.partial().omit({ issueId: true });
+// .partial() makes fields optional but keeps their defaults, so a partial
+// update that omits these would silently reset them. Drop the defaults for
+// updates -- see magazine.ts, which hit this first.
+export const articleUpdateSchema = articleCreateSchema
+  .partial()
+  .omit({ issueId: true })
+  .extend({
+    authors: z.array(z.string()).optional(),
+    sortOrder: z.coerce.number().int().optional(),
+  });
 
 export const articleBatchCreateSchema = z.object({
   issueId: z.string().min(1, "單期 ID 為必填"),
   articles: z.array(
     z.object({
       title: z.string().min(1, "標題為必填"),
-      subtitle: z.string().optional().nullable(),
+      subtitle: optionalText,
       authors: z.array(z.string()).default([]),
       category: z.enum(ARTICLE_CATEGORY_VALUES).optional().nullable(),
       pageStart: z.coerce.number().int().positive().optional().nullable(),
       pageEnd: z.coerce.number().int().positive().optional().nullable(),
-      summary: z.string().optional().nullable(),
+      summary: optionalText,
       sortOrder: z.coerce.number().int().default(0),
       suggestedGames: z.array(z.string()).optional(),
       suggestedTags: z.array(

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
+import { formatValue } from "@/lib/edit-log-format";
 import { prisma } from "@/lib/prisma";
 import { measure } from "@/lib/perf";
 import { FEED_SCOPE } from "@/lib/edit-log";
@@ -40,8 +41,6 @@ const PAGE_SIZE = 50;
 const ACTIONS = ["CREATE", "UPDATE", "DELETE"];
 const ENTITY_TYPES = ["Magazine", "Issue", "Article", "Tag", "Game", "User"];
 
-const MAX_VALUE_LENGTH = 40;
-
 /** Logs written before the diff landed carry the new value alone. */
 function isFieldDiff(value: unknown): value is FieldDiff {
   return (
@@ -51,17 +50,6 @@ function isFieldDiff(value: unknown): value is FieldDiff {
     "from" in value &&
     "to" in value
   );
-}
-
-function formatValue(value: unknown): string {
-  if (value === null || value === undefined || value === "") return "（空）";
-  if (Array.isArray(value)) {
-    return value.length === 0 ? "（空）" : value.join("、");
-  }
-  const text = typeof value === "object" ? JSON.stringify(value) : String(value);
-  return text.length > MAX_VALUE_LENGTH
-    ? `${text.slice(0, MAX_VALUE_LENGTH)}…`
-    : text;
 }
 
 /** Which fields an UPDATE touched and how -- the full payload is too wide. */

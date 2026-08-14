@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { edtfSortDate, isValidEdtf } from "../edtf";
+import { blankToNull, optionalText } from "./fields";
 
 // A blank number input submits "", which z.coerce.number() turns into 0 and
-// .positive() then rejects. Normalise to null so the field reads as absent.
-const blankToNull = (value: unknown) => (value === "" ? null : value);
+// .positive() then rejects. blankToNull makes the field read as absent.
 
 const optionalInt = z.preprocess(
   blankToNull,
@@ -18,19 +18,19 @@ const optionalDecimal = z.preprocess(
 export const issueCreateSchema = z.object({
   magazineId: z.string().min(1, "期刊 ID 為必填"),
   issueNumber: z.string().min(1, "期號為必填"),
-  volumeNumber: z.string().optional().nullable(),
-  title: z.string().optional().nullable(),
+  volumeNumber: optionalText,
+  title: optionalText,
   // EDTF (ISO 8601-2), not a calendar date: a cover may give only the month
   // or the season. See docs/data-conventions.md.
   publishDate: z
     .string()
     .min(1, "出版日期為必填")
     .refine(isValidEdtf, "日期格式無效，請使用 EDTF（例如 1999、1999-05、1999-05-20、1994-22）"),
-  coverImage: z.string().optional().nullable(),
+  coverImage: optionalText,
   tocImages: z.array(z.string()).default([]),
   pageCount: optionalInt,
   price: optionalDecimal,
-  notes: z.string().optional().nullable(),
+  notes: optionalText,
   order: z.coerce.number().int().optional(),
   // A flag rather than the stored timestamp: the caller states that a person
   // checked the table of contents, the server decides when that happened.

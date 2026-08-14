@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { edtfSortDate, isValidEdtf } from "../edtf";
-
-const blankToNull = (value: unknown) => (value === "" ? null : value);
+import { blankToNull, optionalText } from "./fields";
 
 // Dates are EDTF (ISO 8601-2), not calendar dates, so that "1999-05" and
 // "1994-22" can say what is actually known. See lib/edtf.ts.
@@ -14,21 +13,14 @@ const optionalEdtf = z.preprocess(
     .optional()
 );
 
-// A blank form field must become null rather than "", so that magazines
-// without an ISSN are stored as genuinely absent.
-const optionalIssn = z.preprocess(
-  blankToNull,
-  z.string().nullable().optional()
-);
-
 export const magazineCreateSchema = z.object({
   name: z.string().min(1, "期刊名稱為必填"),
-  nameOriginal: z.string().optional().nullable(),
+  nameOriginal: optionalText,
   aliases: z.array(z.string()).default([]),
-  publisher: z.string().optional().nullable(),
-  issn: optionalIssn,
-  description: z.string().optional().nullable(),
-  logoImage: z.string().optional().nullable(),
+  publisher: optionalText,
+  issn: optionalText,
+  description: optionalText,
+  logoImage: optionalText,
   foundedDate: optionalEdtf,
   endedDate: optionalEdtf,
   isActive: z.boolean().default(true),

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { articleUpdateSchema } from "@/lib/validators/article";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
-import { diffChanges } from "@/lib/edit-log-diff";
+import { diffChanges, diffIds } from "@/lib/edit-log-diff";
 
 // GET /api/articles/[id] - 取得單一文章
 export const GET = withErrorHandler(async (
@@ -57,7 +57,15 @@ export const PUT = withErrorHandler(async (
   const { gameIds, tagIds, ...articleData } = body;
   const validatedData = articleUpdateSchema.parse(articleData);
 
-  const before = await prisma.article.findUnique({ where: { id } });
+  // The relation ids come along so the log can show a tag-only or game-only
+  // edit; the row itself does not change for those.
+  const before = await prisma.article.findUnique({
+    where: { id },
+    include: {
+      articleGames: { select: { gameId: true, isPrimary: true } },
+      articleTags: { select: { tagId: true } },
+    },
+  });
 
   // 使用 transaction 更新文章和關聯
   const article = await prisma.$transaction(async (tx) => {
@@ -105,7 +113,26 @@ export const PUT = withErrorHandler(async (
     return updated;
   });
 
-  await logEdit("Article", id, "UPDATE", diffChanges(before, article));
+  const changes: Record<string, unknown> = diffChanges(before, article);
+  if (gameIds !== undefined) {
+    const beforeGames = before?.articleGames ?? [];
+    const diff = diffIds(beforeGames.map((g) => g.gameId), gameIds);
+    if (diff) changes.gameIds = diff;
+
+    // The write above makes the first id the primary game, so the same games
+    // in a new order still changes something the set diff cannot see.
+    const primaryFrom = beforeGames.find((g) => g.isPrimary)?.gameId ?? null;
+    const primaryTo = (gameIds as string[])[0] ?? null;
+    if (primaryFrom !== primaryTo) {
+      changes.primaryGameId = { from: primaryFrom, to: primaryTo };
+    }
+  }
+  if (tagIds !== undefined) {
+    const diff = diffIds(before?.articleTags.map((t) => t.tagId) ?? [], tagIds);
+    if (diff) changes.tagIds = diff;
+  }
+
+  await logEdit("Article", id, "UPDATE", changes);
 
   return NextResponse.json(article);
 }, "Update article");

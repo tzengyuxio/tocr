@@ -52,6 +52,8 @@
 
 授權集中在 `src/middleware.ts`，不在各個 handler 裡：**所有寫入方法**（POST／PUT／PATCH／DELETE）需要 EDITOR 以上，`/api/export` 是唯一同樣受保護的讀取。其餘 GET 公開。
 
+例外是四支會花錢或寫檔的路由——`/api/ocr`、`/api/upload`、`/api/import/magazines-issues`、`/api/games/search-cover`（燒 RAWG 配額）——它們另外用 `requireEditor()`（`src/lib/require-editor.ts`）自己再檢查一次。規則與 middleware 相同（API token 或 EDITOR／ADMIN session），目的是讓 middleware 一旦被繞過（Next.js 出過 CVE-2025-29927）不會直接換來一次模型帳單。
+
 `API_TOKEN` 可代替 session 用於寫入，但不適用於 `/api/users`，也不適用於任何讀取。
 
 ### 期刊 / 單期 / 文章

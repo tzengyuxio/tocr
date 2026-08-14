@@ -3,6 +3,7 @@ import { put } from "@vercel/blob";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { optimizeImage } from "@/lib/image-optimize";
+import { requireEditor } from "@/lib/require-editor";
 
 async function uploadLocal(
   filename: string,
@@ -16,6 +17,9 @@ async function uploadLocal(
 
 export async function POST(request: NextRequest) {
   try {
+    const denied = await requireEditor(request);
+    if (denied) return denied;
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const folder = (formData.get("folder") as string) || "uploads";
