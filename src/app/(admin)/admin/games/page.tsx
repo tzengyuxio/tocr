@@ -264,13 +264,16 @@ export default function GamesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: formData.name }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.coverImage) {
-          setFormData((prev) => ({ ...prev, coverImage: data.coverImage }));
-        } else {
-          setError("RAWG 找不到此遊戲的封面");
-        }
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        // 沒有這個分支時，非 2xx 只會讓 spinner 停下、畫面毫無變化
+        setError(data?.error ? `抓取封面失敗：${data.error}` : "抓取封面失敗");
+        return;
+      }
+      if (data?.coverImage) {
+        setFormData((prev) => ({ ...prev, coverImage: data.coverImage }));
+      } else {
+        setError("RAWG 找不到此遊戲的封面");
       }
     } catch {
       setError("抓取封面失敗");
