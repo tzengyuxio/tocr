@@ -29,6 +29,7 @@ interface PrismaMock {
   ocrRecord: MockModel;
   user: MockModel;
   $transaction: jest.Mock;
+  $queryRaw: jest.Mock;
 }
 
 const createMockModel = (): MockModel => ({
@@ -53,6 +54,9 @@ export const prismaMock: PrismaMock = {
   ocrRecord: createMockModel(),
   user: createMockModel(),
   $transaction: jest.fn((fn: TransactionCallback) => fn(prismaMock)),
+  // Tagged-template call, so tests assert on the interpolated values rather
+  // than on a query object.
+  $queryRaw: jest.fn(),
 };
 
 jest.mock("@/lib/prisma", () => ({
@@ -80,4 +84,5 @@ export function resetPrismaMock() {
   prismaMock.$transaction.mockImplementation((fn: TransactionCallback) =>
     fn(prismaMock)
   );
+  prismaMock.$queryRaw.mockReset().mockResolvedValue([]);
 }

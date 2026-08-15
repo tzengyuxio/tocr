@@ -36,7 +36,9 @@ export function DisplayNameForm({ initialName }: { initialName: string }) {
         return;
       }
 
-      setSaved(data.name);
+      // The rename is committed at this point, so a body that will not parse
+      // must not turn into a failure message.
+      setSaved(data?.name ?? name.trim());
       // The header and every past edit show this name, so refresh the server
       // components rather than leaving a stale one on screen.
       router.refresh();

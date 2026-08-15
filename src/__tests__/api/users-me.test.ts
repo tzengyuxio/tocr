@@ -27,7 +27,7 @@ beforeEach(() => {
   resetPrismaMock();
   currentUser.mockReset().mockResolvedValue("user-1");
   logEditMock.mockClear();
-  prismaMock.user.findFirst.mockResolvedValue(null);
+  prismaMock.$queryRaw.mockResolvedValue([]);
   prismaMock.user.findUnique.mockResolvedValue({ name: "舊名字" });
   prismaMock.user.update.mockResolvedValue({
     id: "user-1",
@@ -71,7 +71,7 @@ describe("PATCH /api/users/me", () => {
   });
 
   it("refuses a name another user already has", async () => {
-    prismaMock.user.findFirst.mockResolvedValue({ id: "user-2" });
+    prismaMock.$queryRaw.mockResolvedValue([{ id: "user-2" }]);
 
     const response = await PATCH(requestWith({ name: "cloudy chen" }));
 
@@ -79,17 +79,15 @@ describe("PATCH /api/users/me", () => {
     expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
-  it("compares names without regard to case", async () => {
-    await PATCH(requestWith({ name: "Cloudy Chen" }));
+  // lower() on both sides rather than ILIKE, which would read % and _ in the
+  // submitted name as wildcards and claim a free name was taken.
+  it("compares names case-insensitively without pattern matching", async () => {
+    await PATCH(requestWith({ name: "100%_愛" }));
 
-    expect(prismaMock.user.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          name: { equals: "Cloudy Chen", mode: "insensitive" },
-          NOT: { id: "user-1" },
-        }),
-      })
-    );
+    const [fragments, ...values] = prismaMock.$queryRaw.mock.calls[0];
+    expect(fragments.join("?")).toContain("lower(name) = lower(");
+    expect(fragments.join("?")).not.toContain("ILIKE");
+    expect(values).toEqual(["100%_愛", "user-1"]);
   });
 
   it("rejects a blank name before touching the database", async () => {
@@ -97,6 +95,23 @@ describe("PATCH /api/users/me", () => {
 
     expect(response.status).toBe(400);
     expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  // withErrorHandler would flatten a ZodError into "Validation failed", which
+  // says nothing about which rule the name broke.
+  it("returns the reason the name was rejected", async () => {
+    const response = await PATCH(requestWith({ name: "司書(NPC)" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("這個名稱是系統保留的");
+  });
+
+  it("explains a name that is too long", async () => {
+    const response = await PATCH(requestWith({ name: "字".repeat(31) }));
+    const body = await response.json();
+
+    expect(body.error).toContain("30");
   });
 
   it("records the rename in the edit log", async () => {

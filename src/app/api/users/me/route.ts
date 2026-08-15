@@ -33,19 +33,31 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
   }
 
   const body = await request.json();
-  const { name } = displayNameSchema.parse(body);
+  // safeParse, not parse: withErrorHandler turns a ZodError into a generic
+  // "Validation failed", so the reasons the schema spells out -- blank, too
+  // long, reserved -- would never reach the person typing the name.
+  const parsed = displayNameSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "顯示名稱無效" },
+      { status: 400 }
+    );
+  }
+  const { name } = parsed.data;
 
   // Case-insensitive so two contributors cannot end up as "Alice" and "alice",
   // which the leaderboard would show as two indistinguishable rows.
-  const taken = await prisma.user.findFirst({
-    where: {
-      name: { equals: name, mode: "insensitive" },
-      NOT: { id: userId },
-    },
-    select: { id: true },
-  });
+  //
+  // Raw lower() rather than Prisma's mode: "insensitive", which compiles to
+  // ILIKE and hands the name over as a pattern -- a person calling themselves
+  // "100%_愛" would be told the name was taken by anything ILIKE matched.
+  const taken = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id FROM users
+    WHERE lower(name) = lower(${name}) AND id <> ${userId}
+    LIMIT 1
+  `;
 
-  if (taken) {
+  if (taken.length > 0) {
     return NextResponse.json(
       { error: "這個顯示名稱已經有人使用了" },
       { status: 409 }
