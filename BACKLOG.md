@@ -40,6 +40,10 @@
 
   **但先不要動手**：目前看到的特殊刊號（`創刊號`、`試刊號`、`創刊驚嘆號`、`70+71`）只來自 3 本雜誌，而已匯入 30 本、還有 27 本沒進來。等更多期刊的刊號樣貌浮現，再一次決定規則會更完整——現在定案等於用不到十分之一的樣本立規矩（2026-08-13）
 
+- [ ] **`/api/ocr` 還會撞到 Vercel 的 4.5MB body 上限** — `OcrUploader.tsx:152` 把原始檔案直接 POST，沒有先縮圖，而且一次可以多張，加總更容易超標。超過上限的請求會被邊緣擋掉，路由不會執行，回的是 HTML 錯誤頁；`handleProcess` 那段無條件 `response.json()`，所以會炸成 `The string did not match the expected pattern.` 這種與大小無關的訊息。
+
+  上傳元件已經修好了（`downscaleImage` 先縮、`uploadErrorMessage` 擋非 JSON 回應），這裡只改了文案。要修就是套同兩個 helper，但**縮圖策略要另外想**：目錄頁走的是 `issues/toc` 的 2400px JPEG，而 OCR 辨識品質直接吃畫質，不能照抄顯示圖那套 1600px。一張 iPhone 照片就 4.4MB，多張目錄頁一定會踩到（2026-08-15）
+
 ## 2026-08-13 code review 待辦
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。
