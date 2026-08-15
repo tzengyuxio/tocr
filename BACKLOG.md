@@ -18,13 +18,6 @@
   2. **期刊與單期併成一欄**。注意：單期連結**其實已經有**（「單期」欄連到 `/magazines/[id]/issues/[id]`），幫助不大的是「期刊」欄那個連到 `/magazines/[id]` 的連結。所以要做的是把兩欄併成一個指向單期的欄位，而不是「補上單期連結」。`/admin/issues` 那頁已經是這個形狀（`電腦玩家雜誌 96`，整列連到單期），可以沿用
 
   桌機是 `<Table>`、手機是卡片列表，**兩處都要改**（2026-08-14）
-- [ ] **「從 RAWG 抓取」的實作檢查** — 2026-08-14 讀了一遍，四個問題，其中「使用者看不到錯誤」已修（`handleFetchCover` 補上非 2xx 分支），剩下三個：
-
-  1. **正式站根本沒有 `RAWG_API_KEY`**（`vercel env ls production` 查證），所以那顆按鈕在線上一律回 500 `RAWG API key not configured`——現在至少看得到這句話了
-  2. **抓到的網址直接存進 `coverImage`**，那是 `api.rawg.io` 的遠端 URL，而 `next.config.ts` 的 `remotePatterns` 只允許 `*.public.blob.vercel-storage.com`——用 `next/image` 顯示會被擋。要嘛把圖抓下來丟 Blob（跟封面既有慣例一致），要嘛把 rawg 加進 allowlist
-  3. **`page_size=1` 直接取第一筆**，沒有確認步驟。中文遊戲名（《軒轅劍3》這類）在 RAWG 的英文資料庫幾乎不會命中，第一筆很可能是不相干的遊戲。另外取的欄位是 `background_image`，那是 RAWG 的美術圖／截圖，不是盒裝封面
-
-  順帶一提，這個功能對這個專案的意義要先想清楚：這裡的「封面」是要給雜誌索引用的辨識圖，跟 RAWG 的遊戲宣傳圖不是同一種東西（2026-08-14）
 - [ ] **單期頁的目錄列表要更緊湊** — `/magazines/[id]/issues/[issueId]` 的文章列表現在是六欄 `<Table>`（頁碼／標題／作者／分類／相關遊戲／編輯），一期 50–80 篇時整頁拉得很長，一眼看不到全貌。而目錄的用途本來就是掃視。
 
   可能的方向（都還沒決定）：縮小行距與 padding、把作者與分類收進標題那一欄的次要行、遊戲標籤改成只在 hover／展開時顯示、或整個換成多欄排版（原始雜誌目錄本來就是兩欄）。手機版是另一套卡片列表，要一起想。
@@ -35,6 +28,20 @@
   最直接的接點是**遊戲**：TOCR 的 `Game` 與 cdosgame 的條目、以及雜誌書目與 nostalibrary 的館藏（見 [[nostalibrary-data-sources]] 的來源比較）。但關聯要怎麼建立（外部 id 欄位？slug 對照表？單向連結或雙向？）沒有討論過。
 
   **等資料量多了再討論**（yuxio 2026-08-14）。現在 TOCR 正式站只有 4 期有目錄、遊戲條目多半是 OCR 產生的暫時資料，此時定對照規則會用太小的樣本立規矩——與 [#34] 期號格式押後的理由相同（2026-08-14）
+- [ ] **「從 RAWG 抓取」的實作檢查** — **優先序押後（2026-08-15）**，原因見下。2026-08-14 讀過一遍，四個問題裡「使用者看不到錯誤」已修（`handleFetchCover` 補上非 2xx 分支），剩下三個：
+
+  1. **正式站沒有 `RAWG_API_KEY`**（`vercel env ls production` 查證），線上按下去一律回 500 `RAWG API key not configured`——現在至少看得到這句話
+  2. **抓到的網址直接存進 `coverImage`**，那是 `api.rawg.io` 的遠端 URL，而 `next.config.ts` 的 `remotePatterns` 只允許 `*.public.blob.vercel-storage.com`，用 `next/image` 會被擋。要嘛抓下來丟 Blob（跟封面既有慣例一致），要嘛把 rawg 加進 allowlist
+  3. **`page_size=1` 直接取第一筆**，沒有確認步驟
+
+  **押後的三個理由**：
+
+  - **RAWG 服務目前是掛的**：2026-08-15 實測 `rawg.io`、`rawg.io/apidocs`、`api.rawg.io/api/games` 全部回 **HTTP 522**（Cloudflare 連不到源站）。連註冊頁都開不了，**現在無法申請 key**，所以這條在服務恢復前根本推不動
+  - **拿到的圖種類是錯的**：RAWG 給的 `background_image` 是宣傳美術／截圖，而這個站要的是盒裝圖（見 [data-conventions.md 的「遊戲封面」](docs/data-conventions.md)）。就算比對完全正確，圖也不是想要的那種
+  - **最多只能覆蓋一半**：正式站 103 款遊戲裡，約一半是華文自製（`霹靂英雄榜`、`新絕代雙驕`、`明星志願2`、`中華一番客棧`），RAWG 幾乎不可能收錄。另一半是西方遊戲的台灣譯名（`創世紀9` = Ultima IX、`網路奇兵2` = System Shock 2、`泰伯倫之日` = C&C Tiberian Sun），這些要先有英文名才查得到——所以**前置作業是把 `nameEn` 填起來**，不是接 RAWG
+
+  免費方案的條件（2026-08-15 查，官網掛掉所以是從搜尋摘要與 readme 鏡像拼的，**未經官方頁面確認**）：要在每個用到資料的頁面標示來源並附上連往 RAWG 的有效連結；月活躍用戶 ≤ 100,000 或月瀏覽 ≤ 500,000 可免費商用；用量兩處說法不一致（TOS 說 20,000／月，readme 說免費 key 共 50,000）
+
 - [ ] [#35] **`pg-connection-string` 的 SSL mode 警告** — 線上 log 有這則：`prefer`/`require`/`verify-ca` 之後會被當成 `verify-full`，pg-connection-string v3.0.0 / pg v9.0.0 起是 breaking change。目前不影響，升級前要處理（2026-08-12）
 - [ ] [#34] **純數字期號加上「第 N 期」** — 549 期裡 544 期的 `issueNumber` 是純數字，單獨顯示「216」讀起來不像期號。建議抽 `formatIssueNumber()` 放在 `formatEdtf` 旁邊：純數字才加「第 N 期」，`創刊號`、`試刊號`、`70+71` 這類原樣保留。不要只改一處——`issueNumber` 散落在 32 個檔案，只改單期複查會讓同一期在不同頁面長得不一樣。不用 `Vol.`／`No.`：前者會跟另一個獨立欄位 `volumeNumber` 混淆，後者偏西式。
 
