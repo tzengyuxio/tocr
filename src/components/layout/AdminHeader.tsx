@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Home, LogOut } from "lucide-react";
+import { Home, LogOut, UserCog } from "lucide-react";
 import Link from "next/link";
 
 interface AdminHeaderProps {
@@ -74,6 +74,13 @@ export function AdminHeader({ user, mobileMenu }: AdminHeaderProps) {
                 </p>
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/admin/profile">
+                <UserCog className="mr-2 h-4 w-4" />
+                個人設定
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-red-600 focus:text-red-600"

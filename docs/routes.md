@@ -47,6 +47,7 @@
 | `/admin/export` | CSV 匯出 |
 | `/admin/users` | 使用者管理（僅 ADMIN） |
 | `/admin/edit-logs` | 編輯紀錄（僅 ADMIN） |
+| `/admin/profile` | 個人設定（顯示名稱） |
 
 ## API
 
@@ -87,7 +88,8 @@
 | 方法 | 路徑 | 說明 |
 |---|---|---|
 | GET | `/api/users` | 使用者列表 |
-| GET · PUT | `/api/users/[id]` | 詳情 / 更新角色 |
+| GET · PUT | `/api/users/[id]` | 詳情 / 更新角色（ADMIN，且不能改自己的角色） |
+| PATCH | `/api/users/me` | 修改自己的顯示名稱（不看 id，所以只能改自己；系統帳號拒絕） |
 | GET | `/api/contributors` | 貢獻排行 |
 | GET | `/api/contributors/[id]` | 單一貢獻者 |
 
