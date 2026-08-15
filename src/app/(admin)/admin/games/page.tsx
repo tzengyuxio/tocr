@@ -51,6 +51,10 @@ interface Game {
   };
 }
 
+// Hidden unless the deployment has a RAWG key: without one the button can only
+// ever fail. next.config.ts derives this from RAWG_API_KEY.
+const RAWG_ENABLED = process.env.NEXT_PUBLIC_RAWG_ENABLED === "true";
+
 const COMMON_PLATFORMS = ["PC", "PS5", "PS4", "Switch", "Xbox Series", "Xbox One", "iOS", "Android"];
 const COMMON_GENRES = ["RPG", "動作", "冒險", "射擊", "模擬", "策略", "格鬥", "運動", "賽車", "音樂"];
 
@@ -629,17 +633,19 @@ export default function GamesPage() {
                   placeholder="封面圖片 URL"
                   className="flex-1"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleFetchCover}
-                  disabled={isFetchingCover || !formData.name.trim()}
-                >
-                  {isFetchingCover ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : null}
-                  從 RAWG 抓取
-                </Button>
+                {RAWG_ENABLED && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleFetchCover}
+                    disabled={isFetchingCover || !formData.name.trim()}
+                  >
+                    {isFetchingCover ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : null}
+                    從 RAWG 抓取
+                  </Button>
+                )}
               </div>
               {formData.coverImage && (
                 // The cover URL can point at RAWG, which is not in the

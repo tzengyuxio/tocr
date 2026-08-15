@@ -16,6 +16,13 @@ const nextConfig: NextConfig = {
       "./node_modules/.pnpm/@img+sharp-libvips-linux-x64@*/node_modules/@img/sharp-libvips-linux-x64/lib/*",
     ],
   },
+  // The key itself is a server secret the admin form cannot read, so derive a
+  // public flag from it rather than adding a second variable someone has to
+  // remember to keep in sync. Inlined at build time, which matches how Vercel
+  // freezes environment variables at deploy: adding the key needs a redeploy.
+  env: {
+    NEXT_PUBLIC_RAWG_ENABLED: process.env.RAWG_API_KEY ? "true" : "",
+  },
   images: {
     remotePatterns: [
       {
