@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { downscaleImage } from "@/lib/downscale-image";
+import { MAX_UPLOAD_BYTES } from "@/lib/image-policy";
+import { uploadErrorMessage } from "@/lib/upload-error";
 
 interface MultiImageUploadProps {
   value: string[];
@@ -41,8 +44,13 @@ export function MultiImageUpload({
         const uploadedUrls: string[] = [];
 
         for (const file of acceptedFiles) {
+          const upload = await downscaleImage(file, folder);
+          if (upload.size > MAX_UPLOAD_BYTES) {
+            throw new Error(`${file.name} 太大，請先縮小至 4.5MB 以下再上傳`);
+          }
+
           const formData = new FormData();
-          formData.append("file", file);
+          formData.append("file", upload);
           formData.append("folder", folder);
 
           const response = await fetch("/api/upload", {
@@ -51,8 +59,7 @@ export function MultiImageUpload({
           });
 
           if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || "上傳失敗");
+            throw new Error(await uploadErrorMessage(response));
           }
 
           const data = await response.json();
@@ -143,7 +150,7 @@ export function MultiImageUpload({
               {isDragActive ? "放開以上傳" : "拖曳圖片至此，或點擊選擇檔案（可多選）"}
             </p>
             <p className="text-xs text-muted-foreground">
-              支援 JPEG, PNG, WebP, GIF（最大 10MB）
+              支援 JPEG, PNG, WebP, GIF（最大 4.5MB，過大的圖會自動縮小）
             </p>
           </>
         )}

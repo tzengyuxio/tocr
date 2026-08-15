@@ -1,27 +1,10 @@
 import sharp from "sharp";
+import { resolvePolicy } from "./image-policy";
 
-export interface ImagePolicy {
-  /** Longest edge in pixels; larger images are scaled down, smaller ones left alone. */
-  maxEdge: number;
-  /** Encoder quality. */
-  quality: number;
-  format: "webp" | "jpeg";
-}
-
-/**
- * Table-of-contents scans are fed to vision OCR, so they keep more pixels and a
- * higher quality than images that only ever get displayed.
- *
- * They also stay JPEG: the self-hosted OCR backend cannot decode WebP and fails
- * the whole page with "Failed to load image or audio file". WebP would save
- * roughly a further 20% here, which is not worth an unusable scan.
- */
-const TOC_POLICY: ImagePolicy = { maxEdge: 2400, quality: 85, format: "jpeg" };
-const DISPLAY_POLICY: ImagePolicy = { maxEdge: 1600, quality: 80, format: "webp" };
-
-export function resolvePolicy(folder: string): ImagePolicy {
-  return folder.startsWith("issues/toc") ? TOC_POLICY : DISPLAY_POLICY;
-}
+// The policy table lives in image-policy so the browser can read it without
+// pulling sharp into the client bundle.
+export { resolvePolicy };
+export type { ImagePolicy } from "./image-policy";
 
 export interface OptimizedImage {
   data: Buffer;
