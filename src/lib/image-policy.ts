@@ -34,3 +34,21 @@ export function resolvePolicy(folder: string): ImagePolicy {
  * anything about size. A single 4032x3024 phone photo already exceeds the cap.
  */
 export const MAX_UPLOAD_BYTES = 4_500_000;
+
+/**
+ * Whether a set of images fits in one request, and what to say when it does not.
+ *
+ * /api/upload sends one file per request, so the per-file check is enough there.
+ * /api/ocr takes every page of a table of contents in a single request, so the
+ * cap applies to their sum -- three scans that are each comfortably under it
+ * still add up to a body the platform rejects before the route runs.
+ */
+export function oversizeMessage(sizes: number[]): string | null {
+  const total = sizes.reduce((sum, size) => sum + size, 0);
+  if (total <= MAX_UPLOAD_BYTES) return null;
+
+  const mb = (bytes: number) => (bytes / 1_000_000).toFixed(1);
+  return `${sizes.length} 張圖縮圖後共 ${mb(total)} MB，超過單次請求上限 ${mb(
+    MAX_UPLOAD_BYTES
+  )} MB。請分批辨識，或先把圖片上傳到單期再用「圖片網址」辨識。`;
+}

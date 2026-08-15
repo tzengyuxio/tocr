@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { downscaleImage } from "@/lib/downscale-image";
+import { oversizeMessage } from "@/lib/image-policy";
+import { uploadErrorMessage } from "@/lib/upload-error";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,10 +152,23 @@ export function OcrUploader({
     setError(null);
 
     try {
+      // Shrink first: a scan straight off a phone is several megabytes, and
+      // every page shares one request body. issues/toc keeps the resolution
+      // and the JPEG encoding that the OCR backend needs.
+      const uploads = await Promise.all(
+        imageFiles.map((file) => downscaleImage(file, "issues/toc"))
+      );
+
+      const oversize = oversizeMessage(uploads.map((file) => file.size));
+      if (oversize) {
+        setError(oversize);
+        return;
+      }
+
       const formData = new FormData();
 
       // 多圖檔案
-      for (const file of imageFiles) {
+      for (const file of uploads) {
         formData.append("images", file);
       }
 
@@ -172,8 +188,9 @@ export function OcrUploader({
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "辨識失敗");
+        // Not response.json(): a body the platform rejects comes back as an
+        // HTML error page, which used to surface as a JSON parse error.
+        throw new Error(await uploadErrorMessage(response, "辨識失敗"));
       }
 
       const data = await response.json();
