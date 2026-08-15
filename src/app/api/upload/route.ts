@@ -3,6 +3,7 @@ import { put } from "@vercel/blob";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { optimizeImage } from "@/lib/image-optimize";
+import { MAX_UPLOAD_BYTES } from "@/lib/image-policy";
 import { requireEditor } from "@/lib/require-editor";
 
 async function uploadLocal(
@@ -37,11 +38,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 驗證檔案大小 (最大 10MB)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
+    // 驗證檔案大小。上限與 Vercel 的 request body 上限一致，超過的請求根本
+    // 到不了這裡，改不了平台的回應，至少讓兩邊的規則說同一件事。
+    if (file.size > MAX_UPLOAD_BYTES) {
       return NextResponse.json(
-        { error: "File too large. Maximum size: 10MB" },
+        { error: "File too large. Maximum size: 4.5MB" },
         { status: 400 }
       );
     }

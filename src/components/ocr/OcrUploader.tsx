@@ -354,7 +354,7 @@ export function OcrUploader({
                   : "拖曳目錄頁圖片至此，或點擊選擇檔案（可多選）"}
               </p>
               <p className="mt-2 text-center text-xs text-muted-foreground">
-                支援 JPEG, PNG, WebP, GIF（最大 10MB）
+                支援 JPEG, PNG, WebP, GIF（最大 4.5MB）
               </p>
             </div>
 
