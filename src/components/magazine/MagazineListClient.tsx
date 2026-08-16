@@ -14,8 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Edit, BookOpen, Plus } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { formatTaipei } from "@/lib/datetime";
 import { QuickCreateIssueDialog } from "./QuickCreateIssueDialog";
 
 interface MagazineItem {
@@ -96,9 +95,7 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                 </Badge>
               </TableCell>
               <TableCell>
-                {format(new Date(magazine.createdAt), "yyyy/MM/dd", {
-                  locale: zhTW,
-                })}
+                {formatTaipei(magazine.createdAt, "yyyy/MM/dd")}
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">

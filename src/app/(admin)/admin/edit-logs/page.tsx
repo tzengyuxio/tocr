@@ -28,8 +28,7 @@ import { actionIcon, actionLabel, entityLabel } from "@/lib/edit-log-labels";
 import { resolveEditLogTargets } from "@/lib/edit-log-targets";
 import type { FieldDiff } from "@/lib/edit-log-diff";
 import { EditLogTargetLink } from "@/components/EditLogEntry";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { formatTaipei } from "@/lib/datetime";
 import { EditLogFilters } from "./EditLogFilters";
 
 export const metadata: Metadata = {
@@ -189,9 +188,7 @@ export default async function EditLogsPage({
                 {logs.map((log) => (
                   <TableRow key={log.id}>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {format(new Date(log.createdAt), "yyyy/MM/dd HH:mm", {
-                        locale: zhTW,
-                      })}
+                      {formatTaipei(log.createdAt, "yyyy/MM/dd HH:mm")}
                     </TableCell>
                     <TableCell>{log.user.name || log.user.email}</TableCell>
                     <TableCell>

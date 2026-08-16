@@ -17,8 +17,7 @@ import { OcrUploader } from "@/components/ocr/OcrUploader";
 import { OcrResultEditor } from "@/components/ocr/OcrResultEditor";
 import { ArrowLeft, History, Loader2, RefreshCw } from "lucide-react";
 import type { OcrResult, OcrArticleResult } from "@/services/ai/ocr.interface";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { formatTaipei } from "@/lib/datetime";
 import { formatEdtf } from "@/lib/edtf";
 
 interface Issue {
@@ -263,7 +262,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
             <span>
               載入了{" "}
               <strong>
-                {format(new Date(loadedAt), "yyyy/MM/dd HH:mm", { locale: zhTW })}
+                {formatTaipei(loadedAt, "yyyy/MM/dd HH:mm")}
               </strong>{" "}
               的辨識結果，共 {ocrResult.articles.length} 篇，可直接複查後儲存
             </span>

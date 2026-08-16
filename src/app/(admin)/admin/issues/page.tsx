@@ -24,8 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Calendar } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { formatTaipei } from "@/lib/datetime";
 
 export const metadata: Metadata = {
   title: "單期複查 - Admin",
@@ -190,17 +189,13 @@ export default async function IssueReviewPage({
                     <TableCell>{issue._count.articles}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {recognisedAt.has(issue.id)
-                        ? format(new Date(recognisedAt.get(issue.id)!), "yyyy/MM/dd", {
-                            locale: zhTW,
-                          })
+                        ? formatTaipei(recognisedAt.get(issue.id)!, "yyyy/MM/dd")
                         : "—"}
                     </TableCell>
                     <TableCell>
                       {issue.tocReviewedAt ? (
                         <Badge variant="secondary">
-                          {format(new Date(issue.tocReviewedAt), "yyyy/MM/dd", {
-                            locale: zhTW,
-                          })}
+                          {formatTaipei(issue.tocReviewedAt, "yyyy/MM/dd")}
                         </Badge>
                       ) : (
                         <Badge variant="outline">未複查</Badge>
