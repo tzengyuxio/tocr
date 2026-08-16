@@ -2,7 +2,7 @@ export const revalidate = 60;
 
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { resolveSlugParam } from "@/lib/slug-lookup";
+import { decodeParam, resolveSlugParam } from "@/lib/slug-lookup";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -50,7 +50,11 @@ export default async function GameDetailPage({ params }: PageProps) {
   // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
   const found = await resolveSlugParam("game", param);
   if (!found) notFound();
-  if (found.slug !== param) permanentRedirect(`/games/${found.slug}`);
+  // encodeURIComponent 不能省：Location header 只吃 ASCII，中文 slug 直接放
+  // 進去會讓 Node 丟 ERR_INVALID_CHAR，整頁變成 500。
+  if (decodeParam(param) !== found.slug) {
+    permanentRedirect(`/games/${encodeURIComponent(found.slug)}`);
+  }
   const id = found.id;
 
   const session = await auth();
