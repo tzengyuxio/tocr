@@ -79,6 +79,16 @@
 
   **但先不要動手**：目前看到的特殊刊號（`創刊號`、`試刊號`、`創刊驚嘆號`、`70+71`）只來自 3 本雜誌，而已匯入 30 本、還有 27 本沒進來。等更多期刊的刊號樣貌浮現，再一次決定規則會更完整——現在定案等於用不到十分之一的樣本立規矩（2026-08-13）
 
+- [ ] **sitemap、robots.txt 與 SEO／AEO 基本盤** — 目前兩個檔案都沒有（`src/` 與 `public/` 都找不到 `sitemap` 或 `robots`），搜尋引擎與 AI 檢索只能靠爬連結摸索，而這個站大部分內容藏在 `/magazines/[id]/issues/[issueId]` 這種要點兩層才到的頁面（2026-08-16）。
+
+  能做的事，由淺到深：
+
+  1. **`app/sitemap.ts` 與 `app/robots.ts`** — Next.js 原生支援，從資料庫列出全部期刊、單期、遊戲、標籤頁。549 期加 397 款遊戲已經超過手寫的規模，一定要動態產生。注意後台 `/admin/*` 要 disallow
+  2. **結構化資料（JSON-LD）** — 期刊可以是 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙，用在雜誌目錄上幾乎是量身訂做。這也是 AEO 的主要施力點：讓模型答得出「電腦玩家 1999 年 5 月號有哪些文章」
+  3. **標題與描述** — 目前逐頁 `generateMetadata` 只有 title，description 多半沿用站台預設
+
+  跟另外兩條綁在一起：**sitemap 要等網址定案**（見「網址裡的 ID 太長」，改網址等於整份 sitemap 重來），**OG meta 與這條共用同一個 `generateMetadata`**。三件事一起規劃比較省。
+
 - [ ] **Open Graph meta 與縮圖** — 現在整個 repo 沒有一處 `openGraph` 設定（`layout.tsx` 只有 `title` 與 `description`），所以任何一頁貼到 LINE／Threads／Discord 都只是一段光禿禿的網址。四個公開的動態頁（`magazines/[id]`、`issues/[issueId]`、`games/[id]`、`tags/[id]`）都已經有 `generateMetadata`，補 `openGraph` 就在同一個函式裡（2026-08-16）。
 
   要決定的是**圖**：單期可以直接用 `coverImage`（覆蓋率非 100%，電腦玩家前 100 期只有 60 期有），遊戲與標籤沒有現成的圖，得用 `next/og` 動態產生（純文字排版就夠）或準備一張站台預設圖。CJK 字型在 `next/og` 要自己載，不是零成本。順帶要設 `metadataBase`，否則相對路徑的圖不會變成絕對網址。
