@@ -2,7 +2,6 @@ export const revalidate = 60;
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
@@ -11,20 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { BookOpen, Calendar, FileText, SquarePen } from "lucide-react";
+import { FileText, SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { CategoryChip, GameChip, TagChip } from "@/components/chips";
+import { IssueImages } from "@/components/issue/IssueImages";
 import { formatEdtf } from "@/lib/edtf";
-import { categoryLabel } from "@/lib/article-categories";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -37,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     select: { issueNumber: true, magazine: { select: { name: true } } },
   });
   if (!issue) return { title: "單期詳情" };
-  return { title: `${issue.issueNumber} - ${issue.magazine.name}` };
+  return { title: `${issue.magazine.name} ${issue.issueNumber}` };
 }
 
 export default async function IssueDetailPage({ params }: PageProps) {
@@ -75,218 +66,188 @@ export default async function IssueDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // A one-line strip rather than a labelled row each: an issue often knows only
+  // its date, and three rows of mostly-absent facts was what left the header
+  // half empty.
+  const meta = [
+    formatEdtf(issue.publishDate),
+    issue.pageCount ? `${issue.pageCount} 頁` : null,
+    issue.price ? `NT$ ${Number(issue.price)}` : null,
+  ].filter(Boolean);
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6">
       <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: "/magazines/" + issue.magazineId }, { label: issue.issueNumber }]} />
-      {/* 單期資訊 */}
-      <div className="mb-8 flex flex-col gap-6 md:flex-row">
-        {issue.coverImage ? (
-          <Image
-            src={issue.coverImage}
-            alt={issue.issueNumber}
-            width={176}
-            height={256}
-            unoptimized
-            className="h-64 w-44 rounded-lg object-cover shadow-lg"
-          />
-        ) : (
-          <div className="flex h-64 w-44 items-center justify-center rounded-lg bg-muted shadow-lg">
-            <BookOpen className="h-12 w-12 text-muted-foreground/50" />
-          </div>
-        )}
-        <div className="flex-1">
-          <div className="text-sm text-muted-foreground">
+
+      {/* Title block: the cover no longer sets the height, so nothing has to
+          fill 256px of space beside it. */}
+      <div className="mb-5">
+        <div className="flex items-center gap-3">
+          {/* The magazine and the issue number together are the title -- a bare
+              "96" names nothing on its own. */}
+          <h1 className="text-2xl font-bold sm:text-3xl">
             <Link
               href={`/magazines/${issue.magazineId}`}
               className="hover:underline"
             >
               {issue.magazine.name}
+            </Link>{" "}
+            {issue.issueNumber}
+          </h1>
+          {canEdit && (
+            <Link
+              href={`/admin/magazines/${id}/issues/${issueId}`}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+              title="編輯此單期"
+            >
+              <SquarePen className="h-4 w-4" />
             </Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">{issue.issueNumber}</h1>
-            {canEdit && (
-              <Link
-                href={`/admin/magazines/${id}/issues/${issueId}`}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                title="編輯此單期"
-              >
-                <SquarePen className="h-4 w-4" />
-              </Link>
-            )}
-          </div>
-          {issue.title && (
-            <p className="mt-2 text-xl text-muted-foreground">{issue.title}</p>
-          )}
-          <div className="mt-4 space-y-2 text-sm">
-            <p className="flex items-center">
-              <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">出版日期：</span>
-              {formatEdtf(issue.publishDate)}
-            </p>
-            {issue.pageCount && (
-              <p>
-                <span className="text-muted-foreground">頁數：</span>
-                {issue.pageCount} 頁
-              </p>
-            )}
-            {issue.price && (
-              <p>
-                <span className="text-muted-foreground">定價：</span>
-                NT$ {Number(issue.price)}
-              </p>
-            )}
-          </div>
-          {issue.notes && (
-            <p className="mt-4 text-muted-foreground">{issue.notes}</p>
           )}
         </div>
+        {issue.title && (
+          <p className="mt-1 text-xl text-muted-foreground">{issue.title}</p>
+        )}
+        <p className="mt-1 text-sm text-muted-foreground">
+          {meta.join(" · ")}
+        </p>
       </div>
 
-      {/* 目錄 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            目錄
-            <span className="text-base font-normal text-muted-foreground">
-              （共 {issue.articles.length} 篇文章）
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {issue.articles.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
-              尚無文章資料
-            </div>
-          ) : (
-            <>
-              {/* Desktop table */}
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[80px]">頁碼</TableHead>
-                      <TableHead>標題</TableHead>
-                      <TableHead>作者</TableHead>
-                      <TableHead>分類</TableHead>
-                      <TableHead>相關遊戲</TableHead>
-                      {canEdit && <TableHead className="w-[50px]"></TableHead>}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {issue.articles.map((article) => (
-                      <TableRow key={article.id}>
-                        <TableCell className="font-mono text-sm text-muted-foreground">
-                          {article.pageStart}
-                          {article.pageEnd && article.pageEnd !== article.pageStart
-                            ? `-${article.pageEnd}`
-                            : ""}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">{article.title}</div>
-                          {article.subtitle && (
-                            <div className="text-sm text-muted-foreground">
-                              {article.subtitle}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {article.authors.length > 0
-                            ? article.authors.join(", ")
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {article.category ? (
-                            <Badge variant="outline">{categoryLabel(article.category)}</Badge>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {article.articleGames.map((ag) => (
+      {/* The images stay beside the index they describe, and stay put while it
+          scrolls, so a reader can check one against the other. */}
+      {/* No items-start: a sticky child can only stay put inside its parent's
+          box, and align-items:start shrinks the aside to its own content, so
+          the images scrolled away as soon as the index passed their height.
+          Stretching the aside to the row's height gives the sticky block the
+          whole index to travel down. */}
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <aside className="shrink-0 lg:w-64 xl:w-72">
+          {/* 4.5rem clears the sticky 3.5rem header plus the page's own gap.
+              A sticky block taller than its scrollport can never reach its own
+              bottom, so on a short window this one scrolls inside itself
+              rather than dragging the foot of the notes out of reach. */}
+          <div className="space-y-4 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto">
+            <IssueImages
+              coverImage={issue.coverImage}
+              tocImages={issue.tocImages}
+              issueNumber={issue.issueNumber}
+            />
+            {issue.notes && (
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="mb-1 text-xs font-medium text-muted-foreground">
+                  本期資訊
+                </p>
+                {/* The notes are written a fact to a line -- cover subject,
+                    inserts, ISBN -- so the breaks carry meaning. */}
+                <p className="whitespace-pre-line text-sm text-muted-foreground">
+                  {issue.notes}
+                </p>
+              </div>
+            )}
+          </div>
+        </aside>
+
+        <div className="min-w-0 flex-1">
+          {/* 目錄 */}
+          <Card className="gap-3 py-4">
+            <CardHeader className="px-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="h-5 w-5" />
+                目錄
+                <span className="text-sm font-normal text-muted-foreground">
+                  （共 {issue.articles.length} 篇文章）
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4">
+              {issue.articles.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">
+                  尚無文章資料
+                </div>
+              ) : (
+                /* One responsive list rather than a table and a card list. Every
+                   column but the page number and the title was empty on most rows
+                   -- this issue has no author at all on any of its 14 articles --
+                   and the empty cells were what made the list so tall. Chips drop
+                   to a second line only when there are any. */
+                <ul className="divide-y">
+                  {issue.articles.map((article) => {
+                    const chips = [
+                      ...article.articleGames.map((ag) => ({
+                        key: `g-${ag.game.id}`,
+                        href: `/games/${ag.game.id}`,
+                        chip: <GameChip name={ag.game.name} />,
+                      })),
+                      ...article.articleTags.map((at) => ({
+                        key: `t-${at.tag.id}`,
+                        href: `/tags/${at.tag.id}`,
+                        chip: <TagChip tag={at.tag} />,
+                      })),
+                    ];
+                    const page = article.pageStart
+                      ? article.pageEnd && article.pageEnd !== article.pageStart
+                        ? `${article.pageStart}-${article.pageEnd}`
+                        : `${article.pageStart}`
+                      : null;
+
+                    return (
+                      <li key={article.id} className="py-2">
+                        <div className="flex items-baseline gap-3">
+                          <span className="w-14 shrink-0 text-right font-mono text-sm text-muted-foreground">
+                            {page ? `p.${page}` : ""}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <span className="font-medium">{article.title}</span>
+                            {article.subtitle && (
+                              <span className="ml-2 text-sm text-muted-foreground">
+                                {article.subtitle}
+                              </span>
+                            )}
+                            {article.authors.length > 0 && (
+                              <span className="ml-2 text-sm text-muted-foreground">
+                                ／{article.authors.join("、")}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            {article.category && (
+                              <CategoryChip
+                                category={article.category}
+                                className="text-xs"
+                              />
+                            )}
+                            {canEdit && (
                               <Link
-                                key={ag.game.id}
-                                href={`/games/${ag.game.id}`}
+                                href={`/admin/articles/${article.id}`}
+                                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                title="編輯文章"
                               >
-                                <Badge
-                                  variant="secondary"
-                                  className="cursor-pointer hover:bg-secondary/80"
-                                >
-                                  {ag.game.name}
-                                </Badge>
+                                <SquarePen className="h-3.5 w-3.5" />
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                        {chips.length > 0 && (
+                          <div className="ml-[4.25rem] mt-1 flex flex-wrap gap-1">
+                            {chips.map(({ key, href, chip }) => (
+                              <Link
+                                key={key}
+                                href={href}
+                                className="transition-opacity hover:opacity-80"
+                              >
+                                {chip}
                               </Link>
                             ))}
                           </div>
-                        </TableCell>
-                        {canEdit && (
-                          <TableCell>
-                            <Link
-                              href={`/admin/articles/${article.id}`}
-                              className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                              title="編輯文章"
-                            >
-                              <SquarePen className="h-3.5 w-3.5" />
-                            </Link>
-                          </TableCell>
                         )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              {/* Mobile card list */}
-              <div className="divide-y md:hidden">
-                {issue.articles.map((article) => (
-                  <div key={article.id} className="py-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium">{article.title}</div>
-                        {article.subtitle && (
-                          <div className="text-sm text-muted-foreground">
-                            {article.subtitle}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex shrink-0 items-center gap-1">
-                        {article.pageStart && (
-                          <span className="font-mono text-xs text-muted-foreground">
-                            p.{article.pageStart}
-                            {article.pageEnd && article.pageEnd !== article.pageStart
-                              ? `-${article.pageEnd}`
-                              : ""}
-                          </span>
-                        )}
-                        {canEdit && (
-                          <Link
-                            href={`/admin/articles/${article.id}`}
-                            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            <SquarePen className="h-3.5 w-3.5" />
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-1">
-                      {article.category && (
-                        <Badge variant="outline" className="text-xs">{categoryLabel(article.category)}</Badge>
-                      )}
-                      {article.articleGames.map((ag) => (
-                        <Link key={ag.game.id} href={`/games/${ag.game.id}`}>
-                          <Badge variant="secondary" className="text-xs cursor-pointer">
-                            {ag.game.name}
-                          </Badge>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
