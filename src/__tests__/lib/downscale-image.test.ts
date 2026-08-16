@@ -1,5 +1,9 @@
 import { fitWithin, downscaleImage } from "@/lib/downscale-image";
-import { MAX_UPLOAD_BYTES, resolvePolicy } from "@/lib/image-policy";
+import {
+  MAX_UPLOAD_BYTES,
+  oversizeMessage,
+  resolvePolicy,
+} from "@/lib/image-policy";
 
 describe("MAX_UPLOAD_BYTES", () => {
   it("stays under the request body Vercel will accept", () => {
@@ -35,5 +39,35 @@ describe("downscaleImage", () => {
     // The client encodes ahead of the server so the two cannot drift apart.
     expect(resolvePolicy("magazines").format).toBe("webp");
     expect(resolvePolicy("issues/toc").format).toBe("jpeg");
+  });
+});
+
+describe("oversizeMessage", () => {
+  it("passes a set that fits", () => {
+    expect(oversizeMessage([1_000_000, 1_000_000])).toBeNull();
+  });
+
+  it("passes a set sitting exactly on the cap", () => {
+    expect(oversizeMessage([MAX_UPLOAD_BYTES])).toBeNull();
+  });
+
+  // The case /api/upload's per-file check cannot catch: each page is well
+  // under the cap, the request they share is not.
+  it("catches pages that only exceed the cap together", () => {
+    const message = oversizeMessage([1_600_000, 1_600_000, 1_600_000]);
+
+    expect(message).toContain("3 張圖");
+    expect(message).toContain("4.8 MB");
+  });
+
+  it("says what to do about it", () => {
+    const message = oversizeMessage([5_000_000]);
+
+    expect(message).toContain("分批辨識");
+    expect(message).toContain("圖片網址");
+  });
+
+  it("treats an empty set as fitting", () => {
+    expect(oversizeMessage([])).toBeNull();
   });
 });

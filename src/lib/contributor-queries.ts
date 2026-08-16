@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { API_USER } from "./api-token";
+import { CATALOGUE_ONLY } from "./edit-log";
 
 /**
  * The bulk importer writes one log row per record it touches, which puts it
@@ -29,7 +30,10 @@ export interface ContributorEntry {
  */
 export async function countRecentEdits(days: number): Promise<number> {
   return prisma.editLog.count({
-    where: { createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) } },
+    where: {
+      ...CATALOGUE_ONLY,
+      createdAt: { gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) },
+    },
   });
 }
 
@@ -48,6 +52,7 @@ export async function getContributorLeaderboard(options: ContributorOptions = {}
   // Each record edited is its own row, batch saves included, so counting rows
   // is counting work.
   const where = {
+    ...CATALOGUE_ONLY,
     userId: { notIn: EXCLUDED_USER_IDS },
     ...(dateFilter.gte && { createdAt: dateFilter }),
   };

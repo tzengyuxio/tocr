@@ -15,7 +15,7 @@ import { StatGrid } from "@/components/StatGrid";
 import { Users, FileEdit, Award } from "lucide-react";
 import { resolveEditLogTargets } from "@/lib/edit-log-targets";
 import { EditLogEntry } from "@/components/EditLogEntry";
-import { FEED_SCOPE } from "@/lib/edit-log";
+import { CONTRIBUTION_FEED_SCOPE } from "@/lib/edit-log";
 import {
   countRecentEdits,
   getContributorLeaderboard,
@@ -37,7 +37,7 @@ export default async function ContributorsPage() {
       prisma.editLog.count(),
       countRecentEdits(7),
       prisma.editLog.findMany({
-        where: FEED_SCOPE,
+        where: CONTRIBUTION_FEED_SCOPE,
         orderBy: { createdAt: "desc" },
         take: 30,
         include: {
