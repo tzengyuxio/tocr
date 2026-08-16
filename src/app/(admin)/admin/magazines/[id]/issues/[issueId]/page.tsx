@@ -97,14 +97,14 @@ export default async function EditIssuePage({ params }: PageProps) {
             <CardTitle>AI 目錄辨識</CardTitle>
             <CardDescription>
               {savedOcr
-                ? `已於 ${formatTaipei(savedOcr.processedAt, "yyyy/MM/dd HH:mm")} 辨識完成，尚待複查`
+                ? `已於 ${formatTaipei(savedOcr.processedAt, "yyyy/MM/dd HH:mm")} 辨識完成`
                 : "上傳目錄頁圖片，使用 AI 自動辨識文章資訊"}
             </CardDescription>
           </div>
           <Button asChild>
             <Link href={`/admin/ocr?issueId=${issue.id}`}>
               <ScanText className="mr-2 h-4 w-4" />
-              {savedOcr ? "複查辨識結果" : "開始辨識"}
+              {savedOcr ? "重新辨識" : "開始辨識"}
             </Link>
           </Button>
         </CardHeader>
@@ -123,7 +123,7 @@ export default async function EditIssuePage({ params }: PageProps) {
               ))}
               <p className="text-sm text-muted-foreground">
                 {savedOcr
-                  ? `已設定 ${issue.tocImages.length} 張目錄頁圖片，辨識結果已產生，點擊「複查辨識結果」確認後建立文章`
+                  ? `已設定 ${issue.tocImages.length} 張目錄頁圖片，文章已在下方列表，可對照目錄頁複查`
                   : `已設定 ${issue.tocImages.length} 張目錄頁圖片，點擊「開始辨識」使用 AI 分析`}
               </p>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { OcrUploader } from "@/components/ocr/OcrUploader";
-import { OcrResultEditor } from "@/components/ocr/OcrResultEditor";
-import { ArrowLeft, History, Loader2, RefreshCw } from "lucide-react";
-import type { OcrResult, OcrArticleResult } from "@/services/ai/ocr.interface";
-import { formatTaipei } from "@/lib/datetime";
+import { AlertCircle, ArrowLeft } from "lucide-react";
+import type { OcrResult } from "@/services/ai/ocr.interface";
 import { formatEdtf } from "@/lib/edtf";
 
 interface Issue {
@@ -55,12 +53,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
   const [selectedIssueId, setSelectedIssueId] = useState<string>(
     initialIssue?.id || ""
   );
-  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
-  const [markedReviewed, setMarkedReviewed] = useState(false);
-  // When the shown result came from a stored record rather than a fresh run.
-  const [loadedAt, setLoadedAt] = useState<string | null>(null);
-  const [isLoadingSaved, setIsLoadingSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selectedMagazine = magazines.find((m) => m.id === selectedMagazineId);
   const selectedIssue = selectedMagazine?.issues.find(
@@ -77,118 +70,81 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
     label: `${issue.issueNumber}（${formatEdtf(issue.publishDate)}）${issue.tocImages.length > 0 ? ` [${issue.tocImages.length} 張目錄圖]` : ""}`,
   }));
 
-  /**
-   * Load the issue's last stored result, so arriving from 單期複查 lands on the
-   * review step instead of asking for another recognition run.
-   */
-  const loadSavedResult = useCallback(async (issueId: string) => {
-    setIsLoadingSaved(true);
-    try {
-      const response = await fetch(`/api/issues/${issueId}/ocr`);
-      if (!response.ok) return; // 404 just means nothing has been recognised yet
-      const data = await response.json();
-      setOcrResult(data.result as OcrResult);
-      setLoadedAt(data.processedAt);
-    } catch {
-      // Falling back to the uploader is the right failure mode here.
-    } finally {
-      setIsLoadingSaved(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (selectedIssueId) loadSavedResult(selectedIssueId);
-  }, [selectedIssueId, loadSavedResult]);
-
   const handleMagazineChange = (value: string) => {
     setSelectedMagazineId(value);
     setSelectedIssueId("");
-    setOcrResult(null);
-    setLoadedAt(null);
+    setError(null);
   };
 
   const handleIssueChange = (value: string) => {
     setSelectedIssueId(value);
-    setOcrResult(null);
-    setLoadedAt(null);
+    setError(null);
   };
 
-  const handleOcrResult = (result: OcrResult) => {
-    setOcrResult(result);
-    setLoadedAt(null);
-    setIsSaved(false);
+  /** 這期現有的文章數，用來決定要不要先問過再取代。 */
+  const countExistingArticles = async () => {
+    const res = await fetch(
+      `/api/articles?issueId=${encodeURIComponent(selectedIssueId)}&limit=1`
+    );
+    if (!res.ok) return 0;
+    const data = await res.json();
+    return data.pagination?.total ?? 0;
   };
 
-  const handleRerun = () => {
-    setOcrResult(null);
-    setLoadedAt(null);
-  };
-
-  const handleSave = async (articles: OcrArticleResult[]) => {
-    if (!selectedIssueId) {
-      throw new Error("請先選擇單期");
-    }
-
-    // 批次建立文章
-    const post = (confirmDuplicate: boolean) =>
-      fetch("/api/articles/batch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          issueId: selectedIssueId,
-          ...(confirmDuplicate && { confirmDuplicate: true }),
-          articles: articles.map((article, index) => ({
-            title: article.title,
-            subtitle: article.subtitle,
-            authors: article.authors || [],
-            category: article.category,
-            pageStart: article.pageStart,
-            pageEnd: article.pageEnd,
-            summary: article.summary,
-            sortOrder: index,
-            suggestedGames: article.suggestedGames,
-            suggestedTags: article.suggestedTags?.map((t) =>
-              typeof t === "string" ? { name: t, type: "GENERAL" } : t
-            ),
-          })),
-        }),
-      });
-
-    let response = await post(false);
-    let data = await response.json();
-
-    // Saving twice appends a whole second copy instead of replacing the first,
-    // so the second pass has to be a deliberate choice rather than the default.
-    if (response.status === 409) {
-      const proceed = confirm(
-        `這期已經有 ${data.existingCount} 篇文章。\n\n` +
-          "再存一次不會覆蓋它們，而是額外新增一整份重複的文章。\n" +
-          "確定要繼續嗎？（要修正既有文章，請到單期編輯頁）"
-      );
-      if (!proceed) {
-        throw new Error("已取消儲存，這期原有的文章沒有變動");
-      }
-      response = await post(true);
-      data = await response.json();
-    }
+  const landArticles = async (result: OcrResult, replaceExisting: boolean) => {
+    const response = await fetch("/api/articles/batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        issueId: selectedIssueId,
+        ...(replaceExisting && { replaceExisting: true }),
+        articles: result.articles.map((article, index) => ({
+          title: article.title,
+          subtitle: article.subtitle,
+          authors: article.authors || [],
+          category: article.category,
+          pageStart: article.pageStart,
+          pageEnd: article.pageEnd,
+          summary: article.summary,
+          sortOrder: index,
+          suggestedGames: article.suggestedGames,
+          suggestedTags: article.suggestedTags?.map((t) =>
+            typeof t === "string" ? { name: t, type: "GENERAL" } : t
+          ),
+        })),
+      }),
+    });
 
     if (!response.ok) {
+      const data = await response.json();
       throw new Error(data.error || "儲存失敗");
     }
+  };
 
-    setMarkedReviewed(!!data.markedReviewed);
-    setIsSaved(true);
+  /**
+   * 辨識結果直接落地成文章，複查在單期編輯頁進行。以前是先在這裡複查再存，
+   * 而那個畫面編的是辨識快照、存的是新文章 -- 複查兩次就多出一整份。
+   */
+  const handleOcrResult = async (result: OcrResult) => {
+    setError(null);
+    try {
+      const existing = await countExistingArticles();
+      if (existing > 0) {
+        const proceed = confirm(
+          `這期已經有 ${existing} 篇文章。\n\n` +
+            "繼續會以這次的辨識結果「取代」它們，既有文章連同標籤與遊戲關聯都會刪除。\n" +
+            "取消的話，辨識結果仍留在紀錄裡，之後可以再載入。"
+        );
+        if (!proceed) return;
+      }
 
-    // 3 秒後跳轉到單期編輯頁
-    setTimeout(() => {
+      await landArticles(result, existing > 0);
       router.push(
         `/admin/magazines/${selectedMagazineId}/issues/${selectedIssueId}`
       );
-    }, 2000);
-  };
-
-  const handleCancel = () => {
-    setOcrResult(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "儲存失敗");
+    }
   };
 
   return (
@@ -197,7 +153,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">AI 目錄辨識</h2>
           <p className="text-muted-foreground">
-            上傳目錄頁圖片，自動辨識文章資訊
+            上傳目錄頁圖片，自動辨識文章資訊並寫入該期文章列表
           </p>
         </div>
         {selectedMagazineId && selectedIssueId && (
@@ -217,7 +173,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
         <CardHeader>
           <CardTitle>選擇目標單期</CardTitle>
           <CardDescription>
-            辨識結果將儲存到所選單期的文章列表中
+            辨識完成後會直接寫入所選單期，並跳到單期編輯頁複查
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -250,69 +206,18 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
         </CardContent>
       </Card>
 
-      {/* 成功訊息 */}
-      {isSaved && (
-        <div className="rounded-lg bg-green-50 p-4 text-green-800">
-          <div className="flex items-center gap-2">
-            <svg
-              className="h-5 w-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="font-medium">
-              文章已成功儲存{markedReviewed ? "，本期已標記為完成複查" : ""}！
-            </span>
-          </div>
-          <p className="mt-1 text-sm">正在跳轉至單期編輯頁面...</p>
+      {error && (
+        <div className="flex items-center gap-2 rounded-md bg-red-50 p-4 text-sm text-red-600">
+          <AlertCircle className="h-4 w-4" />
+          {error}
         </div>
       )}
 
-      {/* 已存的辨識結果 */}
-      {loadedAt && ocrResult && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 p-4">
-          <div className="flex items-center gap-2 text-sm">
-            <History className="h-4 w-4 text-muted-foreground" />
-            <span>
-              載入了{" "}
-              <strong>
-                {formatTaipei(loadedAt, "yyyy/MM/dd HH:mm")}
-              </strong>{" "}
-              的辨識結果，共 {ocrResult.articles.length} 篇，可直接複查後儲存
-            </span>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleRerun}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            重新辨識
-          </Button>
-        </div>
-      )}
-
-      {/* OCR 上傳或結果 */}
-      {isLoadingSaved ? (
-        <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          讀取先前的辨識結果...
-        </div>
-      ) : !ocrResult ? (
-        <OcrUploader
-          issueId={selectedIssueId}
-          initialImageUrls={selectedIssue?.tocImages}
-          onResult={handleOcrResult}
-        />
-      ) : (
-        <OcrResultEditor
-          result={ocrResult}
-          tocImages={selectedIssue?.tocImages || []}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
-      )}
+      <OcrUploader
+        issueId={selectedIssueId}
+        initialImageUrls={selectedIssue?.tocImages}
+        onResult={handleOcrResult}
+      />
     </div>
   );
 }
