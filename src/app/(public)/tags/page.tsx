@@ -68,7 +68,7 @@ export default async function TagsPage() {
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {typeTags.map((tag) => (
-                    <Link key={tag.id} href={`/tags/${tag.id}`}>
+                    <Link key={tag.id} href={`/tags/${tag.slug}`}>
                       <Badge
                         variant="outline"
                         className="cursor-pointer px-3 py-1 text-sm transition-colors hover:bg-primary hover:text-primary-foreground"
