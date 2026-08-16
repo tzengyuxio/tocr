@@ -47,6 +47,7 @@
 | `/admin/export` | CSV 匯出 |
 | `/admin/users` | 使用者管理（僅 ADMIN） |
 | `/admin/edit-logs` | 編輯紀錄（僅 ADMIN） |
+| `/admin/export-logs` | 匯出紀錄（僅 ADMIN） |
 | `/admin/profile` | 個人設定（顯示名稱） |
 
 ## API
