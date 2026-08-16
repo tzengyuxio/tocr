@@ -40,7 +40,7 @@
 | `/admin/articles` | 文章管理 |
 | `/admin/articles/new` | 新增文章 |
 | `/admin/articles/[id]` | 文章編輯 |
-| `/admin/ocr` | AI 目錄辨識與複查 |
+| `/admin/ocr` | AI 目錄辨識（上傳與辨識，結果直接寫入該期文章）|
 | `/admin/tags` · `/admin/tags/[id]` | 標籤管理與詳情 |
 | `/admin/games` · `/admin/games/[id]` | 遊戲管理與詳情 |
 | `/admin/contributors` | 貢獻排行與近期活動 |
