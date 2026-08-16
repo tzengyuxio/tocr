@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { articleBatchCreateSchema } from "@/lib/validators/article";
-import { TagType } from "@prisma/client";
 import { withErrorHandler } from "@/lib/api-utils";
+import { resolveGameIds, resolveTagIds } from "@/lib/resolve-relations";
 import { logEdit, logEditBatch } from "@/lib/edit-log";
 import { isValidApiToken } from "@/lib/api-token";
 
@@ -14,12 +14,27 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   // 驗證單期存在
   const issue = await prisma.issue.findUnique({
     where: { id: validatedData.issueId },
+    include: { _count: { select: { articles: true } } },
   });
 
   if (!issue) {
     return NextResponse.json(
       { error: "Issue not found" },
       { status: 404 }
+    );
+  }
+
+  // 複查頁載入的是存下來的辨識結果，不是這期現有的文章，而這支 route 從頭到尾
+  // 只有 create -- 所以再複查一次、再存一次，這期就多出一整份文章。真正的解法
+  // 是讓複查直接編輯現有文章，在那之前先擋在這裡，由呼叫端明確確認。
+  const existingCount = issue._count?.articles ?? 0;
+  if (existingCount > 0 && !validatedData.confirmDuplicate) {
+    return NextResponse.json(
+      {
+        error: `這期已經有 ${existingCount} 篇文章，再存一次會多出一整份重複的內容`,
+        existingCount,
+      },
+      { status: 409 }
     );
   }
 
@@ -44,83 +59,25 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       });
 
       // 處理建議的遊戲關聯
-      if (articleData.suggestedGames && articleData.suggestedGames.length > 0) {
-        for (const gameName of articleData.suggestedGames) {
-          // 查找或建立遊戲
-          let game = await tx.game.findFirst({
-            where: {
-              OR: [
-                { name: { equals: gameName, mode: "insensitive" } },
-                { nameEn: { equals: gameName, mode: "insensitive" } },
-                { nameOriginal: { equals: gameName, mode: "insensitive" } },
-              ],
-            },
-          });
-
-          if (!game) {
-            // 建立新遊戲
-            const slug = gameName
-              .toLowerCase()
-              .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-              .replace(/^-|-$/g, "");
-
-            game = await tx.game.create({
-              data: {
-                name: gameName,
-                slug: `${slug}-${Date.now()}`,
-              },
-            });
-          }
-
-          // 建立關聯
+      if (articleData.suggestedGames?.length) {
+        const gameIds = await resolveGameIds(tx, articleData.suggestedGames);
+        for (const [index, gameId] of gameIds.entries()) {
           await tx.articleGame.create({
-            data: {
-              articleId: article.id,
-              gameId: game.id,
-              isPrimary: articleData.suggestedGames.indexOf(gameName) === 0,
-            },
+            data: { articleId: article.id, gameId, isPrimary: index === 0 },
           });
         }
       }
 
       // 處理建議的標籤關聯
-      if (articleData.suggestedTags && articleData.suggestedTags.length > 0) {
-        for (const tagItem of articleData.suggestedTags) {
-          // Normalize: string → { name, type: "GENERAL" }
-          const tagName = typeof tagItem === "string" ? tagItem : tagItem.name;
-          const rawType = typeof tagItem === "string" ? "GENERAL" : (tagItem.type || "GENERAL");
-          const tagType = Object.values(TagType).includes(rawType as TagType) ? (rawType as TagType) : TagType.GENERAL;
-
-          // 查找或建立標籤
-          let tag = await tx.tag.findFirst({
-            where: {
-              name: { equals: tagName, mode: "insensitive" },
-            },
-          });
-
-          if (!tag) {
-            // 建立新標籤
-            const slug = tagName
-              .toLowerCase()
-              .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-              .replace(/^-|-$/g, "");
-
-            tag = await tx.tag.create({
-              data: {
-                name: tagName,
-                slug: `${slug}-${Date.now()}`,
-                type: tagType,
-              },
-            });
-          }
-
-          // 建立關聯
-          await tx.articleTag.create({
-            data: {
-              articleId: article.id,
-              tagId: tag.id,
-            },
-          });
+      if (articleData.suggestedTags?.length) {
+        const tagIds = await resolveTagIds(
+          tx,
+          articleData.suggestedTags.map((tag) =>
+            typeof tag === "string" ? { name: tag, type: "GENERAL" } : tag
+          )
+        );
+        for (const tagId of tagIds) {
+          await tx.articleTag.create({ data: { articleId: article.id, tagId } });
         }
       }
 
