@@ -36,8 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { Users, Search, Shield, UserCog, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { formatTaipei } from "@/lib/datetime";
 
 interface User {
   id: string;
@@ -252,9 +251,7 @@ export default function UsersPage() {
                     </TableCell>
                     <TableCell>{user._count.editLogs}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {format(new Date(user.createdAt), "yyyy/MM/dd", {
-                        locale: zhTW,
-                      })}
+                      {formatTaipei(user.createdAt, "yyyy/MM/dd")}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

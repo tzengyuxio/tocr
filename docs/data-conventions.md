@@ -25,6 +25,14 @@
 
 > 已知落差：`edtf.js` 把 `21`–`24` 推導成季度（`22` → 4–6 月），而規範定義為季節。字串本身符合規範，只有推導出的區間偏移。目前排序未依賴季節精度的資料，若日後有需要須重新檢視。
 
+### 時間戳存 UTC，顯示台北時間
+
+`createdAt`、`processedAt`、`tocReviewedAt` 這類**時刻**（不是上面說的出版日期）一律以 UTC 儲存，畫面上一律以台北時間（UTC+8）呈現。
+
+顯示請用 [`src/lib/datetime.ts`](../src/lib/datetime.ts) 的 `formatTaipei()`，**不要直接用 `date-fns` 的 `format()`**。後者跟隨執行環境的時區，而那不是一個時區是兩個：server component 跑在 Vercel function 裡（沒設 `TZ`，所以是 UTC），client component 跑在讀者的瀏覽器裡（這裡是 UTC+8）。同一筆編輯因此在 `/admin/edit-logs` 顯示 03:20、在 `/admin/users` 顯示 11:20，台北時間早上 8 點前連日期都會差一天。
+
+時區寫在程式碼裡而不是設在部署環境的 `TZ`，是為了讓本機、preview 與 production 一致，不會因為換平台或漏設變數又飄掉。
+
 ### 創刊日期以創刊號為準
 
 `Magazine.foundedDate` 記錄 **創刊號** 的出版日期，**不是試刊號**。

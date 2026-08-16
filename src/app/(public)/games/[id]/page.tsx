@@ -21,8 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Gamepad2, Calendar, FileText, SquarePen } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { formatTaipei } from "@/lib/datetime";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
@@ -124,9 +123,7 @@ export default async function GameDetailPage({ params }: PageProps) {
               <p className="flex items-center">
                 <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">發售日期：</span>
-                {format(new Date(game.releaseDate), "yyyy 年 M 月 d 日", {
-                  locale: zhTW,
-                })}
+                {formatTaipei(game.releaseDate, "yyyy 年 M 月 d 日")}
               </p>
             )}
             {game.developer && (

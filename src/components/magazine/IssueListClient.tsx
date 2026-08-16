@@ -233,6 +233,11 @@ export function IssueListClient({
           </div>
         ) : (
           <DndContext
+            // An explicit id: without one dnd-kit numbers its aria-describedby
+            // from a module-level counter that starts over on the client, so
+            // the server rendered DndDescribedBy-0 and hydration wanted -2,
+            // and React reported a mismatch it will not patch up.
+            id="issue-list"
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
