@@ -9,8 +9,10 @@ interface MockModel {
   findUnique: jest.Mock;
   findFirst: jest.Mock;
   create: jest.Mock;
+  createMany: jest.Mock;
   update: jest.Mock;
   delete: jest.Mock;
+  deleteMany: jest.Mock;
   count: jest.Mock;
   aggregate: jest.Mock;
 }
@@ -40,8 +42,10 @@ const createMockModel = (): MockModel => ({
   findUnique: jest.fn(),
   findFirst: jest.fn(),
   create: jest.fn(),
+  createMany: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+  deleteMany: jest.fn(),
   count: jest.fn(),
   aggregate: jest.fn(),
 });
