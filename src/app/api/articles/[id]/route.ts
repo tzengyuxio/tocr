@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { articleUpdateSchema } from "@/lib/validators/article";
 import { withErrorHandler } from "@/lib/api-utils";
+import { resolveGameIds, resolveTagIds } from "@/lib/resolve-relations";
 import { logEdit } from "@/lib/edit-log";
 import { diffChanges, diffIds } from "@/lib/edit-log-diff";
 
@@ -53,8 +54,20 @@ export const PUT = withErrorHandler(async (
   const { id } = await context!.params;
   const body = await request.json();
 
-  // 分離關聯資料
-  const { gameIds, tagIds, ...articleData } = body;
+  // 分離關聯資料。id 版給 picker 用，名稱版給行內編輯用（沒有的會建起來）。
+  const { gameIds, tagIds, games, tags, ...articleData } = body;
+
+  // 兩種寫法只能擇一 -- 同時給而內容不一致時，沒有哪一邊該贏。
+  if (
+    (games !== undefined && gameIds !== undefined) ||
+    (tags !== undefined && tagIds !== undefined)
+  ) {
+    return NextResponse.json(
+      { error: "關聯只能以 id 或名稱其中一種方式設定" },
+      { status: 400 }
+    );
+  }
+
   const validatedData = articleUpdateSchema.parse(articleData);
 
   // The relation ids come along so the log can show a tag-only or game-only
@@ -67,6 +80,10 @@ export const PUT = withErrorHandler(async (
     },
   });
 
+  // 名稱要在 transaction 內解析，但編輯紀錄在 transaction 外算，所以宣告在外層。
+  let resolvedGameIds: string[] | undefined;
+  let resolvedTagIds: string[] | undefined;
+
   // 使用 transaction 更新文章和關聯
   const article = await prisma.$transaction(async (tx) => {
     // 更新文章基本資料
@@ -75,16 +92,19 @@ export const PUT = withErrorHandler(async (
       data: validatedData,
     });
 
-    // 如果有提供 gameIds，更新遊戲關聯
-    if (gameIds !== undefined) {
+    resolvedGameIds =
+      games !== undefined ? await resolveGameIds(tx, games) : gameIds;
+
+    // 如果有提供遊戲，更新遊戲關聯
+    if (resolvedGameIds !== undefined) {
       // 刪除現有關聯
       await tx.articleGame.deleteMany({
         where: { articleId: id },
       });
       // 建立新關聯
-      if (gameIds.length > 0) {
+      if (resolvedGameIds.length > 0) {
         await tx.articleGame.createMany({
-          data: gameIds.map((gameId: string, index: number) => ({
+          data: resolvedGameIds.map((gameId: string, index: number) => ({
             articleId: id,
             gameId,
             isPrimary: index === 0, // 第一個為主要遊戲
@@ -93,16 +113,18 @@ export const PUT = withErrorHandler(async (
       }
     }
 
-    // 如果有提供 tagIds，更新標籤關聯
-    if (tagIds !== undefined) {
+    resolvedTagIds = tags !== undefined ? await resolveTagIds(tx, tags) : tagIds;
+
+    // 如果有提供標籤，更新標籤關聯
+    if (resolvedTagIds !== undefined) {
       // 刪除現有關聯
       await tx.articleTag.deleteMany({
         where: { articleId: id },
       });
       // 建立新關聯
-      if (tagIds.length > 0) {
+      if (resolvedTagIds.length > 0) {
         await tx.articleTag.createMany({
-          data: tagIds.map((tagId: string) => ({
+          data: resolvedTagIds.map((tagId: string) => ({
             articleId: id,
             tagId,
           })),
@@ -114,21 +136,24 @@ export const PUT = withErrorHandler(async (
   });
 
   const changes: Record<string, unknown> = diffChanges(before, article);
-  if (gameIds !== undefined) {
+  if (resolvedGameIds !== undefined) {
     const beforeGames = before?.articleGames ?? [];
-    const diff = diffIds(beforeGames.map((g) => g.gameId), gameIds);
+    const diff = diffIds(beforeGames.map((g) => g.gameId), resolvedGameIds);
     if (diff) changes.gameIds = diff;
 
     // The write above makes the first id the primary game, so the same games
     // in a new order still changes something the set diff cannot see.
     const primaryFrom = beforeGames.find((g) => g.isPrimary)?.gameId ?? null;
-    const primaryTo = (gameIds as string[])[0] ?? null;
+    const primaryTo = resolvedGameIds[0] ?? null;
     if (primaryFrom !== primaryTo) {
       changes.primaryGameId = { from: primaryFrom, to: primaryTo };
     }
   }
-  if (tagIds !== undefined) {
-    const diff = diffIds(before?.articleTags.map((t) => t.tagId) ?? [], tagIds);
+  if (resolvedTagIds !== undefined) {
+    const diff = diffIds(
+      before?.articleTags.map((t) => t.tagId) ?? [],
+      resolvedTagIds
+    );
     if (diff) changes.tagIds = diff;
   }
 
