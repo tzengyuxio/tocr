@@ -22,14 +22,19 @@ export function IssueCard({ issue, magazineId, magazineName }: IssueCardProps) {
     <Link href={`/magazines/${magazineId}/issues/${issue.id}`}>
       <Card className="h-full overflow-hidden transition-shadow hover:shadow-md gap-0 py-0">
         {issue.coverImage ? (
-          <Image
-            src={issue.coverImage}
-            alt={issue.issueNumber}
-            width={400}
-            height={560}
-            unoptimized
-            className="aspect-[3/4] w-full object-cover"
-          />
+          // object-contain, not cover: a magazine cover is mostly masthead and
+          // cover lines, and cropping to fill the frame cuts the text off.
+          // The frame keeps its 3:4 shape so the grid stays even.
+          <div className="flex aspect-[3/4] w-full items-center justify-center bg-muted">
+            <Image
+              src={issue.coverImage}
+              alt={issue.issueNumber}
+              width={400}
+              height={560}
+              unoptimized
+              className="max-h-full w-auto max-w-full object-contain"
+            />
+          </div>
         ) : (
           <div className="flex aspect-[3/4] w-full items-center justify-center bg-muted">
             <BookOpen className="h-10 w-10 text-muted-foreground/50" />
