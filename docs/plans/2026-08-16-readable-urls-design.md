@@ -152,7 +152,7 @@ base 沒被佔用就直接用；被佔用就試 `base-2`、`base-3`⋯⋯ 直到
 | `slugify` | NFKC（`宇宙傳奇Ⅱ → 宇宙傳奇ii`、全形 → 半形）、大小寫、標點轉 `-`、收邊、CJK 保留、空字串 |
 | `ensureUniqueSlug` | 沒撞就用 base、撞了接 `-2`／`-3`、`excludeId` 不跟自己撞 |
 | `resolve-relations` | 新建的 slug 不再帶時間戳 |
-| `/games/[id]` · `/tags/[id]` | slug 命中正常渲染、cuid 命中回 301 且 Location 指向 slug、兩者皆無回 404 |
+| `/games/[id]` · `/tags/[id]` | slug 命中正常渲染、cuid 命中回 308 且 Location 指向 slug、兩者皆無回 404 |
 | 回填腳本 | 兩筆同名時第二筆得到 `-2`；重跑結果一致（冪等） |
 
 ---
