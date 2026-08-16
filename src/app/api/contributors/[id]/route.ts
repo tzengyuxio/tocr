@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withErrorHandler } from "@/lib/api-utils";
-import { FEED_SCOPE } from "@/lib/edit-log";
+import { CONTRIBUTION_FEED_SCOPE } from "@/lib/edit-log";
 
 // GET /api/contributors/[id] - 取得單一貢獻者詳情
 export const GET = withErrorHandler(async (
@@ -34,7 +34,7 @@ export const GET = withErrorHandler(async (
       _count: { id: true },
     }),
     prisma.editLog.findMany({
-      where: { userId: id, ...FEED_SCOPE },
+      where: { userId: id, ...CONTRIBUTION_FEED_SCOPE },
       orderBy: { createdAt: "desc" },
       take: 20,
       select: {

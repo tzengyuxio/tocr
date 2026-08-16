@@ -5,6 +5,7 @@
 
 interface MockModel {
   findMany: jest.Mock;
+  groupBy: jest.Mock;
   findUnique: jest.Mock;
   findFirst: jest.Mock;
   create: jest.Mock;
@@ -28,12 +29,14 @@ interface PrismaMock {
   articleGame: MockModel;
   ocrRecord: MockModel;
   user: MockModel;
+  editLog: MockModel;
   $transaction: jest.Mock;
   $queryRaw: jest.Mock;
 }
 
 const createMockModel = (): MockModel => ({
   findMany: jest.fn(),
+  groupBy: jest.fn(),
   findUnique: jest.fn(),
   findFirst: jest.fn(),
   create: jest.fn(),
@@ -53,6 +56,7 @@ export const prismaMock: PrismaMock = {
   articleGame: createMockModel(),
   ocrRecord: createMockModel(),
   user: createMockModel(),
+  editLog: createMockModel(),
   $transaction: jest.fn((fn: TransactionCallback) => fn(prismaMock)),
   // Tagged-template call, so tests assert on the interpolated values rather
   // than on a query object.
@@ -68,6 +72,13 @@ jest.mock("@/lib/edit-log", () => ({
   logEditBatch: jest.fn().mockResolvedValue(undefined),
   getCurrentUserId: jest.fn().mockResolvedValue("test-user"),
   FEED_SCOPE: { OR: [{ batchId: null }, { batchSize: { not: null } }] },
+  // Mirror the real module: spreading a constant this mock forgets yields
+  // nothing, and the filter it stands for silently stops being applied.
+  CATALOGUE_ONLY: { entityType: { not: "User" } },
+  CONTRIBUTION_FEED_SCOPE: {
+    OR: [{ batchId: null }, { batchSize: { not: null } }],
+    entityType: { not: "User" },
+  },
 }));
 
 export function resetPrismaMock() {

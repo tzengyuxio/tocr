@@ -21,6 +21,25 @@ export const FEED_SCOPE: Prisma.EditLogWhereInput = {
 };
 
 /**
+ * Edits that count as work on the catalogue.
+ *
+ * Account housekeeping -- someone renaming themselves, an admin granting a
+ * role -- is a real edit and stays in the audit log at /admin/edit-logs. It is
+ * not cataloguing, though, so it earns neither a place on the contributor
+ * leaderboard nor a line in the activity feed: renaming A to B and back would
+ * otherwise be worth two contributions.
+ */
+export const CATALOGUE_ONLY: Prisma.EditLogWhereInput = {
+  entityType: { not: "User" },
+};
+
+/** The activity feed: one line per action, and only catalogue work. */
+export const CONTRIBUTION_FEED_SCOPE: Prisma.EditLogWhereInput = {
+  ...FEED_SCOPE,
+  ...CATALOGUE_ONLY,
+};
+
+/**
  * Get the current authenticated user's ID.
  * Returns null if not authenticated (should not happen for write operations
  * since middleware enforces auth).
