@@ -13,8 +13,9 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
-import { ARTICLE_CATEGORIES, categoryLabel } from "@/lib/article-categories";
+import { ARTICLE_CATEGORIES } from "@/lib/article-categories";
 import type { ArticleCategory } from "@/lib/article-categories";
+import { CategoryChip, GameChip } from "@/components/chips";
 
 interface ArticleItem {
   id: string;
@@ -208,9 +209,7 @@ export function EditableArticleRow({
             <span className="text-xs text-muted-foreground">相關遊戲：</span>
             <div className="flex flex-wrap gap-1">
               {article.articleGames.map((ag) => (
-                <Badge key={ag.game.id} variant="secondary" className="text-xs">
-                  {ag.game.name}
-                </Badge>
+                <GameChip key={ag.game.id} name={ag.game.name} className="text-xs" />
               ))}
             </div>
             <span className="text-xs text-muted-foreground">
@@ -287,9 +286,7 @@ export function EditableArticleRow({
         </div>
         <div className="flex flex-wrap gap-1 mt-1">
           {article.category && (
-            <Badge variant="outline" className="text-xs">
-              {categoryLabel(article.category)}
-            </Badge>
+            <CategoryChip category={article.category} className="text-xs" />
           )}
           {article.authors.length > 0 && (
             <Badge variant="secondary" className="text-xs">
@@ -297,9 +294,7 @@ export function EditableArticleRow({
             </Badge>
           )}
           {article.articleGames.map((ag) => (
-            <Badge key={ag.game.id} variant="secondary" className="text-xs">
-              {ag.game.name}
-            </Badge>
+            <GameChip key={ag.game.id} name={ag.game.name} className="text-xs" />
           ))}
         </div>
       </div>

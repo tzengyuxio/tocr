@@ -33,60 +33,28 @@ import {
   ArrowUp,
   ArrowDown,
   BetweenHorizontalStart,
-  FolderOpen,
-  Gamepad2,
   Gauge,
 } from "lucide-react";
 import type { OcrArticleResult, OcrResult } from "@/services/ai/ocr.interface";
-import { getTagTypeColor, getTagTypeLabel, formatTagLabel } from "@/lib/tag-colors";
+import {
+  getTagTypeLabel,
+} from "@/lib/tag-colors";
 import { formatTagInput, parseTagInput } from "@/lib/tag-input";
 import { ARTICLE_CATEGORIES, categoryLabel } from "@/lib/article-categories";
 import type { ArticleCategory } from "@/lib/article-categories";
+import {
+  CategoryChip,
+  ChipRemoveButton,
+  GameChip,
+  REMOVABLE_CHIP,
+  TagChip,
+} from "@/components/chips";
 
 interface OcrResultEditorProps {
   result: OcrResult;
   tocImages: string[];
   onSave: (articles: OcrArticleResult[]) => Promise<void>;
   onCancel: () => void;
-}
-
-/**
- * A chip carrying its own remove button, so a wrong tag can go without opening
- * the full editor. The click must not reach the row, which starts editing.
- */
-function ChipWithRemove({
-  className,
-  title,
-  onRemove,
-  children,
-}: {
-  className?: string;
-  title: string;
-  onRemove: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    // overflow-visible: the badge clips its children by default, which would
-    // swallow a button sitting on the corner.
-    <Badge
-      variant="secondary"
-      title={title}
-      className={`group/chip relative overflow-visible text-xs font-normal ${className ?? ""}`}
-    >
-      {children}
-      <button
-        type="button"
-        aria-label={`移除 ${title}`}
-        className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-white opacity-0 shadow-sm transition-opacity focus-visible:opacity-100 group-hover/chip:opacity-100"
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove();
-        }}
-      >
-        <X className="h-2.5 w-2.5" strokeWidth={3} />
-      </button>
-    </Badge>
-  );
 }
 
 function ArticleRow({
@@ -259,9 +227,7 @@ function ArticleRow({
           {editingArticle.suggestedTags && editingArticle.suggestedTags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
               {editingArticle.suggestedTags.map((tag, i) => (
-                <Badge key={i} className={`text-xs ${getTagTypeColor(tag.type)}`}>
-                  {formatTagLabel(tag)}
-                </Badge>
+                <TagChip key={i} tag={tag} withTypeLabel className="text-xs" />
               ))}
             </div>
           )}
@@ -317,48 +283,47 @@ function ArticleRow({
           {article.authors && article.authors.length > 0 && (
             <span className="mr-0.5">{article.authors.join(", ")}</span>
           )}
-          {/* Three families of chip, told apart by shape rather than only hue:
-              the category outlined, games filled with an icon, tags filled. */}
+          {/* The shared chips, so the colour AND the icon come from one place --
+              this screen used to re-pick its own icons beside the shared
+              colours, which quietly drifts the moment one of them changes. */}
           {article.category && (
-            <ChipWithRemove
-              className="bg-amber-400 font-medium text-amber-950"
-              title={`分類：${categoryLabel(article.category)}`}
-              onRemove={() => onQuickChange({ ...article, category: undefined })}
-            >
-              <FolderOpen className="h-3 w-3" />
-              {categoryLabel(article.category)}
-            </ChipWithRemove>
+            <CategoryChip category={article.category} className={REMOVABLE_CHIP}>
+              <ChipRemoveButton
+                label={`分類：${categoryLabel(article.category)}`}
+                onRemove={() => onQuickChange({ ...article, category: undefined })}
+              />
+            </CategoryChip>
           )}
           {article.suggestedGames?.map((game, i) => (
-            <ChipWithRemove
-              key={`game-${i}`}
-              className="bg-violet-600 font-medium text-white"
-              title={`遊戲：${game}`}
-              onRemove={() =>
-                onQuickChange({
-                  ...article,
-                  suggestedGames: article.suggestedGames?.filter((_, j) => j !== i),
-                })
-              }
-            >
-              <Gamepad2 className="h-3 w-3" />
-              {game}
-            </ChipWithRemove>
+            <GameChip key={`game-${i}`} name={game} className={REMOVABLE_CHIP}>
+              <ChipRemoveButton
+                label={`遊戲：${game}`}
+                onRemove={() =>
+                  onQuickChange({
+                    ...article,
+                    suggestedGames: article.suggestedGames?.filter((_, j) => j !== i),
+                  })
+                }
+              />
+            </GameChip>
           ))}
           {article.suggestedTags?.map((tag, i) => (
-            <ChipWithRemove
+            <TagChip
               key={`tag-${i}`}
-              className={getTagTypeColor(tag.type)}
-              title={`${getTagTypeLabel(tag.type)}標籤：${tag.name}`}
-              onRemove={() =>
-                onQuickChange({
-                  ...article,
-                  suggestedTags: article.suggestedTags?.filter((_, j) => j !== i),
-                })
-              }
+              tag={tag}
+              withTypeLabel
+              className={REMOVABLE_CHIP}
             >
-              {formatTagLabel(tag)}
-            </ChipWithRemove>
+              <ChipRemoveButton
+                label={`${getTagTypeLabel(tag.type)}標籤：${tag.name}`}
+                onRemove={() =>
+                  onQuickChange({
+                    ...article,
+                    suggestedTags: article.suggestedTags?.filter((_, j) => j !== i),
+                  })
+                }
+              />
+            </TagChip>
           ))}
         </div>
       </div>

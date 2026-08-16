@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -21,10 +20,9 @@ import {
 } from "@/components/ui/table";
 import { Tags, FileText, SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
-import { categoryLabel } from "@/lib/article-categories";
+import { CategoryChip, TagTypeChip } from "@/components/chips";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -97,7 +95,7 @@ export default async function TagDetailPage({ params }: PageProps) {
               )}
             </div>
             <div className="mt-1 flex items-center gap-2">
-              <Badge className={getTagTypeColor(tag.type)}>{getTagTypeLabel(tag.type)}</Badge>
+              <TagTypeChip type={tag.type} />
               <span className="text-muted-foreground">
                 {tag.articleTags.length} 篇相關文章
               </span>
@@ -167,7 +165,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell>
                           {at.article.category ? (
-                            <Badge variant="outline">{categoryLabel(at.article.category)}</Badge>
+                            <CategoryChip category={at.article.category} />
                           ) : (
                             "-"
                           )}
@@ -196,7 +194,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                       <span>{formatEdtf(at.article.issue.publishDate)}</span>
                     </div>
                     {at.article.category && (
-                      <Badge variant="outline" className="mt-1 text-xs">{categoryLabel(at.article.category)}</Badge>
+                      <CategoryChip category={at.article.category} className="mt-1 text-xs" />
                     )}
                   </div>
                 ))}

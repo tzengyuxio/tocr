@@ -34,6 +34,7 @@ import {
   categoryLabel,
   isArticleCategory,
 } from "@/lib/article-categories";
+import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 
 const PAGE_SIZE = 20;
 
@@ -508,9 +509,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <div className="flex flex-wrap items-center gap-2">
                   {article.category && (
                     <Link href={buildUrl({ category: article.category })}>
-                      <Badge variant="outline">
-                        {categoryLabel(article.category)}
-                      </Badge>
+                      <CategoryChip category={article.category} />
                     </Link>
                   )}
                   {article.authors.length > 0 && (
@@ -521,10 +520,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   {article.articleGames.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {article.articleGames.map((ag) => (
-                        <Link key={ag.game.id} href={`/games/${ag.game.id}`}>
-                          <Badge variant="secondary" className="text-xs">
-                            {ag.game.name}
-                          </Badge>
+                        <Link
+                          key={ag.game.id}
+                          href={`/games/${ag.game.id}`}
+                          className="transition-opacity hover:opacity-80"
+                        >
+                          <GameChip name={ag.game.name} className="text-xs" />
                         </Link>
                       ))}
                     </div>
@@ -532,13 +533,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   {article.articleTags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {article.articleTags.map((at) => (
-                        <Link key={at.tag.id} href={`/tags/${at.tag.id}`}>
-                          <Badge
-                            variant="outline"
-                            className="text-xs text-muted-foreground"
-                          >
-                            {at.tag.name}
-                          </Badge>
+                        <Link
+                          key={at.tag.id}
+                          href={`/tags/${at.tag.id}`}
+                          className="transition-opacity hover:opacity-80"
+                        >
+                          <TagChip tag={at.tag} className="text-xs" />
                         </Link>
                       ))}
                     </div>

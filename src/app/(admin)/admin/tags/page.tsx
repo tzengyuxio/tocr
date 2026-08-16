@@ -34,13 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit, Trash2, Loader2, Tags, Eye, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { TAG_TYPES, getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
-import { categoryLabel } from "@/lib/article-categories";
+import { TAG_TYPES } from "@/lib/tag-colors";
 import type { ArticleCategory } from "@/lib/article-categories";
+import { CategoryChip, TagTypeChip } from "@/components/chips";
 
 interface Tag {
   id: string;
@@ -268,9 +267,7 @@ export default function TagsPage() {
                           {tag.slug}
                         </TableCell>
                         <TableCell>
-                          <Badge className={getTagTypeColor(tag.type)}>
-                            {getTagTypeLabel(tag.type)}
-                          </Badge>
+                          <TagTypeChip type={tag.type} />
                         </TableCell>
                         <TableCell>
                           <Button
@@ -331,9 +328,10 @@ export default function TagsPage() {
                                       {at.article.title}
                                     </span>
                                     {at.article.category && (
-                                      <Badge variant="outline" className="text-xs shrink-0">
-                                        {categoryLabel(at.article.category)}
-                                      </Badge>
+                                      <CategoryChip
+                                        category={at.article.category}
+                                        className="shrink-0 text-xs"
+                                      />
                                     )}
                                   </div>
                                 ))}

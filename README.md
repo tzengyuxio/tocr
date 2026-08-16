@@ -85,6 +85,7 @@ pnpm test
 | [路由與 API](docs/routes.md) | 頁面與 API 端點、授權規則 |
 | [架構](docs/architecture.md) | 目錄結構、資料模型、授權模型、部署形態 |
 | [資料慣例](docs/data-conventions.md) | 建檔時的判斷準則 |
+| [介面慣例](docs/ui-conventions.md) | Chip 的配色與圖示等畫面規範 |
 | [Vercel 部署](docs/deployment.md) | 正式環境部署 |
 | [Docker 部署](docs/docker-deployment.md) | 自架伺服器 |
 | [本地開發](docs/local-development.md) | 開發環境細節 |
