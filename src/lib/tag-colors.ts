@@ -1,6 +1,16 @@
 /**
- * Shared tag type colors and labels
+ * Shared tag type colors, labels and icons
  */
+
+import {
+  Building2,
+  Calendar,
+  Layers,
+  Monitor,
+  Tag as TagIcon,
+  User,
+  type LucideIcon,
+} from "lucide-react";
 
 export const TAG_TYPES = [
   { value: "GENERAL", label: "一般" },
@@ -22,6 +32,23 @@ export const TAG_TYPE_COLORS: Record<string, string> = {
 
 export function getTagTypeColor(type: string): string {
   return TAG_TYPE_COLORS[type] || "bg-gray-100 text-gray-800";
+}
+
+/**
+ * An icon per type, so a chip reads as a person or a company at a glance
+ * rather than by remembering which colour meant which.
+ */
+export const TAG_TYPE_ICONS: Record<string, LucideIcon> = {
+  GENERAL: TagIcon,
+  PERSON: User,
+  EVENT: Calendar,
+  SERIES: Layers,
+  COMPANY: Building2,
+  PLATFORM: Monitor,
+};
+
+export function getTagTypeIcon(type: string): LucideIcon {
+  return TAG_TYPE_ICONS[type] || TagIcon;
 }
 
 export function getTagTypeLabel(type: string): string {

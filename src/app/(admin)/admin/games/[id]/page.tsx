@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-articles";
 import { formatEdtf } from "@/lib/edtf";
-import { categoryLabel } from "@/lib/article-categories";
+import { CategoryChip } from "@/components/chips";
 
 export default function GameDetailPage() {
   const params = useParams<{ id: string }>();
@@ -188,9 +188,10 @@ export default function GameDetailPage() {
                                     {article.title}
                                   </span>
                                   {article.category && (
-                                    <Badge variant="outline" className="text-xs shrink-0">
-                                      {categoryLabel(article.category)}
-                                    </Badge>
+                                    <CategoryChip
+                                      category={article.category}
+                                      className="shrink-0 text-xs"
+                                    />
                                   )}
                                 </Link>
                               ))}

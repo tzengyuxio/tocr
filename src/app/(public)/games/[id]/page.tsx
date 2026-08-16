@@ -26,7 +26,7 @@ import { zhTW } from "date-fns/locale";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
-import { categoryLabel } from "@/lib/article-categories";
+import { CategoryChip } from "@/components/chips";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -237,7 +237,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell>
                           {ag.article.category ? (
-                            <Badge variant="outline">{categoryLabel(ag.article.category)}</Badge>
+                            <CategoryChip category={ag.article.category} />
                           ) : (
                             "-"
                           )}
@@ -270,7 +270,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                       {ag.article.pageStart && <span>· p.{ag.article.pageStart}</span>}
                     </div>
                     {ag.article.category && (
-                      <Badge variant="outline" className="mt-1 text-xs">{categoryLabel(ag.article.category)}</Badge>
+                      <CategoryChip category={ag.article.category} className="mt-1 text-xs" />
                     )}
                   </div>
                 ))}

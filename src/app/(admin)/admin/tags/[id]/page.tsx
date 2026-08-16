@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
@@ -26,9 +25,8 @@ import {
   FileText,
 } from "lucide-react";
 import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-articles";
-import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 import { formatEdtf } from "@/lib/edtf";
-import { categoryLabel } from "@/lib/article-categories";
+import { CategoryChip, TagTypeChip } from "@/components/chips";
 
 export default function TagDetailPage() {
   const params = useParams<{ id: string }>();
@@ -97,7 +95,7 @@ export default function TagDetailPage() {
               {tag.name}
             </h2>
             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-              <Badge className={getTagTypeColor(tag.type)}>{getTagTypeLabel(tag.type)}</Badge>
+              <TagTypeChip type={tag.type} />
               <span>{tag._count.articleTags} 篇相關文章</span>
               {tag.description && <span>· {tag.description}</span>}
             </div>
@@ -165,9 +163,10 @@ export default function TagDetailPage() {
                                     {article.title}
                                   </span>
                                   {article.category && (
-                                    <Badge variant="outline" className="text-xs shrink-0">
-                                      {categoryLabel(article.category)}
-                                    </Badge>
+                                    <CategoryChip
+                                      category={article.category}
+                                      className="shrink-0 text-xs"
+                                    />
                                   )}
                                 </Link>
                               ))}

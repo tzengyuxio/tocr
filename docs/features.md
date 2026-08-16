@@ -36,6 +36,8 @@ ISSN 刻意不設唯一性、日期採 EDTF 等建檔準則見 [data-conventions
 - 個別編輯與批次建立
 - 關聯標籤與遊戲（多對多）
 
+掛在文章上的三種 chip（分類、遊戲、標籤）全站共用 [`src/components/chips.tsx`](../src/components/chips.tsx)，配色、圖示與使用規則見 [ui-conventions.md](ui-conventions.md#chip)。
+
 ## 標籤
 
 六種類型：一般、人物、活動、系列、公司、平台。標籤詳情頁依期刊、單期分組顯示相關文章，可展開收合。

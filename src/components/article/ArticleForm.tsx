@@ -36,9 +36,9 @@ import {
 import { Loader2, X, Plus, Gamepad2, Tags, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
 import { ARTICLE_CATEGORIES } from "@/lib/article-categories";
 import type { ArticleCategory } from "@/lib/article-categories";
+import { GameChip, TagChip, TagTypeChip } from "@/components/chips";
 
 interface Game {
   id: string;
@@ -463,13 +463,13 @@ export function ArticleForm({
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {selectedGames.map((game, index) => (
-              <Badge
+              <GameChip
                 key={game.id}
-                variant={index === 0 ? "default" : "secondary"}
-                className="gap-1"
+                name={index === 0 ? `${game.name} (主要)` : game.name}
+                className={
+                  index === 0 ? "ring-2 ring-violet-900 ring-offset-1" : undefined
+                }
               >
-                {game.name}
-                {index === 0 && " (主要)"}
                 <button
                   type="button"
                   onClick={() => toggleGame(game)}
@@ -477,7 +477,7 @@ export function ArticleForm({
                 >
                   <X className="h-3 w-3" />
                 </button>
-              </Badge>
+              </GameChip>
             ))}
           </div>
           <Popover open={gameOpen} onOpenChange={setGameOpen}>
@@ -557,8 +557,7 @@ export function ArticleForm({
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {selectedTags.map((tag) => (
-              <Badge key={tag.id} className={cn("gap-1", getTagTypeColor(tag.type))}>
-                {tag.name}
+              <TagChip key={tag.id} tag={tag}>
                 <button
                   type="button"
                   onClick={() => toggleTag(tag)}
@@ -566,7 +565,7 @@ export function ArticleForm({
                 >
                   <X className="h-3 w-3" />
                 </button>
-              </Badge>
+              </TagChip>
             ))}
           </div>
           <Popover open={tagOpen} onOpenChange={setTagOpen}>
@@ -624,9 +623,7 @@ export function ArticleForm({
                           )}
                         />
                         {tag.name}
-                        <Badge className={cn("ml-2 text-xs", getTagTypeColor(tag.type))}>
-                          {getTagTypeLabel(tag.type)}
-                        </Badge>
+                        <TagTypeChip type={tag.type} className="ml-2 text-xs" />
                       </CommandItem>
                     ))}
                   </CommandGroup>

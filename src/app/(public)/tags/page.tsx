@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tags } from "lucide-react";
-import { getTagTypeColor, getTagTypeLabel } from "@/lib/tag-colors";
+import { TagTypeChip } from "@/components/chips";
 
 export default async function TagsPage() {
   const tags = await prisma.tag.findMany({
@@ -62,7 +62,7 @@ export default async function TagsPage() {
             <Card key={type}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Badge className={getTagTypeColor(type)}>{getTagTypeLabel(type)}</Badge>
+                  <TagTypeChip type={type} />
                 </CardTitle>
               </CardHeader>
               <CardContent>

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -29,8 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Search, FileText, Loader2, Pencil, BookOpen } from "lucide-react";
 import { formatEdtf } from "@/lib/edtf";
-import { categoryLabel } from "@/lib/article-categories";
 import type { ArticleCategory } from "@/lib/article-categories";
+import { CategoryChip } from "@/components/chips";
 
 interface Article {
   id: string;
@@ -228,7 +227,7 @@ export default function ArticlesPage() {
                       </TableCell>
                       <TableCell>
                         {article.category && (
-                          <Badge variant="outline">{categoryLabel(article.category)}</Badge>
+                          <CategoryChip category={article.category} />
                         )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
