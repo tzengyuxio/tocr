@@ -19,44 +19,62 @@ import {
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 
+// Two rows of eight on a wide screen.
+const LATEST_ISSUE_COUNT = 16;
+
 export default async function HomePage() {
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
   // Run all queries in parallel
+  // Recently touched, not recently published: an issue that just had its
+  // contents filled in is the interesting one, whatever year it came out.
+  const latestIssueQuery = {
+    orderBy: { updatedAt: "desc" },
+    include: {
+      magazine: {
+        select: { id: true, name: true },
+      },
+      _count: {
+        select: { articles: true },
+      },
+    },
+  } as const;
+
   const [
     magazineCount,
     issueCount,
     articleCount,
     gameCount,
     tagCount,
-    latestIssues,
+    withArticles,
   ] = await Promise.all([
     prisma.magazine.count(),
     prisma.issue.count(),
     prisma.article.count(),
     prisma.game.count(),
     prisma.tag.count(),
+    // An issue whose contents are indexed is what the site is for, so those
+    // come first and the rest only fill the row out.
     prisma.issue.findMany({
-      take: 6,
-      // Most of the 549 imported issues are still bare records with nothing but
-      // a number and a date -- showing those reads as a broken page.
-      where: {
-        OR: [{ coverImage: { not: null } }, { articles: { some: {} } }],
-      },
-      // Recently touched, not recently published: an issue that just had its
-      // contents filled in is the interesting one, whatever year it came out.
-      orderBy: { updatedAt: "desc" },
-      include: {
-        magazine: {
-          select: { id: true, name: true },
-        },
-        _count: {
-          select: { articles: true },
-        },
-      },
+      ...latestIssueQuery,
+      take: LATEST_ISSUE_COUNT,
+      where: { articles: { some: {} } },
     }),
   ]);
+
+  // Most of the imported issues are still bare records with nothing but a
+  // number and a date -- showing those reads as a broken page, so a cover is
+  // the minimum for the second tier.
+  const filler =
+    withArticles.length < LATEST_ISSUE_COUNT
+      ? await prisma.issue.findMany({
+          ...latestIssueQuery,
+          take: LATEST_ISSUE_COUNT - withArticles.length,
+          where: { articles: { none: {} }, coverImage: { not: null } },
+        })
+      : [];
+  const latestIssues = [...withArticles, ...filler];
 
   return (
     <div className="animate-fade-in-up">
@@ -139,7 +157,7 @@ export default async function HomePage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 stagger-children">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 stagger-children">
               {latestIssues.map((issue) => (
                 <IssueCard
                   key={issue.id}

@@ -4,3 +4,8 @@ export const reorderSchema = z.object({
   magazineId: z.string().min(1),
   issueIds: z.array(z.string().min(1)),
 });
+
+export const articleReorderSchema = z.object({
+  issueId: z.string().min(1),
+  articleIds: z.array(z.string().min(1)),
+});
