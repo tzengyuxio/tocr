@@ -70,6 +70,7 @@
 | GET · POST | `/api/articles` | 列表 / 新增 |
 | POST | `/api/articles/batch` | 批次建立 |
 | GET · PUT · DELETE | `/api/articles/[id]` | 單筆 CRUD |
+| PUT | `/api/articles/reorder` | 批次排序 |
 
 分頁參數 `page` 與 `limit` 會被夾在合理範圍內，`limit` 上限 100。
 

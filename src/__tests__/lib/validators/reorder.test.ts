@@ -1,4 +1,4 @@
-import { reorderSchema } from "@/lib/validators/reorder";
+import { articleReorderSchema, reorderSchema } from "@/lib/validators/reorder";
 
 describe("reorderSchema", () => {
   it("should validate a valid magazineId and issueIds", () => {
@@ -54,6 +54,50 @@ describe("reorderSchema", () => {
       magazineId: "mag-123",
     };
     const result = reorderSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("articleReorderSchema", () => {
+  it("should validate a valid issueId and articleIds", () => {
+    const input = {
+      issueId: "iss-123",
+      articleIds: ["art-1", "art-2", "art-3"],
+    };
+    const result = articleReorderSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.issueId).toBe("iss-123");
+      expect(result.data.articleIds).toEqual(["art-1", "art-2", "art-3"]);
+    }
+  });
+
+  it("should fail when issueId is empty", () => {
+    const result = articleReorderSchema.safeParse({
+      issueId: "",
+      articleIds: ["art-1"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("should accept an empty articleIds array", () => {
+    const result = articleReorderSchema.safeParse({
+      issueId: "iss-123",
+      articleIds: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("should fail when articleIds contains an empty string", () => {
+    const result = articleReorderSchema.safeParse({
+      issueId: "iss-123",
+      articleIds: ["art-1", "", "art-3"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("should fail when articleIds is missing", () => {
+    const result = articleReorderSchema.safeParse({ issueId: "iss-123" });
     expect(result.success).toBe(false);
   });
 });

@@ -45,6 +45,8 @@ interface EditableArticleRowProps {
   onSaveEdit: (data: ArticleUpdatePayload) => Promise<void>;
   onCancelEdit: () => void;
   onDelete: () => void;
+  // The drag handle is supplied by the list, which owns the sortable context.
+  dragHandle?: React.ReactNode;
 }
 
 export type { ArticleItem, ArticleUpdatePayload };
@@ -56,6 +58,7 @@ export function EditableArticleRow({
   onSaveEdit,
   onCancelEdit,
   onDelete,
+  dragHandle,
 }: EditableArticleRowProps) {
   const [formData, setFormData] = useState<ArticleUpdatePayload>({
     title: article.title,
@@ -263,6 +266,8 @@ export function EditableArticleRow({
       className="group flex items-center gap-3 rounded-lg border px-4 py-3 hover:bg-muted/50 cursor-pointer transition-colors"
       onClick={handleStartEdit}
     >
+      {dragHandle}
+
       {/* Page number */}
       {pageDisplay && (
         <span className="shrink-0 font-mono text-sm text-muted-foreground w-12 text-right">
@@ -311,6 +316,18 @@ export function EditableArticleRow({
           <Link href={`/admin/articles/${article.id}`}>
             <ExternalLink className="h-3.5 w-3.5" />
           </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          title="刪除文章"
+          className="h-7 w-7 text-destructive hover:text-destructive"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>
