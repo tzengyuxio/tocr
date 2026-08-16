@@ -1,20 +1,9 @@
 import { type Prisma, TagType } from "@prisma/client";
 import type { TagInput } from "./tag-input";
+import { ensureUniqueSlug, slugify } from "./slugify";
 
 /** The transaction client both callers hand in. */
 export type TxClient = Prisma.TransactionClient;
-
-/**
- * Names arrive from AI recognition and from hand-typed comma fields, so the
- * game or tag may not exist yet. The slug carries a timestamp because two
- * different names collapse to the same string once punctuation is stripped.
- */
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 /** Ids in input order, so the caller can treat the first as the primary game. */
 export async function resolveGameIds(
@@ -40,7 +29,7 @@ export async function resolveGameIds(
     }
 
     const created = await tx.game.create({
-      data: { name, slug: `${slugify(name)}-${Date.now()}` },
+      data: { name, slug: await ensureUniqueSlug(tx, "game", slugify(name) || "game") },
     });
     ids.push(created.id);
   }
@@ -69,7 +58,11 @@ export async function resolveTagIds(
       : TagType.GENERAL;
 
     const created = await tx.tag.create({
-      data: { name: tag.name, slug: `${slugify(tag.name)}-${Date.now()}`, type },
+      data: {
+        name: tag.name,
+        slug: await ensureUniqueSlug(tx, "tag", slugify(tag.name) || "tag"),
+        type,
+      },
     });
     ids.push(created.id);
   }

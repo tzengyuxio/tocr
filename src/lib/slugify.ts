@@ -28,15 +28,20 @@ export async function ensureUniqueSlug(
   base: string,
   excludeId?: string
 ): Promise<string> {
+  // Spelled out per model: the two delegates have different generic
+  // signatures, so tx[model] resolves to a union TypeScript will not call.
+  const isTaken = async (slug: string) => {
+    const where = { slug, ...(excludeId && { NOT: { id: excludeId } }) };
+    const select = { id: true };
+    const row =
+      model === "game"
+        ? await tx.game.findFirst({ where, select })
+        : await tx.tag.findFirst({ where, select });
+    return row !== null;
+  };
+
   for (let n = 1; ; n++) {
     const candidate = n === 1 ? base : `${base}-${n}`;
-    const taken = await tx[model].findFirst({
-      where: {
-        slug: candidate,
-        ...(excludeId && { NOT: { id: excludeId } }),
-      },
-      select: { id: true },
-    });
-    if (!taken) return candidate;
+    if (!(await isTaken(candidate))) return candidate;
   }
 }
