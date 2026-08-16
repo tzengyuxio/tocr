@@ -15,9 +15,18 @@ export default async function EditMagazinePage({ params }: PageProps) {
   const magazine = await prisma.magazine.findUnique({
     where: { id },
     include: {
+      // Select rather than include: the full row carries a Decimal price,
+      // which React cannot hand to a Client Component -- the same reason
+      // /admin/ocr selects its columns.
       issues: {
         orderBy: { order: "asc" },
-        include: {
+        select: {
+          id: true,
+          issueNumber: true,
+          title: true,
+          publishDate: true,
+          coverImage: true,
+          order: true,
           _count: {
             select: { articles: true },
           },
