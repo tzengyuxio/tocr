@@ -79,12 +79,6 @@
 
   **但先不要動手**：目前看到的特殊刊號（`創刊號`、`試刊號`、`創刊驚嘆號`、`70+71`）只來自 3 本雜誌，而已匯入 30 本、還有 27 本沒進來。等更多期刊的刊號樣貌浮現，再一次決定規則會更完整——現在定案等於用不到十分之一的樣本立規矩（2026-08-13）
 
-- [ ] **後台單期編輯頁的 hydration mismatch** — `/admin/magazines/[id]/issues/[issueId]` 一載入就在 dev overlay 留下一筆錯誤：「A tree hydrated but some attributes of the server rendered HTML didn't match the client properties.」React 說明白了**不會補正**，所以那棵樹的伺服器輸出與客戶端實際狀態是不一致的，只是目前看不出症狀。
-
-  **是既有問題，不是 chip 統一造成的**——2026-08-16 把整批改動 stash 掉之後重測，同一頁一樣會出現。訊息本身沒有指出是哪個節點，要開 React DevTools 或逐段二分才找得到；候選是這頁上幾個吃 `Date`／`toLocaleString` 的欄位，或表單的 `defaultValue` 與伺服器渲染值對不上。
-
-  **不急但別放太久**：hydration 不一致最典型的下場是事件綁到錯的節點，出事時的症狀（點了沒反應、值跳回舊的）跟原因離很遠，很難查（2026-08-16）
-
 ## 2026-08-13 code review 待辦
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。
