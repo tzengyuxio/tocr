@@ -7,8 +7,7 @@ import {
   isTocReviewMark,
 } from "@/lib/edit-log-labels";
 import type { EditLogTarget } from "@/lib/edit-log-targets";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { formatTaipei } from "@/lib/datetime";
 
 /**
  * The edited record, linked when it still exists. Opens in a new tab so
@@ -82,7 +81,7 @@ export function EditLogEntry({
         )}
       </div>
       <span className="shrink-0 text-xs text-muted-foreground">
-        {format(new Date(log.createdAt), "MM/dd HH:mm", { locale: zhTW })}
+        {formatTaipei(log.createdAt, "MM/dd HH:mm")}
       </span>
     </div>
   );

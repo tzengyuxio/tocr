@@ -232,6 +232,8 @@ export function ArticleListClient({
             </div>
           ) : (
             <DndContext
+              // An explicit id -- see IssueListClient for why.
+              id="article-list"
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}

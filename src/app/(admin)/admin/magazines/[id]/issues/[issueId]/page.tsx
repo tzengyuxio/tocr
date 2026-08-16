@@ -12,8 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ArrowLeft, ScanText } from "lucide-react";
-import { format } from "date-fns";
-import { zhTW } from "date-fns/locale";
+import { formatTaipei } from "@/lib/datetime";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -95,7 +94,7 @@ export default async function EditIssuePage({ params }: PageProps) {
             <CardTitle>AI 目錄辨識</CardTitle>
             <CardDescription>
               {savedOcr
-                ? `已於 ${format(new Date(savedOcr.processedAt), "yyyy/MM/dd HH:mm", { locale: zhTW })} 辨識完成，尚待複查`
+                ? `已於 ${formatTaipei(savedOcr.processedAt, "yyyy/MM/dd HH:mm")} 辨識完成，尚待複查`
                 : "上傳目錄頁圖片，使用 AI 自動辨識文章資訊"}
             </CardDescription>
           </div>
