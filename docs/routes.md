@@ -9,9 +9,9 @@
 | `/magazines/[id]` | 期刊詳情與單期列表 |
 | `/magazines/[id]/issues/[issueId]` | 單期目錄 |
 | `/games` | 遊戲列表 |
-| `/games/[id]` | 該遊戲的相關文章 |
+| `/games/[slug]` | 該遊戲的相關文章。網址吃 slug（可為中文），舊的 cuid 連結永久轉址 |
 | `/tags` | 標籤索引 |
-| `/tags/[id]` | 該標籤的相關文章 |
+| `/tags/[slug]` | 該標籤的相關文章。網址吃 slug（可為中文），舊的 cuid 連結永久轉址 |
 | `/contributors` | 貢獻者 |
 | `/search` | 搜尋（`?type=article\|magazine\|game`） |
 
