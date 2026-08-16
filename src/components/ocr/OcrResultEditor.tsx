@@ -40,6 +40,11 @@ import {
   getTagTypeLabel,
 } from "@/lib/tag-colors";
 import { formatTagInput, parseTagInput } from "@/lib/tag-input";
+import {
+  CommaListInput,
+  formatStringList,
+  parseStringList,
+} from "@/components/ui/comma-list-input";
 import { ARTICLE_CATEGORIES, categoryLabel } from "@/lib/article-categories";
 import type { ArticleCategory } from "@/lib/article-categories";
 import {
@@ -56,6 +61,7 @@ interface OcrResultEditorProps {
   onSave: (articles: OcrArticleResult[]) => Promise<void>;
   onCancel: () => void;
 }
+
 
 function ArticleRow({
   article,
@@ -171,40 +177,26 @@ function ArticleRow({
           </div>
           <div className="space-y-1">
             <Label className="text-xs">作者（逗號分隔）</Label>
-            <Input
-              value={editingArticle.authors?.join(", ") || ""}
-              onChange={(e) =>
-                onEditChange({
-                  ...editingArticle,
-                  authors: e.target.value
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                })
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Escape") onCancelEdit();
-              }}
+            <CommaListInput
+              value={editingArticle.authors}
+              format={formatStringList}
+              parse={parseStringList}
+              onChange={(authors) => onEditChange({ ...editingArticle, authors })}
+              onEscape={onCancelEdit}
             />
           </div>
         </div>
 
         <div className="space-y-1">
           <Label className="text-xs">相關遊戲（逗號分隔）</Label>
-          <Input
-            value={editingArticle.suggestedGames?.join(", ") || ""}
-            onChange={(e) =>
-              onEditChange({
-                ...editingArticle,
-                suggestedGames: e.target.value
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-              })
+          <CommaListInput
+            value={editingArticle.suggestedGames}
+            format={formatStringList}
+            parse={parseStringList}
+            onChange={(suggestedGames) =>
+              onEditChange({ ...editingArticle, suggestedGames })
             }
-            onKeyDown={(e) => {
-              if (e.key === "Escape") onCancelEdit();
-            }}
+            onEscape={onCancelEdit}
           />
         </div>
 
@@ -212,17 +204,14 @@ function ArticleRow({
           <Label className="text-xs">
             建議標籤（逗號分隔，格式：名稱 或 類型:名稱，例如 SERIES:Panzer Dragoon）
           </Label>
-          <Input
-            value={formatTagInput(editingArticle.suggestedTags)}
-            onChange={(e) =>
-              onEditChange({
-                ...editingArticle,
-                suggestedTags: parseTagInput(e.target.value),
-              })
+          <CommaListInput
+            value={editingArticle.suggestedTags}
+            format={formatTagInput}
+            parse={parseTagInput}
+            onChange={(suggestedTags) =>
+              onEditChange({ ...editingArticle, suggestedTags })
             }
-            onKeyDown={(e) => {
-              if (e.key === "Escape") onCancelEdit();
-            }}
+            onEscape={onCancelEdit}
           />
           {editingArticle.suggestedTags && editingArticle.suggestedTags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
