@@ -130,29 +130,48 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
     }
 
     // 批次建立文章
-    const response = await fetch("/api/articles/batch", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        issueId: selectedIssueId,
-        articles: articles.map((article, index) => ({
-          title: article.title,
-          subtitle: article.subtitle,
-          authors: article.authors || [],
-          category: article.category,
-          pageStart: article.pageStart,
-          pageEnd: article.pageEnd,
-          summary: article.summary,
-          sortOrder: index,
-          suggestedGames: article.suggestedGames,
-          suggestedTags: article.suggestedTags?.map((t) =>
-            typeof t === "string" ? { name: t, type: "GENERAL" } : t
-          ),
-        })),
-      }),
-    });
+    const post = (confirmDuplicate: boolean) =>
+      fetch("/api/articles/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          issueId: selectedIssueId,
+          ...(confirmDuplicate && { confirmDuplicate: true }),
+          articles: articles.map((article, index) => ({
+            title: article.title,
+            subtitle: article.subtitle,
+            authors: article.authors || [],
+            category: article.category,
+            pageStart: article.pageStart,
+            pageEnd: article.pageEnd,
+            summary: article.summary,
+            sortOrder: index,
+            suggestedGames: article.suggestedGames,
+            suggestedTags: article.suggestedTags?.map((t) =>
+              typeof t === "string" ? { name: t, type: "GENERAL" } : t
+            ),
+          })),
+        }),
+      });
 
-    const data = await response.json();
+    let response = await post(false);
+    let data = await response.json();
+
+    // Saving twice appends a whole second copy instead of replacing the first,
+    // so the second pass has to be a deliberate choice rather than the default.
+    if (response.status === 409) {
+      const proceed = confirm(
+        `這期已經有 ${data.existingCount} 篇文章。\n\n` +
+          "再存一次不會覆蓋它們，而是額外新增一整份重複的文章。\n" +
+          "確定要繼續嗎？（要修正既有文章，請到單期編輯頁）"
+      );
+      if (!proceed) {
+        throw new Error("已取消儲存，這期原有的文章沒有變動");
+      }
+      response = await post(true);
+      data = await response.json();
+    }
+
     if (!response.ok) {
       throw new Error(data.error || "儲存失敗");
     }

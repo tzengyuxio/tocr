@@ -79,6 +79,21 @@
 
   **但先不要動手**：目前看到的特殊刊號（`創刊號`、`試刊號`、`創刊驚嘆號`、`70+71`）只來自 3 本雜誌，而已匯入 30 本、還有 27 本沒進來。等更多期刊的刊號樣貌浮現，再一次決定規則會更完整——現在定案等於用不到十分之一的樣本立規矩（2026-08-13）
 
+- [ ] **複查與文章列表編輯合而為一** — 兩者本質是同一件事，現在卻是兩套平行實作，而且各缺對方的長處：複查頁有目錄圖對照，但遊戲/標籤只有一個逗號字串欄位；`ArticleForm` 有 chip picker、能當場建新標籤與遊戲，卻沒有目錄圖可對照。
+
+  更要緊的是**這個分裂正是重複存檔的來源**：複查頁載入的是 `ocr_records` 裡的辨識結果，不是該期現有的文章，儲存又只走 `POST /api/articles/batch` 的 create path。2026-08-16 已加 409 擋下（見 [docs/features.md](docs/features.md) 的複查編輯器），但那只是止血。
+
+  **正解**：複查頁載入該期真正的文章（沒有文章時才拿辨識結果當草稿），儲存走 diff（更新／刪除／新增），並讓文章列表也能開目錄圖對照。差別只剩文案與狀態——還沒人工複查過的，按鈕與說明不同，文章維持未確認未發布（2026-08-16）
+
+- [ ] **資料匯出要留紀錄，只給管理員看** — `/api/export` 目前匯出完什麼都不留，誰在什麼時候把整份目錄拉走無從查起。設計已經談定，等排到就能直接做（2026-08-16）：
+
+  - **存哪裡**：新開 `ExportLog` model（`export_logs`），不沿用 `EditLog`。`EditLog` 的語意是 CREATE/UPDATE/DELETE，而且會餵貢獻者排行榜與活動流（`CONTRIBUTION_FEED_SCOPE`），塞匯出進去等於到處加排除條件
+  - **欄位**：`userId`、`createdAt`、`magazineId` + `magazineName`（範圍；null = 全部期刊。名稱存快照，期刊改名或刪除後紀錄仍讀得懂）、`rowCount`、`ipAddress`、`userAgent`
+  - **寫入時機**：串流開始前先寫一筆，結束時 `update` 補 `rowCount`。中途失敗也留得下紀錄，`rowCount` 是 null 就代表沒跑完。使用者取 `getCurrentUserId()`（涵蓋 dev bypass 與 API token）；取不到就跳過寫入，不讓 log 失敗擋掉匯出
+  - **看哪裡**：新頁 `/admin/export-logs`，照 `/admin/edit-logs` 的結構，側欄用既有的 `adminOnly: true`
+
+  順帶一提：現有的 `edit-logs`、`users` 兩個 adminOnly 頁面只靠側欄隱藏，**沒有伺服端角色檢查**（只有 API 層擋）。新頁面自己加 `role !== "ADMIN" → notFound()`，那兩頁要不要補是另一件事
+
 ## 2026-08-13 code review 待辦
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。

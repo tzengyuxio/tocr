@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
+  ArrowDown,
+  ArrowUp,
+  BetweenHorizontalStart,
   Check,
   X,
   ExternalLink,
@@ -372,6 +375,38 @@ export function EditableArticleRow({
 
       {/* Action buttons (visible on hover) */}
       <div className="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Insert where the gap actually is: a missed entry belongs next to
+            its neighbours, not appended to the end of 61 rows. */}
+        {onInsert && (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-auto gap-0 px-1.5"
+              title="在此列上方新增文章"
+              onClick={(e) => {
+                e.stopPropagation();
+                onInsert("before");
+              }}
+            >
+              <BetweenHorizontalStart className="h-4 w-4" />
+              <ArrowUp className="-ml-0.5 h-2.5 w-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-auto gap-0 px-1.5"
+              title="在此列下方新增文章"
+              onClick={(e) => {
+                e.stopPropagation();
+                onInsert("after");
+              }}
+            >
+              <BetweenHorizontalStart className="h-4 w-4" />
+              <ArrowDown className="-ml-0.5 h-2.5 w-2.5" />
+            </Button>
+          </>
+        )}
         <Button
           asChild
           variant="ghost"

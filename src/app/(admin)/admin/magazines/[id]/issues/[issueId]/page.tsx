@@ -33,6 +33,9 @@ export default async function EditIssuePage({ params }: PageProps) {
           articleGames: {
             include: { game: { select: { id: true, name: true } } },
           },
+          articleTags: {
+            include: { tag: { select: { id: true, name: true, type: true } } },
+          },
         },
       },
     },
@@ -137,6 +140,8 @@ export default async function EditIssuePage({ params }: PageProps) {
         articles={issue.articles}
         issueId={issue.id}
         magazineId={id}
+        tocImages={issue.tocImages}
+        tocReviewed={issue.tocReviewedAt !== null}
       />
     </div>
   );
