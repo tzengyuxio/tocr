@@ -16,6 +16,12 @@
 
   一樣趁資料還少的時候做（見 [[refactor-while-data-is-empty]]），拖越久越貴（2026-08-16 更新）
 
+- [ ] **`Game` 沒有別名欄位，落選的譯名無處可放** — `Game` 只有 `name`、`nameOriginal`（原文名）、`nameEn`，語意都固定，塞不下「同一款的第二個中文譯名」。`Magazine` 反而有 `aliases String[]`。
+
+  這擋住了剛從 cdosgame 引進的兩條命名規則（見 [docs/data-conventions.md](docs/data-conventions.md) 的「遊戲與標籤的命名」）：**一款多譯名**要求落選譯名全部留作別名、**同名消歧義**要求裸名留作別名——兩者都是為了「搜尋與連結可達」。沒有欄位的結果是：`竹籬笆外的春天` 這種當年真的用過的譯名一旦沒被選為主名，站上就完全搜不到。
+
+  最直接的做法是比照 `Magazine.aliases` 加一個 `aliases String[] @default([])`，並讓搜尋一併吃它（`/api/articles` 與 `/search` 目前只比對 `name`／`nameEn`）。跟「多語言遊戲條目的識別與合併」那條相關，可以一起想（2026-08-17）
+
 - [ ] **顯示名稱的重名檢查擋不住同時送出** — `PATCH /api/users/me` 是先查再寫，而 `users.name` 沒有唯一索引（`schema.prisma` 就是 `name String?`）。兩個人同時挑同一個名字，兩邊都查到「沒人用」，於是都寫進去——正好變成這個檢查想避免的「排行榜上兩列分不出誰是誰」。
 
   真正的保證要靠資料庫：對 `lower(name)` 建 partial unique index（`WHERE name IS NOT NULL`），查詢就只負責決定錯誤訊息。Prisma schema 表達不了函式索引，要在 migration 裡寫原生 SQL。
@@ -74,14 +80,36 @@
 
   **但先不要動手**：目前看到的特殊刊號（`創刊號`、`試刊號`、`創刊驚嘆號`、`70+71`）只來自 3 本雜誌，而已匯入 30 本、還有 27 本沒進來。等更多期刊的刊號樣貌浮現，再一次決定規則會更完整——現在定案等於用不到十分之一的樣本立規矩（2026-08-13）
 
-- [ ] **資料匯出要留紀錄，只給管理員看** — `/api/export` 目前匯出完什麼都不留，誰在什麼時候把整份目錄拉走無從查起。設計已經談定，等排到就能直接做（2026-08-16）：
+- [ ] **重複的遊戲條目要合併** — 397 款遊戲裡至少有一組是同一款的兩種寫法：`P-47` 與 `P.47`（2026-08-16 查 production 發現，兩者的 slug 去掉時間戳後都是 `p-47`）。名稱完全相同的一筆都沒有，所以這類重複只能靠 slug 正規化後撞在一起才被看見——**改 slug 規則時會把它們一次抖出來**，屆時再一併清。
 
-  - **存哪裡**：新開 `ExportLog` model（`export_logs`），不沿用 `EditLog`。`EditLog` 的語意是 CREATE/UPDATE/DELETE，而且會餵貢獻者排行榜與活動流（`CONTRIBUTION_FEED_SCOPE`），塞匯出進去等於到處加排除條件
-  - **欄位**：`userId`、`createdAt`、`magazineId` + `magazineName`（範圍；null = 全部期刊。名稱存快照，期刊改名或刪除後紀錄仍讀得懂）、`rowCount`、`ipAddress`、`userAgent`
-  - **寫入時機**：串流開始前先寫一筆，結束時 `update` 補 `rowCount`。中途失敗也留得下紀錄，`rowCount` 是 null 就代表沒跑完。使用者取 `getCurrentUserId()`（涵蓋 dev bypass 與 API token）；取不到就跳過寫入，不讓 log 失敗擋掉匯出
-  - **看哪裡**：新頁 `/admin/export-logs`，照 `/admin/edit-logs` 的結構，側欄用既有的 `adminOnly: true`
+  合併要做的事不只刪一筆：`article_games` 的關聯要重新指向留下來的那款，`isPrimary` 也要處理。這是資料品質工作，不是 slug 工作，所以跟 slug 化分開做（2026-08-16）
 
-  順帶一提：現有的 `edit-logs`、`users` 兩個 adminOnly 頁面只靠側欄隱藏，**沒有伺服端角色檢查**（只有 API 層擋）。新頁面自己加 `role !== "ADMIN" → notFound()`，那兩頁要不要補是另一件事
+- [ ] **sitemap、robots.txt 與 SEO／AEO 基本盤** — 目前兩個檔案都沒有（`src/` 與 `public/` 都找不到 `sitemap` 或 `robots`），搜尋引擎與 AI 檢索只能靠爬連結摸索，而這個站大部分內容藏在 `/magazines/[id]/issues/[issueId]` 這種要點兩層才到的頁面（2026-08-16）。
+
+  能做的事，由淺到深：
+
+  1. **`app/sitemap.ts` 與 `app/robots.ts`** — Next.js 原生支援，從資料庫列出全部期刊、單期、遊戲、標籤頁。549 期加 397 款遊戲已經超過手寫的規模，一定要動態產生。注意後台 `/admin/*` 要 disallow
+  2. **結構化資料（JSON-LD）** — 期刊可以是 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙，用在雜誌目錄上幾乎是量身訂做。這也是 AEO 的主要施力點：讓模型答得出「電腦玩家 1999 年 5 月號有哪些文章」
+  3. **標題與描述** — 目前逐頁 `generateMetadata` 只有 title，description 多半沿用站台預設
+
+  跟另外兩條綁在一起：**sitemap 要等網址定案**（見「網址裡的 ID 太長」，改網址等於整份 sitemap 重來），**OG meta 與這條共用同一個 `generateMetadata`**。三件事一起規劃比較省。
+
+- [ ] **Open Graph meta 與縮圖** — 現在整個 repo 沒有一處 `openGraph` 設定（`layout.tsx` 只有 `title` 與 `description`），所以任何一頁貼到 LINE／Threads／Discord 都只是一段光禿禿的網址。四個公開的動態頁（`magazines/[id]`、`issues/[issueId]`、`games/[id]`、`tags/[id]`）都已經有 `generateMetadata`，補 `openGraph` 就在同一個函式裡（2026-08-16）。
+
+  要決定的是**圖**：單期可以直接用 `coverImage`（覆蓋率非 100%，電腦玩家前 100 期只有 60 期有），遊戲與標籤沒有現成的圖，得用 `next/og` 動態產生（純文字排版就夠）或準備一張站台預設圖。CJK 字型在 `next/og` 要自己載，不是零成本。順帶要設 `metadataBase`，否則相對路徑的圖不會變成絕對網址。
+
+  **這是「加分享按鈕」的前置作業**——沒有 OG 的分享按鈕只是把醜網址送出去。
+
+- [ ] **接 Google Analytics** — 目前站上沒有任何分析工具（Vercel Analytics 也沒開）。基本問題都答不出來：有沒有人在看、看哪幾本雜誌、從哪來（2026-08-16）。
+
+  幾件要一起想的事：Next.js 官方有 `@next/third-parties/google` 的 `<GoogleAnalytics>`，接起來很快；但**後台頁面要排除**，不然自己編目的流量會蓋過真實訪客。另外 measurement ID 要走環境變數（`NEXT_PUBLIC_` 前綴才讀得到，而 Vercel 的環境變數改了要 redeploy 才生效，見 [[tocr-deployment-topology]]）。也要想要不要放 cookie 同意——訪客量還小的話可以先用不寫 cookie 的設定。
+
+- [ ] **加分享按鈕** — 目前要分享一頁只能複製網址列。想到才記，細節都還沒定（2026-08-16）：
+
+  - **放哪些頁**：單期頁最有分享價值（一整份目錄），文章、遊戲、標籤頁也都可能
+  - **用什麼形式**：`navigator.share`（手機原生分享，桌機支援不一）、複製連結按鈕、或直接列社群按鈕。最省事的組合大概是「有 Web Share API 就用，沒有就退回複製連結」
+  - **前置作業是 OG meta**，見上面那條。沒有 OG 的分享按鈕只是把醜網址送出去，而按鈕本身十行就寫完了
+  - 網址本身也還很醜，見上面「網址裡的 ID 太長」。兩件事一起做比較合理
 
 ## 2026-08-13 code review 待辦
 
