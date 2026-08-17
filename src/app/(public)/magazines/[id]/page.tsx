@@ -86,6 +86,22 @@ export default async function MagazineDetailPage({
   );
   const total = counts[ISSUE_FILTERS[0].value];
 
+  // Only five magazines have a masthead on file, and an empty column beside the
+  // details reads as a page that failed to load. The earliest issue's cover
+  // stands in: it answers the same question -- what did this magazine look like
+  // -- and the note beneath says which of the two a reader is seeing.
+  //
+  // Borrowed, not copied: the picture keeps living on the issue. Uploading a
+  // second copy up here is how the same photograph came to be stored twice.
+  const standIn = magazine.logoImage
+    ? null
+    : await prisma.issue.findFirst({
+        where: { magazineId: id, coverImage: { not: null } },
+        orderBy: { publishSort: "asc" },
+        select: { issueNumber: true, coverImage: true },
+      });
+  const headerImage = magazine.logoImage ?? standIn?.coverImage ?? null;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: magazine.name }]} />
@@ -93,9 +109,13 @@ export default async function MagazineDetailPage({
       {/* 期刊資訊。刊頭與詳細資料左右並列，兩欄等高——刊頭原本是頂上一條 96px
           的橫幅，那個高度撐不起這頁唯一的一張圖。 */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
-        {magazine.logoImage && (
+        {headerImage && (
           <>
-            <MagazineLogo src={magazine.logoImage} name={magazine.name} />
+            <MagazineLogo
+              src={headerImage}
+              name={magazine.name}
+              note={standIn ? `${standIn.issueNumber} 封面` : undefined}
+            />
             {/* A rule between the two columns, horizontal once they stack. */}
             <hr className="border-t md:h-auto md:border-l md:border-t-0" />
           </>
@@ -160,6 +180,24 @@ export default async function MagazineDetailPage({
           </div>
           {magazine.description && (
             <p className="mt-4 text-muted-foreground">{magazine.description}</p>
+          )}
+          {magazine.photos.length > 0 && (
+            <div className="mt-4">
+              <p className="mb-1.5 text-xs text-muted-foreground">藏書照</p>
+              <div className="flex flex-wrap gap-2">
+                {magazine.photos.map((photo) => (
+                  /* eslint-disable-next-line @next/next/no-img-element -- a
+                     thumbnail strip of arbitrarily-shaped photographs;
+                     next/image would need dimensions this data lacks. */
+                  <img
+                    key={photo}
+                    src={photo}
+                    alt={`${magazine.name} 藏書照`}
+                    className="h-20 w-28 rounded border object-cover"
+                  />
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>

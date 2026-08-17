@@ -11,12 +11,25 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
  *
  * A button rather than a div with onClick: the logo is the only way to open
  * the lightbox, so it has to be reachable by keyboard.
+ *
+ * Most magazines have no masthead on file, so the caller may pass the earliest
+ * issue's cover instead; `note` is what keeps a reader from reading a cover as
+ * a masthead.
  */
-export function MagazineLogo({ src, name }: { src: string; name: string }) {
+export function MagazineLogo({
+  src,
+  name,
+  note,
+}: {
+  src: string;
+  name: string;
+  /** Says what the picture is when it is not the masthead -- see the page. */
+  note?: string;
+}) {
   const [isZoomed, setIsZoomed] = useState(false);
 
   return (
-    <>
+    <div className="flex w-full shrink-0 flex-col gap-1 self-stretch md:w-80 lg:w-[26rem]">
       {/* self-stretch is what makes the logo as tall as the details beside it:
           the row's height comes from the text column, and the flex item then
           matches it. min-h keeps it from collapsing when the details are only
@@ -31,7 +44,7 @@ export function MagazineLogo({ src, name }: { src: string; name: string }) {
         type="button"
         aria-label={`放大檢視 ${name} 的刊頭`}
         onClick={() => setIsZoomed(true)}
-        className="relative min-h-40 w-full shrink-0 cursor-zoom-in self-stretch overflow-hidden rounded-lg bg-muted/30 transition-colors hover:bg-muted/60 md:w-80 lg:w-[26rem]"
+        className="relative min-h-40 w-full flex-1 cursor-zoom-in overflow-hidden rounded-lg bg-muted/30 transition-colors hover:bg-muted/60"
       >
         {/* fill, not fixed dimensions: the box is sized by the row beside it,
             and object-contain keeps a wide masthead from being cropped. */}
@@ -45,6 +58,8 @@ export function MagazineLogo({ src, name }: { src: string; name: string }) {
         />
       </button>
 
+      {note && <p className="text-xs text-muted-foreground">{note}</p>}
+
       {/* Same lightbox shape as the table-of-contents viewer: a transparent
           panel over a dim overlay, and a click anywhere off the image closes
           it. */}
@@ -54,7 +69,7 @@ export function MagazineLogo({ src, name }: { src: string; name: string }) {
           className="flex h-screen w-screen max-w-none items-center justify-center border-0 bg-black/[0.64] p-0 shadow-none sm:max-w-none"
           onClick={() => setIsZoomed(false)}
         >
-          <DialogTitle className="sr-only">{name} 的刊頭</DialogTitle>
+          <DialogTitle className="sr-only">{note ?? `${name} 的刊頭`}</DialogTitle>
           <button
             type="button"
             aria-label="關閉"
@@ -74,6 +89,6 @@ export function MagazineLogo({ src, name }: { src: string; name: string }) {
           />
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

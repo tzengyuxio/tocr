@@ -101,7 +101,19 @@ model Magazine {
   // legitimately share one (電擊王 and 電玩通 both use 1561-8099).
   issn           String?
   description    String?   @db.Text
-  logoImage      String?   @map("logo_image") // Masthead/title logo image
+  // The masthead, as one representative image: the thing a reader recognises
+  // the magazine by. A long-running title redrew its standard type more than
+  // once -- 軟體世界 has at least ten over fifteen years -- and an editor picks
+  // whichever one identifies it best rather than the site holding all of them.
+  // Recording that evolution is a separate job with no home yet; see BACKLOG.
+  logoImage      String?   @map("logo_image")
+  // Photographs of the physical copies: spines on a shelf, a stack, a bookcase.
+  // Evidence that the run exists, not part of the magazine's design, and not
+  // an identifier -- the list page shows the masthead, never these.
+  //
+  // A single issue's cover belongs to neither field. Copying one up here is how
+  // the production data ended up storing the same photograph twice.
+  photos         String[]  @default([])
   // EDTF (ISO 8601-2) so month-, year- and season-level precision can be
   // recorded without inventing a day: "1999-05", "1994", "1994-22".
   foundedDate    String?   @map("founded_date")
