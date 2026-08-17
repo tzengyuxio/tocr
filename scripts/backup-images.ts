@@ -29,7 +29,8 @@ function aws(args: string[]) {
     env: { ...process.env, AWS_DEFAULT_REGION: "auto" },
   });
   if (result.status !== 0) {
-    throw new Error(`aws ${args[0]} ${args[1]} failed: ${result.stderr.trim()}`);
+    const detail = [result.stderr, result.stdout].map((s) => s?.trim()).filter(Boolean).join(" ");
+    throw new Error(`aws ${args[0]} ${args[1]} failed (${result.status}): ${detail || "no output"}`);
   }
   return result.stdout;
 }
@@ -46,15 +47,29 @@ async function listBlobs() {
   return blobs;
 }
 
-/** The keys already mirrored, as blob pathnames. */
+/**
+ * The keys already mirrored, as blob pathnames.
+ *
+ * list-objects-v2 rather than `s3 ls`: the latter exits 1 with no message when
+ * the prefix holds nothing, which is exactly the state of the very first run.
+ * This one returns an empty result and exits 0, and the CLI pages through
+ * everything past the 1000-key limit on its own.
+ */
 function listMirrored(): Set<string> {
-  const output = aws(["s3", "ls", `s3://${BUCKET}/${PREFIX}/`, "--recursive"]);
-  const keys = output
-    .split("\n")
-    .map((line) => line.trim().split(/\s+/).slice(3).join(" "))
-    .filter(Boolean)
-    .map((key) => key.slice(`${PREFIX}/`.length));
-  return new Set(keys);
+  const output = aws([
+    "s3api",
+    "list-objects-v2",
+    "--bucket",
+    BUCKET,
+    "--prefix",
+    `${PREFIX}/`,
+    "--query",
+    "Contents[].Key",
+    "--output",
+    "json",
+  ]);
+  const keys: string[] | null = JSON.parse(output || "null");
+  return new Set((keys ?? []).map((key) => key.slice(`${PREFIX}/`.length)));
 }
 
 async function main() {
