@@ -8,6 +8,7 @@
 | `/magazines` | 期刊列表 |
 | `/magazines/[slug]` | 期刊詳情與單期列表。網址吃 ASCII slug（`/magazines/ace`），舊的 cuid 連結永久轉址 |
 | `/magazines/[slug]/issues/[issueSlug]` | 單期目錄。兩段都吃 slug；單期那段也收期號與舊 cuid，皆永久轉址 |
+| `/i/[code]` | 單期永久短碼，307 轉到當下的正規網址。`Issue.code` 是自動產生的 8 碼，正規網址的每一段都可能變，這條不會 |
 | `/games` | 遊戲列表 |
 | `/games/[slug]` | 該遊戲的相關文章。網址吃 slug（可為中文），舊的 cuid 連結永久轉址 |
 | `/tags` | 標籤索引 |

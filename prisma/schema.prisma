@@ -128,6 +128,13 @@ model Magazine {
 
 model Issue {
   id           String   @id @default(cuid())
+  // A short, global handle that never moves. Every segment of the public URL
+  // can change -- a magazine gets renamed, an issue number is corrected, a
+  // slug is retyped -- so a link that has been shared needs something else to
+  // hold on to. Truncating the cuid cannot serve: its entropy sits at the
+  // tail, and the first 7 characters of the 764 issues in dev collapse into
+  // 12 distinct values.
+  code         String   @unique @default(nanoid(8))
   magazineId   String   @map("magazine_id")
   issueNumber  String   @map("issue_number") // "第 42 期" 或 "Vol.5 No.3"
   // The other numbers printed on the same issue. 電玩通 carries four at once:

@@ -26,6 +26,9 @@ import { Loader2 } from "lucide-react";
 interface IssueFormProps {
   magazineId: string;
   magazineName: string;
+  // Not part of the form: the short code is generated on create and never
+  // edited, it is only shown so an editor can copy the permanent link.
+  code?: string;
   initialData?: Partial<IssueCreateInput> & { id?: string };
   mode: "create" | "edit";
 }
@@ -33,6 +36,7 @@ interface IssueFormProps {
 export function IssueForm({
   magazineId,
   magazineName,
+  code,
   initialData,
   mode,
 }: IssueFormProps) {
@@ -184,6 +188,19 @@ export function IssueForm({
                 )}
               />
             </div>
+
+            {/* 永久短碼 */}
+            {code && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>永久短碼</Label>
+                <p className="text-sm">
+                  <code className="rounded bg-muted px-1.5 py-0.5">/i/{code}</code>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  自動產生、不會變動。期刊改名或網址代號改動時，這條連結仍然到得了本期
+                </p>
+              </div>
+            )}
 
             {/* 卷號 */}
             <div className="space-y-2">
