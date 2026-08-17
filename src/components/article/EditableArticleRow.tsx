@@ -7,15 +7,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
+  ArrowDown,
+  ArrowUp,
+  BetweenHorizontalStart,
   Check,
   X,
   ExternalLink,
   Trash2,
   Loader2,
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  CommaListInput,
+  formatStringList,
+  parseStringList,
+} from "@/components/ui/comma-list-input";
 import { ARTICLE_CATEGORIES } from "@/lib/article-categories";
 import type { ArticleCategory } from "@/lib/article-categories";
-import { CategoryChip, GameChip } from "@/components/chips";
+import { formatTagInput, parseTagInput, type TagInput } from "@/lib/tag-input";
+import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 
 interface ArticleItem {
   id: string;
@@ -25,8 +35,12 @@ interface ArticleItem {
   category: ArticleCategory | null;
   pageStart: number | null;
   pageEnd: number | null;
+  summary: string | null;
   articleGames: Array<{
     game: { id: string; name: string };
+  }>;
+  articleTags: Array<{
+    tag: { id: string; name: string; type: string };
   }>;
 }
 
@@ -37,6 +51,10 @@ interface ArticleUpdatePayload {
   pageStart: number | null;
   pageEnd: number | null;
   authors: string[];
+  summary: string | null;
+  // 以名稱送出，後端沒有的會建起來 -- 複查時新遊戲、新標籤是常態。
+  games: string[];
+  tags: TagInput[];
 }
 
 interface EditableArticleRowProps {
@@ -46,6 +64,7 @@ interface EditableArticleRowProps {
   onSaveEdit: (data: ArticleUpdatePayload) => Promise<void>;
   onCancelEdit: () => void;
   onDelete: () => void;
+  onInsert?: (position: "before" | "after") => void;
   // The drag handle is supplied by the list, which owns the sortable context.
   dragHandle?: React.ReactNode;
 }
@@ -59,18 +78,26 @@ export function EditableArticleRow({
   onSaveEdit,
   onCancelEdit,
   onDelete,
+  onInsert,
   dragHandle,
 }: EditableArticleRowProps) {
-  const [formData, setFormData] = useState<ArticleUpdatePayload>({
+  const gameNames = () => article.articleGames.map((ag) => ag.game.name);
+  const tagInputs = () =>
+    article.articleTags.map((at) => ({ name: at.tag.name, type: at.tag.type }));
+
+  const [formData, setFormData] = useState({
     title: article.title,
     subtitle: article.subtitle,
     category: article.category,
     pageStart: article.pageStart,
     pageEnd: article.pageEnd,
     authors: article.authors,
+    summary: article.summary,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [authorsText, setAuthorsText] = useState(article.authors.join(", "));
+  const [gamesDraft, setGamesDraft] = useState<string[]>(gameNames);
+  const [tagsDraft, setTagsDraft] = useState<TagInput[]>(tagInputs);
 
   const handleStartEdit = () => {
     setFormData({
@@ -80,8 +107,11 @@ export function EditableArticleRow({
       pageStart: article.pageStart,
       pageEnd: article.pageEnd,
       authors: article.authors,
+      summary: article.summary,
     });
     setAuthorsText(article.authors.join(", "));
+    setGamesDraft(gameNames());
+    setTagsDraft(tagInputs());
     onStartEdit();
   };
 
@@ -93,7 +123,7 @@ export function EditableArticleRow({
         .split(",")
         .map((a) => a.trim())
         .filter(Boolean);
-      await onSaveEdit({ ...formData, authors });
+      await onSaveEdit({ ...formData, authors, games: gamesDraft, tags: tagsDraft });
     } finally {
       setIsSaving(false);
     }
@@ -203,20 +233,56 @@ export function EditableArticleRow({
           </div>
         </div>
 
-        {/* Games display (read-only, edit in full page) */}
-        {article.articleGames.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">相關遊戲：</span>
-            <div className="flex flex-wrap gap-1">
-              {article.articleGames.map((ag) => (
-                <GameChip key={ag.game.id} name={ag.game.name} className="text-xs" />
-              ))}
-            </div>
-            <span className="text-xs text-muted-foreground">
-              （至進階編輯頁修改）
-            </span>
+        {/* Row 3: games + tags, typed as names rather than picked by id --
+            reviewing a scan is continuous typing, and most of these do not
+            exist in the database yet. */}
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-1">
+            <Label className="text-xs">相關遊戲（逗號分隔）</Label>
+            <CommaListInput
+              value={gamesDraft}
+              format={formatStringList}
+              parse={parseStringList}
+              onChange={setGamesDraft}
+              onEscape={onCancelEdit}
+            />
           </div>
-        )}
+          <div className="space-y-1">
+            <Label className="text-xs">
+              標籤（逗號分隔，格式：名稱 或 類型:名稱）
+            </Label>
+            <CommaListInput
+              value={tagsDraft}
+              format={formatTagInput}
+              parse={parseTagInput}
+              onChange={setTagsDraft}
+              onEscape={onCancelEdit}
+            />
+            {tagsDraft.length > 0 && (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {tagsDraft.map((tag, i) => (
+                  <TagChip key={i} tag={tag} withTypeLabel className="text-xs" />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Row 4: summary */}
+        <div className="space-y-1">
+          <Label className="text-xs" htmlFor={`summary-${article.id}`}>
+            摘要
+          </Label>
+          <Textarea
+            id={`summary-${article.id}`}
+            value={formData.summary ?? ""}
+            onChange={(e) =>
+              setFormData({ ...formData, summary: e.target.value || null })
+            }
+            rows={2}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
 
         {/* Action buttons */}
         <div className="flex items-center justify-between">
@@ -296,11 +362,51 @@ export function EditableArticleRow({
           {article.articleGames.map((ag) => (
             <GameChip key={ag.game.id} name={ag.game.name} className="text-xs" />
           ))}
+          {article.articleTags.map((at) => (
+            <TagChip
+              key={at.tag.id}
+              tag={{ name: at.tag.name, type: at.tag.type }}
+              withTypeLabel
+              className="text-xs"
+            />
+          ))}
         </div>
       </div>
 
       {/* Action buttons (visible on hover) */}
       <div className="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Insert where the gap actually is: a missed entry belongs next to
+            its neighbours, not appended to the end of 61 rows. */}
+        {onInsert && (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-auto gap-0 px-1.5"
+              title="在此列上方新增文章"
+              onClick={(e) => {
+                e.stopPropagation();
+                onInsert("before");
+              }}
+            >
+              <BetweenHorizontalStart className="h-4 w-4" />
+              <ArrowUp className="-ml-0.5 h-2.5 w-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-auto gap-0 px-1.5"
+              title="在此列下方新增文章"
+              onClick={(e) => {
+                e.stopPropagation();
+                onInsert("after");
+              }}
+            >
+              <BetweenHorizontalStart className="h-4 w-4" />
+              <ArrowDown className="-ml-0.5 h-2.5 w-2.5" />
+            </Button>
+          </>
+        )}
         <Button
           asChild
           variant="ghost"

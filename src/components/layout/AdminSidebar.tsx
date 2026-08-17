@@ -11,6 +11,7 @@ import {
   ScanText,
   Upload,
   Download,
+  FileDown,
   Users,
   Award,
   ClipboardCheck,
@@ -43,6 +44,12 @@ const navItems = [
   { title: "資料匯出", href: "/admin/export", icon: Download },
   { title: "貢獻者", href: "/admin/contributors", icon: Award },
   { title: "編輯紀錄", href: "/admin/edit-logs", icon: History, adminOnly: true },
+  {
+    title: "匯出紀錄",
+    href: "/admin/export-logs",
+    icon: FileDown,
+    adminOnly: true,
+  },
   { title: "使用者管理", href: "/admin/users", icon: Users, adminOnly: true },
 ];
 
