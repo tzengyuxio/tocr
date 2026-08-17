@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, FileText, ListPlus, GripVertical, ArrowDownNarrowWide } from "lucide-react";
 import { byPageNumber } from "@/lib/article-sort";
+import { TocImageViewer } from "@/components/issue/TocImageViewer";
 import { BatchArticleForm } from "./BatchArticleForm";
 import {
   EditableArticleRow,
@@ -52,6 +53,8 @@ interface ArticleListClientProps {
   articles: ArticleItem[];
   issueId: string;
   magazineId: string;
+  tocImages: string[];
+  tocReviewed: boolean;
 }
 
 function SortableArticleRow({
@@ -94,6 +97,8 @@ function SortableArticleRow({
 export function ArticleListClient({
   articles: initialArticles,
   issueId,
+  tocImages,
+  tocReviewed,
 }: ArticleListClientProps) {
   const router = useRouter();
   const [articles, setArticles] = useState(initialArticles);
@@ -102,6 +107,7 @@ export function ArticleListClient({
   const [deleteTarget, setDeleteTarget] = useState<ArticleItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
+  const [isMarking, setIsMarking] = useState(false);
 
   // A save or a delete re-renders the page, and the fresh list arrives as a prop.
   useEffect(() => setArticles(initialArticles), [initialArticles]);
@@ -168,6 +174,53 @@ export function ArticleListClient({
     router.refresh();
   };
 
+  /**
+   * Recognition lands before anyone has checked it, so the review flag is a
+   * deliberate act here rather than a side effect of saving.
+   */
+  const handleMarkReviewed = async () => {
+    setIsMarking(true);
+    try {
+      const res = await fetch(`/api/issues/${issueId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tocReviewed: true }),
+      });
+      if (!res.ok) throw new Error("Mark reviewed failed");
+      toast.success("已標記為完成複查");
+      router.refresh();
+    } catch {
+      toast.error("標記失敗");
+    } finally {
+      setIsMarking(false);
+    }
+  };
+
+  /** A missed entry belongs next to its neighbours, not at the end of 61 rows. */
+  const handleInsert = async (index: number, position: "before" | "after") => {
+    const at = position === "before" ? index : index + 1;
+    // 標題必填，所以先給一個看得出是待填的暫名。
+    const res = await fetch("/api/articles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ issueId, title: "（未命名）", sortOrder: at }),
+    });
+    if (!res.ok) {
+      toast.error("新增失敗");
+      return;
+    }
+    const created = await res.json();
+    const next = [...articles];
+    next.splice(at, 0, {
+      ...created,
+      authors: created.authors ?? [],
+      articleGames: [],
+      articleTags: [],
+    });
+    await saveOrder(next);
+    setEditingId(created.id);
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
@@ -222,6 +275,25 @@ export function ArticleListClient({
           </div>
         </CardHeader>
         <CardContent>
+          {!tocReviewed && (
+            <div className="mb-4 flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              <span>本期尚未複查，請對照目錄頁逐篇確認</span>
+              <Button size="sm" onClick={handleMarkReviewed} disabled={isMarking}>
+                標記為已複查
+              </Button>
+            </div>
+          )}
+
+          {/* The scan on the left, the list it is being checked against on the
+              right. Without a scan there is nothing to compare, so the list
+              takes the full width. */}
+          <div className="flex gap-6">
+            {tocImages.length > 0 && (
+              <div className="w-2/5 shrink-0">
+                <TocImageViewer images={tocImages} />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
           {articles.length === 0 && !showBatchForm ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/50" />
@@ -253,6 +325,12 @@ export function ArticleListClient({
                           onSaveEdit={(data) => handleSaveEdit(article.id, data)}
                           onCancelEdit={() => setEditingId(null)}
                           onDelete={() => setDeleteTarget(article)}
+                          onInsert={(position) =>
+                            handleInsert(
+                              articles.findIndex((a) => a.id === article.id),
+                              position
+                            )
+                          }
                           dragHandle={dragHandle}
                         />
                       )}
@@ -268,6 +346,8 @@ export function ArticleListClient({
               onDone={() => setShowBatchForm(false)}
             />
           )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 

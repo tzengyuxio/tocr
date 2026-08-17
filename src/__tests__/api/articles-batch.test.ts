@@ -71,6 +71,47 @@ describe("POST /api/articles/batch", () => {
     );
   });
 
+  // Re-running recognition replaces the issue's contents rather than appending
+  // a second copy of everything -- appending was where the duplicates came from.
+  it("replaces the issue's articles when asked to", async () => {
+    prismaMock.issue.findUnique.mockResolvedValue({ id: "iss-1" });
+    prismaMock.article.deleteMany.mockResolvedValue({ count: 14 });
+    prismaMock.article.create.mockResolvedValue({ id: "art-1" });
+
+    const res = await POST(
+      makeRequest({
+        issueId: "iss-1",
+        replaceExisting: true,
+        articles: [{ title: "A" }],
+      })
+    );
+
+    expect(res.status).toBe(201);
+    expect(prismaMock.article.deleteMany).toHaveBeenCalledWith({
+      where: { issueId: "iss-1" },
+    });
+  });
+
+  it("leaves existing articles alone when not asked to replace", async () => {
+    prismaMock.issue.findUnique.mockResolvedValue({ id: "iss-1" });
+    prismaMock.article.create.mockResolvedValue({ id: "art-1" });
+
+    await POST(makeRequest({ issueId: "iss-1", articles: [{ title: "A" }] }));
+
+    expect(prismaMock.article.deleteMany).not.toHaveBeenCalled();
+  });
+
+  // Recognition now lands before anyone has looked at it, so this route can no
+  // longer claim the contents were reviewed. The issue page does that.
+  it("never marks the issue as reviewed", async () => {
+    prismaMock.issue.findUnique.mockResolvedValue({ id: "iss-1" });
+    prismaMock.article.create.mockResolvedValue({ id: "art-1" });
+
+    await POST(makeRequest({ issueId: "iss-1", articles: [{ title: "A" }] }));
+
+    expect(prismaMock.issue.update).not.toHaveBeenCalled();
+  });
+
   it("returns 404 when issue does not exist", async () => {
     prismaMock.issue.findUnique.mockResolvedValue(null);
 

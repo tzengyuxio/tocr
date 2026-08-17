@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { articleBatchCreateSchema } from "@/lib/validators/article";
-import { TagType } from "@prisma/client";
 import { withErrorHandler } from "@/lib/api-utils";
-import { logEdit, logEditBatch } from "@/lib/edit-log";
-import { isValidApiToken } from "@/lib/api-token";
+import { resolveGameIds, resolveTagIds } from "@/lib/resolve-relations";
+import { logEditBatch } from "@/lib/edit-log";
 
 // POST /api/articles/batch - 批次建立文章（AI 辨識後使用）
 export const POST = withErrorHandler(async (request: NextRequest) => {
@@ -25,6 +24,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   // 使用 transaction 批次建立
   const result = await prisma.$transaction(async (tx) => {
+    // 重跑辨識時整期換掉。關聯是 cascade，所以標籤與遊戲的連結會一併消失 --
+    // 呼叫端的確認對話框要講清楚這件事。
+    if (validatedData.replaceExisting) {
+      await tx.article.deleteMany({ where: { issueId: validatedData.issueId } });
+    }
+
     const createdArticles = [];
 
     for (const articleData of validatedData.articles) {
@@ -44,83 +49,25 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       });
 
       // 處理建議的遊戲關聯
-      if (articleData.suggestedGames && articleData.suggestedGames.length > 0) {
-        for (const gameName of articleData.suggestedGames) {
-          // 查找或建立遊戲
-          let game = await tx.game.findFirst({
-            where: {
-              OR: [
-                { name: { equals: gameName, mode: "insensitive" } },
-                { nameEn: { equals: gameName, mode: "insensitive" } },
-                { nameOriginal: { equals: gameName, mode: "insensitive" } },
-              ],
-            },
-          });
-
-          if (!game) {
-            // 建立新遊戲
-            const slug = gameName
-              .toLowerCase()
-              .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-              .replace(/^-|-$/g, "");
-
-            game = await tx.game.create({
-              data: {
-                name: gameName,
-                slug: `${slug}-${Date.now()}`,
-              },
-            });
-          }
-
-          // 建立關聯
+      if (articleData.suggestedGames?.length) {
+        const gameIds = await resolveGameIds(tx, articleData.suggestedGames);
+        for (const [index, gameId] of gameIds.entries()) {
           await tx.articleGame.create({
-            data: {
-              articleId: article.id,
-              gameId: game.id,
-              isPrimary: articleData.suggestedGames.indexOf(gameName) === 0,
-            },
+            data: { articleId: article.id, gameId, isPrimary: index === 0 },
           });
         }
       }
 
       // 處理建議的標籤關聯
-      if (articleData.suggestedTags && articleData.suggestedTags.length > 0) {
-        for (const tagItem of articleData.suggestedTags) {
-          // Normalize: string → { name, type: "GENERAL" }
-          const tagName = typeof tagItem === "string" ? tagItem : tagItem.name;
-          const rawType = typeof tagItem === "string" ? "GENERAL" : (tagItem.type || "GENERAL");
-          const tagType = Object.values(TagType).includes(rawType as TagType) ? (rawType as TagType) : TagType.GENERAL;
-
-          // 查找或建立標籤
-          let tag = await tx.tag.findFirst({
-            where: {
-              name: { equals: tagName, mode: "insensitive" },
-            },
-          });
-
-          if (!tag) {
-            // 建立新標籤
-            const slug = tagName
-              .toLowerCase()
-              .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-              .replace(/^-|-$/g, "");
-
-            tag = await tx.tag.create({
-              data: {
-                name: tagName,
-                slug: `${slug}-${Date.now()}`,
-                type: tagType,
-              },
-            });
-          }
-
-          // 建立關聯
-          await tx.articleTag.create({
-            data: {
-              articleId: article.id,
-              tagId: tag.id,
-            },
-          });
+      if (articleData.suggestedTags?.length) {
+        const tagIds = await resolveTagIds(
+          tx,
+          articleData.suggestedTags.map((tag) =>
+            typeof tag === "string" ? { name: tag, type: "GENERAL" } : tag
+          )
+        );
+        for (const tagId of tagIds) {
+          await tx.articleTag.create({ data: { articleId: article.id, tagId } });
         }
       }
 
@@ -137,27 +84,11 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     { issueId: validatedData.issueId }
   );
 
-  // Saving here is the last step of a person comparing the recognised list
-  // against the scan, so the issue leaves the review queue. Token writes are
-  // unattended and must not claim a human checked anything -- the same rule
-  // the issue route applies. An existing timestamp is left alone: it records
-  // when the contents were first confirmed.
-  const isHuman = !isValidApiToken(request.headers.get("authorization"));
-  const markedReviewed = isHuman && !issue.tocReviewedAt;
-  if (markedReviewed) {
-    await prisma.issue.update({
-      where: { id: validatedData.issueId },
-      data: { tocReviewedAt: new Date() },
-    });
-    await logEdit("Issue", validatedData.issueId, "UPDATE", {
-      tocReviewedAt: { from: null, to: new Date().toISOString() },
-    });
-  }
-
+  // Recognition now lands before anyone has looked at it, so this route cannot
+  // claim the contents were reviewed. 標記由單期編輯頁上的按鈕負責。
   return NextResponse.json({
     success: true,
     count: result.length,
     articles: result,
-    markedReviewed,
   }, { status: 201 });
 }, "Batch create articles");

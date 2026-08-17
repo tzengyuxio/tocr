@@ -28,6 +28,8 @@ export const articleUpdateSchema = articleCreateSchema
 
 export const articleBatchCreateSchema = z.object({
   issueId: z.string().min(1, "單期 ID 為必填"),
+  // 重跑辨識時，取代整期的文章。不帶就是單純附加（匯入腳本靠這個行為）。
+  replaceExisting: z.boolean().optional(),
   articles: z.array(
     z.object({
       title: z.string().min(1, "標題為必填"),
