@@ -32,6 +32,18 @@ describe("resolveGameIds", () => {
     );
   });
 
+  // 時間戳後綴讓每個 slug 都不能當網址用，見 2026-08-16-readable-urls-design.md
+  it("gives a new game a readable slug, with no timestamp", async () => {
+    prismaMock.game.findFirst.mockResolvedValue(null);
+    prismaMock.game.create.mockResolvedValue({ id: "game-new" });
+
+    await resolveGameIds(prismaMock as never, ["宇宙傳奇Ⅱ"]);
+
+    expect(prismaMock.game.create).toHaveBeenCalledWith({
+      data: { name: "宇宙傳奇Ⅱ", slug: "宇宙傳奇ii" },
+    });
+  });
+
   it("matches case-insensitively across all three name columns", async () => {
     prismaMock.game.findFirst.mockResolvedValue({ id: "game-1" });
 

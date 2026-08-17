@@ -1,7 +1,8 @@
 export const revalidate = 60;
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
+import { decodeParam, resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
@@ -29,13 +30,30 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = await params;
-  const tag = await prisma.tag.findUnique({ where: { id }, select: { name: true } });
+  const { id: param } = await params;
+  const found = await resolveSlugParam("tag", param);
+  if (!found) return { title: "標籤詳情" };
+
+  const tag = await prisma.tag.findUnique({
+    where: { id: found.id },
+    select: { name: true },
+  });
   return { title: tag?.name ?? "標籤詳情" };
 }
 
 export default async function TagDetailPage({ params }: PageProps) {
-  const { id } = await params;
+  const { id: param } = await params;
+
+  // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
+  const found = await resolveSlugParam("tag", param);
+  if (!found) notFound();
+  // encodeURIComponent 不能省：Location header 只吃 ASCII，中文 slug 直接放
+  // 進去會讓 Node 丟 ERR_INVALID_CHAR，整頁變成 500。
+  if (decodeParam(param) !== found.slug) {
+    permanentRedirect(`/tags/${encodeURIComponent(found.slug)}`);
+  }
+  const id = found.id;
+
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 

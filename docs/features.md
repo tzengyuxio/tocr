@@ -87,6 +87,16 @@ ISSN 刻意不設唯一性、日期採 EDTF 等建檔準則見 [data-conventions
 
 紀錄在第一個位元組送出**之前**就寫下，結束才回填 `rowCount`。所以中途斷掉的下載也留得下痕跡，而 `rowCount` 是 null 就是「這次沒跑完」。寫紀錄失敗（或匯出者無法歸屬，例如 API token 以外的情況）只會少一行紀錄，不會擋掉匯出——服務不了的匯出比少一行 log 更糟。
 
+## 公開網址
+
+遊戲與標籤頁以 **slug** 為網址（`/games/信長之野望`），不是 cuid。slug 由名稱產生：NFKC 正規化 → 小寫 → 保留中文與英數 → 其餘轉 `-`，撞到才接 `-2`。NFKC 擺在最前面是有原因的——`宇宙傳奇Ⅱ` 與 `宇宙傳奇Ⅲ` 的羅馬數字在正規化前會被當標點吃掉，兩款續作因此撞成同一個 slug。
+
+**中文 slug 是刻意的選擇**：[Google 的 URL 結構指南](https://developers.google.com/search/docs/crawling-indexing/url-structure)建議用受眾語言的字詞，而這個站的讀者在台灣。代價是複製成純文字時會 percent-encode（`%E4%BF%A1%E9%95%B7...`），要乾淨英文網址的重點條目可在後台手動指定 slug。
+
+舊的 cuid 網址不會斷：找不到 slug 就用 id 查，命中就 308 轉址到 slug 網址。後台網址維持 cuid——那些不會被分享。
+
+雜誌、單期、文章仍是 cuid，見 BACKLOG。
+
 ## 認證與權限
 
 - Auth.js v5 + Google OAuth 2.0

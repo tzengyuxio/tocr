@@ -160,14 +160,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             articleGames: {
               include: {
                 game: {
-                  select: { id: true, name: true },
+                  select: { id: true, name: true, slug: true },
                 },
               },
             },
             articleTags: {
               include: {
                 tag: {
-                  select: { id: true, name: true, type: true },
+                  select: { id: true, name: true, type: true, slug: true },
                 },
               },
             },
@@ -416,7 +416,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       ) : type === "game" ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {games.map((game) => (
-            <Link key={game.id} href={`/games/${game.id}`}>
+            <Link key={game.id} href={`/games/${game.slug}`}>
               <Card className="h-full transition-shadow hover:shadow-md">
                 <CardContent className="flex items-center gap-3 p-3">
                   {game.coverImage ? (
@@ -522,7 +522,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       {article.articleGames.map((ag) => (
                         <Link
                           key={ag.game.id}
-                          href={`/games/${ag.game.id}`}
+                          href={`/games/${ag.game.slug}`}
                           className="transition-opacity hover:opacity-80"
                         >
                           <GameChip name={ag.game.name} className="text-xs" />
@@ -535,7 +535,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       {article.articleTags.map((at) => (
                         <Link
                           key={at.tag.id}
-                          href={`/tags/${at.tag.id}`}
+                          href={`/tags/${at.tag.slug}`}
                           className="transition-opacity hover:opacity-80"
                         >
                           <TagChip tag={at.tag} className="text-xs" />

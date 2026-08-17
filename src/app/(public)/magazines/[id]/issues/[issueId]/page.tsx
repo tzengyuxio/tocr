@@ -46,14 +46,14 @@ export default async function IssueDetailPage({ params }: PageProps) {
           articleGames: {
             include: {
               game: {
-                select: { id: true, name: true },
+                select: { id: true, name: true, slug: true },
               },
             },
           },
           articleTags: {
             include: {
               tag: {
-                select: { id: true, name: true, type: true },
+                select: { id: true, name: true, type: true, slug: true },
               },
             },
           },
@@ -174,12 +174,12 @@ export default async function IssueDetailPage({ params }: PageProps) {
                     const chips = [
                       ...article.articleGames.map((ag) => ({
                         key: `g-${ag.game.id}`,
-                        href: `/games/${ag.game.id}`,
+                        href: `/games/${ag.game.slug}`,
                         chip: <GameChip name={ag.game.name} />,
                       })),
                       ...article.articleTags.map((at) => ({
                         key: `t-${at.tag.id}`,
-                        href: `/tags/${at.tag.id}`,
+                        href: `/tags/${at.tag.slug}`,
                         chip: <TagChip tag={at.tag} />,
                       })),
                     ];

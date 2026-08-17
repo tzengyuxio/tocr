@@ -12,6 +12,7 @@ import { Gamepad2, Search, Loader2, ChevronLeft, ChevronRight } from "lucide-rea
 interface Game {
   id: string;
   name: string;
+  slug: string;
   nameOriginal: string | null;
   nameEn: string | null;
   platforms: string[];
@@ -105,7 +106,7 @@ export default function GamesPage() {
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {games.map((game) => (
-              <Link key={game.id} href={`/games/${game.id}`}>
+              <Link key={game.id} href={`/games/${game.slug}`}>
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardContent className="flex items-center gap-3 p-3">
                     {game.coverImage ? (
