@@ -119,6 +119,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           { name: { contains: query, mode: "insensitive" } },
           { nameOriginal: { contains: query, mode: "insensitive" } },
           { nameEn: { contains: query, mode: "insensitive" } },
+          { aliases: { has: query } },
         ],
       }
     : {};

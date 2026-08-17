@@ -39,6 +39,7 @@ interface Game {
   name: string;
   nameOriginal: string | null;
   nameEn: string | null;
+  aliases: string[];
   slug: string;
   releaseDate: string | null;
   platforms: string[];
@@ -68,6 +69,7 @@ export default function GamesPage() {
     name: "",
     nameOriginal: "",
     nameEn: "",
+    aliases: [] as string[],
     slug: "",
     releaseDate: "",
     platforms: [] as string[],
@@ -148,6 +150,7 @@ export default function GamesPage() {
       name: "",
       nameOriginal: "",
       nameEn: "",
+      aliases: [],
       slug: "",
       releaseDate: "",
       platforms: [],
@@ -167,6 +170,7 @@ export default function GamesPage() {
       name: game.name,
       nameOriginal: game.nameOriginal || "",
       nameEn: game.nameEn || "",
+      aliases: game.aliases,
       slug: game.slug,
       releaseDate: game.releaseDate ? game.releaseDate.split("T")[0] : "",
       platforms: game.platforms,
@@ -538,6 +542,26 @@ export default function GamesPage() {
                   placeholder="English Name"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>別名</Label>
+              <Input
+                value={formData.aliases.join(", ")}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({
+                    ...formData,
+                    aliases: val
+                      ? val.split(",").map((s) => s.trim()).filter(Boolean)
+                      : [],
+                  });
+                }}
+                placeholder="以逗號分隔（例如：竹籬笆外的春天）"
+              />
+              <p className="text-xs text-muted-foreground">
+                同一款的其他中文譯名，以及加了消歧義後綴之後空出來的裸名。搜尋會一併比對
+              </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">

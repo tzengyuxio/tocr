@@ -57,6 +57,7 @@ export default async function EditIssuePage({ params }: PageProps) {
     id: issue.id,
     magazineId: issue.magazineId,
     issueNumber: issue.issueNumber,
+    altNumbers: issue.altNumbers,
     slug: issue.slug,
     volumeNumber: issue.volumeNumber,
     title: issue.title,
@@ -86,6 +87,7 @@ export default async function EditIssuePage({ params }: PageProps) {
         <IssueForm
           magazineId={issue.magazineId}
           magazineName={issue.magazine.name}
+          code={issue.code}
           initialData={formData}
           mode="edit"
         />

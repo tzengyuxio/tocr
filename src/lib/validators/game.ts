@@ -5,6 +5,9 @@ export const gameCreateSchema = z.object({
   name: z.string().min(1, "遊戲名稱為必填"),
   nameOriginal: optionalText,
   nameEn: optionalText,
+  // Translations that lost, and the bare name when a disambiguating suffix was
+  // added -- see docs/data-conventions.md.
+  aliases: z.array(z.string()).default([]),
   slug: z.string().min(1, "Slug 為必填").regex(/^[a-z0-9\u4e00-\u9fff-]+$/, "Slug 只能包含小寫字母、數字、中文和連字號"),
   releaseDate: z.coerce.date().optional().nullable(),
   platforms: z.array(z.string()).default([]),
@@ -21,6 +24,7 @@ export const gameCreateSchema = z.object({
 export const gameUpdateSchema = gameCreateSchema.partial().extend({
   platforms: z.array(z.string()).optional(),
   genres: z.array(z.string()).optional(),
+  aliases: z.array(z.string()).optional(),
 });
 
 export type GameCreateInput = z.infer<typeof gameCreateSchema>;

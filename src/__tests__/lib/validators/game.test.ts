@@ -166,6 +166,24 @@ describe("gameUpdateSchema", () => {
     }
   });
 
+  it("leaves aliases alone when they are not supplied", () => {
+    const result = gameUpdateSchema.safeParse({ developer: "Origin" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).not.toHaveProperty("aliases");
+    }
+  });
+
+  it("keeps the translations that lost", () => {
+    const result = gameUpdateSchema.safeParse({
+      aliases: ["竹籬笆外的春天"],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.aliases).toEqual(["竹籬笆外的春天"]);
+    }
+  });
+
   it("should validate genres update only", () => {
     const input = {
       genres: ["射擊", "多人線上"],
