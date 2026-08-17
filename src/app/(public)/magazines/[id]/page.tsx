@@ -9,7 +9,10 @@ import { formatEdtf } from "@/lib/edtf";
 import { Badge } from "@/components/ui/badge";
 import { IssueCard } from "@/components/IssueCard";
 import { IssueBrowseBar } from "@/components/magazine/IssueBrowseBar";
-import { MagazineLogo } from "@/components/magazine/MagazineLogo";
+import {
+  MagazineGallery,
+  type GalleryImage,
+} from "@/components/magazine/MagazineGallery";
 import {
   ISSUE_FILTERS,
   issueOrderBy,
@@ -50,7 +53,7 @@ export default async function MagazineDetailPage({
   } = await searchParams;
   const filter = parseIssueFilter(filterParam);
   const sort = parseIssueSort(sortParam);
-  const direction = parseIssueDirection(dirParam);
+  const direction = parseIssueDirection(dirParam, sort);
 
   // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
   const found = await resolveSlugParam("magazine", param);
@@ -84,7 +87,7 @@ export default async function MagazineDetailPage({
   const counts = Object.fromEntries(
     ISSUE_FILTERS.map((option, index) => [option.value, filterCounts[index]])
   );
-  const total = counts[ISSUE_FILTERS[0].value];
+  const total = counts.all;
 
   // Only five magazines have a masthead on file, and an empty column beside the
   // details reads as a page that failed to load. The earliest issue's cover
@@ -100,7 +103,18 @@ export default async function MagazineDetailPage({
         orderBy: { publishSort: "asc" },
         select: { issueNumber: true, coverImage: true },
       });
-  const headerImage = magazine.logoImage ?? standIn?.coverImage ?? null;
+
+  // The masthead leads and the shelf photographs follow it in the same frame.
+  // They used to hang under the details, which grew the page by a band of
+  // mostly-empty space: a masthead is wide and short, so the column beside the
+  // details is short, and the photographs added height that bought nothing.
+  const gallery: GalleryImage[] = [
+    ...(magazine.logoImage ? [{ url: magazine.logoImage }] : []),
+    ...(standIn?.coverImage
+      ? [{ url: standIn.coverImage, note: `${standIn.issueNumber} 封面` }]
+      : []),
+    ...magazine.photos.map((url) => ({ url, note: "藏書照" })),
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -109,13 +123,9 @@ export default async function MagazineDetailPage({
       {/* 期刊資訊。刊頭與詳細資料左右並列，兩欄等高——刊頭原本是頂上一條 96px
           的橫幅，那個高度撐不起這頁唯一的一張圖。 */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
-        {headerImage && (
+        {gallery.length > 0 && (
           <>
-            <MagazineLogo
-              src={headerImage}
-              name={magazine.name}
-              note={standIn ? `${standIn.issueNumber} 封面` : undefined}
-            />
+            <MagazineGallery images={gallery} name={magazine.name} />
             {/* A rule between the two columns, horizontal once they stack. */}
             <hr className="border-t md:h-auto md:border-l md:border-t-0" />
           </>
@@ -181,24 +191,6 @@ export default async function MagazineDetailPage({
           {magazine.description && (
             <p className="mt-4 text-muted-foreground">{magazine.description}</p>
           )}
-          {magazine.photos.length > 0 && (
-            <div className="mt-4">
-              <p className="mb-1.5 text-xs text-muted-foreground">藏書照</p>
-              <div className="flex flex-wrap gap-2">
-                {magazine.photos.map((photo) => (
-                  /* eslint-disable-next-line @next/next/no-img-element -- a
-                     thumbnail strip of arbitrarily-shaped photographs;
-                     next/image would need dimensions this data lacks. */
-                  <img
-                    key={photo}
-                    src={photo}
-                    alt={`${magazine.name} 藏書照`}
-                    className="h-20 w-28 rounded border object-cover"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -206,16 +198,28 @@ export default async function MagazineDetailPage({
       <div>
         {/* The controls share the heading's line rather than taking one of
             their own; they wrap under it only when the row runs out of width. */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-6 gap-y-3">
           <h2 className="text-2xl font-bold">
             單期列表
             <span className="ml-2 text-lg font-normal text-muted-foreground">
               （共 {total} 期
-              {filter.value !== ISSUE_FILTERS[0].value &&
-                `，顯示 ${issues.length} 期`}
+              {/* Only when the list really is shorter: 軟體世界 has a cover
+                  for all 201, and 「共 201 期，顯示 201 期」 reads like a bug. */}
+              {issues.length !== total && `，顯示 ${issues.length} 期`}
               ）
             </span>
           </h2>
+
+          {/* A rule, not just space: the heading's trailing 「（共 N 期）」 is the
+              same grey and nearly the same size as the 篩選 label, so 96px of
+              gap still read as one continuous string. Hidden once the row
+              wraps -- a divider at the start of a line means nothing. */}
+          {total > 0 && (
+            <div
+              aria-hidden
+              className="hidden h-5 w-px shrink-0 self-center bg-border sm:block"
+            />
+          )}
 
           {total > 0 && (
             <IssueBrowseBar
