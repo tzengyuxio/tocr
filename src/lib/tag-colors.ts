@@ -21,6 +21,9 @@ export const TAG_TYPES = [
   { value: "PLATFORM", label: "平台" },
 ] as const;
 
+// XXX(unused-export): TAG_TYPE_COLORS and TAG_TYPE_ICONS are only read by the
+// two accessors right below them; nothing outside this file imports either.
+// Drop the `export` when next editing here.
 export const TAG_TYPE_COLORS: Record<string, string> = {
   GENERAL: "bg-gray-100 text-gray-800",
   PERSON: "bg-blue-100 text-blue-800",

@@ -136,6 +136,12 @@ export default async function GameDetailPage({ params }: PageProps) {
           {game.nameEn && game.nameEn !== game.nameOriginal && (
             <p className="text-muted-foreground">{game.nameEn}</p>
           )}
+          {/* 落選的譯名與消歧義前的裸名，跟期刊頁的別名同一種寫法 */}
+          {game.aliases.length > 0 && (
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {game.aliases.join(" / ")}
+            </p>
+          )}
 
           <div className="mt-4 space-y-2 text-sm">
             {game.releaseDate && (

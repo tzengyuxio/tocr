@@ -18,6 +18,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         { name: { contains: search, mode: "insensitive" as const } },
         { nameEn: { contains: search, mode: "insensitive" as const } },
         { nameOriginal: { contains: search, mode: "insensitive" as const } },
+        // 陣列欄位只能整串比對，做不到 contains
+        { aliases: { has: search } },
       ],
     }),
     ...(platform && {

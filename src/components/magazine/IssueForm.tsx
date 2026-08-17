@@ -26,6 +26,9 @@ import { Loader2 } from "lucide-react";
 interface IssueFormProps {
   magazineId: string;
   magazineName: string;
+  // Not part of the form: the short code is generated on create and never
+  // edited, it is only shown so an editor can copy the permanent link.
+  code?: string;
   initialData?: Partial<IssueCreateInput> & { id?: string };
   mode: "create" | "edit";
 }
@@ -33,6 +36,7 @@ interface IssueFormProps {
 export function IssueForm({
   magazineId,
   magazineName,
+  code,
   initialData,
   mode,
 }: IssueFormProps) {
@@ -53,6 +57,7 @@ export function IssueForm({
     defaultValues: {
       magazineId,
       issueNumber: initialData?.issueNumber || "",
+      altNumbers: initialData?.altNumbers || [],
       slug: initialData?.slug || "",
       volumeNumber: initialData?.volumeNumber || "",
       title: initialData?.title || "",
@@ -154,6 +159,48 @@ export function IssueForm({
                 <p className="text-sm text-destructive">{errors.slug.message}</p>
               )}
             </div>
+
+            {/* 其他編號 */}
+            <div className="space-y-2 md:col-span-2">
+              <Controller
+                name="altNumbers"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label>其他編號</Label>
+                    <Input
+                      placeholder="以逗號分隔（例如：2014 02, HK VOL 308, 1月30日號）"
+                      value={(field.value || []).join(", ")}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        field.onChange(
+                          val
+                            ? val.split(",").map((s) => s.trim()).filter(Boolean)
+                            : []
+                        );
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      同一期封面／版權頁上並存的其他編號。期號欄放最主要的那個（有總號就放總號），
+                      其餘如期別、港版卷號、日期發行號放這裡
+                    </p>
+                  </div>
+                )}
+              />
+            </div>
+
+            {/* 永久短碼 */}
+            {code && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>永久短碼</Label>
+                <p className="text-sm">
+                  <code className="rounded bg-muted px-1.5 py-0.5">/i/{code}</code>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  自動產生、不會變動。期刊改名或網址代號改動時，這條連結仍然到得了本期
+                </p>
+              </div>
+            )}
 
             {/* 卷號 */}
             <div className="space-y-2">
