@@ -1,0 +1,71 @@
+name: Backup database
+
+# 19:00 UTC is 03:00 in Taipei -- after the day's editing, before anyone wakes
+# up to notice a mistake. Neon's free plan keeps six hours of history, so this
+# snapshot is the only thing standing between a bad DELETE and retyping a
+# year of catalogue entries.
+on:
+  schedule:
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: backup-database
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      # Neon runs PostgreSQL 18 and pg_dump refuses to talk to a newer server,
+      # so the runner's bundled client (16) is not enough.
+      - name: Install PostgreSQL 18 client
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+            https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-18 age
+
+      # The dump carries users.email and the OAuth tokens in `accounts`, so it
+      # is encrypted before it ever touches the disk of a shared runner. The
+      # recipient is a public age key; the private half never leaves the
+      # owner's machine, which also means a leaked R2 token yields ciphertext.
+      - name: Dump, compress and encrypt
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+        run: |
+          test -n "$AGE_RECIPIENT" || { echo "BACKUP_AGE_RECIPIENT is not set"; exit 1; }
+          pg_dump "$DATABASE_URL" --no-owner --no-privileges \
+            | gzip -9 \
+            | age --recipient "$AGE_RECIPIENT" \
+            > backup.sql.gz.age
+          ls -l backup.sql.gz.age
+
+      # A dump that shrinks to nothing is the failure this is meant to catch:
+      # a wrong connection string still exits 0 and writes a valid, empty file.
+      - name: Refuse to upload an implausibly small dump
+        run: |
+          size=$(stat -c %s backup.sql.gz.age)
+          echo "encrypted dump: $size bytes"
+          test "$size" -gt 100000 || { echo "dump is too small to be real"; exit 1; }
+
+      - name: Upload to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ vars.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          ENDPOINT: https://${{ vars.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          BUCKET: ${{ vars.R2_BUCKET }}
+        run: |
+          key="db/$(date -u +%Y-%m-%d).sql.gz.age"
+          aws s3 cp backup.sql.gz.age "s3://$BUCKET/$key" --endpoint-url "$ENDPOINT"
+          echo "uploaded $key"
+
+      # Retention is a bucket lifecycle rule in Cloudflare, not a step here:
+      # a delete loop in CI is one bug away from erasing the backups it exists
+      # to protect. See docs/deployment.md.

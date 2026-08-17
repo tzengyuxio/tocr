@@ -1,0 +1,44 @@
+name: Backup images
+
+# Weekly, not daily: the blob store only ever gains files, so a missed week
+# costs nothing that the next run does not pick up. Sunday 19:00 UTC is Monday
+# 03:00 in Taipei, an hour after the database dump.
+on:
+  schedule:
+    - cron: "0 19 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: backup-images
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Copies only the pathnames R2 does not have yet, so the run stays cheap
+      # as the scans grow -- today 127 MB, closer to 1 GB once every issue has
+      # its table of contents photographed.
+      - name: Mirror new blobs to R2
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ vars.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        # npx, not a devDependency: scripts/ already runs this way locally
+        # (see the header of scripts/backup-images.ts).
+        run: npx --yes tsx scripts/backup-images.ts
