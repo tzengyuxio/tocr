@@ -4,18 +4,11 @@
 格式：`- [ ] [#issue] 標題 — 一句說明（日期）`（完成就打勾或刪除）。
 這份檔是正本，GitHub issue 是鏡像——決定要做的項目才開 issue，編號回填到行首。
 
-- [ ] **資料庫沒有定期備份，而 Neon 的還原窗口只有 6 小時** — 目前唯一的備份手段是 `docs/deployment.md` 裡那行手動 `pg_dump`，沒有人在跑。
+- [ ] **備份要接上 Cloudflare R2 的帳號設定** — workflow 與腳本已經寫好（`backup-database.yml`、`backup-images.yml`、`scripts/backup-images.ts`），設定步驟見 [docs/deployment.md](docs/deployment.md#備份與還原)。**在 R2 開通並填好 secrets 之前，排程會失敗**。
 
-  Neon 免費方案（`free_v3`）的 `history_retention_seconds` 是 **21600 秒＝6 小時**，那是 point-in-time restore 的全部範圍。**誤刪或寫壞資料若沒在 6 小時內發現，就回不去了**——而這個站的資料是人工抄錄目錄累積出來的，重建成本極高（761 期、上千筆文章，每一筆都要對著掃描圖打）。
+  待辦：開 R2 bucket、產 API token、`age-keygen` 產金鑰對（私鑰自己留）、填 GitHub secrets/variables、設 `db/` 前綴的 lifecycle rule（建議 90 天）、手動觸發一次確認，然後排一次還原驗證。
 
-  要決定的：
-
-  - **頻率與保留**：每日一次、保留 30 天大概就夠，資料變動速度不快
-  - **放哪裡**：Vercel Blob（已經在用，但跟資料同一個供應商，供應商層級的事故會一起掛）、GitHub Actions artifact、或本機／NAS 拉取
-  - **怎麼觸發**：GitHub Actions 排程最省事（repo 已有 CI），需要一組唯讀的 `DATABASE_URL` secret
-  - **要不要驗證還原**：只備份不驗證，等於不知道備份能不能用。至少該定期把備份還原到 Neon 的一條臨時 branch 跑一次
-
-  升級 Neon 方案也能拉長 retention，但那是「還原窗口」不是「備份」——供應商端的資料仍是單點。兩者性質不同，該分開想（2026-08-17）
+  量測過的數字：`pg_dump` 1.8 MB → gzip 333 KB；圖片 499 檔 127 MB（`issues/toc/` 80 檔 39.5 MB 是唯一不可再生的）。779 期裡只有 414 期有封面、約 40 期有目錄圖，補齊後圖片會逼近 1 GB（2026-08-17）
 
 - [ ] **一期帶多組編號，`issueNumber` 一個欄位塞不下** — 電玩通同一期的封面與版權頁上有四組並存的編號：
 
