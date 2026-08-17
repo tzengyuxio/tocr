@@ -80,7 +80,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                   issueNumber: true,
                   publishDate: true,
                   magazine: {
-                    select: { id: true, name: true },
+                    select: { id: true, name: true, slug: true },
                   },
                 },
               },
@@ -225,7 +225,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                       <TableRow key={ag.id}>
                         <TableCell>
                           <Link
-                            href={`/magazines/${ag.article.issue.magazine.id}`}
+                            href={`/magazines/${ag.article.issue.magazine.slug}`}
                             className="hover:underline"
                           >
                             {ag.article.issue.magazine.name}
@@ -233,7 +233,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell>
                           <Link
-                            href={`/magazines/${ag.article.issue.magazine.id}/issues/${ag.article.issue.id}`}
+                            href={`/magazines/${ag.article.issue.magazine.slug}/issues/${ag.article.issue.id}`}
                             className="hover:underline"
                           >
                             {ag.article.issue.issueNumber}
@@ -273,11 +273,11 @@ export default async function GameDetailPage({ params }: PageProps) {
                       <div className="text-sm text-muted-foreground">{ag.article.subtitle}</div>
                     )}
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                      <Link href={`/magazines/${ag.article.issue.magazine.id}`} className="hover:underline">
+                      <Link href={`/magazines/${ag.article.issue.magazine.slug}`} className="hover:underline">
                         {ag.article.issue.magazine.name}
                       </Link>
                       <span>·</span>
-                      <Link href={`/magazines/${ag.article.issue.magazine.id}/issues/${ag.article.issue.id}`} className="hover:underline">
+                      <Link href={`/magazines/${ag.article.issue.magazine.slug}/issues/${ag.article.issue.id}`} className="hover:underline">
                         {ag.article.issue.issueNumber}
                       </Link>
                       <span>·</span>

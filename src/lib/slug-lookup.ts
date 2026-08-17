@@ -9,21 +9,28 @@ import { prisma } from "./prisma";
  * one falls through to the id lookup rather than resolving to the wrong row.
  */
 export async function resolveSlugParam(
-  model: "game" | "tag",
+  model: "game" | "tag" | "magazine",
   param: string
 ): Promise<{ id: string; slug: string } | null> {
   const select = { id: true, slug: true };
   const slug = decodeParam(param);
 
+  // Spelled out per model rather than indexed: the delegates have different
+  // generic signatures, so prisma[model] resolves to a union TypeScript will
+  // not call. Same reason as ensureUniqueSlug in slugify.ts.
   const bySlug =
     model === "game"
       ? await prisma.game.findUnique({ where: { slug }, select })
-      : await prisma.tag.findUnique({ where: { slug }, select });
+      : model === "tag"
+        ? await prisma.tag.findUnique({ where: { slug }, select })
+        : await prisma.magazine.findUnique({ where: { slug }, select });
   if (bySlug) return bySlug;
 
   return model === "game"
     ? prisma.game.findUnique({ where: { id: slug }, select })
-    : prisma.tag.findUnique({ where: { id: slug }, select });
+    : model === "tag"
+      ? prisma.tag.findUnique({ where: { id: slug }, select })
+      : prisma.magazine.findUnique({ where: { id: slug }, select });
 }
 
 /**

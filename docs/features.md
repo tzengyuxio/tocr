@@ -97,7 +97,9 @@ ISSN 刻意不設唯一性、日期採 EDTF 等建檔準則見 [data-conventions
 
 舊的 cuid 網址不會斷：找不到 slug 就用 id 查，命中就 308 轉址到 slug 網址。後台網址維持 cuid——那些不會被分享。
 
-雜誌、單期、文章仍是 cuid，見 BACKLOG。
+**期刊走同一條路，但 slug 是 ASCII 而非中文**（`/magazines/ace`）。期刊 slug 是每一條單期網址的前綴，中文在這個位置會 percent-encode 成站上最常被分享的那類網址，所以 validator 只收 `[a-z0-9-]`。值不是從名稱產生的，而是沿用 [nostalibrary](https://gitlab.com/tzengyuxio/nostalibrary) 的代號（`content/magazines/<slug>/`），兩站因此共用同一組識別碼；上游沒有的三本另取自英文刊名：`astro`（星際遊樂雜誌）、`rgt`（舊遊戲時代）、`gamexpress`（電玩宅速配）。後台新增期刊時 slug 必填，CSV 匯入沒有這一欄則落到 cuid，之後由編輯補。
+
+**單期仍是 cuid**（`/magazines/ace/issues/cmsu8s…`）。期號的寫法太雜——重新編號、改名、跨刊合併號、以日期為號——沒有可靠的推導規則，見 BACKLOG。文章沒有公開的單篇網址。
 
 ## 認證與權限
 

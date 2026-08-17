@@ -42,6 +42,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
     resolver: zodResolver(magazineCreateSchema) as any,
     defaultValues: {
       name: initialData?.name || "",
+      slug: initialData?.slug || "",
       nameOriginal: initialData?.nameOriginal || "",
       aliases: initialData?.aliases || [],
       publisher: initialData?.publisher || "",
@@ -116,6 +117,21 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               />
               {errors.name && (
                 <p className="text-sm text-red-500">{errors.name.message}</p>
+              )}
+            </div>
+
+            {/* 網址代號 */}
+            <div className="space-y-2">
+              <Label htmlFor="slug">
+                網址代號 <span className="text-red-500">*</span>
+              </Label>
+              <Input id="slug" placeholder="例如：fmt-tw" {...register("slug")} />
+              <p className="text-xs text-muted-foreground">
+                公開網址用的短代號，只能小寫英數與連字號。已收錄的期刊沿用
+                nostalibrary 的代號；新刊取自英文刊名。改動會讓舊網址失效
+              </p>
+              {errors.slug && (
+                <p className="text-sm text-destructive">{errors.slug.message}</p>
               )}
             </div>
 

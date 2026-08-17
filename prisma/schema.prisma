@@ -85,6 +85,15 @@ enum UserRole {
 model Magazine {
   id             String    @id @default(cuid())
   name           String
+  // URL handle. ASCII only, unlike Game.slug and Tag.slug -- a magazine slug
+  // is the prefix of every issue URL, so a Chinese one would percent-encode
+  // into the most-shared URLs on the site. Values come from nostalibrary
+  // (see data/magazines.json), which already assigned them upstream.
+  //
+  // The cuid default is for CSV import, which has no slug column: the row gets
+  // an unreadable but working URL until an editor names it. The admin form
+  // requires one (validators/magazine.ts), so that is the only lenient path.
+  slug           String    @unique @default(cuid())
   nameOriginal   String?   @map("name_original") // Original name (e.g. Japanese: ファミ通)
   aliases        String[]  @default([]) // Other known names (English, historical, etc.)
   publisher      String?

@@ -13,13 +13,13 @@ interface IssueCardProps {
     publishDate: string;
     _count: { articles: number };
   };
-  magazineId: string;
+  magazineSlug: string;
   magazineName?: string;
 }
 
-export function IssueCard({ issue, magazineId, magazineName }: IssueCardProps) {
+export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps) {
   return (
-    <Link href={`/magazines/${magazineId}/issues/${issue.id}`}>
+    <Link href={`/magazines/${magazineSlug}/issues/${issue.id}`}>
       <Card className="h-full overflow-hidden transition-shadow hover:shadow-md gap-0 py-0">
         {issue.coverImage ? (
           // object-contain, not cover: a magazine cover is mostly masthead and

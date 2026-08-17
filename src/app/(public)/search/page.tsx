@@ -153,7 +153,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 issueNumber: true,
                 publishDate: true,
                 magazine: {
-                  select: { id: true, name: true },
+                  select: { id: true, name: true, slug: true },
                 },
               },
             },
@@ -370,7 +370,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       ) : type === "magazine" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {foundMagazines.map((magazine) => (
-            <Link key={magazine.id} href={`/magazines/${magazine.id}`}>
+            <Link key={magazine.id} href={`/magazines/${magazine.slug}`}>
               <Card className="h-full transition-shadow hover:shadow-lg gap-3">
                 <CardHeader className="pb-0 gap-1">
                   <div className="mb-2 flex h-20 items-center justify-center rounded-lg bg-muted/50">
@@ -459,14 +459,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     <CardDescription className="flex items-center gap-2">
                       <BookOpen className="h-3 w-3" />
                       <Link
-                        href={`/magazines/${article.issue.magazine.id}`}
+                        href={`/magazines/${article.issue.magazine.slug}`}
                         className="hover:underline"
                       >
                         {article.issue.magazine.name}
                       </Link>
                       <span>·</span>
                       <Link
-                        href={`/magazines/${article.issue.magazine.id}/issues/${article.issue.id}`}
+                        href={`/magazines/${article.issue.magazine.slug}/issues/${article.issue.id}`}
                         className="hover:underline"
                       >
                         {article.issue.issueNumber}
@@ -478,7 +478,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </CardDescription>
                     <CardTitle className="mt-1 text-lg">
                       <Link
-                        href={`/magazines/${article.issue.magazine.id}/issues/${article.issue.id}`}
+                        href={`/magazines/${article.issue.magazine.slug}/issues/${article.issue.id}`}
                         className="hover:underline"
                       >
                         {article.title}

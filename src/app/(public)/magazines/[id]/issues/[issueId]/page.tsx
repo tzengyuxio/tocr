@@ -1,7 +1,8 @@
 export const revalidate = 60;
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
+import { resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
@@ -32,7 +33,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function IssueDetailPage({ params }: PageProps) {
-  const { id, issueId } = await params;
+  const { id: magazineParam, issueId } = await params;
+
+  // 只有期刊那一段吃 slug；單期維持 cuid（期號的寫法太雜，沒有可靠的推導規則，
+  // 見 BACKLOG）。舊的 cuid 期刊連結還在外面流傳，所以認出來就永久轉址。
+  const magazine = await resolveSlugParam("magazine", magazineParam);
+  if (!magazine) notFound();
+  if (magazineParam !== magazine.slug) {
+    permanentRedirect(`/magazines/${magazine.slug}/issues/${issueId}`);
+  }
+  const id = magazine.id;
+
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
@@ -77,7 +88,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: "/magazines/" + issue.magazineId }, { label: issue.issueNumber }]} />
+      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: issue.issueNumber }]} />
 
       {/* Title block: the cover no longer sets the height, so nothing has to
           fill 256px of space beside it. */}
@@ -87,7 +98,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
               "96" names nothing on its own. */}
           <h1 className="text-2xl font-bold sm:text-3xl">
             <Link
-              href={`/magazines/${issue.magazineId}`}
+              href={`/magazines/${issue.magazine.slug}`}
               className="hover:underline"
             >
               {issue.magazine.name}

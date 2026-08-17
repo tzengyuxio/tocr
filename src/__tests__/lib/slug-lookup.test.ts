@@ -48,6 +48,28 @@ describe("resolveSlugParam", () => {
     expect(await resolveSlugParam("game", "%E0%A4%A")).toBeNull();
   });
 
+  // 期刊 slug 是 ASCII，但走的是同一條「先 slug 後 cuid」的路。
+  it("resolves a magazine by slug", async () => {
+    prismaMock.magazine.findUnique.mockResolvedValueOnce({ id: "m1", slug: "ace" });
+
+    expect(await resolveSlugParam("magazine", "ace")).toEqual({
+      id: "m1",
+      slug: "ace",
+    });
+    expect(prismaMock.magazine.findUnique).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the cuid for a magazine", async () => {
+    prismaMock.magazine.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "m1", slug: "ace" });
+
+    expect(await resolveSlugParam("magazine", "m1")).toEqual({
+      id: "m1",
+      slug: "ace",
+    });
+  });
+
   it("returns null when neither matches", async () => {
     prismaMock.tag.findUnique.mockResolvedValue(null);
 

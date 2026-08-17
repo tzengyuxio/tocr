@@ -1,7 +1,8 @@
 export const revalidate = 60;
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
+import { resolveSlugParam } from "@/lib/slug-lookup";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -17,13 +18,26 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = await params;
-  const magazine = await prisma.magazine.findUnique({ where: { id }, select: { name: true } });
+  const { id: param } = await params;
+  const found = await resolveSlugParam("magazine", param);
+  if (!found) return { title: "期刊詳情" };
+
+  const magazine = await prisma.magazine.findUnique({
+    where: { id: found.id },
+    select: { name: true },
+  });
   return { title: magazine?.name ?? "期刊詳情" };
 }
 
 export default async function MagazineDetailPage({ params }: PageProps) {
-  const { id } = await params;
+  const { id: param } = await params;
+
+  // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
+  const found = await resolveSlugParam("magazine", param);
+  if (!found) notFound();
+  if (param !== found.slug) permanentRedirect(`/magazines/${found.slug}`);
+  const id = found.id;
+
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
@@ -146,7 +160,7 @@ export default async function MagazineDetailPage({ params }: PageProps) {
               <IssueCard
                 key={issue.id}
                 issue={issue}
-                magazineId={magazine.id}
+                magazineSlug={magazine.slug}
               />
             ))}
           </div>
