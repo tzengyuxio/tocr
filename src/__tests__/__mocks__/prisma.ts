@@ -30,6 +30,7 @@ interface PrismaMock {
   articleTag: MockModel;
   articleGame: MockModel;
   ocrRecord: MockModel;
+  exportLog: MockModel;
   user: MockModel;
   editLog: MockModel;
   $transaction: jest.Mock;
@@ -59,6 +60,7 @@ export const prismaMock: PrismaMock = {
   articleTag: createMockModel(),
   articleGame: createMockModel(),
   ocrRecord: createMockModel(),
+  exportLog: createMockModel(),
   user: createMockModel(),
   editLog: createMockModel(),
   $transaction: jest.fn((fn: TransactionCallback) => fn(prismaMock)),
