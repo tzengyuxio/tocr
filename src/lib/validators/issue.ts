@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { edtfSortDate, isValidEdtf } from "../edtf";
+import { issueSlugify } from "../slugify";
 import { blankToNull, optionalText } from "./fields";
 
 // A blank number input submits "", which z.coerce.number() turns into 0 and
@@ -18,6 +19,16 @@ const optionalDecimal = z.preprocess(
 export const issueCreateSchema = z.object({
   magazineId: z.string().min(1, "期刊 ID 為必填"),
   issueNumber: z.string().min(1, "期號為必填"),
+  // Optional on the wire: left blank, the server derives it from the issue
+  // number. Same charset as Game.slug -- 創刊號 has to survive.
+  slug: z.preprocess(
+    blankToNull,
+    z
+      .string()
+      .regex(/^[a-z0-9一-鿿-]+$/, "網址代號只能包含小寫字母、數字、中文和連字號")
+      .nullable()
+      .optional()
+  ),
   volumeNumber: optionalText,
   title: optionalText,
   // EDTF (ISO 8601-2), not a calendar date: a cover may give only the month
@@ -59,6 +70,33 @@ export function withPublishSort<T extends { publishDate: string }>(
     throw new Error(`Cannot derive a sort key from "${data.publishDate}"`);
   }
   return { ...data, publishSort: sort };
+}
+
+/**
+ * Fill in the slug on create when the caller left it blank.
+ *
+ * Derived from the issue number, which covers the plain "163"/"第163期"/"VOL.51"
+ * majority. Anything the rule cannot name well -- 電玩通, whose slug is the
+ * cover date and is not in issueNumber at all -- the editor types in.
+ */
+export function withIssueSlug<T extends { issueNumber: string; slug?: string | null }>(
+  data: T
+): Omit<T, "slug"> & { slug: string } {
+  const { slug, ...rest } = data;
+  return { ...rest, slug: slug || issueSlugify(data.issueNumber) };
+}
+
+/**
+ * On update a blank slug means "leave it alone", never "recompute it".
+ *
+ * Renaming an issue number to fix a typo must not silently move the URL --
+ * the slug is what the outside world has already linked to.
+ */
+export function withIssueSlugIfPresent<T extends { slug?: string | null }>(
+  data: T
+): Omit<T, "slug"> & { slug?: string } {
+  const { slug, ...rest } = data;
+  return slug ? { ...rest, slug } : rest;
 }
 
 export function withPublishSortIfPresent<T extends { publishDate?: string }>(

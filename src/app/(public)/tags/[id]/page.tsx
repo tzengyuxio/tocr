@@ -75,9 +75,10 @@ export default async function TagDetailPage({ params }: PageProps) {
                 select: {
                   id: true,
                   issueNumber: true,
+                  slug: true,
                   publishDate: true,
                   magazine: {
-                    select: { id: true, name: true },
+                    select: { id: true, name: true, slug: true },
                   },
                 },
               },
@@ -156,7 +157,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                       <TableRow key={at.id}>
                         <TableCell>
                           <Link
-                            href={`/magazines/${at.article.issue.magazine.id}`}
+                            href={`/magazines/${at.article.issue.magazine.slug}`}
                             className="hover:underline"
                           >
                             {at.article.issue.magazine.name}
@@ -164,7 +165,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell>
                           <Link
-                            href={`/magazines/${at.article.issue.magazine.id}/issues/${at.article.issue.id}`}
+                            href={`/magazines/${at.article.issue.magazine.slug}/issues/${encodeURIComponent(at.article.issue.slug)}`}
                             className="hover:underline"
                           >
                             {at.article.issue.issueNumber}
@@ -201,11 +202,11 @@ export default async function TagDetailPage({ params }: PageProps) {
                       <div className="text-sm text-muted-foreground">{at.article.subtitle}</div>
                     )}
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                      <Link href={`/magazines/${at.article.issue.magazine.id}`} className="hover:underline">
+                      <Link href={`/magazines/${at.article.issue.magazine.slug}`} className="hover:underline">
                         {at.article.issue.magazine.name}
                       </Link>
                       <span>·</span>
-                      <Link href={`/magazines/${at.article.issue.magazine.id}/issues/${at.article.issue.id}`} className="hover:underline">
+                      <Link href={`/magazines/${at.article.issue.magazine.slug}/issues/${encodeURIComponent(at.article.issue.slug)}`} className="hover:underline">
                         {at.article.issue.issueNumber}
                       </Link>
                       <span>·</span>

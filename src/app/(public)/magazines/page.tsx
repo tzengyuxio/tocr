@@ -48,7 +48,7 @@ export default async function MagazinesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {magazines.map((magazine) => (
-            <Link key={magazine.id} href={`/magazines/${magazine.id}`}>
+            <Link key={magazine.id} href={`/magazines/${magazine.slug}`}>
               <Card className="h-full transition-shadow hover:shadow-lg gap-3">
                 <CardHeader className="pb-0 gap-1">
                   <div className="mb-2 flex h-20 items-center justify-center rounded-lg bg-muted/50">

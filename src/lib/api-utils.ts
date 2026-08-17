@@ -39,6 +39,25 @@ export function withErrorHandler(
         );
       }
 
+      // Unique constraint. Worth naming the field: an issue slug that clashes
+      // is meant to stop the write and make a person pick another one, and a
+      // bare 500 tells them nothing about what to change.
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        (error as { code: string }).code === "P2002"
+      ) {
+        const fields = uniqueConstraintFields(error);
+        return NextResponse.json(
+          {
+            error: fields.length
+              ? `已經有一筆資料使用了相同的${fields.join("、")}`
+              : "資料重複",
+          },
+          { status: 409 }
+        );
+      }
+
       console.error(`${operationName} failed:`, error);
       return NextResponse.json(
         { error: `${operationName} failed` },
@@ -46,6 +65,37 @@ export function withErrorHandler(
       );
     }
   };
+}
+
+/** Column names an editor would not recognise, in the wording the forms use. */
+const FIELD_LABELS: Record<string, string> = {
+  slug: "網址代號",
+  issue_number: "期號",
+};
+
+/**
+ * The columns a P2002 was raised on, labelled for a person.
+ *
+ * Prisma 7 reports them through the driver adapter rather than in `meta.target`,
+ * which stays checked in case a path without the adapter raises the same code.
+ * Foreign keys are dropped: [magazine_id, slug] means the slug clashed within
+ * one magazine, and naming magazine_id only muddies that.
+ */
+function uniqueConstraintFields(error: Error): string[] {
+  const meta = (error as { meta?: unknown }).meta as
+    | {
+        target?: string[] | string;
+        driverAdapterError?: { cause?: { constraint?: { fields?: string[] } } };
+      }
+    | undefined;
+
+  const raw =
+    meta?.driverAdapterError?.cause?.constraint?.fields ??
+    (Array.isArray(meta?.target) ? meta.target : meta?.target ? [meta.target] : []);
+
+  return raw
+    .filter((field) => !field.endsWith("_id"))
+    .map((field) => FIELD_LABELS[field] ?? field);
 }
 
 /**

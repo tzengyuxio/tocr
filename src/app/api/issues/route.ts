@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   issueCreateSchema,
+  withIssueSlug,
   withPublishSort,
   withTocReviewedAt,
 } from "@/lib/validators/issue";
@@ -56,7 +57,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const isHuman = !isValidApiToken(request.headers.get("authorization"));
   const issue = await prisma.issue.create({
-    data: withTocReviewedAt(withPublishSort(validatedData), {
+    data: withTocReviewedAt(withIssueSlug(withPublishSort(validatedData)), {
       isHuman,
       current: null,
     }),

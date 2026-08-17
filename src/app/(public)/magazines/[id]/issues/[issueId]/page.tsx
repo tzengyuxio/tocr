@@ -1,7 +1,8 @@
 export const revalidate = 60;
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
+import { decodeParam, resolveIssueParam, resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
@@ -22,9 +23,15 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { issueId } = await params;
+  const { id: magazineParam, issueId: issueParam } = await params;
+  const magazine = await resolveSlugParam("magazine", magazineParam);
+  if (!magazine) return { title: "單期詳情" };
+
+  const found = await resolveIssueParam(magazine.id, issueParam);
+  if (!found) return { title: "單期詳情" };
+
   const issue = await prisma.issue.findUnique({
-    where: { id: issueId },
+    where: { id: found.id },
     select: { issueNumber: true, magazine: { select: { name: true } } },
   });
   if (!issue) return { title: "單期詳情" };
@@ -32,7 +39,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function IssueDetailPage({ params }: PageProps) {
-  const { id, issueId } = await params;
+  const { id: magazineParam, issueId: issueParam } = await params;
+
+  // 兩段各自解析，任一段不是 canonical 就一次轉到正確的網址。舊的 cuid 連結還在
+  // 外面流傳，而單期那段還多收期號——拿著實體雜誌的人讀到的是封底的期號。
+  const magazine = await resolveSlugParam("magazine", magazineParam);
+  if (!magazine) notFound();
+
+  const found = magazine && (await resolveIssueParam(magazine.id, issueParam));
+  if (!found) notFound();
+
+  if (magazineParam !== magazine.slug || decodeParam(issueParam) !== found.slug) {
+    // encodeURIComponent 不能省：中文 slug（創刊號）直接放進 Location header 會
+    // 讓 Node 丟 ERR_INVALID_CHAR，整頁變成 500。
+    permanentRedirect(
+      `/magazines/${magazine.slug}/issues/${encodeURIComponent(found.slug)}`
+    );
+  }
+  const id = magazine.id;
+  const issueId = found.id;
+
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
@@ -77,7 +103,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: "/magazines/" + issue.magazineId }, { label: issue.issueNumber }]} />
+      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: issue.issueNumber }]} />
 
       {/* Title block: the cover no longer sets the height, so nothing has to
           fill 256px of space beside it. */}
@@ -87,7 +113,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
               "96" names nothing on its own. */}
           <h1 className="text-2xl font-bold sm:text-3xl">
             <Link
-              href={`/magazines/${issue.magazineId}`}
+              href={`/magazines/${issue.magazine.slug}`}
               className="hover:underline"
             >
               {issue.magazine.name}

@@ -84,13 +84,13 @@ describe("GET /api/magazines", () => {
 
 describe("POST /api/magazines", () => {
   it("creates a magazine with valid data", async () => {
-    const created = { id: "new-1", name: "Game Walker", isActive: true };
+    const created = { id: "new-1", name: "Game Walker", slug: "gwalker", isActive: true };
     prismaMock.magazine.create.mockResolvedValue(created);
 
     const res = await POST(
       makeRequest("http://localhost:3000/api/magazines", {
         method: "POST",
-        body: JSON.stringify({ name: "Game Walker" }),
+        body: JSON.stringify({ name: "Game Walker", slug: "gwalker" }),
       })
     );
     const json = await res.json();

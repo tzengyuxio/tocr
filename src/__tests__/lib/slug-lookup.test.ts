@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { prismaMock, resetPrismaMock } from "../__mocks__/prisma";
-import { resolveSlugParam } from "@/lib/slug-lookup";
+import { resolveIssueParam, resolveSlugParam } from "@/lib/slug-lookup";
 
 beforeEach(() => resetPrismaMock());
 
@@ -48,9 +48,90 @@ describe("resolveSlugParam", () => {
     expect(await resolveSlugParam("game", "%E0%A4%A")).toBeNull();
   });
 
+  // 期刊 slug 是 ASCII，但走的是同一條「先 slug 後 cuid」的路。
+  it("resolves a magazine by slug", async () => {
+    prismaMock.magazine.findUnique.mockResolvedValueOnce({ id: "m1", slug: "ace" });
+
+    expect(await resolveSlugParam("magazine", "ace")).toEqual({
+      id: "m1",
+      slug: "ace",
+    });
+    expect(prismaMock.magazine.findUnique).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the cuid for a magazine", async () => {
+    prismaMock.magazine.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "m1", slug: "ace" });
+
+    expect(await resolveSlugParam("magazine", "m1")).toEqual({
+      id: "m1",
+      slug: "ace",
+    });
+  });
+
   it("returns null when neither matches", async () => {
     prismaMock.tag.findUnique.mockResolvedValue(null);
 
     expect(await resolveSlugParam("tag", "nope")).toBeNull();
+  });
+});
+
+// 單期只在該刊內唯一，所以三段查詢都綁著 magazineId。
+describe("resolveIssueParam", () => {
+  it("matches on slug first", async () => {
+    prismaMock.issue.findUnique.mockResolvedValueOnce({ id: "i1", slug: "105" });
+
+    expect(await resolveIssueParam("m1", "105")).toEqual({ id: "i1", slug: "105" });
+    expect(prismaMock.issue.findUnique).toHaveBeenCalledWith({
+      where: { magazineId_slug: { magazineId: "m1", slug: "105" } },
+      select: { id: true, slug: true },
+    });
+  });
+
+  // 拿著實體雜誌的人讀到的是封底印的期號，那跟網址上的 slug 可以是兩回事。
+  it("falls back to the issue number as printed", async () => {
+    prismaMock.issue.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "i1", slug: "2014-01-30" });
+
+    expect(await resolveIssueParam("m1", "468")).toEqual({
+      id: "i1",
+      slug: "2014-01-30",
+    });
+    expect(prismaMock.issue.findUnique).toHaveBeenLastCalledWith({
+      where: { magazineId_issueNumber: { magazineId: "m1", issueNumber: "468" } },
+      select: { id: true, slug: true },
+    });
+  });
+
+  it("falls back to the cuid, scoped to the magazine", async () => {
+    prismaMock.issue.findUnique.mockResolvedValue(null);
+    prismaMock.issue.findFirst.mockResolvedValueOnce({ id: "i1", slug: "105" });
+
+    expect(await resolveIssueParam("m1", "i1")).toEqual({ id: "i1", slug: "105" });
+    expect(prismaMock.issue.findFirst).toHaveBeenCalledWith({
+      where: { id: "i1", magazineId: "m1" },
+      select: { id: true, slug: true },
+    });
+  });
+
+  // 中文 slug（創刊號）在網址上是 percent-encoded。
+  it("decodes the param before looking it up", async () => {
+    prismaMock.issue.findUnique.mockResolvedValueOnce({ id: "i1", slug: "創刊號" });
+
+    await resolveIssueParam("m1", "%E5%89%B5%E5%88%8A%E8%99%9F");
+
+    expect(prismaMock.issue.findUnique).toHaveBeenCalledWith({
+      where: { magazineId_slug: { magazineId: "m1", slug: "創刊號" } },
+      select: { id: true, slug: true },
+    });
+  });
+
+  it("returns null when nothing matches", async () => {
+    prismaMock.issue.findUnique.mockResolvedValue(null);
+    prismaMock.issue.findFirst.mockResolvedValue(null);
+
+    expect(await resolveIssueParam("m1", "nope")).toBeNull();
   });
 });

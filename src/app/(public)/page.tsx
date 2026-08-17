@@ -33,7 +33,7 @@ export default async function HomePage() {
     orderBy: { updatedAt: "desc" },
     include: {
       magazine: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, slug: true },
       },
       _count: {
         select: { articles: true },
@@ -162,7 +162,7 @@ export default async function HomePage() {
                 <IssueCard
                   key={issue.id}
                   issue={issue}
-                  magazineId={issue.magazine.id}
+                  magazineSlug={issue.magazine.slug}
                   magazineName={issue.magazine.name}
                 />
               ))}

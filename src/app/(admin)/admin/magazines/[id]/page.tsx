@@ -42,6 +42,7 @@ export default async function EditMagazinePage({ params }: PageProps) {
   const formData = {
     id: magazine.id,
     name: magazine.name,
+    slug: magazine.slug,
     nameOriginal: magazine.nameOriginal,
     aliases: magazine.aliases,
     publisher: magazine.publisher,

@@ -57,6 +57,7 @@ export default async function EditIssuePage({ params }: PageProps) {
     id: issue.id,
     magazineId: issue.magazineId,
     issueNumber: issue.issueNumber,
+    slug: issue.slug,
     volumeNumber: issue.volumeNumber,
     title: issue.title,
     publishDate: issue.publishDate,

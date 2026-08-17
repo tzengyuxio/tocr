@@ -5,6 +5,7 @@ import { withErrorHandler } from "@/lib/api-utils";
 import { requireEditor } from "@/lib/require-editor";
 import { withFoundedSort } from "@/lib/validators/magazine";
 import { withPublishSort } from "@/lib/validators/issue";
+import { issueSlugify } from "@/lib/slugify";
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const denied = await requireEditor(request);
@@ -80,6 +81,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
             data: {
               magazineId,
               issueNumber: iss.issueNumber,
+              // The CSV has no slug column, so it is derived. A clash inside
+              // one magazine aborts the transaction rather than being silently
+              // suffixed -- see lib/slugify.ts.
+              slug: issueSlugify(iss.issueNumber),
               volumeNumber: iss.volumeNumber,
               title: iss.title,
               ...withPublishSort({ publishDate: iss.publishDate }),

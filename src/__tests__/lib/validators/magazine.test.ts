@@ -4,6 +4,7 @@ describe("magazineCreateSchema", () => {
   it("should validate a valid magazine with required fields only", () => {
     const input = {
       name: "電玩雜誌",
+      slug: "gm",
     };
     const result = magazineCreateSchema.safeParse(input);
     expect(result.success).toBe(true);
@@ -16,6 +17,7 @@ describe("magazineCreateSchema", () => {
   it("should validate a complete magazine with all fields", () => {
     const input = {
       name: "電玩雜誌",
+      slug: "gm",
       nameOriginal: "Game Magazine",
       publisher: "遊戲出版社",
       issn: "1234-5678",
@@ -58,6 +60,7 @@ describe("magazineCreateSchema", () => {
   it("should accept null for optional fields", () => {
     const input = {
       name: "電玩雜誌",
+      slug: "gm",
       nameOriginal: null,
       publisher: null,
       description: null,
@@ -70,6 +73,7 @@ describe("magazineCreateSchema", () => {
     for (const value of ["2000-01-15", "2000-01", "2000", "2000-22"]) {
       const result = magazineCreateSchema.safeParse({
         name: "電玩雜誌",
+        slug: "gm",
         foundedDate: value,
       });
       expect(result.success).toBe(true);
@@ -80,13 +84,14 @@ describe("magazineCreateSchema", () => {
   it("rejects a date that is not valid EDTF", () => {
     const result = magazineCreateSchema.safeParse({
       name: "電玩雜誌",
+      slug: "gm",
       foundedDate: "2000年1月",
     });
     expect(result.success).toBe(false);
   });
 
   it("should treat an empty issn as null", () => {
-    const input = { name: "電玩雜誌", issn: "" };
+    const input = { name: "電玩雜誌", slug: "gm", issn: "" };
     const result = magazineCreateSchema.safeParse(input);
     expect(result.success).toBe(true);
     if (result.success) {
@@ -97,6 +102,7 @@ describe("magazineCreateSchema", () => {
   it("should treat empty date strings as null", () => {
     const input = {
       name: "電玩雜誌",
+      slug: "gm",
       foundedDate: "",
       endedDate: "",
     };
@@ -106,6 +112,29 @@ describe("magazineCreateSchema", () => {
       expect(result.data.foundedDate).toBeNull();
       expect(result.data.endedDate).toBeNull();
     }
+  });
+});
+
+// 期刊 slug 是每一條單期網址的前綴，中文會 percent-encode 成最常被分享的那類
+// 網址，所以這裡刻意比 Game.slug / Tag.slug 嚴。
+describe("magazineCreateSchema slug", () => {
+  const withSlug = (slug: string) =>
+    magazineCreateSchema.safeParse({ name: "電玩雜誌", slug });
+
+  it("accepts lowercase ascii, digits and hyphens", () => {
+    for (const slug of ["ace", "dps-tw", "game100"]) {
+      expect(withSlug(slug).success).toBe(true);
+    }
+  });
+
+  it("rejects Chinese, uppercase and spaces", () => {
+    for (const slug of ["電玩雜誌", "ACE", "dps tw", "dps_tw"]) {
+      expect(withSlug(slug).success).toBe(false);
+    }
+  });
+
+  it("is required", () => {
+    expect(magazineCreateSchema.safeParse({ name: "電玩雜誌" }).success).toBe(false);
   });
 });
 

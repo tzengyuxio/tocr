@@ -7,19 +7,20 @@ import { formatEdtf } from "@/lib/edtf";
 interface IssueCardProps {
   issue: {
     id: string;
+    slug: string;
     coverImage: string | null;
     issueNumber: string;
     title?: string | null;
     publishDate: string;
     _count: { articles: number };
   };
-  magazineId: string;
+  magazineSlug: string;
   magazineName?: string;
 }
 
-export function IssueCard({ issue, magazineId, magazineName }: IssueCardProps) {
+export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps) {
   return (
-    <Link href={`/magazines/${magazineId}/issues/${issue.id}`}>
+    <Link href={`/magazines/${magazineSlug}/issues/${encodeURIComponent(issue.slug)}`}>
       <Card className="h-full overflow-hidden transition-shadow hover:shadow-md gap-0 py-0">
         {issue.coverImage ? (
           // object-contain, not cover: a magazine cover is mostly masthead and
