@@ -279,14 +279,78 @@ Vercel 預設會在每次推送到 main 分支時自動部署。
 
 ## 備份與還原
 
-### 資料庫備份
+備份是自動的，跑在 GitHub Actions 上，存到 Cloudflare R2。
+
+| 對象 | 排程 | Workflow | 大小 |
+|---|---|---|---|
+| 資料庫 | 每日 03:00（台北） | `backup-database.yml` | gzip+加密後約 350 KB |
+| 圖片 | 每週一 04:00（台北） | `backup-images.yml` | 目前 127 MB，只複製新增的 |
+
+**為什麼要有這個**：Neon 免費方案的 `history_retention_seconds` 是 21600（**6 小時**），那是 point-in-time restore 的全部窗口。誤刪若沒在 6 小時內發現就回不去，而目錄資料是對著掃描圖一筆筆打出來的。Vercel Blob 則完全沒有版本歷史，刪掉就是刪掉。
+
+### 為什麼分成兩種節奏
+
+資料庫小（`pg_dump` 1.8 MB，gzip 後 333 KB）、天天變、**含個資**；圖片大、只增不改、無個資。所以資料庫每日快照並加密，圖片每週增量鏡像。
+
+`issues/toc/` 那批目錄掃描圖是**唯一完全不可再生**的資產——整個資料庫都是從它們抄出來的。封面多數還能從 nostalibrary 重抓，但檔名與期數的對應只存在資料庫裡。
+
+### 需要的設定
+
+**Cloudflare R2**：建一個 bucket（例如 `tocr-backups`），產一組 R2 API token（Object Read & Write）。保留策略用 **bucket 的 lifecycle rule**，不要寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西。建議 `db/` 前綴留 90 天。
+
+**age 金鑰對**：`age-keygen -o backup-key.txt`。公鑰放 GitHub variable，**私鑰自己保管、不要進 CI**（理由見下）。
+
+**GitHub secrets 與 variables**（repo 是 public，但兩者都不會給 fork 的 PR）：
+
+| 名稱 | 放哪 | 說明 |
+|---|---|---|
+| `BACKUP_DATABASE_URL` | secret | Neon 的 direct 連線字串（非 pooled） |
+| `R2_SECRET_ACCESS_KEY` | secret | R2 API token 的密鑰那半 |
+| `BLOB_READ_WRITE_TOKEN` | secret | 列出 blob 用 |
+| `BACKUP_AGE_RECIPIENT` | secret | age 公鑰。公鑰本身不是機密，放 secret 只是順便讓它在 log 裡被遮掉 |
+| `R2_ACCESS_KEY_ID` | variable | 憑證的另一半，單獨拿到沒有用；variable 不會在 log 裡被遮 |
+| `R2_ACCOUNT_ID` | variable | Cloudflare 帳號 ID |
+| `R2_BUCKET` | variable | bucket 名稱 |
+
+⚠️ **repo 是 public，所以 Actions 的 artifact 也是公開的**——資料庫 dump 絕對不能用 `upload-artifact`，它含 `users.email` 與 `accounts` 的 OAuth token。目前的 workflow 直接串流上傳到 R2，不留在 runner 上。
+
+### 還原
 
 ```bash
-# 使用 pg_dump 備份
-pg_dump $DATABASE_URL > backup.sql
+# 1. 從 R2 取回（或直接在 Cloudflare 後台下載）
+aws s3 cp s3://tocr-backups/db/2026-08-17.sql.gz.age . \
+  --endpoint-url https://<account-id>.r2.cloudflarestorage.com
 
-# 還原
-psql $DATABASE_URL < backup.sql
+# 2. 解密並還原
+age -d -i backup-key.txt 2026-08-17.sql.gz.age | gunzip | psql "$DATABASE_URL"
+```
+
+`pg_dump` 的版本必須 ≥ 伺服器版本。Neon 目前是 **PostgreSQL 18**，用 15 或 16 的 client 會直接拒絕（`aborting because of server version mismatch`）。
+
+### 定期驗證還原（手動，每季）
+
+**只備份不驗證，等於不知道備份能不能用。** 這一步刻意不放進 CI：驗證需要 age 私鑰，放進 GitHub secrets 就等於私鑰進了 CI，加密只剩「防 R2 token 外洩」的效果。私鑰留在自己機器上，這一步就手動跑。
+
+```bash
+# 1. 開一條臨時 branch（秒級，用完就刪）
+neonctl branches create --name restore-test --project-id <project-id>
+URL=$(neonctl connection-string restore-test --project-id <project-id>)
+
+# 2. 清空再灌入備份
+psql "$URL" -c 'drop schema public cascade; create schema public;'
+age -d -i backup-key.txt <最新備份> | gunzip | psql "$URL"
+
+# 3. 斷言筆數與正式庫相近
+psql "$URL" -tAc 'select count(*) from issues'
+
+# 4. 收工
+neonctl branches delete restore-test --project-id <project-id>
+```
+
+### 手動備份
+
+```bash
+pg_dump "$DATABASE_URL" --no-owner --no-privileges | gzip -9 > backup.sql.gz
 ```
 
 ### Prisma 遷移
