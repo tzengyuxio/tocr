@@ -106,11 +106,26 @@ https://your-domain.com/api/auth/callback/google
 
 ### 步驟 7：資料庫 migration
 
-**production 部署會在 build 時自動跑 `prisma migrate deploy`**（見 `package.json` 的 `build`）。
-
-它用 `VERCEL_ENV = production` 擋住 preview：Vercel 對每個 PR 都會自動建 preview，若 preview 與 production 共用同一個 `DATABASE_URL`，沒有這道判斷就等於每開一個 PR 就對正式庫跑 migration。
+**production 與 preview 部署都會在 build 時自動跑 `prisma migrate deploy`**（見 `package.json` 的 `build`），因為兩者用的是不同的資料庫。
 
 migration 走 `DATABASE_URL_UNPOOLED`（Neon 的 pooler 不適合跑 DDL），沒設的話會退回 `DATABASE_URL`。
+
+### preview 有自己的資料庫（2026-08-17 起）
+
+Neon 專案下有兩條 branch，Vercel 的環境變數分別指過去：
+
+| Vercel 環境 | Neon branch | 說明 |
+|---|---|---|
+| Production | `production` | 正式資料 |
+| Preview | `preview` | 從 `production` 分出的 copy-on-write 副本，所有 PR 共用 |
+
+**在此之前兩者共用同一個資料庫**，所以 build script 用 `VERCEL_ENV = production` 擋住 preview——否則每開一個 PR 就會對正式庫跑 migration。
+
+那道判斷的代價是**任何「對已被預先產生的頁面所查的 model 新增欄位」的 PR，preview build 一定會掛**：preview 不跑 migration，但 `next build` 會預先產生 `revalidate` 的 ISR 頁（`/magazines` 等）並在那時查庫，而 Prisma Client 已經是新 schema。症狀是 CI 全綠、Vercel 紅字，log 為 `The column (not available) does not exist`（P2022）。加新資料表不會觸發，因為 build 時沒人查它。
+
+分開資料庫之後 preview 自己跑 migration，這個問題消失，而且 preview 站變成真的可以點進去驗收。
+
+**preview branch 的資料會隨 PR 累積漂移**（各 PR 共用一條），需要時可以從 `production` 重新分一條。
 
 要手動補跑（例如自動化上線前累積的 migration）：
 

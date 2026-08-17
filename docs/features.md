@@ -105,6 +105,8 @@ ISSN 刻意不設唯一性、日期採 EDTF 等建檔準則見 [data-conventions
 
 文章沒有公開的單篇網址。
 
+**路徑段刻意不縮寫**（不用 `/m/cgw/i/163`）。`/magazines/cgw/issues/163` 是 25 個字元，跟一個裸 cuid 一樣長，縮寫只省 11 個字元卻讓網址失去自我描述——貼到別處時它自己要能講出「這是某本雜誌的某一期」，這跟選中文 slug 是同一條理由。而且 `/games/`、`/tags/`、`/contributors/` 都是全稱，只縮這兩個會不一致。「短」這個預算留給日後的全域短碼（見 BACKLOG），那裡短才有意義。
+
 ## 認證與權限
 
 - Auth.js v5 + Google OAuth 2.0
