@@ -130,6 +130,10 @@ model Issue {
   id           String   @id @default(cuid())
   magazineId   String   @map("magazine_id")
   issueNumber  String   @map("issue_number") // "第 42 期" 或 "Vol.5 No.3"
+  // URL handle, unique within the magazine -- the magazine slug is already in
+  // the path. Defaults to issueSlugify(issueNumber) but editors override it:
+  // see lib/slugify.ts for why no rule can be trusted here.
+  slug         String
   volumeNumber String?  @map("volume_number")
   title        String? // 本期特輯標題
   // EDTF (ISO 8601-2), same as Magazine: an issue is often dated only to the
@@ -155,6 +159,7 @@ model Issue {
   articles Article[]
 
   @@unique([magazineId, issueNumber])
+  @@unique([magazineId, slug])
   @@index([publishSort])
   @@map("issues")
 }

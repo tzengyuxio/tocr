@@ -151,6 +151,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               select: {
                 id: true,
                 issueNumber: true,
+                slug: true,
                 publishDate: true,
                 magazine: {
                   select: { id: true, name: true, slug: true },
@@ -466,7 +467,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       </Link>
                       <span>·</span>
                       <Link
-                        href={`/magazines/${article.issue.magazine.slug}/issues/${article.issue.id}`}
+                        href={`/magazines/${article.issue.magazine.slug}/issues/${encodeURIComponent(article.issue.slug)}`}
                         className="hover:underline"
                       >
                         {article.issue.issueNumber}
@@ -478,7 +479,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </CardDescription>
                     <CardTitle className="mt-1 text-lg">
                       <Link
-                        href={`/magazines/${article.issue.magazine.slug}/issues/${article.issue.id}`}
+                        href={`/magazines/${article.issue.magazine.slug}/issues/${encodeURIComponent(article.issue.slug)}`}
                         className="hover:underline"
                       >
                         {article.title}

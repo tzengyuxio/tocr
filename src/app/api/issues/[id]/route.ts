@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   issueUpdateSchema,
+  withIssueSlugIfPresent,
   withPublishSortIfPresent,
   withTocReviewedAt,
 } from "@/lib/validators/issue";
@@ -56,10 +57,13 @@ export const PUT = withErrorHandler(async (
   const isHuman = !isValidApiToken(request.headers.get("authorization"));
   const existing = await prisma.issue.findUnique({ where: { id } });
 
-  const data = withTocReviewedAt(withPublishSortIfPresent(validatedData), {
-    isHuman,
-    current: existing?.tocReviewedAt ?? null,
-  });
+  const data = withTocReviewedAt(
+    withIssueSlugIfPresent(withPublishSortIfPresent(validatedData)),
+    {
+      isHuman,
+      current: existing?.tocReviewedAt ?? null,
+    }
+  );
 
   const issue = await prisma.issue.update({ where: { id }, data });
 

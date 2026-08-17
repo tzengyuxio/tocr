@@ -2,7 +2,7 @@ export const revalidate = 60;
 
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { resolveSlugParam } from "@/lib/slug-lookup";
+import { decodeParam, resolveIssueParam, resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import {
@@ -23,9 +23,15 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { issueId } = await params;
+  const { id: magazineParam, issueId: issueParam } = await params;
+  const magazine = await resolveSlugParam("magazine", magazineParam);
+  if (!magazine) return { title: "單期詳情" };
+
+  const found = await resolveIssueParam(magazine.id, issueParam);
+  if (!found) return { title: "單期詳情" };
+
   const issue = await prisma.issue.findUnique({
-    where: { id: issueId },
+    where: { id: found.id },
     select: { issueNumber: true, magazine: { select: { name: true } } },
   });
   if (!issue) return { title: "單期詳情" };
@@ -33,16 +39,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function IssueDetailPage({ params }: PageProps) {
-  const { id: magazineParam, issueId } = await params;
+  const { id: magazineParam, issueId: issueParam } = await params;
 
-  // 只有期刊那一段吃 slug；單期維持 cuid（期號的寫法太雜，沒有可靠的推導規則，
-  // 見 BACKLOG）。舊的 cuid 期刊連結還在外面流傳，所以認出來就永久轉址。
+  // 兩段各自解析，任一段不是 canonical 就一次轉到正確的網址。舊的 cuid 連結還在
+  // 外面流傳，而單期那段還多收期號——拿著實體雜誌的人讀到的是封底的期號。
   const magazine = await resolveSlugParam("magazine", magazineParam);
   if (!magazine) notFound();
-  if (magazineParam !== magazine.slug) {
-    permanentRedirect(`/magazines/${magazine.slug}/issues/${issueId}`);
+
+  const found = magazine && (await resolveIssueParam(magazine.id, issueParam));
+  if (!found) notFound();
+
+  if (magazineParam !== magazine.slug || decodeParam(issueParam) !== found.slug) {
+    // encodeURIComponent 不能省：中文 slug（創刊號）直接放進 Location header 會
+    // 讓 Node 丟 ERR_INVALID_CHAR，整頁變成 500。
+    permanentRedirect(
+      `/magazines/${magazine.slug}/issues/${encodeURIComponent(found.slug)}`
+    );
   }
   const id = magazine.id;
+  const issueId = found.id;
 
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";

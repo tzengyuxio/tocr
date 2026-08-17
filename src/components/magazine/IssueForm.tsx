@@ -53,6 +53,7 @@ export function IssueForm({
     defaultValues: {
       magazineId,
       issueNumber: initialData?.issueNumber || "",
+      slug: initialData?.slug || "",
       volumeNumber: initialData?.volumeNumber || "",
       title: initialData?.title || "",
       publishDate: initialData?.publishDate || "",
@@ -137,6 +138,20 @@ export function IssueForm({
                 <p className="text-sm text-red-500">
                   {errors.issueNumber.message}
                 </p>
+              )}
+            </div>
+
+            {/* 網址代號 */}
+            <div className="space-y-2">
+              <Label htmlFor="slug">網址代號</Label>
+              <Input id="slug" placeholder="留空則自動產生" {...register("slug")} />
+              <p className="text-xs text-muted-foreground">
+                公開網址用的代號，只需在本刊內唯一。留空會從期號推出（「第163期」→
+                「163」）。封面另有編號的刊物請自行填寫，例如電玩通用日期發行號
+                「2014-01-30」。改動會讓舊網址失效
+              </p>
+              {errors.slug && (
+                <p className="text-sm text-destructive">{errors.slug.message}</p>
               )}
             </div>
 

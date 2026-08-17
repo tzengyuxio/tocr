@@ -78,6 +78,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                 select: {
                   id: true,
                   issueNumber: true,
+                  slug: true,
                   publishDate: true,
                   magazine: {
                     select: { id: true, name: true, slug: true },
@@ -233,7 +234,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell>
                           <Link
-                            href={`/magazines/${ag.article.issue.magazine.slug}/issues/${ag.article.issue.id}`}
+                            href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`}
                             className="hover:underline"
                           >
                             {ag.article.issue.issueNumber}
@@ -277,7 +278,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                         {ag.article.issue.magazine.name}
                       </Link>
                       <span>·</span>
-                      <Link href={`/magazines/${ag.article.issue.magazine.slug}/issues/${ag.article.issue.id}`} className="hover:underline">
+                      <Link href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`} className="hover:underline">
                         {ag.article.issue.issueNumber}
                       </Link>
                       <span>·</span>

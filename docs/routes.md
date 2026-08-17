@@ -7,7 +7,7 @@
 | `/` | 首頁：搜尋框、統計、最新單期 |
 | `/magazines` | 期刊列表 |
 | `/magazines/[slug]` | 期刊詳情與單期列表。網址吃 ASCII slug（`/magazines/ace`），舊的 cuid 連結永久轉址 |
-| `/magazines/[slug]/issues/[issueId]` | 單期目錄。期刊那一段吃 slug，單期維持 cuid |
+| `/magazines/[slug]/issues/[issueSlug]` | 單期目錄。兩段都吃 slug；單期那段也收期號與舊 cuid，皆永久轉址 |
 | `/games` | 遊戲列表 |
 | `/games/[slug]` | 該遊戲的相關文章。網址吃 slug（可為中文），舊的 cuid 連結永久轉址 |
 | `/tags` | 標籤索引 |

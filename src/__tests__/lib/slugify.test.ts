@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 import { prismaMock, resetPrismaMock } from "../__mocks__/prisma";
-import { ensureUniqueSlug, slugify } from "@/lib/slugify";
+import { ensureUniqueSlug, issueSlugify, slugify } from "@/lib/slugify";
 
 beforeEach(() => resetPrismaMock());
 
@@ -60,5 +60,38 @@ describe("ensureUniqueSlug", () => {
       where: { slug: "攻略", NOT: { id: "tag-1" } },
       select: { id: true },
     });
+  });
+});
+
+// 同一個期號有三種寫法，網址只該有一種形狀。
+describe("issueSlugify", () => {
+  it("reduces the three ways of writing a number to the number", () => {
+    expect(issueSlugify("163")).toBe("163");
+    expect(issueSlugify("第163期")).toBe("163");
+    expect(issueSlugify("第 163 期")).toBe("163");
+    expect(issueSlugify("VOL.51")).toBe("51");
+    expect(issueSlugify("No. 7")).toBe("7");
+    expect(issueSlugify("ＶＯＬ．５１")).toBe("51");
+  });
+
+  it("drops leading zeros so 007 and 7 cannot both exist", () => {
+    expect(issueSlugify("007")).toBe("7");
+  });
+
+  it("keeps the words when the number is a name", () => {
+    expect(issueSlugify("創刊號")).toBe("創刊號");
+    expect(issueSlugify("試刊2號")).toBe("試刊2號");
+    expect(issueSlugify("創刊驚嘆號")).toBe("創刊驚嘆號");
+  });
+
+  // 合併號在整站是同一條規則：用 "-" 接後半。
+  it("joins a merged issue with a hyphen", () => {
+    expect(issueSlugify("70+71")).toBe("70-71");
+  });
+
+  // 期號不是純數字時不該被當成數字，否則 GAMEfans 新刊1號 會變成 1，
+  // 跟該刊真正的第 1 期撞在一起。
+  it("does not pull a number out of a longer name", () => {
+    expect(issueSlugify("GAMEfans 新刊1號")).toBe("gamefans-新刊1號");
   });
 });

@@ -1,4 +1,9 @@
-import { issueCreateSchema, issueUpdateSchema } from "@/lib/validators/issue";
+import {
+  issueCreateSchema,
+  issueUpdateSchema,
+  withIssueSlug,
+  withIssueSlugIfPresent,
+} from "@/lib/validators/issue";
 
 describe("issueCreateSchema", () => {
   it("should validate a valid issue with required fields", () => {
@@ -278,5 +283,34 @@ describe("issueUpdateSchema defaults", () => {
     if (result.success) {
       expect(result.data).not.toHaveProperty("tocImages");
     }
+  });
+});
+
+// 期號會被修（打錯字、補全名），但 slug 一旦公開就不能自己跑掉。
+describe("withIssueSlug", () => {
+  it("derives the slug from the issue number when none is given", () => {
+    expect(withIssueSlug({ issueNumber: "第163期" })).toEqual({
+      issueNumber: "第163期",
+      slug: "163",
+    });
+  });
+
+  it("keeps the slug the editor typed", () => {
+    expect(withIssueSlug({ issueNumber: "468", slug: "2014-01-30" })).toEqual({
+      issueNumber: "468",
+      slug: "2014-01-30",
+    });
+  });
+});
+
+describe("withIssueSlugIfPresent", () => {
+  it("drops a blank slug rather than writing one", () => {
+    expect(withIssueSlugIfPresent({ issueNumber: "164", slug: null })).toEqual({
+      issueNumber: "164",
+    });
+  });
+
+  it("leaves an explicit slug in place", () => {
+    expect(withIssueSlugIfPresent({ slug: "創刊號" })).toEqual({ slug: "創刊號" });
   });
 });
