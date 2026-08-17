@@ -159,6 +159,14 @@
 
   真要做的話，值得做成**單期刊頭的時間軸**——「界」字隨當期主題變成聖誕老人、包青天、棒球，那是這個站對懷舊讀者少見的價值。但那是展示功能的規劃，不是加個欄位就好，**動手前要先想清楚展示形狀**（2026-08-18）
 
+- [ ] **preview 資料庫由所有 PR 共用，會被互相汙染** — preview build 會跑 `prisma migrate deploy`，而所有 PR 的 preview 打的是同一條 Neon branch（`preview`）。於是各 PR 的 migration 全疊在同一個資料庫上，誰也不擁有那個狀態。
+
+  **2026-08-18 實際炸過一次**：三個 PR 的 migration 疊在上面，其中一條來自後來被 force-push 抹掉的 commit（它 drop 了 `magazines.logo_image`）。分支歷史沒了，資料庫的改動卻留著，下一次部署就撞上「欄位已存在」而失敗。**重寫已經部署過的分支，資料庫不會跟著回捲**——這是那次的教訓。當下的處置是把 preview branch 從 production 重新重置（Neon 的 reset from parent），正式站全程未受影響。
+
+  兩個方向：**每個 PR 一條 Neon branch**（Vercel–Neon 整合支援，要碰部署設定與環境變數），或**preview 不跑 migrate**（build script 改一行，但 preview 就測不到 migration，而且會回到 2026-08-17 之前那個「新增欄位必掛」的老問題，見 [deployment.md](docs/deployment.md)）。
+
+  **不急**：重置一次就恢復，而且知道原因就不會慌。等 PR 開始並行得更頻繁再處理（2026-08-18）
+
 ## 2026-08-13 code review 待辦
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。

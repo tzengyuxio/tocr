@@ -95,6 +95,6 @@ User     1:N EditLog
 
 **Function region 釘在 `sin1`**（`vercel.json`）。先前 function 在 `iad1`、資料庫在新加坡，跨太平洋往返讓後台每頁要 1.8–2.8 秒；同區之後暖機 13–50ms。
 
-**`prisma migrate deploy` 跑在 build 裡**，用 `VERCEL_ENV = production` 擋住 preview。**那道判斷不能拿掉**——Vercel 對每個 PR 都會建 preview，而 preview 與 production 共用資料庫。
+**`prisma migrate deploy` 跑在 build 裡**，production 與 preview 都跑。2026-08-17 起 preview 有自己的 Neon branch，所以這件事是安全的；在那之前兩者共用同一個資料庫，build script 得擋住 preview。詳見 [deployment.md](deployment.md)——**preview branch 由所有 PR 共用，會累積漂移**。
 
 另有 Docker 部署路徑，見 [docker-deployment.md](docker-deployment.md)。
