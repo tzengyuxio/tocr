@@ -9,8 +9,10 @@ interface MockModel {
   findUnique: jest.Mock;
   findFirst: jest.Mock;
   create: jest.Mock;
+  createMany: jest.Mock;
   update: jest.Mock;
   delete: jest.Mock;
+  deleteMany: jest.Mock;
   count: jest.Mock;
   aggregate: jest.Mock;
 }
@@ -28,6 +30,7 @@ interface PrismaMock {
   articleTag: MockModel;
   articleGame: MockModel;
   ocrRecord: MockModel;
+  exportLog: MockModel;
   user: MockModel;
   editLog: MockModel;
   $transaction: jest.Mock;
@@ -40,8 +43,10 @@ const createMockModel = (): MockModel => ({
   findUnique: jest.fn(),
   findFirst: jest.fn(),
   create: jest.fn(),
+  createMany: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
+  deleteMany: jest.fn(),
   count: jest.fn(),
   aggregate: jest.fn(),
 });
@@ -55,6 +60,7 @@ export const prismaMock: PrismaMock = {
   articleTag: createMockModel(),
   articleGame: createMockModel(),
   ocrRecord: createMockModel(),
+  exportLog: createMockModel(),
   user: createMockModel(),
   editLog: createMockModel(),
   $transaction: jest.fn((fn: TransactionCallback) => fn(prismaMock)),

@@ -29,6 +29,9 @@ model User {
   // 編輯紀錄
   editLogs EditLog[]
 
+  // 匯出紀錄
+  exportLogs ExportLog[]
+
   @@map("users")
 }
 
@@ -301,6 +304,36 @@ model EditLog {
   @@index([userId])
   @@index([batchId])
   @@map("edit_logs")
+}
+
+// ==================== 匯出紀錄 ====================
+
+/**
+ * 誰在什麼時候把資料匯出去。只有管理員看得到（/admin/export-logs）。
+ *
+ * 不放進 EditLog：那裡的語意是 CREATE/UPDATE/DELETE，而且會餵貢獻者排行榜
+ * 與活動流，匯出擠進去等於到處補排除條件。
+ */
+model ExportLog {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  // 匯出範圍。null = 全部期刊。名稱是快照，期刊改名或刪除後紀錄仍讀得懂。
+  magazineId   String? @map("magazine_id")
+  magazineName String? @map("magazine_name")
+
+  // 串流結束才知道，所以是 null 就代表那次匯出沒跑完。
+  rowCount Int? @map("row_count")
+
+  ipAddress String? @map("ip_address")
+  userAgent String? @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([userId])
+  @@map("export_logs")
 }
 
 // ==================== AI OCR 紀錄 ====================

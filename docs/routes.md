@@ -40,13 +40,14 @@
 | `/admin/articles` | 文章管理 |
 | `/admin/articles/new` | 新增文章 |
 | `/admin/articles/[id]` | 文章編輯 |
-| `/admin/ocr` | AI 目錄辨識與複查 |
+| `/admin/ocr` | AI 目錄辨識（上傳與辨識，結果直接寫入該期文章）|
 | `/admin/tags` · `/admin/tags/[id]` | 標籤管理與詳情 |
 | `/admin/games` · `/admin/games/[id]` | 遊戲管理與詳情 |
 | `/admin/contributors` | 貢獻排行與近期活動 |
 | `/admin/export` | CSV 匯出 |
 | `/admin/users` | 使用者管理（僅 ADMIN） |
 | `/admin/edit-logs` | 編輯紀錄（僅 ADMIN） |
+| `/admin/export-logs` | 匯出紀錄（僅 ADMIN） |
 | `/admin/profile` | 個人設定（顯示名稱） |
 
 ## API
