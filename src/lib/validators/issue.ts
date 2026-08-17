@@ -29,6 +29,8 @@ export const issueCreateSchema = z.object({
       .nullable()
       .optional()
   ),
+  // The other numbers printed on the same issue -- see Issue.altNumbers.
+  altNumbers: z.array(z.string()).default([]),
   volumeNumber: optionalText,
   title: optionalText,
   // EDTF (ISO 8601-2), not a calendar date: a cover may give only the month
@@ -53,7 +55,10 @@ export const issueCreateSchema = z.object({
 export const issueUpdateSchema = issueCreateSchema
   .partial()
   .omit({ magazineId: true })
-  .extend({ tocImages: z.array(z.string()).optional() });
+  .extend({
+    tocImages: z.array(z.string()).optional(),
+    altNumbers: z.array(z.string()).optional(),
+  });
 
 /**
  * publishSort is derived, never supplied by the caller, so that the ordering

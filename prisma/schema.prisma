@@ -130,6 +130,14 @@ model Issue {
   id           String   @id @default(cuid())
   magazineId   String   @map("magazine_id")
   issueNumber  String   @map("issue_number") // "第 42 期" 或 "Vol.5 No.3"
+  // The other numbers printed on the same issue. 電玩通 carries four at once:
+  // a dated release number (1月30日號), a within-year number (2014 02), a
+  // Hong Kong volume (HK VOL 308) and the running total (第468期), which is
+  // what issueNumber holds. An array rather than named columns because how
+  // many exist varies by issue -- the HK volume only appears once the Hong
+  // Kong edition does. The cost is that no single one can be queried or
+  // sorted on its own.
+  altNumbers   String[] @default([]) @map("alt_numbers")
   // URL handle, unique within the magazine -- the magazine slug is already in
   // the path. Defaults to issueSlugify(issueNumber) but editors override it:
   // see lib/slugify.ts for why no rule can be trusted here.

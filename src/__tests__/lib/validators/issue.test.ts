@@ -284,6 +284,28 @@ describe("issueUpdateSchema defaults", () => {
       expect(result.data).not.toHaveProperty("tocImages");
     }
   });
+
+  it("leaves altNumbers alone when it is not supplied", () => {
+    const result = issueUpdateSchema.safeParse({ price: 120 });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).not.toHaveProperty("altNumbers");
+    }
+  });
+
+  it("takes the other numbers printed on the same issue", () => {
+    const result = issueUpdateSchema.safeParse({
+      altNumbers: ["2014 02", "HK VOL 308", "1月30日號"],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.altNumbers).toEqual([
+        "2014 02",
+        "HK VOL 308",
+        "1月30日號",
+      ]);
+    }
+  });
 });
 
 // 期號會被修（打錯字、補全名），但 slug 一旦公開就不能自己跑掉。

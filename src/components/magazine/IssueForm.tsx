@@ -53,6 +53,7 @@ export function IssueForm({
     defaultValues: {
       magazineId,
       issueNumber: initialData?.issueNumber || "",
+      altNumbers: initialData?.altNumbers || [],
       slug: initialData?.slug || "",
       volumeNumber: initialData?.volumeNumber || "",
       title: initialData?.title || "",
@@ -153,6 +154,35 @@ export function IssueForm({
               {errors.slug && (
                 <p className="text-sm text-destructive">{errors.slug.message}</p>
               )}
+            </div>
+
+            {/* 其他編號 */}
+            <div className="space-y-2 md:col-span-2">
+              <Controller
+                name="altNumbers"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label>其他編號</Label>
+                    <Input
+                      placeholder="以逗號分隔（例如：2014 02, HK VOL 308, 1月30日號）"
+                      value={(field.value || []).join(", ")}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        field.onChange(
+                          val
+                            ? val.split(",").map((s) => s.trim()).filter(Boolean)
+                            : []
+                        );
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      同一期封面／版權頁上並存的其他編號。期號欄放最主要的那個（有總號就放總號），
+                      其餘如期別、港版卷號、日期發行號放這裡
+                    </p>
+                  </div>
+                )}
+              />
             </div>
 
             {/* 卷號 */}

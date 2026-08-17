@@ -133,6 +133,13 @@ export default async function IssueDetailPage({ params }: PageProps) {
         {issue.title && (
           <p className="mt-1 text-xl text-muted-foreground">{issue.title}</p>
         )}
+        {/* 同一期封面上常印著好幾套編號，而標題只放得下一個。手上拿著實體雜誌的人
+            讀到的可能正是這裡的其中一個。 */}
+        {issue.altNumbers.length > 0 && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            其他編號：{issue.altNumbers.join(" · ")}
+          </p>
+        )}
         <p className="mt-1 text-sm text-muted-foreground">
           {meta.join(" · ")}
         </p>
