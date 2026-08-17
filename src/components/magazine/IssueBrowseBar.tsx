@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowDownUp, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
+  DEFAULT_ISSUE_FILTER,
+  DEFAULT_ISSUE_SORT,
   ISSUE_FILTERS,
   ISSUE_SORTS,
   type IssueDirection,
@@ -38,9 +40,14 @@ export function IssueBrowseBar({
     nextDirection: IssueDirection
   ) => {
     const params = new URLSearchParams();
-    if (nextFilter !== ISSUE_FILTERS[0].value) params.set("filter", nextFilter);
-    if (nextSort !== ISSUE_SORTS[0].value) params.set("sort", nextSort);
-    if (nextDirection !== "desc") params.set("dir", nextDirection);
+    if (nextFilter !== DEFAULT_ISSUE_FILTER) params.set("filter", nextFilter);
+    if (nextSort !== DEFAULT_ISSUE_SORT) params.set("sort", nextSort);
+    // Each sort has its own default direction, so what counts as "not worth
+    // spelling out" depends on which sort is in play.
+    const sortDefault = ISSUE_SORTS.find(
+      (option) => option.value === nextSort
+    )!.defaultDirection;
+    if (nextDirection !== sortDefault) params.set("dir", nextDirection);
     const query = params.toString();
     return query ? `${basePath}?${query}` : basePath;
   };
@@ -58,7 +65,10 @@ export function IssueBrowseBar({
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-muted-foreground">篩選</span>
+        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+          <Filter className="h-3.5 w-3.5" />
+          篩選
+        </span>
         {ISSUE_FILTERS.map((option) => (
           <Link
             key={option.value}
@@ -75,17 +85,20 @@ export function IssueBrowseBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-muted-foreground">排序</span>
+        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+          <ArrowDownUp className="h-3.5 w-3.5" />
+          排序
+        </span>
         {ISSUE_SORTS.map((option) => {
           const active = option.value === sort.value;
           // Clicking the sort you are already on reverses it; picking the other
-          // one starts from newest-first rather than carrying the direction
-          // over, which would otherwise show 1989 first for no stated reason.
+          // one starts from that sort's own default rather than carrying the
+          // direction over, which would leave "最近更新" reading oldest-first.
           const nextDirection: IssueDirection = active
             ? direction === "desc"
               ? "asc"
               : "desc"
-            : "desc";
+            : option.defaultDirection;
           return (
             <Link
               key={option.value}

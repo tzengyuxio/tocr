@@ -50,7 +50,7 @@ export default async function MagazineDetailPage({
   } = await searchParams;
   const filter = parseIssueFilter(filterParam);
   const sort = parseIssueSort(sortParam);
-  const direction = parseIssueDirection(dirParam);
+  const direction = parseIssueDirection(dirParam, sort);
 
   // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
   const found = await resolveSlugParam("magazine", param);
@@ -84,7 +84,7 @@ export default async function MagazineDetailPage({
   const counts = Object.fromEntries(
     ISSUE_FILTERS.map((option, index) => [option.value, filterCounts[index]])
   );
-  const total = counts[ISSUE_FILTERS[0].value];
+  const total = counts.all;
 
   // Only five magazines have a masthead on file, and an empty column beside the
   // details reads as a page that failed to load. The earliest issue's cover
@@ -206,13 +206,14 @@ export default async function MagazineDetailPage({
       <div>
         {/* The controls share the heading's line rather than taking one of
             their own; they wrap under it only when the row runs out of width. */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-10 gap-y-3">
           <h2 className="text-2xl font-bold">
             單期列表
             <span className="ml-2 text-lg font-normal text-muted-foreground">
               （共 {total} 期
-              {filter.value !== ISSUE_FILTERS[0].value &&
-                `，顯示 ${issues.length} 期`}
+              {/* Only when the list really is shorter: 軟體世界 has a cover
+                  for all 201, and 「共 201 期，顯示 201 期」 reads like a bug. */}
+              {issues.length !== total && `，顯示 ${issues.length} 期`}
               ）
             </span>
           </h2>
