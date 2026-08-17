@@ -73,6 +73,54 @@ describe("resolveEditLogTargets", () => {
     });
   });
 
+  // 「（已刪除 · cmsumll9k007x04joxpa2rhy1）」看不出刪掉的是什麼。刪除紀錄
+  // 現在會把名稱寫進 changes，這裡把它撈回來。
+  it("names the record from the log when it has been deleted", async () => {
+    prismaMock.game.findMany.mockResolvedValue([]);
+
+    const refs = [
+      {
+        entityType: "Game",
+        entityId: "g-gone",
+        changes: { name: { from: "P.47", to: null } },
+      },
+    ];
+    const targetOf = await resolveEditLogTargets(refs);
+
+    expect(targetOf(refs[0])).toEqual({
+      label: "P.47（已刪除）",
+      href: null,
+    });
+  });
+
+  it("points a merged record at the one it was merged into", async () => {
+    // 兩個 id 走同一次查詢；被刪的那筆查不到，存活的查得到。
+    prismaMock.game.findMany.mockResolvedValue([{ id: "g-keep", name: "P-47" }]);
+
+    const refs = [
+      {
+        entityType: "Game",
+        entityId: "g-gone",
+        changes: { name: { from: "P.47", to: null }, mergedInto: "g-keep" },
+      },
+    ];
+    const targetOf = await resolveEditLogTargets(refs);
+
+    expect(targetOf(refs[0])).toEqual({
+      label: "P.47（已合併至 P-47）",
+      href: "/admin/games/g-keep",
+    });
+  });
+
+  it("falls back to the id when the log carries no name", async () => {
+    prismaMock.game.findMany.mockResolvedValue([]);
+
+    const refs = [{ entityType: "Game", entityId: "g-old", changes: null }];
+    const targetOf = await resolveEditLogTargets(refs);
+
+    expect(targetOf(refs[0]).label).toBe("（已刪除 · g-old）");
+  });
+
   it("hides who a user account belongs to unless the caller asks", async () => {
     prismaMock.user.findMany.mockResolvedValue([
       { id: "u1", name: null, email: "someone@example.com" },

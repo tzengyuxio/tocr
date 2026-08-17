@@ -169,11 +169,13 @@ export const DELETE = withErrorHandler(async (
 ) => {
   const { id } = await context!.params;
 
-  await prisma.article.delete({
+  // delete() 回傳被刪的那筆，正好用來記下它叫什麼 -- 紀錄活得比資料久，
+  // 只留 id 的話事後看不出刪掉的是什麼。
+  const deleted = await prisma.article.delete({
     where: { id },
   });
 
-  await logEdit("Article", id, "DELETE");
+  await logEdit("Article", id, "DELETE", { title: { from: deleted.title, to: null } });
 
   return NextResponse.json({ success: true });
 }, "Delete article");

@@ -78,11 +78,23 @@ export const DELETE = withErrorHandler(async (
 ) => {
   const { id } = await context!.params;
 
+  // 期號單獨看認不出是哪一本，所以連雜誌名一起記。delete() 不能 include，
+  // 而刪掉之後就查不到了，只好先讀一次。
+  const before = await prisma.issue.findUnique({
+    where: { id },
+    select: { issueNumber: true, magazine: { select: { name: true } } },
+  });
+
   await prisma.issue.delete({
     where: { id },
   });
 
-  await logEdit("Issue", id, "DELETE");
+  await logEdit("Issue", id, "DELETE", {
+    name: {
+      from: before ? `${before.magazine.name} ${before.issueNumber}` : null,
+      to: null,
+    },
+  });
 
   return NextResponse.json({ success: true });
 }, "Delete issue");
