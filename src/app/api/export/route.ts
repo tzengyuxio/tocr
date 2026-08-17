@@ -6,6 +6,7 @@ import {
   rowsFor,
   type ExportIssue,
 } from "@/lib/csv/export-rows";
+import { finishExportLog, startExportLog } from "@/lib/export-log";
 
 // Issues are read a batch at a time so peak memory stays flat regardless of
 // how much has been catalogued. 549 issues is roughly 11 queries.
@@ -37,7 +38,15 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     },
   });
 
+  // Opened before the first byte goes out, so a download that dies halfway
+  // still leaves a trace. See lib/export-log.ts.
+  const logId = await startExportLog(request, {
+    magazineId,
+    magazineName: magazineId ? (magazines[0]?.name ?? null) : null,
+  });
+
   const encoder = new TextEncoder();
+  let rowCount = 0;
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -65,6 +74,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
             seenAny = true;
             const lines = rowsFor(magazine, issues as ExportIssue[]);
+            rowCount += lines.length;
             controller.enqueue(encoder.encode("\r\n" + lines.join("\r\n")));
 
             if (issues.length < ISSUE_BATCH_SIZE) break;
@@ -74,10 +84,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           // A magazine with no issues still gets its own row.
           if (!seenAny) {
             const lines = rowsFor(magazine, []);
+            rowCount += lines.length;
             controller.enqueue(encoder.encode("\r\n" + lines.join("\r\n")));
           }
         }
 
+        await finishExportLog(logId, rowCount);
         controller.close();
       } catch (error) {
         // Headers are already sent, so this cannot become a 500 -- the client
