@@ -10,14 +10,20 @@ import { Badge } from "@/components/ui/badge";
 import { IssueCard } from "@/components/IssueCard";
 import { IssueBrowseBar } from "@/components/magazine/IssueBrowseBar";
 import { MagazineLogo } from "@/components/magazine/MagazineLogo";
-import { ISSUE_FILTERS, parseIssueFilter, parseIssueSort } from "@/lib/issue-browse";
+import {
+  ISSUE_FILTERS,
+  issueOrderBy,
+  parseIssueDirection,
+  parseIssueFilter,
+  parseIssueSort,
+} from "@/lib/issue-browse";
 import { SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ filter?: string; sort?: string }>;
+  searchParams: Promise<{ filter?: string; sort?: string; dir?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -37,9 +43,14 @@ export default async function MagazineDetailPage({
   searchParams,
 }: PageProps) {
   const { id: param } = await params;
-  const { filter: filterParam, sort: sortParam } = await searchParams;
+  const {
+    filter: filterParam,
+    sort: sortParam,
+    dir: dirParam,
+  } = await searchParams;
   const filter = parseIssueFilter(filterParam);
   const sort = parseIssueSort(sortParam);
+  const direction = parseIssueDirection(dirParam);
 
   // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
   const found = await resolveSlugParam("magazine", param);
@@ -62,7 +73,7 @@ export default async function MagazineDetailPage({
   const [issues, ...filterCounts] = await Promise.all([
     prisma.issue.findMany({
       where: { magazineId: id, ...filter.where },
-      orderBy: sort.orderBy,
+      orderBy: issueOrderBy(sort, direction),
       include: { _count: { select: { articles: true } } },
     }),
     ...ISSUE_FILTERS.map((option) =>
@@ -81,9 +92,13 @@ export default async function MagazineDetailPage({
 
       {/* 期刊資訊。刊頭與詳細資料左右並列，兩欄等高——刊頭原本是頂上一條 96px
           的橫幅，那個高度撐不起這頁唯一的一張圖。 */}
-      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-stretch">
+      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
         {magazine.logoImage && (
-          <MagazineLogo src={magazine.logoImage} name={magazine.name} />
+          <>
+            <MagazineLogo src={magazine.logoImage} name={magazine.name} />
+            {/* A rule between the two columns, horizontal once they stack. */}
+            <hr className="border-t md:h-auto md:border-l md:border-t-0" />
+          </>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
@@ -151,24 +166,29 @@ export default async function MagazineDetailPage({
 
       {/* 單期列表 */}
       <div>
-        <h2 className="mb-4 text-2xl font-bold">
-          單期列表
-          <span className="ml-2 text-lg font-normal text-muted-foreground">
-            （共 {total} 期
-            {filter.value !== ISSUE_FILTERS[0].value &&
-              `，顯示 ${issues.length} 期`}
-            ）
-          </span>
-        </h2>
+        {/* The controls share the heading's line rather than taking one of
+            their own; they wrap under it only when the row runs out of width. */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <h2 className="text-2xl font-bold">
+            單期列表
+            <span className="ml-2 text-lg font-normal text-muted-foreground">
+              （共 {total} 期
+              {filter.value !== ISSUE_FILTERS[0].value &&
+                `，顯示 ${issues.length} 期`}
+              ）
+            </span>
+          </h2>
 
-        {total > 0 && (
-          <IssueBrowseBar
-            basePath={`/magazines/${magazine.slug}`}
-            filter={filter}
-            sort={sort}
-            counts={counts}
-          />
-        )}
+          {total > 0 && (
+            <IssueBrowseBar
+              basePath={`/magazines/${magazine.slug}`}
+              filter={filter}
+              sort={sort}
+              direction={direction}
+              counts={counts}
+            />
+          )}
+        </div>
 
         {issues.length === 0 ? (
           <div className="rounded-lg border p-8 text-center">
@@ -177,16 +197,16 @@ export default async function MagazineDetailPage({
             </p>
           </div>
         ) : (
-          // The cover frame is 3:4, so the column width is what sets its
-          // height: these counts keep it between 228 and 273px at every
-          // breakpoint, against the 379px it used to reach at 5 columns.
+          // Fixed tracks: the covers keep their own proportions now, so the
+          // column width is the only thing holding the shelf in line, and a
+          // fixed one keeps every issue the same width whatever the viewport.
+          // 182px, not 180: the card's 1px border sits outside the image, and
+          // it is the image that should measure 180.
           //
-          // Column counts rather than auto-fill with a 12rem cap, which looks
-          // like the tidier way to ask for a fixed height: auto-fill counts
-          // tracks by the maximum, so a 390px phone fitted one 12rem column
-          // where two used to go, and a 1440px page left a column's worth of
-          // slack at the right edge.
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+          // Two equal columns below sm instead, because auto-fill counts tracks
+          // by their width: 182px + gap does not go twice into a 390px phone,
+          // and the shelf would drop to a single column.
+          <div className="grid grid-cols-2 gap-3 sm:[grid-template-columns:repeat(auto-fill,182px)]">
             {issues.map((issue) => (
               <IssueCard
                 key={issue.id}

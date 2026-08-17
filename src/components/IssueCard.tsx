@@ -18,30 +18,32 @@ interface IssueCardProps {
   magazineName?: string;
 }
 
+/**
+ * One issue as the object it was: the scan keeps its own proportions and the
+ * card has square corners, because these are photographs of physical magazines
+ * and a rounded corner reads as damage to the object rather than as styling.
+ *
+ * The cost is that a row of cards no longer lines up along the bottom of the
+ * covers -- issues really were different shapes.
+ */
 export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps) {
   return (
     <Link href={`/magazines/${magazineSlug}/issues/${encodeURIComponent(issue.slug)}`}>
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md gap-0 py-0">
+      <Card className="h-full gap-0 overflow-hidden rounded-none py-0 transition-shadow hover:shadow-md">
         {issue.coverImage ? (
-          // object-contain, not cover: a magazine cover is mostly masthead and
-          // cover lines, and cropping to fill the frame cuts the text off.
-          //
-          // min-h-0 is what holds the 3:4 shape. The frame is both a flex item
-          // and a flex container, so its automatic minimum size kept it from
-          // going below the height of the image inside -- a cover taller than
-          // 3:4 pushed the frame out by up to 9px, and a row of covers came out
-          // at slightly different heights.
-          <div className="flex aspect-[3/4] w-full min-h-0 items-center justify-center bg-muted">
-            <Image
-              src={issue.coverImage}
-              alt={issue.issueNumber}
-              width={400}
-              height={560}
-              unoptimized
-              className="max-h-full w-auto max-w-full object-contain"
-            />
-          </div>
+          // No frame to fight with: the width comes from the grid column and
+          // the height follows the scan.
+          <Image
+            src={issue.coverImage}
+            alt={issue.issueNumber}
+            width={400}
+            height={560}
+            unoptimized
+            className="h-auto w-full bg-muted"
+          />
         ) : (
+          // No scan: the placeholder keeps a 3:4 frame, so a gap still reads as
+          // a magazine-shaped hole rather than as a squashed card.
           <div className="flex aspect-[3/4] w-full min-h-0 items-center justify-center bg-muted">
             <BookOpen className="h-10 w-10 text-muted-foreground/50" />
           </div>

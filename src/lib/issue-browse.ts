@@ -25,18 +25,22 @@ export const ISSUE_FILTERS = [
 }>;
 
 export const ISSUE_SORTS = [
-  // Ordering by the issue number would order "10" before "9"; the publish date
-  // is what the number stands for anyway, and it is already indexed.
-  { value: "date", label: "出版日期", orderBy: { publishSort: "desc" } },
-  { value: "updated", label: "最近更新", orderBy: { updatedAt: "desc" } },
+  // Ordering by the issue number would put "10" before "9"; the publish date is
+  // what the number stands for anyway, and it is already indexed.
+  { value: "date", label: "出版日期", field: "publishSort" },
+  { value: "updated", label: "最近更新", field: "updatedAt" },
 ] as const satisfies ReadonlyArray<{
   value: string;
   label: string;
-  orderBy: Prisma.IssueOrderByWithRelationInput;
+  field: keyof Prisma.IssueOrderByWithRelationInput;
 }>;
+
+/** Newest first by default: both fields answer "what is recent" first. */
+export const ISSUE_DIRECTIONS = ["desc", "asc"] as const;
 
 export type IssueFilter = (typeof ISSUE_FILTERS)[number];
 export type IssueSort = (typeof ISSUE_SORTS)[number];
+export type IssueDirection = (typeof ISSUE_DIRECTIONS)[number];
 
 /** An unknown value in a hand-edited URL reads as the default, never as 404. */
 export function parseIssueFilter(value: string | undefined): IssueFilter {
@@ -45,4 +49,15 @@ export function parseIssueFilter(value: string | undefined): IssueFilter {
 
 export function parseIssueSort(value: string | undefined): IssueSort {
   return ISSUE_SORTS.find((s) => s.value === value) ?? ISSUE_SORTS[0];
+}
+
+export function parseIssueDirection(value: string | undefined): IssueDirection {
+  return ISSUE_DIRECTIONS.find((d) => d === value) ?? ISSUE_DIRECTIONS[0];
+}
+
+export function issueOrderBy(
+  sort: IssueSort,
+  direction: IssueDirection
+): Prisma.IssueOrderByWithRelationInput {
+  return { [sort.field]: direction };
 }
