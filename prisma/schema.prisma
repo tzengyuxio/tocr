@@ -262,6 +262,13 @@ model Game {
   name         String
   nameOriginal String?   @map("name_original") // 原文名
   nameEn       String?   @map("name_en")
+  // Other names this game is known by, mirroring Magazine.aliases. The naming
+  // conventions need somewhere to put the translations that lost: a game with
+  // two Taiwanese titles keeps only one as `name`, and 竹籬笆外的春天 was
+  // genuinely used at the time -- unfindable if it is stored nowhere. Also
+  // holds the bare name when a disambiguating suffix is added.
+  // See docs/data-conventions.md.
+  aliases      String[]  @default([])
   slug         String    @unique
   releaseDate  DateTime? @map("release_date")
   platforms    String[] // ["PC", "PS5", "Switch"]

@@ -6,6 +6,7 @@
  * 「合併 vs 剔除」的界線見 docs/data-conventions.md 的「重複條目怎麼歸類」。
  *
  * 做的事：把 loser 的文章關聯搬到 keeper（已經有的就跳過，避免違反 unique）、
+ * 把 loser 的名稱與別名併進 keeper 的別名（落選的寫法要留著才搜得到）、
  * 留一筆 DELETE 的編輯紀錄、刪掉 loser。全部在一個 transaction 裡。
  *
  * 用法：
@@ -46,9 +47,16 @@ async function main() {
   const toMove = loser.articleGames.filter((ag) => !keeperArticles.has(ag.articleId));
   const alreadyLinked = loser.articleGames.length - toMove.length;
 
+  // 落選的寫法本身就是當年用過的名字，刪掉就再也搜不到。keeper.name 除外——
+  // 那不是別名。
+  const mergedAliases = [
+    ...new Set([...keeper.aliases, loser.name, ...loser.aliases]),
+  ].filter((alias) => alias !== keeper.name);
+
   console.log(`保留：${keeper.name} [${keeper.slug}] ${keeper.id}`);
   console.log(`刪除：${loser.name} [${loser.slug}] ${loser.id}`);
   console.log(`關聯：搬 ${toMove.length} 筆，${alreadyLinked} 筆已存在於保留方（直接丟棄）`);
+  console.log(`別名：${mergedAliases.join("、") || "（無）"}`);
 
   if (!apply) {
     console.log("\n這是 dry run。要實際執行請加 --apply");
@@ -62,6 +70,11 @@ async function main() {
         data: { gameId: keeperId },
       });
     }
+
+    await tx.game.update({
+      where: { id: keeperId },
+      data: { aliases: mergedAliases },
+    });
 
     // 刪除會 cascade 掉剩下的關聯，那些是保留方已經有的重複。
     await tx.editLog.create({
