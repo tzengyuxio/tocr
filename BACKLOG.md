@@ -4,11 +4,14 @@
 格式：`- [ ] [#issue] 標題 — 一句說明（日期）`（完成就打勾或刪除）。
 這份檔是正本，GitHub issue 是鏡像——決定要做的項目才開 issue，編號回填到行首。
 
-- [ ] **備份要接上 Cloudflare R2 的帳號設定** — workflow 與腳本已經寫好（`backup-database.yml`、`backup-images.yml`、`scripts/backup-images.ts`），設定步驟見 [docs/deployment.md](docs/deployment.md#備份與還原)。**在 R2 開通並填好 secrets 之前，排程會失敗**。
+- [ ] **備份還缺保留策略與第一次還原驗證** — 排程備份已經上線並實跑驗證過（2026-08-17）：資料庫每日、圖片每週，存到 R2 的 `tocr-backup`，設定與還原步驟見 [docs/deployment.md](docs/deployment.md#備份與還原)。
 
-  待辦：開 R2 bucket、產 API token、`age-keygen` 產金鑰對（私鑰自己留）、填 GitHub secrets/variables、設 `db/` 前綴的 lifecycle rule（建議 90 天）、手動觸發一次確認，然後排一次還原驗證。
+  剩兩件：
 
-  量測過的數字：`pg_dump` 1.8 MB → gzip 333 KB；圖片 499 檔 127 MB（`issues/toc/` 80 檔 39.5 MB 是唯一不可再生的）。779 期裡只有 414 期有封面、約 40 期有目錄圖，補齊後圖片會逼近 1 GB（2026-08-17）
+  - **`db/` 前綴的 lifecycle rule**（建議 90 天）。刻意不寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西
+  - **跑一次還原驗證**。只備份不驗證等於不知道備份能不能用；步驟在文件裡（開臨時 Neon branch 灌入、斷言筆數、刪掉）。這一步刻意不進 CI，因為需要 age 私鑰，放進 secrets 就等於私鑰進了 CI
+
+  上線過程踩到的三件事都已修並記在文件裡：`pg_dump` 要指名 `/usr/lib/postgresql/18/bin/`（pg_wrapper 會挑到舊版）、`aws s3 ls` 對空前綴 exit 1、S3 對「看不到的 bucket」回 `AccessDenied` 而非 `NoSuchBucket`（bucket 名字打錯時很難判讀）（2026-08-17）
 
 - [ ] **一期帶多組編號，`issueNumber` 一個欄位塞不下** — 電玩通同一期的封面與版權頁上有四組並存的編號：
 

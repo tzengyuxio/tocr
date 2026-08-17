@@ -16,6 +16,9 @@ concurrency:
 jobs:
   dump:
     runs-on: ubuntu-latest
+    # The whole job takes about a minute. Ten is generous and still fails fast
+    # if pg_dump stalls on a connection that never answers.
+    timeout-minutes: 10
     steps:
       # Neon runs PostgreSQL 18 and pg_dump refuses to talk to a newer server,
       # so the runner's bundled client (16) is not enough.
