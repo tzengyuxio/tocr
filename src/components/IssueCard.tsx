@@ -25,8 +25,13 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
         {issue.coverImage ? (
           // object-contain, not cover: a magazine cover is mostly masthead and
           // cover lines, and cropping to fill the frame cuts the text off.
-          // The frame keeps its 3:4 shape so the grid stays even.
-          <div className="flex aspect-[3/4] w-full items-center justify-center bg-muted">
+          //
+          // min-h-0 is what holds the 3:4 shape. The frame is both a flex item
+          // and a flex container, so its automatic minimum size kept it from
+          // going below the height of the image inside -- a cover taller than
+          // 3:4 pushed the frame out by up to 9px, and a row of covers came out
+          // at slightly different heights.
+          <div className="flex aspect-[3/4] w-full min-h-0 items-center justify-center bg-muted">
             <Image
               src={issue.coverImage}
               alt={issue.issueNumber}
@@ -37,7 +42,7 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
             />
           </div>
         ) : (
-          <div className="flex aspect-[3/4] w-full items-center justify-center bg-muted">
+          <div className="flex aspect-[3/4] w-full min-h-0 items-center justify-center bg-muted">
             <BookOpen className="h-10 w-10 text-muted-foreground/50" />
           </div>
         )}

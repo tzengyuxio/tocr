@@ -3,18 +3,21 @@ export const revalidate = 60;
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { resolveSlugParam } from "@/lib/slug-lookup";
-import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatEdtf } from "@/lib/edtf";
 import { Badge } from "@/components/ui/badge";
 import { IssueCard } from "@/components/IssueCard";
+import { IssueBrowseBar } from "@/components/magazine/IssueBrowseBar";
+import { MagazineLogo } from "@/components/magazine/MagazineLogo";
+import { ISSUE_FILTERS, parseIssueFilter, parseIssueSort } from "@/lib/issue-browse";
 import { SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ filter?: string; sort?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -29,8 +32,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title: magazine?.name ?? "期刊詳情" };
 }
 
-export default async function MagazineDetailPage({ params }: PageProps) {
+export default async function MagazineDetailPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { id: param } = await params;
+  const { filter: filterParam, sort: sortParam } = await searchParams;
+  const filter = parseIssueFilter(filterParam);
+  const sort = parseIssueSort(sortParam);
 
   // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
   const found = await resolveSlugParam("magazine", param);
@@ -41,43 +50,42 @@ export default async function MagazineDetailPage({ params }: PageProps) {
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
-  const magazine = await prisma.magazine.findUnique({
-    where: { id },
-    include: {
-      issues: {
-        orderBy: { publishSort: "desc" },
-        include: {
-          _count: {
-            select: { articles: true },
-          },
-        },
-      },
-    },
-  });
+  const magazine = await prisma.magazine.findUnique({ where: { id } });
 
   if (!magazine) {
     notFound();
   }
 
+  // The issues are fetched separately now that the filter narrows them: the
+  // counts have to cover the whole magazine even when the list does not, so
+  // they cannot come from the rows that came back.
+  const [issues, ...filterCounts] = await Promise.all([
+    prisma.issue.findMany({
+      where: { magazineId: id, ...filter.where },
+      orderBy: sort.orderBy,
+      include: { _count: { select: { articles: true } } },
+    }),
+    ...ISSUE_FILTERS.map((option) =>
+      prisma.issue.count({ where: { magazineId: id, ...option.where } })
+    ),
+  ]);
+
+  const counts = Object.fromEntries(
+    ISSUE_FILTERS.map((option, index) => [option.value, filterCounts[index]])
+  );
+  const total = counts[ISSUE_FILTERS[0].value];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: magazine.name }]} />
 
-      {/* 期刊資訊 */}
-      <div className="mb-8">
+      {/* 期刊資訊。刊頭與詳細資料左右並列，兩欄等高——刊頭原本是頂上一條 96px
+          的橫幅，那個高度撐不起這頁唯一的一張圖。 */}
+      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-stretch">
         {magazine.logoImage && (
-          <div className="mb-4 flex h-24 items-center rounded-lg bg-muted/30 px-4">
-            <Image
-              src={magazine.logoImage}
-              alt={magazine.name}
-              width={400}
-              height={120}
-              unoptimized
-              className="h-20 w-auto object-contain"
-            />
-          </div>
+          <MagazineLogo src={magazine.logoImage} name={magazine.name} />
         )}
-        <div>
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold">{magazine.name}</h1>
             {canEdit && (
@@ -146,17 +154,40 @@ export default async function MagazineDetailPage({ params }: PageProps) {
         <h2 className="mb-4 text-2xl font-bold">
           單期列表
           <span className="ml-2 text-lg font-normal text-muted-foreground">
-            （共 {magazine.issues.length} 期）
+            （共 {total} 期
+            {filter.value !== ISSUE_FILTERS[0].value &&
+              `，顯示 ${issues.length} 期`}
+            ）
           </span>
         </h2>
 
-        {magazine.issues.length === 0 ? (
+        {total > 0 && (
+          <IssueBrowseBar
+            basePath={`/magazines/${magazine.slug}`}
+            filter={filter}
+            sort={sort}
+            counts={counts}
+          />
+        )}
+
+        {issues.length === 0 ? (
           <div className="rounded-lg border p-8 text-center">
-            <p className="text-muted-foreground">尚無單期資料</p>
+            <p className="text-muted-foreground">
+              {total === 0 ? "尚無單期資料" : "沒有符合這個篩選的單期"}
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {magazine.issues.map((issue) => (
+          // The cover frame is 3:4, so the column width is what sets its
+          // height: these counts keep it between 228 and 273px at every
+          // breakpoint, against the 379px it used to reach at 5 columns.
+          //
+          // Column counts rather than auto-fill with a 12rem cap, which looks
+          // like the tidier way to ask for a fixed height: auto-fill counts
+          // tracks by the maximum, so a 390px phone fitted one 12rem column
+          // where two used to go, and a 1440px page left a column's worth of
+          // slack at the right edge.
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7">
+            {issues.map((issue) => (
               <IssueCard
                 key={issue.id}
                 issue={issue}
