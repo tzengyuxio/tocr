@@ -327,6 +327,8 @@ age -d -i backup-key.txt 2026-08-17.sql.gz.age | gunzip | psql "$DATABASE_URL"
 
 `pg_dump` 的版本必須 ≥ 伺服器版本。Neon 目前是 **PostgreSQL 18**，用 15 或 16 的 client 會直接拒絕（`aborting because of server version mismatch`）。
 
+⚠️ 光是裝了 `postgresql-client-18` 還不夠——`/usr/bin/pg_dump` 是 pg_wrapper，在同時裝了多版的機器上仍可能挑到舊的。要指名 `/usr/lib/postgresql/18/bin/pg_dump`。
+
 ### 定期驗證還原（手動，每季）
 
 **只備份不驗證，等於不知道備份能不能用。** 這一步刻意不放進 CI：驗證需要 age 私鑰，放進 GitHub secrets 就等於私鑰進了 CI，加密只剩「防 R2 token 外洩」的效果。私鑰留在自己機器上，這一步就手動跑。

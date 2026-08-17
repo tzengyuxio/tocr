@@ -39,8 +39,15 @@ jobs:
           DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
           AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
         run: |
+          # pipefail so a failing pg_dump fails the step here. Without it the
+          # pipeline reports age's status, age happily encrypts nothing, and
+          # the only thing standing between that and a published "backup" is
+          # the size check below.
+          set -o pipefail
           test -n "$AGE_RECIPIENT" || { echo "BACKUP_AGE_RECIPIENT is not set"; exit 1; }
-          pg_dump "$DATABASE_URL" --no-owner --no-privileges \
+          # The explicit path is required: /usr/bin/pg_dump is pg_wrapper, and
+          # it kept choosing the runner's preinstalled 16 even with 18 present.
+          /usr/lib/postgresql/18/bin/pg_dump "$DATABASE_URL" --no-owner --no-privileges \
             | gzip -9 \
             | age --recipient "$AGE_RECIPIENT" \
             > backup.sql.gz.age
