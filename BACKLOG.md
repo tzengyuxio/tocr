@@ -117,6 +117,34 @@
   - 網址本身也還很醜，見上面「網址裡的 ID 太長」。兩件事一起做比較合理
   - **分享哪一條網址要先決定**：`Issue.code` 與 `/i/<code>` 已經上線（2026-08-17），短、不會壞，但讀不出是哪一期；正規網址讀得懂卻會隨改名／重排失效
 
+## 2026-08-17 簡化盤點
+
+以下來自一次以「找可簡化的地方」為目標的全 repo 盤點，每條都附了呼叫端證據。刻意的重複不在此列：三個 OCR provider 是有意的抽換座（`OPENAI_BASE_URL` 指向自架模型）、`requireEditor()` 與 middleware 的雙重檢查是 [routes.md](docs/routes.md) 寫明的防繞過設計。
+
+- [ ] **`OcrRecord.status` 有四個狀態，只有一個到得了** — 唯一的寫入端（`src/app/api/ocr/route.ts:212`）永遠寫 `COMPLETED`，兩個讀取端（`src/app/api/issues/[id]/ocr/route.ts:18`、`src/app/(admin)/admin/issues/page.tsx:93`）也都只查 `COMPLETED`。`errorMessage` 在 `src/` 與 `scripts/` **零次引用**——沒人寫也沒人讀。dev 的 10 筆紀錄全是 COMPLETED、全無錯誤訊息。
+
+  失敗之所以不可達，是因為 route 的 catch 只 `console.error` 就回 500，不落庫。所以有兩條路，**選哪條是產品決定**：把失敗也記下來（那是新功能，得想清楚錯誤訊息會不會帶出自架後端的內部網址——route 的註解正是為此才不回傳細節），或者承認這個站不追蹤失敗，把 `errorMessage` 與 `OcrStatus` 一起拿掉。
+
+  傾向後者：欄位存在會讓人以為查得到失敗紀錄。**要做趁現在**——`ocr_records` 目前資料量極小，之後只會更難動（2026-08-17）
+
+- [ ] **OCR provider 的 `config` 參數沒有任何呼叫端傳過** — 三個 provider 的 `extractTableOfContents(images, config?: Partial<OcrProviderConfig>)` 都得帶這個參數，但唯一的呼叫端（`route.ts:209`）只傳 images，設定一律從環境變數讀。`OcrProviderConfig` 這個型別除了這三個簽名之外沒有別的用途。
+
+  同一區還有兩個死的 public API：`OcrProviderFactory.clearCache()`（註解寫「主要用於測試」，實際上 0 個測試用到）與 `getDefaultProvider()`（0 個呼叫端）——而 route 第 65 行與第 244 行各自 inline 了一份 `DEFAULT_OCR_PROVIDER || "claude"`，等於同一個預設值有三份寫法。刪掉沒人用的那份、讓 route 呼叫 factory，或反過來把 factory 那份刪掉，兩者都比現在好（2026-08-17）
+
+- [ ] **允許上傳的圖片格式散在四個地方** — `src/services/ai/ocr.interface.ts:69` 的 `ImageMimeType`、`src/app/api/upload/route.ts:33` 與 `src/app/api/ocr/route.ts:87` 各自的 `allowedTypes` 陣列，外加兩處 `|| "image/jpeg"` 的 fallback。四份要一起改才不會走鐘。
+
+  落點已經有了：[`src/lib/image-policy.ts`](src/lib/image-policy.ts) 的開頭就寫著「一張表，兩邊不會走鐘」，尺寸與編碼格式早就收斂在那裡，只有這份清單漏掉。搬過去即可（2026-08-17）
+
+- [ ] **逗號分隔的陣列輸入抄了三次** — `MagazineForm.tsx:216`（別名）、`IssueForm.tsx:178`（其他編號）、`admin/games/page.tsx:556`（別名），三段 `split(",").map(trim).filter(Boolean)` 完全相同，連 placeholder 的寫法都同一個模子。
+
+  抽成一個受控元件（值是 `string[]`、顯示成逗號字串）可以少掉兩份，也讓「要不要改成 tag 式輸入」之後只有一處要改。**不急，但下次再出現第四個陣列欄位時就該做**——`Game.aliases` 與 `Issue.altNumbers` 都是 2026-08-17 加的，一天之內就從一份變三份（2026-08-17）
+
+- [ ] **rate limiter 的通用程度遠超過它的用途** — `src/lib/rate-limit.ts` 81 行，帶 config 物件、滑動視窗、定期清理計時器與 remaining 計數，只服務一個呼叫端、一組寫死的設定（`/api/ocr`，10 次／分鐘）。
+
+  而它擋不了什麼：計數在記憶體裡，Vercel 每個 function instance 各算各的（route 的註解自己寫明「it is not a defence against abuse」），且該路由在 `requireEditor()` 後面，能打到的本來就只有編輯者與 API token。
+
+  所以這條不是「刪掉」而是「降級」：留一個十來行的同檔計數就夠，或乾脆承認它只防手滑重送。**優先度低**，列著是因為它讀起來像一道防線，而它不是（2026-08-17）
+
 ## 2026-08-13 code review 待辦
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。

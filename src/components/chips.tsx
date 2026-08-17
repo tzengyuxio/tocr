@@ -140,6 +140,10 @@ export function TagTypeChip({ type, className }: ChipProps & { type: string }) {
  * Pass it as a chip's `children` together with `REMOVABLE_CHIP` on the
  * className -- the badge clips its children by default, which would swallow a
  * button sitting outside the box.
+ *
+ * XXX(unused-export): no caller as of 2026-08-17 -- the editing screens ended
+ * up removing chips their own way. Delete both this and REMOVABLE_CHIP if the
+ * next editing screen does not reach for them either.
  */
 export const REMOVABLE_CHIP = "group/chip relative overflow-visible";
 
