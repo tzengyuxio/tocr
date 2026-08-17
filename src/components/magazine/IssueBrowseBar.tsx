@@ -52,11 +52,12 @@ export function IssueBrowseBar({
     return query ? `${basePath}?${query}` : basePath;
   };
 
-  // Smaller than the 篩選／排序 labels beside them: at text-sm with px-3 py-1
-  // the buttons outweighed the words they belong to.
+  // Smaller type than the 篩選／排序 labels beside them, so the buttons do not
+  // outweigh the words they belong to -- but the padding stays generous, or
+  // the label ends up touching the pill's edge.
   const chip = (active: boolean) =>
     cn(
-      "flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs transition-colors",
+      "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors",
       active
         ? "border-transparent bg-primary text-primary-foreground"
         : "text-muted-foreground hover:bg-muted hover:text-foreground"
