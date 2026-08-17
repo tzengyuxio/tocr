@@ -206,7 +206,7 @@ export default async function MagazineDetailPage({
       <div>
         {/* The controls share the heading's line rather than taking one of
             their own; they wrap under it only when the row runs out of width. */}
-        <div className="mb-4 flex flex-wrap items-baseline gap-x-10 gap-y-3">
+        <div className="mb-4 flex flex-wrap items-baseline gap-x-16 gap-y-3">
           <h2 className="text-2xl font-bold">
             單期列表
             <span className="ml-2 text-lg font-normal text-muted-foreground">

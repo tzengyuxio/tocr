@@ -52,9 +52,11 @@ export function IssueBrowseBar({
     return query ? `${basePath}?${query}` : basePath;
   };
 
+  // Smaller than the 篩選／排序 labels beside them: at text-sm with px-3 py-1
+  // the buttons outweighed the words they belong to.
   const chip = (active: boolean) =>
     cn(
-      "flex items-center gap-1 rounded-full border px-3 py-1 text-sm transition-colors",
+      "flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs transition-colors",
       active
         ? "border-transparent bg-primary text-primary-foreground"
         : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -114,7 +116,7 @@ export function IssueBrowseBar({
               }
             >
               {option.label}
-              {active && <Arrow className="h-3.5 w-3.5" />}
+              {active && <Arrow className="h-3 w-3" />}
             </Link>
           );
         })}
