@@ -15,6 +15,11 @@ concurrency:
 jobs:
   mirror:
     runs-on: ubuntu-latest
+    # A weekly run copies a handful of files in seconds; the first full mirror
+    # took 17 minutes for 499. Anything approaching an hour means a blob fetch
+    # is hung -- Node's fetch has no default timeout -- and a job that sits
+    # there until the six-hour ceiling helps nobody.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
