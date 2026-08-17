@@ -21,6 +21,12 @@
      規模上限抓 1 萬期（nostalibrary 四個雜誌分頁合計約 4,200 筆，留成長空間）。**結論是 7 碼**：雜誌與期數都在 1 萬筆這個級距，碰撞率 0.06%，而且只要保留唯一索引、產生時撞到就重抽，碰撞根本不是正確性問題、只是偶爾多抽一次。6 碼也能靠重試撐住（1 萬筆時平均 21 萬次插入才撞一次），但省的那一碼不值得。**文章不要用 7 碼**——`/admin/articles/[id]` 的數量會上看數十萬，那裡要 8–9 碼
 
   **不論走哪條，最大的成本都不是產生 ID，而是換掉既有的：** 正式站的網址已經流出去了，改 ID 等於斷連結，要嘛保留舊 cuid 欄位做 301 轉址，要嘛接受斷。而 `magazineId`／`issueId` 散在外鍵、API、匯入腳本與後台各處，是一次全面的遷移。**趁資料還少的時候做**（見 [[refactor-while-data-is-empty]]），拖越久越貴（2026-08-16）
+- [ ] **`Game` 沒有別名欄位，落選的譯名無處可放** — `Game` 只有 `name`、`nameOriginal`（原文名）、`nameEn`，語意都固定，塞不下「同一款的第二個中文譯名」。`Magazine` 反而有 `aliases String[]`。
+
+  這擋住了剛從 cdosgame 引進的兩條命名規則（見 [docs/data-conventions.md](docs/data-conventions.md) 的「遊戲與標籤的命名」）：**一款多譯名**要求落選譯名全部留作別名、**同名消歧義**要求裸名留作別名——兩者都是為了「搜尋與連結可達」。沒有欄位的結果是：`竹籬笆外的春天` 這種當年真的用過的譯名一旦沒被選為主名，站上就完全搜不到。
+
+  最直接的做法是比照 `Magazine.aliases` 加一個 `aliases String[] @default([])`，並讓搜尋一併吃它（`/api/articles` 與 `/search` 目前只比對 `name`／`nameEn`）。跟「多語言遊戲條目的識別與合併」那條相關，可以一起想（2026-08-17）
+
 - [ ] **顯示名稱的重名檢查擋不住同時送出** — `PATCH /api/users/me` 是先查再寫，而 `users.name` 沒有唯一索引（`schema.prisma` 就是 `name String?`）。兩個人同時挑同一個名字，兩邊都查到「沒人用」，於是都寫進去——正好變成這個檢查想避免的「排行榜上兩列分不出誰是誰」。
 
   真正的保證要靠資料庫：對 `lower(name)` 建 partial unique index（`WHERE name IS NOT NULL`），查詢就只負責決定錯誤訊息。Prisma schema 表達不了函式索引，要在 migration 裡寫原生 SQL。
