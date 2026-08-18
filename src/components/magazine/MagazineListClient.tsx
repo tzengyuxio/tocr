@@ -56,17 +56,24 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
             <TableRow key={magazine.id}>
               <TableCell>
                 <div className="flex items-center gap-3">
+                  {/* A masthead is wide -- 812x281 for 華泰任天堂秘笈, 880x212
+                      for 新世紀 HYPER PlayStation -- so a portrait box with
+                      object-cover showed a sliver from the middle of the
+                      wordmark and cropped off the name. Landscape and
+                      object-contain instead: the frame is fixed so the column
+                      does not resize per row, and the odd portrait logo
+                      (Official Xbox Magazine) letterboxes rather than crops. */}
                   {magazine.logoImage ? (
                     <Image
                       src={magazine.logoImage}
                       alt={magazine.name}
-                      width={32}
-                      height={40}
+                      width={224}
+                      height={80}
                       unoptimized
-                      className="h-10 w-8 rounded object-cover"
+                      className="h-10 w-28 shrink-0 rounded object-contain"
                     />
                   ) : (
-                    <div className="flex h-10 w-8 items-center justify-center rounded bg-muted">
+                    <div className="flex h-10 w-28 shrink-0 items-center justify-center rounded bg-muted">
                       <BookOpen className="h-4 w-4 text-muted-foreground" />
                     </div>
                   )}
