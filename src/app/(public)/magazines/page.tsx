@@ -17,16 +17,36 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
+import { MagazineBrowseBar } from "@/components/magazine/MagazineBrowseBar";
+import { MAGAZINE_FILTERS, parseMagazineFilter } from "@/lib/magazine-browse";
 
-export default async function MagazinesPage() {
-  const magazines = await prisma.magazine.findMany({
-    orderBy: { name: "asc" },
-    include: {
-      _count: {
-        select: { issues: true },
+export default async function MagazinesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const filter = parseMagazineFilter((await searchParams).filter);
+
+  const [magazines, counts] = await Promise.all([
+    prisma.magazine.findMany({
+      where: filter.where,
+      orderBy: { name: "asc" },
+      include: {
+        _count: {
+          select: { issues: true },
+        },
       },
-    },
-  });
+    }),
+    Promise.all(
+      MAGAZINE_FILTERS.map((option) =>
+        prisma.magazine.count({ where: option.where })
+      )
+    ),
+  ]);
+
+  const filterCounts = Object.fromEntries(
+    MAGAZINE_FILTERS.map((option, i) => [option.value, counts[i]])
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -38,12 +58,22 @@ export default async function MagazinesPage() {
         </p>
       </div>
 
+      <div className="mb-6">
+        <MagazineBrowseBar
+          basePath="/magazines"
+          filter={filter}
+          counts={filterCounts}
+        />
+      </div>
+
       {magazines.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <BookOpen className="h-16 w-16 text-muted-foreground/50" />
-          <h2 className="mt-4 text-xl font-semibold">尚無期刊資料</h2>
+          <h2 className="mt-4 text-xl font-semibold">
+            {filter.value === "all" ? "尚無期刊資料" : "這個分類還沒有刊物"}
+          </h2>
           <p className="mt-2 text-muted-foreground">
-            資料建置中，敬請期待
+            {filter.value === "all" ? "資料建置中，敬請期待" : "試試其他分類"}
           </p>
         </div>
       ) : (
