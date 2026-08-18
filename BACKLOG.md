@@ -163,6 +163,26 @@
 
   所以這條不是「刪掉」而是「降級」：留一個十來行的同檔計數就夠，或乾脆承認它只防手滑重送。**優先度低**，列著是因為它讀起來像一道防線，而它不是（2026-08-17）
 
+- [ ] **blob store 裡累積了沒有任何資料列指向的孤兒圖** — 換過的圖不會自動消失：`/api/upload` 每次都產新檔名，欄位改指新網址之後，舊檔就永遠留在 store 裡。本機測試上傳的垃圾檔同樣會進去（`.env.local` 的 `BLOB_READ_WRITE_TOKEN` 指向正式站那個 store）。
+
+  已知的九張是 2026-08-18 換掉的《軟體之星》跨頁封面（原掃描是左封底右封面，改用 nostalibrary 已裁好的正面封面），前綴都是 `issues/covers/`：
+
+  ```
+  1786937693606-glbb1u.webp  (第0期)
+  1786889532647-58683u.webp  (第2期)
+  1786937812926-j5t9ng.webp  (第4期)
+  1786937895972-a1blpk.webp  (第5期)
+  1786938287353-sethpb.webp  (第6期)
+  1786938352150-co5gtj.webp  (第7期)
+  1786938992949-p2zt09.webp  (第8期)
+  1786939106008-7r3h4n.webp  (第9期)
+  1786939160975-gndi59.webp  (第10期)
+  ```
+
+  但**逐次記錄換掉的檔案不是長久做法**——會漏，而且漏掉的那些沒有第二份記錄。真正該做的是一次掃描：列出 store 全部物件，比對 `magazines.logo_image`、`magazines.photos`、`issues.cover_image`、`issues.toc_images`（以及日後任何存網址的欄位），差集就是孤兒。
+
+  ⚠️ **刪之前先確認備份涵蓋到**：圖片鏡像是每週一跑的增量（見 [docs/deployment.md](docs/deployment.md#備份與還原)），而 Vercel Blob 本身沒有版本歷史，刪掉就是刪掉。掃描腳本應該先只輸出清單，確認過再刪（2026-08-18）
+
 ## 2026-08-13 code review 待辦
 
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。
