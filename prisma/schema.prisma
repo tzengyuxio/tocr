@@ -82,6 +82,18 @@ enum UserRole {
 
 // ==================== 期刊相關 ====================
 
+/// 一本刊物報導的是哪一類遊戲。取自 nostalibrary 的分節（PC Game／TV Game／
+/// Online Game），那是這批雜誌既有的分類方式，沒有理由重新發明。
+///
+/// 上游還有一節「近期雜誌」，**那不是類別而是另一條軸**——它裝的是近期收藏，
+/// 同一本會同時出現在該節與 TV Game（電視遊樂雜誌、電擊王、電玩通等七本都是）。
+/// 匯入時只取這三節，否則會得到互相矛盾的分類。
+enum MagazineCategory {
+  PC_GAME     // 電腦遊戲
+  TV_GAME     // 電視遊樂器
+  ONLINE_GAME // 線上遊戲
+}
+
 model Magazine {
   id             String    @id @default(cuid())
   name           String
@@ -114,6 +126,13 @@ model Magazine {
   // A single issue's cover belongs to neither field. Copying one up here is how
   // the production data ended up storing the same photograph twice.
   photos         String[]  @default([])
+  // What kinds of games the magazine covered. A list rather than one value:
+  // a long-running title crosses over -- 電玩通 moved from consoles into online
+  // games, 電腦玩家 covered both by its final years -- and a single column would
+  // force the editor to pick a side. An enum rather than String[] so the filter
+  // can list its own options: Game.platforms is free text, and the chips there
+  // would have to be derived from data that is not filled in yet.
+  categories     MagazineCategory[] @default([])
   // EDTF (ISO 8601-2) so month-, year- and season-level precision can be
   // recorded without inventing a day: "1999-05", "1994", "1994-22".
   foundedDate    String?   @map("founded_date")

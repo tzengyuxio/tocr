@@ -21,6 +21,11 @@ import {
   magazineCreateSchema,
   type MagazineCreateInput,
 } from "@/lib/validators/magazine";
+import {
+  MAGAZINE_CATEGORY_LABELS,
+  MAGAZINE_CATEGORY_VALUES,
+} from "@/lib/magazine-browse";
+import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 interface MagazineFormProps {
@@ -51,6 +56,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
       description: initialData?.description || "",
       logoImage: initialData?.logoImage || "",
       photos: initialData?.photos || [],
+      categories: initialData?.categories || [],
       foundedDate: initialData?.foundedDate || "",
       endedDate: initialData?.endedDate || "",
       isActive: initialData?.isActive ?? true,
@@ -222,6 +228,48 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                     />
                     <p className="text-xs text-muted-foreground">
                       可用於搜尋的替代名稱，以逗號分隔
+                    </p>
+                  </div>
+                )}
+              />
+            </div>
+
+            {/* 分類 */}
+            <div className="space-y-2 md:col-span-2">
+              <Controller
+                name="categories"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label>分類</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {MAGAZINE_CATEGORY_VALUES.map((category) => {
+                        const on = (field.value || []).includes(category);
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() =>
+                              field.onChange(
+                                on
+                                  ? (field.value || []).filter((c) => c !== category)
+                                  : [...(field.value || []), category]
+                              )
+                            }
+                            className={cn(
+                              "rounded-full border px-3 py-1 text-xs transition-colors",
+                              on
+                                ? "border-transparent bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            )}
+                          >
+                            {MAGAZINE_CATEGORY_LABELS[category]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      這本刊物報導哪一類遊戲。跨類別的刊可以複選（電玩通後期同時涵蓋主機與線上）
                     </p>
                   </div>
                 )}

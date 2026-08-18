@@ -50,6 +50,7 @@ export default async function EditMagazinePage({ params }: PageProps) {
     description: magazine.description,
     logoImage: magazine.logoImage,
     photos: magazine.photos,
+    categories: magazine.categories,
     foundedDate: magazine.foundedDate,
     endedDate: magazine.endedDate,
     isActive: magazine.isActive,

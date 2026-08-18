@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { edtfSortDate, isValidEdtf } from "../edtf";
+import { MAGAZINE_CATEGORY_VALUES } from "../magazine-browse";
 import { blankToNull, optionalText } from "./fields";
 
 // Dates are EDTF (ISO 8601-2), not calendar dates, so that "1999-05" and
@@ -30,6 +31,8 @@ export const magazineCreateSchema = z.object({
   logoImage: optionalText,
   // 藏書照，純網址。刊頭是識別、這些是收藏的證據，見 docs/data-conventions.md
   photos: z.array(z.string()).default([]),
+  // 報導哪一類遊戲。一本可以跨多類，見 prisma/schema.prisma 的 MagazineCategory
+  categories: z.array(z.enum(MAGAZINE_CATEGORY_VALUES)).default([]),
   foundedDate: optionalEdtf,
   endedDate: optionalEdtf,
   isActive: z.boolean().default(true),
@@ -41,6 +44,7 @@ export const magazineCreateSchema = z.object({
 export const magazineUpdateSchema = magazineCreateSchema.partial().extend({
   aliases: z.array(z.string()).optional(),
   photos: z.array(z.string()).optional(),
+  categories: z.array(z.enum(MAGAZINE_CATEGORY_VALUES)).optional(),
   isActive: z.boolean().optional(),
 });
 
