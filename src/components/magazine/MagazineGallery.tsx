@@ -93,14 +93,32 @@ export function MagazineGallery({
         </div>
 
         {(current.note || many) && (
-          <p className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          /* The arrows repeat here, beside the counter, because the pair over
+             the image only appears once the pointer is near it -- and on a
+             touch screen not at all. This row is the one that is always
+             visible, so it carries the controls that have to be found. */
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
             <span className="min-w-0 truncate">{current.note}</span>
             {many && (
-              <span className="shrink-0 tabular-nums">
-                {index + 1} / {images.length}
+              <span className="flex shrink-0 items-center gap-1">
+                <CaptionArrow
+                  side="left"
+                  label="上一張"
+                  disabled={index === 0}
+                  onClick={() => step(-1)}
+                />
+                <span className="tabular-nums">
+                  {index + 1} / {images.length}
+                </span>
+                <CaptionArrow
+                  side="right"
+                  label="下一張"
+                  disabled={index === images.length - 1}
+                  onClick={() => step(1)}
+                />
               </span>
             )}
-          </p>
+          </div>
         )}
       </div>
 
@@ -192,6 +210,34 @@ function GalleryArrow({
       className={`absolute top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm transition-opacity hover:text-foreground disabled:pointer-events-none disabled:opacity-0 ${
         side === "left" ? "left-1" : "right-1"
       }`}
+    >
+      <Icon className="h-4 w-4" />
+    </button>
+  );
+}
+
+/* The caption row's arrows. Unlike the pair over the image, a disabled one
+   stays visible at low contrast: the row is a fixed set of controls, and
+   having one vanish at either end of the run makes the counter jump. */
+function CaptionArrow({
+  side,
+  label,
+  disabled,
+  onClick,
+}: {
+  side: "left" | "right";
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const Icon = side === "left" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-5 w-5 items-center justify-center rounded transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
     >
       <Icon className="h-4 w-4" />
     </button>
