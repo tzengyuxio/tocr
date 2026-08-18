@@ -1,5 +1,9 @@
 import {
   DEFAULT_MAGAZINE_FILTER,
+  DEFAULT_MAGAZINE_SORT,
+  magazineOrderBy,
+  parseMagazineDirection,
+  parseMagazineSort,
   MAGAZINE_CATEGORY_VALUES,
   MAGAZINE_FILTERS,
   parseMagazineFilter,
@@ -34,5 +38,36 @@ describe("parseMagazineFilter", () => {
   it("falls back to the default rather than throwing on a hand-edited URL", () => {
     expect(parseMagazineFilter("nonsense").value).toBe(DEFAULT_MAGAZINE_FILTER);
     expect(parseMagazineFilter(undefined).value).toBe(DEFAULT_MAGAZINE_FILTER);
+  });
+});
+
+describe("parseMagazineSort / parseMagazineDirection", () => {
+  it("reads a known value and falls back on nonsense", () => {
+    expect(parseMagazineSort("founded").value).toBe("founded");
+    expect(parseMagazineSort("nonsense").value).toBe(DEFAULT_MAGAZINE_SORT);
+  });
+
+  it("uses each sort's own default direction when the URL says nothing", () => {
+    expect(parseMagazineDirection(undefined, parseMagazineSort("name"))).toBe("asc");
+    expect(parseMagazineDirection(undefined, parseMagazineSort("founded"))).toBe("asc");
+    expect(parseMagazineDirection("desc", parseMagazineSort("founded"))).toBe("desc");
+    expect(parseMagazineDirection("sideways", parseMagazineSort("name"))).toBe("asc");
+  });
+});
+
+describe("magazineOrderBy", () => {
+  it("orders by name alone", () => {
+    expect(magazineOrderBy(parseMagazineSort("name"), "desc")).toEqual([
+      { name: "desc" },
+    ]);
+  });
+
+  it("orders by the derived sort key, keeps undated magazines last, and breaks ties on the name", () => {
+    // foundedDate is EDTF, so "1999-05" and "1994" cannot be compared as
+    // strings; foundedSort holds the start of the range each value covers.
+    expect(magazineOrderBy(parseMagazineSort("founded"), "asc")).toEqual([
+      { foundedSort: { sort: "asc", nulls: "last" } },
+      { name: "asc" },
+    ]);
   });
 });

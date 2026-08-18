@@ -10,10 +10,24 @@ import {
 } from "@/components/ui/card";
 import { Plus, BookOpen, Upload } from "lucide-react";
 import { MagazineListClient } from "@/components/magazine/MagazineListClient";
+import { MagazineBrowseBar } from "@/components/magazine/MagazineBrowseBar";
+import {
+  magazineOrderBy,
+  parseMagazineDirection,
+  parseMagazineSort,
+} from "@/lib/magazine-browse";
 
-export default async function MagazinesPage() {
+export default async function MagazinesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string; dir?: string }>;
+}) {
+  const params = await searchParams;
+  const sort = parseMagazineSort(params.sort);
+  const direction = parseMagazineDirection(params.dir, sort);
+
   const magazines = await prisma.magazine.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: magazineOrderBy(sort, direction),
     include: {
       _count: {
         select: { issues: true },
@@ -49,7 +63,13 @@ export default async function MagazinesPage() {
           <CardTitle>期刊列表</CardTitle>
           <CardDescription>共 {magazines.length} 本期刊</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* 後台只掛排序，不掛分類篩選：這裡是管理清單，要看得到全部。 */}
+          <MagazineBrowseBar
+            basePath="/admin/magazines"
+            sort={sort}
+            direction={direction}
+          />
           {magazines.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <BookOpen className="h-12 w-12 text-muted-foreground/50" />
