@@ -1,4 +1,5 @@
 import {
+  ADMIN_MAGAZINE_SORTS,
   DEFAULT_MAGAZINE_FILTER,
   DEFAULT_MAGAZINE_SORT,
   magazineOrderBy,
@@ -69,5 +70,28 @@ describe("magazineOrderBy", () => {
       { foundedSort: { sort: "asc", nulls: "last" } },
       { name: "asc" },
     ]);
+  });
+});
+
+describe("the admin-only sort", () => {
+  it("offers 建立日期 on top of the public two", () => {
+    expect(ADMIN_MAGAZINE_SORTS.map((s) => s.value)).toEqual([
+      "name",
+      "founded",
+      "created",
+    ]);
+  });
+
+  it("is not reachable from the public list", () => {
+    // A reader has no use for when a row was typed in, so ?sort=created there
+    // reads as the default rather than exposing a button that page lacks.
+    expect(parseMagazineSort("created").value).toBe(DEFAULT_MAGAZINE_SORT);
+    expect(parseMagazineSort("created", ADMIN_MAGAZINE_SORTS).value).toBe("created");
+  });
+
+  it("orders by createdAt, newest first by default", () => {
+    const sort = parseMagazineSort("created", ADMIN_MAGAZINE_SORTS);
+    expect(parseMagazineDirection(undefined, sort)).toBe("desc");
+    expect(magazineOrderBy(sort, "desc")).toEqual([{ createdAt: "desc" }]);
   });
 });

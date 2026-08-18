@@ -24,6 +24,7 @@ export function MagazineBrowseBar({
   basePath,
   filter,
   sort,
+  sorts = MAGAZINE_SORTS,
   direction,
   counts,
 }: {
@@ -31,6 +32,8 @@ export function MagazineBrowseBar({
   /** 省略即不顯示分類那一組。 */
   filter?: MagazineFilter;
   sort: MagazineSort;
+  /** 可選的排序，後台傳 ADMIN_MAGAZINE_SORTS 多一種「建立日期」。 */
+  sorts?: ReadonlyArray<MagazineSort>;
   direction: MagazineDirection;
   /** 以 filter 的 value 為 key，讓讀者看得出每個選擇涵蓋多少。 */
   counts?: Record<string, number>;
@@ -44,7 +47,7 @@ export function MagazineBrowseBar({
     const params = new URLSearchParams();
     if (filter && nextFilter !== DEFAULT_MAGAZINE_FILTER) params.set("filter", nextFilter);
     if (nextSort !== DEFAULT_MAGAZINE_SORT) params.set("sort", nextSort);
-    const sortDefault = MAGAZINE_SORTS.find(
+    const sortDefault = sorts.find(
       (option) => option.value === nextSort
     )!.defaultDirection;
     if (nextDirection !== sortDefault) params.set("dir", nextDirection);
@@ -103,7 +106,7 @@ export function MagazineBrowseBar({
           <ArrowDownUp className="h-3.5 w-3.5" />
           排序
         </span>
-        {MAGAZINE_SORTS.map((option) => {
+        {sorts.map((option) => {
           const active = option.value === sort.value;
           // 點目前這個排序就反轉方向；點另一個則用它自己的預設方向，不把方向
           // 帶過去——否則「創刊日」會變成從最新的刊物讀起。

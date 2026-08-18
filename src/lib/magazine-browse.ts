@@ -61,17 +61,38 @@ export const MAGAZINE_SORTS = [
   defaultDirection: "asc" | "desc";
 }>;
 
+/**
+ * 後台多一種「建立日期」。它是這頁原本的預設順序，用途是「剛才建的那本在哪」
+ * ——那是編輯才有的問題，讀者不關心一筆資料是什麼時候被輸入的，所以不放進
+ * 前台那組。
+ */
+export const ADMIN_MAGAZINE_SORTS = [
+  ...MAGAZINE_SORTS,
+  { value: "created", label: "建立日期", defaultDirection: "desc" },
+] as const satisfies ReadonlyArray<{
+  value: string;
+  label: string;
+  defaultDirection: "asc" | "desc";
+}>;
+
 export const DEFAULT_MAGAZINE_SORT = "name";
 
 export const MAGAZINE_DIRECTIONS = ["asc", "desc"] as const;
 
-export type MagazineSort = (typeof MAGAZINE_SORTS)[number];
+export type MagazineSort = (typeof ADMIN_MAGAZINE_SORTS)[number];
 export type MagazineDirection = (typeof MAGAZINE_DIRECTIONS)[number];
 
-export function parseMagazineSort(value: string | undefined): MagazineSort {
+/**
+ * `sorts` 決定哪些值算數：前台傳預設那組，所以 `?sort=created` 在前台會退回
+ * 名稱，而不是露出一個那頁沒有的按鈕。
+ */
+export function parseMagazineSort(
+  value: string | undefined,
+  sorts: ReadonlyArray<MagazineSort> = MAGAZINE_SORTS
+): MagazineSort {
   return (
-    MAGAZINE_SORTS.find((s) => s.value === value) ??
-    MAGAZINE_SORTS.find((s) => s.value === DEFAULT_MAGAZINE_SORT)!
+    sorts.find((s) => s.value === value) ??
+    sorts.find((s) => s.value === DEFAULT_MAGAZINE_SORT)!
   );
 }
 
@@ -95,7 +116,9 @@ export function magazineOrderBy(
   sort: MagazineSort,
   direction: MagazineDirection
 ): Prisma.MagazineOrderByWithRelationInput[] {
-  return sort.value === "founded"
-    ? [{ foundedSort: { sort: direction, nulls: "last" } }, { name: "asc" }]
-    : [{ name: direction }];
+  if (sort.value === "founded") {
+    return [{ foundedSort: { sort: direction, nulls: "last" } }, { name: "asc" }];
+  }
+  if (sort.value === "created") return [{ createdAt: direction }];
+  return [{ name: direction }];
 }

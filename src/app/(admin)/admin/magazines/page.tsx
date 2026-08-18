@@ -12,6 +12,7 @@ import { Plus, BookOpen, Upload } from "lucide-react";
 import { MagazineListClient } from "@/components/magazine/MagazineListClient";
 import { MagazineBrowseBar } from "@/components/magazine/MagazineBrowseBar";
 import {
+  ADMIN_MAGAZINE_SORTS,
   magazineOrderBy,
   parseMagazineDirection,
   parseMagazineSort,
@@ -23,7 +24,7 @@ export default async function MagazinesPage({
   searchParams: Promise<{ sort?: string; dir?: string }>;
 }) {
   const params = await searchParams;
-  const sort = parseMagazineSort(params.sort);
+  const sort = parseMagazineSort(params.sort, ADMIN_MAGAZINE_SORTS);
   const direction = parseMagazineDirection(params.dir, sort);
 
   const magazines = await prisma.magazine.findMany({
@@ -68,6 +69,7 @@ export default async function MagazinesPage({
           <MagazineBrowseBar
             basePath="/admin/magazines"
             sort={sort}
+            sorts={ADMIN_MAGAZINE_SORTS}
             direction={direction}
           />
           {magazines.length === 0 ? (
