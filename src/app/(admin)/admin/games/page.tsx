@@ -59,10 +59,16 @@ const RAWG_ENABLED = process.env.NEXT_PUBLIC_RAWG_ENABLED === "true";
 const COMMON_PLATFORMS = ["PC", "PS5", "PS4", "Switch", "Xbox Series", "Xbox One", "iOS", "Android"];
 const COMMON_GENRES = ["RPG", "動作", "冒險", "射擊", "模擬", "策略", "格鬥", "運動", "賽車", "音樂"];
 
+const PAGE_SIZE = 20;
+
 export default function GamesPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [formData, setFormData] = useState({
@@ -125,23 +131,39 @@ export default function GamesPage() {
   const fetchGames = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ limit: "100" });
-      if (searchQuery) {
-        params.set("search", searchQuery);
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(PAGE_SIZE),
+      });
+      if (debouncedSearch) {
+        params.set("search", debouncedSearch);
       }
       const response = await fetch(`/api/games?${params}`);
       const data = await response.json();
       setGames(data.data);
+      setTotal(data.pagination?.total ?? 0);
+      setTotalPages(data.pagination?.totalPages ?? 1);
     } catch (err) {
       console.error("Failed to fetch games:", err);
     } finally {
       setIsLoading(false);
     }
+  }, [debouncedSearch, page]);
+
+  // 打字要等使用者停手，翻頁不必——debounce 掛在關鍵字上而不是整個查詢，
+  // 按下一頁才會立刻有反應。
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // 在第 5 頁換關鍵字，新的結果多半沒有第 5 頁，留在原頁只會看到空白。
   useEffect(() => {
-    const timer = setTimeout(fetchGames, 300);
-    return () => clearTimeout(timer);
+    setPage(1);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    fetchGames();
   }, [fetchGames]);
 
   const handleOpenCreate = () => {
@@ -308,7 +330,7 @@ export default function GamesPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>遊戲列表</CardTitle>
-              <CardDescription>共 {games.length} 款遊戲</CardDescription>
+              <CardDescription>共 {total} 款遊戲</CardDescription>
             </div>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -335,6 +357,7 @@ export default function GamesPage() {
               </p>
             </div>
           ) : (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -471,6 +494,53 @@ export default function GamesPage() {
                 ))}
               </TableBody>
             </Table>
+
+            {/* 分頁 */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage(page - 1)}
+                >
+                  上一頁
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={pageNum === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setPage(pageNum)}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(page + 1)}
+                >
+                  下一頁
+                </Button>
+              </div>
+            )}
+            </>
           )}
         </CardContent>
       </Card>
