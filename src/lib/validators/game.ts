@@ -29,3 +29,12 @@ export const gameUpdateSchema = gameCreateSchema.partial().extend({
 
 export type GameCreateInput = z.infer<typeof gameCreateSchema>;
 export type GameUpdateInput = z.infer<typeof gameUpdateSchema>;
+
+export const gameMergeSchema = z.object({
+  /** The duplicate to fold in and delete. The keeper is the id in the path. */
+  loserId: z.string().min(1, "缺少要合併的條目"),
+  /** Ask what the merge would do without writing it, so it can be previewed. */
+  dryRun: z.boolean().default(false),
+});
+
+export type GameMergeInput = z.infer<typeof gameMergeSchema>;
