@@ -69,8 +69,31 @@
 | `OPENAI_API_KEY` | OpenAI API Key | * |
 | `GOOGLE_AI_API_KEY` | Google AI API Key | * |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob Token | |
+| `API_TOKEN` | 批次腳本寫入用的 Bearer token | |
 
 > *至少需要設定一個 AI API Key
+
+#### API_TOKEN 存哪裡
+
+`API_TOKEN` 是對稱的共享密鑰：伺服器拿請求帶來的值跟自己的 `process.env.API_TOKEN`
+比對，所以打哪一台就要用哪一台的值。**正式站與本機各一把，不要共用**——`.env.local`
+會被 dev server 載入，正式站的密鑰不該放在那裡。
+
+- 正式站那把設在 Vercel（Production scope）。改了要 redeploy 才生效：部署在建立當下
+  就把環境變數固定了
+- 本機開發用的另外 `openssl rand -base64 32` 產一把，放 `.env.local`
+- 要從本機用腳本寫進正式站時，正式站那把存在 macOS Keychain，不落地成檔案：
+
+```bash
+# 存（-U 表示已存在就更新）
+security add-generic-password -s tocr-prod-api-token -a "$USER" -w '<token>' -U
+# 取
+security find-generic-password -s tocr-prod-api-token -a "$USER" -w
+```
+
+不要用 `.env.production`：那個檔名不在 `.gitignore` 的 `.env.*.local` 規則內，會被
+commit 進 repo，而且 `NODE_ENV=production` 時（例如本機 `pnpm build && pnpm start`）
+Next.js 會載入它。
 
 #### 產生 AUTH_SECRET
 

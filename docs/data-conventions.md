@@ -194,7 +194,30 @@ print(hits[0], '..', hits[-1])
 magick <封面>.jpg -crop 740x252+140+40 +repage <slug>_no-<期號>_logo.png
 ```
 
-檔名帶期號，日後要換更好的掃描時知道原圖是哪一期。裁好後走 `/api/upload`（`folder=magazines`）上傳，套用與正式站相同的縮圖轉檔政策。
+檔名帶期號，日後要換更好的掃描時知道原圖是哪一期。
+
+### 裁好之後：上傳，然後掛上去
+
+**兩步都要走 API，不要直接改資料庫。** 路由帶著 SQL 繞不過去的配套：`/api/upload` 會依 `image-policy` 重新編碼（刊頭走 DISPLAY policy，WebP、長邊 1600），`PUT /api/magazines/[id]` 會寫 `edit_logs`。直接下 SQL 的結果是資料對、歷史缺一塊。
+
+```bash
+# 1. 上傳。本機的 BLOB_READ_WRITE_TOKEN 指向正式站的 blob store，所以從
+#    localhost 傳就會落在線上站在用的同一個空間。回傳的 url 是下一步要的值。
+curl -s -X POST http://localhost:3000/api/upload \
+  -F "file=@<slug>_no-<期號>_logo.png;type=image/png" -F "folder=magazines"
+
+# 2. 掛到期刊上。正式站的 token 在 keychain（見 docs/deployment.md）。
+TOKEN=$(security find-generic-password -s tocr-prod-api-token -a "$USER" -w)
+curl -s -X PUT "https://tocr.simagame.me/api/magazines/<magazine id>" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"logoImage":"<上一步回傳的 url>"}'
+```
+
+期刊 id 用 slug 查（`GET /api/magazines`），slug 與 nostalibrary 一致。
+
+**若不慎已用 SQL 寫過，要先把欄位還原成原值再走 API**：`logEdit` 對 diff 為空的 UPDATE 直接 return，拿同樣的值重打一次不會留下任何紀錄。
+
+期刊頁是 ISR（`revalidate = 60`），最多一分鐘後才看得到圖。
 
 ## 遊戲封面
 
