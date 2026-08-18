@@ -11,6 +11,8 @@
   - **`db/` 前綴的 lifecycle rule**（建議 90 天）。刻意不寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西
   - **跑一次還原驗證**。只備份不驗證等於不知道備份能不能用；步驟在文件裡（開臨時 Neon branch 灌入、斷言筆數、刪掉）。這一步刻意不進 CI，因為需要 age 私鑰，放進 secrets 就等於私鑰進了 CI
 
+    **改在本機做**（yuxio 2026-08-18）：私鑰本來就留在自己機器上，本機還原少一層網路與 Neon 額度，理由跟「不進 CI」是同一個。步驟寫在 [deployment.md](docs/deployment.md#在本機驗證不必開-neon-branch)，最容易踩的一點是**不要灌進 `tocr-db-dev`**——那支是 PG15，備份是 PG18 的 dump，而且會洗掉開發資料
+
   上線過程踩到的三件事都已修並記在文件裡：`pg_dump` 要指名 `/usr/lib/postgresql/18/bin/`（pg_wrapper 會挑到舊版）、`aws s3 ls` 對空前綴 exit 1、S3 對「看不到的 bucket」回 `AccessDenied` 而非 `NoSuchBucket`（bucket 名字打錯時很難判讀）（2026-08-17）
 
 - [ ] **期刊改名之後，整段歷史都顯示新名** — `Magazine.name` 是單一字串，一本刊改名就只剩得下一個。已知案例：電擊王 → DengekiGAMES（2003）、電視遊樂雜誌 → GAMEfans（293 期起）、電玩雙週刊 → 電玩宅速配（2019-02，刊期另起）。
@@ -18,8 +20,6 @@
   `aliases String[]` 收得下舊名供搜尋，但表達不了「哪一段期間叫什麼」，所以單期頁的標題仍會用今天的名字稱呼 1999 年的那一期。
 
   **不擋單期網址**（原本以為會）：slug 是人工填的，改名時編輯自己給 `dg-26`、`gamefans-1` 即可。這條純粹是顯示問題（2026-08-17）
-
-- [ ] **後台遊戲列表每頁改為 50 筆** — 目前分頁數量偏小；調整 `/admin/games` 每頁顯示 50 筆（2026-08-18）。
 
 - [ ] **`/magazines` 提供列表式檢視切換** — 新增與後台期刊列表相近的列表呈現，並可在既有檢視與列表式之間切換（2026-08-18）。
 
@@ -97,9 +97,7 @@
 
   **2026-08-17 已合併第一筆**：`P.47` → `P-47`（正式站，文章關聯 3 → 4，`EditLog` 留了 `mergedInto`）。判準見 [docs/data-conventions.md](docs/data-conventions.md) 的「重複條目怎麼歸類」。
 
-  **2026-08-18 搬進後台**：遊戲列表每一列有「合併」按鈕，搜尋挑出對方、選保留哪一筆、確認前先看一遍會搬幾筆關聯。邏輯與 `scripts/merge-game.ts` 共用 `src/lib/merge-game.ts`。
-
-  **合併時要保留 `isPrimary`**：若同一篇文章同時連到兩筆待合併遊戲，且落選方是主要遊戲、保留方不是，現在刪除落選方會連帶刪掉那個主要標記。合併前應把保留方的關聯升成 `isPrimary: true`，並補上這個情境的測試（2026-08-18，PR #95 review）。
+  **2026-08-18 搬進後台**（#95）：遊戲列表每一列有「合併」按鈕，搜尋挑出對方、選保留哪一筆、確認前先看一遍會搬幾筆關聯。邏輯與 `scripts/merge-game.ts` 共用 `src/lib/merge-game.ts`；兩筆都連到同一篇文章時，落選方若是主要遊戲會把保留方升成 `isPrimary`（review 指出的破口，已修並有測試）。
 
   下次全庫回填或匯入新期刊時，若 `backfill-slugs.ts` 又報出 `-2` 後綴，就是新的候選——後綴本身就是偵測器（2026-08-17）
 
@@ -167,9 +165,9 @@
 
   落點已經有了：[`src/lib/image-policy.ts`](src/lib/image-policy.ts) 的開頭就寫著「一張表，兩邊不會走鐘」，尺寸與編碼格式早就收斂在那裡，只有這份清單漏掉。搬過去即可（2026-08-17）
 
-- [ ] **逗號分隔的陣列輸入抄了三次** — `MagazineForm.tsx:216`（別名）、`IssueForm.tsx:178`（其他編號）、`admin/games/page.tsx:556`（別名），三段 `split(",").map(trim).filter(Boolean)` 完全相同，連 placeholder 的寫法都同一個模子。
+- [ ] **逗號分隔的陣列輸入抄了四次** — `MagazineForm.tsx:224`（別名）、`IssueForm.tsx:178`（其他編號）、`admin/games/page.tsx:776`（別名）、`EditableArticleRow.tsx:123`（作者），四段 `split(",").map(trim).filter(Boolean)` 完全相同，連 placeholder 的寫法都同一個模子。
 
-  抽成一個受控元件（值是 `string[]`、顯示成逗號字串）可以少掉兩份，也讓「要不要改成 tag 式輸入」之後只有一處要改。**不急，但下次再出現第四個陣列欄位時就該做**——`Game.aliases` 與 `Issue.altNumbers` 都是 2026-08-17 加的，一天之內就從一份變三份（2026-08-17）
+  抽成一個受控元件（值是 `string[]`、顯示成逗號字串）可以少掉三份，也讓「要不要改成 tag 式輸入」之後只有一處要改。**條件已達成**：原本寫「下次再出現第四個陣列欄位時就該做」，2026-08-18 覆核發現第四份（作者）早就在那裡了。`src/lib/tag-input.ts` 不算——它處理的是 `TYPE:name` 的標籤語法，是另一件事（2026-08-17，2026-08-18 覆核）
 
 - [ ] **rate limiter 的通用程度遠超過它的用途** — `src/lib/rate-limit.ts` 81 行，帶 config 物件、滑動視窗、定期清理計時器與 remaining 計數，只服務一個呼叫端、一組寫死的設定（`/api/ocr`，10 次／分鐘）。
 
@@ -202,4 +200,6 @@
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。
 
 - [ ] [#26] **匯入腳本沒有進版控，每次都要重寫** — 已匯入 30 本、還有 27 本沒進來，而每次要用都得重寫一次。等資料面的決定收斂、開始在 production 上傳目錄頁時，這支腳本會被反覆使用，屆時「上次是怎麼跑的」會變成實際問題。動手時順帶決定三件事：放 `scripts/`、資料來源怎麼取（Google Sheet 是正本）、以及用 API token 還是直接連 DB（2026-08-13）
-- [ ] [#39] **兩個檔案超過 650 行** — `src/app/(admin)/admin/games/page.tsx` 681、`src/components/article/ArticleForm.tsx` 663。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構（2026-08-16 覆核行數；原本榜首的 `OcrResultEditor.tsx` 已隨複查整合刪除）
+- [ ] [#39] **兩個檔案超過 650 行** — `src/app/(admin)/admin/games/page.tsx` 1054、`src/components/article/ArticleForm.tsx` 663（`src/app/(public)/search/page.tsx` 614 在門檻邊上）。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構。
+
+  **2026-08-18 覆核**：games 那支從 681 漲到 1054，整整多出來的是 #95 的合併對話框——它自成一塊（搜尋候選、選保留方、預覽、送出），是現成的抽離對象。原本榜首的 `OcrResultEditor.tsx` 已隨複查整合刪除（2026-08-16 覆核）
