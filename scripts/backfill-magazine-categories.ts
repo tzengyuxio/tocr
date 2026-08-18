@@ -48,6 +48,9 @@ const MANUAL_CATEGORIES: Record<string, Category[]> = {
   ssm: ["PC_GAME"],
   // 上游只出現在「近期雜誌」那節、沒有分類；以 PC Game 為主（yuxio 2026-08-18）
   rgt: ["PC_GAME"],
+  // 同樣只在「近期雜誌」那節（yuxio 2026-08-18）
+  astronews: ["TV_GAME"],
+  cityboy: ["TV_GAME"],
 };
 
 interface SourceMagazine {
