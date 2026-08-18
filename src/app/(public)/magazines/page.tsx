@@ -34,6 +34,7 @@ export default async function MagazinesPage() {
         <h1 className="text-3xl font-bold">期刊列表</h1>
         <p className="mt-2 text-muted-foreground">
           瀏覽所有收錄的遊戲雜誌
+          {magazines.length > 0 && `，共 ${magazines.length} 本`}
         </p>
       </div>
 
