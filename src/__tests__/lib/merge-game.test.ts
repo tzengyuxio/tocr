@@ -6,16 +6,21 @@ function candidate(over: Partial<MergeCandidate> & { id: string }): MergeCandida
     slug: `game-${over.id}`,
     aliases: [],
     createdAt: new Date("2026-01-01"),
-    articleIds: [],
+    links: [],
     ...over,
   };
+}
+
+/** Article links, primary first when `primary` names one of them. */
+function links(articleIds: string[], primary?: string) {
+  return articleIds.map((articleId) => ({ articleId, isPrimary: articleId === primary }));
 }
 
 describe("planGameMerge", () => {
   it("moves the links the keeper does not already have", () => {
     const plan = planGameMerge(
-      candidate({ id: "keeper", articleIds: ["a1"] }),
-      candidate({ id: "loser", articleIds: ["a1", "a2", "a3"] })
+      candidate({ id: "keeper", links: links(["a1"]) }),
+      candidate({ id: "loser", links: links(["a1", "a2", "a3"]) })
     );
 
     expect(plan.movedArticleIds).toEqual(["a2", "a3"]);
@@ -52,12 +57,43 @@ describe("planGameMerge", () => {
 
   it("plans nothing to move when the keeper already covers every article", () => {
     const plan = planGameMerge(
-      candidate({ id: "keeper", articleIds: ["a1", "a2"] }),
-      candidate({ id: "loser", articleIds: ["a1"] })
+      candidate({ id: "keeper", links: links(["a1", "a2"]) }),
+      candidate({ id: "loser", links: links(["a1"]) })
     );
 
     expect(plan.movedArticleIds).toEqual([]);
     expect(plan.discardedLinkCount).toBe(1);
+  });
+
+  it("keeps the article's primary game when the losing row was the primary one", () => {
+    // The keeper's row survives and the loser's is cascaded away, so without
+    // this the article ends up with no primary game at all.
+    const plan = planGameMerge(
+      candidate({ id: "keeper", links: links(["a1"]) }),
+      candidate({ id: "loser", links: links(["a1"], "a1") })
+    );
+
+    expect(plan.promotedArticleIds).toEqual(["a1"]);
+  });
+
+  it("promotes nothing when the keeper's row is already the primary one", () => {
+    const plan = planGameMerge(
+      candidate({ id: "keeper", links: links(["a1"], "a1") }),
+      candidate({ id: "loser", links: links(["a1"], "a1") })
+    );
+
+    expect(plan.promotedArticleIds).toEqual([]);
+  });
+
+  it("does not promote for a link that moves across unchanged", () => {
+    // Moving the row keeps its own isPrimary, so there is nothing to correct.
+    const plan = planGameMerge(
+      candidate({ id: "keeper", links: [] }),
+      candidate({ id: "loser", links: links(["a1"], "a1") })
+    );
+
+    expect(plan.movedArticleIds).toEqual(["a1"]);
+    expect(plan.promotedArticleIds).toEqual([]);
   });
 
   it("refuses to merge an entry into itself", () => {

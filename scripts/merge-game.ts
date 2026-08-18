@@ -34,7 +34,7 @@ async function main() {
     slug: true,
     aliases: true,
     createdAt: true,
-    articleGames: { select: { articleId: true } },
+    articleGames: { select: { articleId: true, isPrimary: true } },
   } as const;
 
   const [keeper, loser] = await Promise.all([
@@ -50,7 +50,7 @@ async function main() {
 
   const toCandidate = (game: typeof keeper) => ({
     ...game,
-    articleIds: game.articleGames.map((link) => link.articleId),
+    links: game.articleGames,
   });
 
   const plan = planGameMerge(toCandidate(keeper), toCandidate(loser));
@@ -61,6 +61,9 @@ async function main() {
     `關聯：搬 ${plan.movedArticleIds.length} 筆，${plan.discardedLinkCount} 筆已存在於保留方（直接丟棄）`
   );
   console.log(`別名：${plan.mergedAliases.join("、") || "（無）"}`);
+  if (plan.promotedArticleIds.length > 0) {
+    console.log(`主要遊戲：${plan.promotedArticleIds.length} 篇文章的主要遊戲改記在保留方`);
+  }
 
   if (!apply) {
     console.log("\n這是 dry run。要實際執行請加 --apply");

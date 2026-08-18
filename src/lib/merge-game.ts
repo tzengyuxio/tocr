@@ -13,6 +13,13 @@ import type { Prisma } from "@prisma/client";
  * id ledger to trace it back through afterwards.
  */
 
+/** One row of `article_games`, as much of it as the merge has to reason about. */
+export interface MergeLink {
+  articleId: string;
+  /** The article's main game. An article has at most one. */
+  isPrimary: boolean;
+}
+
 /** One side of a merge: enough of a Game to decide what the merge would do. */
 export interface MergeCandidate {
   id: string;
@@ -21,7 +28,7 @@ export interface MergeCandidate {
   aliases: string[];
   createdAt: Date;
   /** Articles this entry is linked to, through `article_games`. */
-  articleIds: string[];
+  links: MergeLink[];
 }
 
 export interface GameMergePlan {
@@ -31,6 +38,11 @@ export interface GameMergePlan {
   movedArticleIds: string[];
   /** Links dropped: the keeper is already on that article, and the pair is unique. */
   discardedLinkCount: number;
+  /**
+   * Articles whose keeper row has to be promoted to primary, because the row
+   * being dropped was the primary one.
+   */
+  promotedArticleIds: string[];
   /** What the keeper's `aliases` becomes. */
   mergedAliases: string[];
 }
@@ -46,8 +58,17 @@ export function planGameMerge(
     throw new Error("無法把條目合併到自己");
   }
 
-  const keeperArticles = new Set(keeper.articleIds);
-  const movedArticleIds = loser.articleIds.filter((id) => !keeperArticles.has(id));
+  const keeperLinks = new Map(keeper.links.map((link) => [link.articleId, link]));
+  const movedArticleIds = loser.links
+    .filter((link) => !keeperLinks.has(link.articleId))
+    .map((link) => link.articleId);
+
+  // A dropped row takes its isPrimary with it, so an article whose main game
+  // was recorded on the losing row would come out of the merge with no main
+  // game at all. Moved rows keep their own flag and need no correction.
+  const promotedArticleIds = loser.links
+    .filter((link) => link.isPrimary && keeperLinks.get(link.articleId)?.isPrimary === false)
+    .map((link) => link.articleId);
 
   // The losing spelling is a name the magazines actually printed. Dropping it
   // means nobody can search for it again.
@@ -59,7 +80,8 @@ export function planGameMerge(
     keeperId: keeper.id,
     loserId: loser.id,
     movedArticleIds,
-    discardedLinkCount: loser.articleIds.length - movedArticleIds.length,
+    discardedLinkCount: loser.links.length - movedArticleIds.length,
+    promotedArticleIds,
     mergedAliases,
   };
 }
@@ -106,6 +128,13 @@ export async function applyGameMerge(
     });
   }
 
+  if (plan.promotedArticleIds.length > 0) {
+    await tx.articleGame.updateMany({
+      where: { articleId: { in: plan.promotedArticleIds }, gameId: plan.keeperId },
+      data: { isPrimary: true },
+    });
+  }
+
   await tx.game.update({
     where: { id: plan.keeperId },
     data: { aliases: plan.mergedAliases },
@@ -125,6 +154,7 @@ export async function applyGameMerge(
         name: { from: loserName, to: null },
         movedArticleLinks: plan.movedArticleIds.length,
         discardedDuplicateLinks: plan.discardedLinkCount,
+        promotedPrimaryLinks: plan.promotedArticleIds.length,
       },
     },
   });

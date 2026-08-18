@@ -62,6 +62,7 @@ interface MergePlan {
   loserName: string;
   movedArticleLinks: number;
   discardedLinkCount: number;
+  promotedPrimaryLinks: number;
   mergedAliases: string[];
 }
 
@@ -1012,6 +1013,11 @@ export default function GamesPage() {
                   {mergePlan.discardedLinkCount > 0 &&
                     `，${mergePlan.discardedLinkCount} 筆重複丟棄`}
                 </p>
+                {mergePlan.promotedPrimaryLinks > 0 && (
+                  <p>
+                    {mergePlan.promotedPrimaryLinks} 篇文章的主要遊戲改記在保留方
+                  </p>
+                )}
                 <p className="text-muted-foreground">
                   合併後別名：{mergePlan.mergedAliases.join("、") || "（無）"}
                 </p>

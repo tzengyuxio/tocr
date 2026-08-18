@@ -11,7 +11,7 @@ const CANDIDATE_SELECT = {
   slug: true,
   aliases: true,
   createdAt: true,
-  articleGames: { select: { articleId: true } },
+  articleGames: { select: { articleId: true, isPrimary: true } },
 } as const;
 
 type LoadedGame = {
@@ -20,7 +20,7 @@ type LoadedGame = {
   slug: string;
   aliases: string[];
   createdAt: Date;
-  articleGames: { articleId: string }[];
+  articleGames: { articleId: string; isPrimary: boolean }[];
 };
 
 function toCandidate(game: LoadedGame): MergeCandidate {
@@ -30,7 +30,7 @@ function toCandidate(game: LoadedGame): MergeCandidate {
     slug: game.slug,
     aliases: game.aliases,
     createdAt: game.createdAt,
-    articleIds: game.articleGames.map((link) => link.articleId),
+    links: game.articleGames,
   };
 }
 
@@ -67,6 +67,7 @@ export const POST = withErrorHandler(async (request: NextRequest, context) => {
     keeperName: keeper.name,
     loserName: loser.name,
     movedArticleLinks: plan.movedArticleIds.length,
+    promotedPrimaryLinks: plan.promotedArticleIds.length,
   };
 
   if (dryRun) {
