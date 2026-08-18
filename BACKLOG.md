@@ -85,7 +85,9 @@
 
 - [ ] **重複的遊戲條目要合併（持續）** — 同一款遊戲被建成兩筆的來源是不同期的目錄抄寫不同；名稱完全相同的反而不會發生，那在建立時就比對到了。**只有 slug 正規化後撞在一起才看得見**。
 
-  **2026-08-17 已合併第一筆**：`P.47` → `P-47`（正式站，文章關聯 3 → 4，`EditLog` 留了 `mergedInto`）。工具在 `scripts/merge-game.ts`，預設 dry run、`--apply` 才寫入。判準見 [docs/data-conventions.md](docs/data-conventions.md) 的「重複條目怎麼歸類」。
+  **2026-08-17 已合併第一筆**：`P.47` → `P-47`（正式站，文章關聯 3 → 4，`EditLog` 留了 `mergedInto`）。判準見 [docs/data-conventions.md](docs/data-conventions.md) 的「重複條目怎麼歸類」。
+
+  **2026-08-18 搬進後台**：遊戲列表每一列有「合併」按鈕，搜尋挑出對方、選保留哪一筆、確認前先看一遍會搬幾筆關聯。邏輯與 `scripts/merge-game.ts` 共用 `src/lib/merge-game.ts`。
 
   下次全庫回填或匯入新期刊時，若 `backfill-slugs.ts` 又報出 `-2` 後綴，就是新的候選——後綴本身就是偵測器（2026-08-17）
 

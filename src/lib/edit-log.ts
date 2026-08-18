@@ -104,8 +104,11 @@ function ensureUser(user: SyntheticUser): Promise<void> {
 /**
  * Resolve who is writing, making sure the row exists for the synthetic users.
  * Returns null when there is nobody to attribute the edit to.
+ *
+ * Exported for writes that log inside their own transaction rather than
+ * through logEdit -- the merge in lib/merge-game.ts is one.
  */
-async function resolveAuthor(): Promise<string | null> {
+export async function resolveAuthor(): Promise<string | null> {
   const userId = await getCurrentUserId();
   if (!userId) return null;
 

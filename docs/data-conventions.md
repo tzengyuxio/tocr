@@ -308,7 +308,9 @@ curl -s -X PUT "https://tocr.simagame.me/api/magazines/<magazine id>" \
 
 正本特別警告：**確認的重複停在「合併」，不要標成「剔除」**——兩者回答不同問題，不是嚴重度梯度。合併是「是真遊戲、只是重複」，剔除是「根本不符收錄判準」。
 
-**TOCR 差異**：正本靠 append-only 的 `id-registry.json` 保證 id 永不重配，並用 `merged_into` 留麵包屑。這裡沒有那套帳本，合併就是真的刪掉一筆、把 `article_games` 的關聯改指留下的那筆。所以**合併前要確認關聯都搬乾淨**，刪掉就沒有回溯線索。`scripts/merge-game.ts` 會把落選那筆的名稱與別名併進留下那筆的 `aliases`，名字本身不會跟著消失。
+**TOCR 差異**：正本靠 append-only 的 `id-registry.json` 保證 id 永不重配，並用 `merged_into` 留麵包屑。這裡沒有那套帳本，合併就是真的刪掉一筆、把 `article_games` 的關聯改指留下的那筆。所以**合併前要確認關聯都搬乾淨**，刪掉就沒有回溯線索。合併會把落選那筆的名稱與別名併進留下那筆的 `aliases`，名字本身不會跟著消失。
+
+動手的方式有兩種，判準與寫入的內容相同（邏輯都在 `src/lib/merge-game.ts`）：後台遊戲列表每一列的「合併」按鈕，以及 `scripts/merge-game.ts`。後台那條會先算一遍再讓人確認，落在編輯紀錄上的是操作者本人；腳本預設 dry run，`--apply` 才寫入，記在司書名下。
 
 ### 標籤
 
