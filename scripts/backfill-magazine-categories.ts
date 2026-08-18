@@ -32,6 +32,19 @@ const SECTION_TO_CATEGORY: Record<string, Category> = {
   "Online Game": "ONLINE_GAME",
 };
 
+/**
+ * 上游的分節每本只能屬於一個，表達不了跨類別的刊物，這裡補上編輯的判斷。
+ *
+ * 寫進腳本而不是叫人到後台勾，是為了讓每個環境跑一次就一致——只存在某個人
+ * 記憶裡的分類，換一個環境就會漏。之後有新的跨類別刊物，加在這裡即可。
+ */
+const MANUAL_CATEGORIES: Record<string, Category[]> = {
+  // 上游列在 PC Game，但它同時報線上遊戲（yuxio 2026-08-18）
+  mania: ["ONLINE_GAME"],
+  // 近代刊物，上游只出現在「近期雜誌」那節、沒有分類（yuxio 2026-08-18）
+  gamexpress: ["ONLINE_GAME"],
+};
+
 interface SourceMagazine {
   name: string;
   slug: string | null;
@@ -63,10 +76,18 @@ async function main() {
     readFileSync(new URL("../data/magazines.json", import.meta.url), "utf8")
   ).magazines;
 
-  const wanted = new Map<string, Category>();
+  const wanted = new Map<string, Set<Category>>();
+  const add = (slug: string, category: Category) => {
+    const set = wanted.get(slug) ?? new Set<Category>();
+    set.add(category);
+    wanted.set(slug, set);
+  };
   for (const row of upstream) {
     const category = SECTION_TO_CATEGORY[row.source?.section ?? ""];
-    if (row.slug && category) wanted.set(row.slug, category);
+    if (row.slug && category) add(row.slug, category);
+  }
+  for (const [slug, categories] of Object.entries(MANUAL_CATEGORIES)) {
+    for (const category of categories) add(slug, category);
   }
 
   const res = await fetch(`${base}/api/magazines?limit=200`);
@@ -81,16 +102,18 @@ async function main() {
     // rather than returning []; treat that as empty so the run reports rather
     // than crashes, and restart the server if nothing writes.
     const current = magazine.categories ?? [];
-    const category = wanted.get(magazine.slug);
-    if (!category) {
+    const target = wanted.get(magazine.slug);
+    if (!target) {
       if (current.length === 0) unclassified.push(`${magazine.name}(${magazine.slug})`);
       continue;
     }
-    // Only the ones the upstream section covers are touched: a magazine an
-    // editor has already given a second category keeps it.
-    if (current.includes(category)) continue;
+    // Union rather than replace: whatever an editor added in the admin form
+    // survives a rerun. That also makes the run idempotent -- once every
+    // wanted category is present there is nothing left to write.
+    const missing = [...target].filter((c) => !current.includes(c));
+    if (missing.length === 0) continue;
 
-    const next = [...current, category];
+    const next = [...current, ...missing];
     const put = await fetch(`${base}/api/magazines/${magazine.id}`, {
       method: "PUT",
       headers,
