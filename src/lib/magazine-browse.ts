@@ -49,3 +49,76 @@ export function parseMagazineFilter(value: string | undefined): MagazineFilter {
     MAGAZINE_FILTERS.find((f) => f.value === DEFAULT_MAGAZINE_FILTER)!
   );
 }
+
+export const MAGAZINE_SORTS = [
+  // 各自帶著自己讀起來順的方向：刊名清單從 A 讀到 Z，而一整排刊物是從最早的
+  // 那本讀起——與 ISSUE_SORTS 的出版日期同一個道理。
+  { value: "name", label: "名稱", defaultDirection: "asc" },
+  { value: "founded", label: "創刊日", defaultDirection: "asc" },
+] as const satisfies ReadonlyArray<{
+  value: string;
+  label: string;
+  defaultDirection: "asc" | "desc";
+}>;
+
+/**
+ * 後台多一種「建立日期」。它是這頁原本的預設順序，用途是「剛才建的那本在哪」
+ * ——那是編輯才有的問題，讀者不關心一筆資料是什麼時候被輸入的，所以不放進
+ * 前台那組。
+ */
+export const ADMIN_MAGAZINE_SORTS = [
+  ...MAGAZINE_SORTS,
+  { value: "created", label: "建立日期", defaultDirection: "desc" },
+] as const satisfies ReadonlyArray<{
+  value: string;
+  label: string;
+  defaultDirection: "asc" | "desc";
+}>;
+
+export const DEFAULT_MAGAZINE_SORT = "name";
+
+export const MAGAZINE_DIRECTIONS = ["asc", "desc"] as const;
+
+export type MagazineSort = (typeof ADMIN_MAGAZINE_SORTS)[number];
+export type MagazineDirection = (typeof MAGAZINE_DIRECTIONS)[number];
+
+/**
+ * `sorts` 決定哪些值算數：前台傳預設那組，所以 `?sort=created` 在前台會退回
+ * 名稱，而不是露出一個那頁沒有的按鈕。
+ */
+export function parseMagazineSort(
+  value: string | undefined,
+  sorts: ReadonlyArray<MagazineSort> = MAGAZINE_SORTS
+): MagazineSort {
+  return (
+    sorts.find((s) => s.value === value) ??
+    sorts.find((s) => s.value === DEFAULT_MAGAZINE_SORT)!
+  );
+}
+
+/** 沒指定時用該排序自己讀起來順的方向，不是固定一個。 */
+export function parseMagazineDirection(
+  value: string | undefined,
+  sort: MagazineSort
+): MagazineDirection {
+  return MAGAZINE_DIRECTIONS.find((d) => d === value) ?? sort.defaultDirection;
+}
+
+/**
+ * 創刊日排的是 `foundedSort` 不是 `foundedDate`：後者是 EDTF 字串，「1999-05」
+ * 與「1994」直接比字串會把年份較小的排在後面。衍生欄位存的是該值涵蓋區間的
+ * 起點，本來就是為了排序而存在的。
+ *
+ * 沒有創刊日的排在最後（34 本裡有 2 本），否則一片空白會頂在最前面；名稱當
+ * 第二鍵，讓同月創刊的刊物有穩定順序。
+ */
+export function magazineOrderBy(
+  sort: MagazineSort,
+  direction: MagazineDirection
+): Prisma.MagazineOrderByWithRelationInput[] {
+  if (sort.value === "founded") {
+    return [{ foundedSort: { sort: direction, nulls: "last" } }, { name: "asc" }];
+  }
+  if (sort.value === "created") return [{ createdAt: direction }];
+  return [{ name: direction }];
+}

@@ -18,19 +18,28 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
 import { MagazineBrowseBar } from "@/components/magazine/MagazineBrowseBar";
-import { MAGAZINE_FILTERS, parseMagazineFilter } from "@/lib/magazine-browse";
+import {
+  MAGAZINE_FILTERS,
+  magazineOrderBy,
+  parseMagazineDirection,
+  parseMagazineFilter,
+  parseMagazineSort,
+} from "@/lib/magazine-browse";
 
 export default async function MagazinesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; sort?: string; dir?: string }>;
 }) {
-  const filter = parseMagazineFilter((await searchParams).filter);
+  const params = await searchParams;
+  const filter = parseMagazineFilter(params.filter);
+  const sort = parseMagazineSort(params.sort);
+  const direction = parseMagazineDirection(params.dir, sort);
 
   const [magazines, counts] = await Promise.all([
     prisma.magazine.findMany({
       where: filter.where,
-      orderBy: { name: "asc" },
+      orderBy: magazineOrderBy(sort, direction),
       include: {
         _count: {
           select: { issues: true },
@@ -62,6 +71,8 @@ export default async function MagazinesPage({
         <MagazineBrowseBar
           basePath="/magazines"
           filter={filter}
+          sort={sort}
+          direction={direction}
           counts={filterCounts}
         />
       </div>
