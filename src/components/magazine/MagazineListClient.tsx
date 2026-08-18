@@ -22,6 +22,7 @@ interface MagazineItem {
   name: string;
   nameOriginal: string | null;
   publisher: string | null;
+  issn: string | null;
   logoImage: string | null;
   isActive: boolean;
   createdAt: string | Date;
@@ -45,6 +46,7 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
           <TableRow>
             <TableHead>期刊名稱</TableHead>
             <TableHead>出版社</TableHead>
+            <TableHead>ISSN</TableHead>
             <TableHead>單期</TableHead>
             <TableHead>狀態</TableHead>
             <TableHead>建立日期</TableHead>
@@ -93,6 +95,11 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                 </div>
               </TableCell>
               <TableCell>{magazine.publisher || "-"}</TableCell>
+              {/* tabular-nums so the digit groups line up down the column --
+                  an ISSN is read by comparing it to its neighbours. */}
+              <TableCell className="tabular-nums text-muted-foreground">
+                {magazine.issn || "-"}
+              </TableCell>
               <TableCell>{magazine._count.issues} 期</TableCell>
               <TableCell>
                 <Badge

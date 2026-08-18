@@ -43,6 +43,11 @@ const MANUAL_CATEGORIES: Record<string, Category[]> = {
   mania: ["ONLINE_GAME"],
   // 近代刊物，上游只出現在「近期雜誌」那節、沒有分類（yuxio 2026-08-18）
   gamexpress: ["ONLINE_GAME"],
+  // 上游索引把它列在 PC Game，但 data/magazines.json 這份快照
+  // （nostalibrary@8a163a3f，30 筆）漏了它。等快照重新產生就可以拿掉這一行。
+  ssm: ["PC_GAME"],
+  // 上游只出現在「近期雜誌」那節、沒有分類；以 PC Game 為主（yuxio 2026-08-18）
+  rgt: ["PC_GAME"],
 };
 
 interface SourceMagazine {
@@ -76,23 +81,29 @@ async function main() {
     readFileSync(new URL("../data/magazines.json", import.meta.url), "utf8")
   ).magazines;
 
+  const res = await fetch(`${base}/api/magazines?limit=200`);
+  const body = await res.json();
+  const magazines: ApiMagazine[] = Array.isArray(body) ? body : body.data;
+
   const wanted = new Map<string, Set<Category>>();
   const add = (slug: string, category: Category) => {
     const set = wanted.get(slug) ?? new Set<Category>();
     set.add(category);
     wanted.set(slug, set);
   };
+  // Some upstream rows know their section but carry no slug (星際遊樂雜誌 is
+  // one), so fall back to matching on the name -- otherwise a classification
+  // that upstream already made gets dropped for want of a key.
+  const slugByName = new Map(magazines.map((m) => [m.name, m.slug]));
   for (const row of upstream) {
     const category = SECTION_TO_CATEGORY[row.source?.section ?? ""];
-    if (row.slug && category) add(row.slug, category);
+    if (!category) continue;
+    const slug = row.slug ?? slugByName.get(row.name);
+    if (slug) add(slug, category);
   }
   for (const [slug, categories] of Object.entries(MANUAL_CATEGORIES)) {
     for (const category of categories) add(slug, category);
   }
-
-  const res = await fetch(`${base}/api/magazines?limit=200`);
-  const body = await res.json();
-  const magazines: ApiMagazine[] = Array.isArray(body) ? body : body.data;
 
   let written = 0;
   const unclassified: string[] = [];
