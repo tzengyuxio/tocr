@@ -30,15 +30,15 @@
  * 不帶 `--apply` 就是 dry run，只印出會做什麼。
  *
  * 打正式站需要 API token，從 keychain 取（見 docs/deployment.md）：
- *   security find-generic-password -s tocr-prod-api-token -a "$USER" -w
+ *   security find-generic-password -s tocr-prod-token-claude -a "$USER" -w
  *
  * 上傳封面需要 `BLOB_READ_WRITE_TOKEN`，用 `--env-file=.env.local` 帶進來。
  * **dev 與 production 共用同一個 blob store**，所以封面只需要傳一次，兩邊的
  * `coverImage` 網址完全相同。
  */
 import { readFileSync, existsSync } from "node:fs";
-import { execFileSync } from "node:child_process";
 import { put } from "@vercel/blob";
+import { productionToken } from "./prod-token";
 
 type Row = Record<string, string>;
 
@@ -101,12 +101,6 @@ const RULES: Record<string, MagazineRule> = {
     overrides: { 35: { pageCount: 432, note: "揮別 20 世紀特別號，加厚至 432 頁全彩。" } },
   },
 };
-
-function productionToken(): string {
-  return execFileSync("security", [
-    "find-generic-password", "-s", "tocr-prod-api-token", "-a", process.env.USER ?? "", "-w",
-  ]).toString().trim();
-}
 
 function flag(name: string): string | undefined {
   const i = process.argv.indexOf(name);

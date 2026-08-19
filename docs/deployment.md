@@ -76,6 +76,16 @@
 貢獻者自己的 per-user token 不是環境變數，存在資料庫裡（`api_tokens`，只有 sha256），
 在 `/admin/profile` 產生與撤銷，不必設定也不必 redeploy。
 
+#### 打正式站用哪一把 token
+
+**預設是 per-user token**（Keychain 的 `tocr-prod-token-claude`）。腳本走
+`scripts/prod-token.ts` 的 `productionToken()` 取值，不必自己拼 `security` 指令；
+要改用備用那把就把 service name 傳進去。
+
+per-user token 是首選，因為署名與撤銷都對得上人：寫入等同本人操作，`edit_logs`
+記下是誰、並標記走的是 API，撤銷只是在 `/admin/profile` 按一下。共用的 `API_TOKEN`
+一律掛給司書(NPC)，要撤銷得改 Vercel 環境變數再 redeploy，所以留作備用。
+
 #### API_TOKEN 存哪裡
 
 `API_TOKEN` 是對稱的共享密鑰：伺服器拿請求帶來的值跟自己的 `process.env.API_TOKEN`
@@ -93,6 +103,14 @@ security add-generic-password -s tocr-prod-api-token -a "$USER" -w '<token>' -U
 # 取
 security find-generic-password -s tocr-prod-api-token -a "$USER" -w
 ```
+
+per-user token 存法相同，只是換一個 service name（`tocr-prod-token-claude`）。
+**一個用途一支**——不同機器、不同用途各自產一支，撤掉一支不會連累其他的，
+而 `/admin/profile` 的「最後使用」看得出哪支還活著。
+
+**兩者都不要落成檔案**：除了 `.env.local` 會被 dev server 載入之外，repo 裡的檔案
+讀得到的不只有人——寫給 AI 跑的腳本也讀得到，token 一旦成為檔案就可能被 grep 出來、
+貼進對話、留在某段輸出裡。讓腳本在執行當下自己去 Keychain 取，明碼不必經過任何人的手。
 
 不要用 `.env.production`：那個檔名不在 `.gitignore` 的 `.env.*.local` 規則內，會被
 commit 進 repo，而且 `NODE_ENV=production` 時（例如本機 `pnpm build && pnpm start`）
