@@ -28,46 +28,46 @@ export function ListPager({
 
   return (
     /* 置中而非左右對齊：靠著兩端時，看完頁碼再去按鍵要橫跨整個表格寬度，
-       而清單越寬跨得越遠。控制項擺在中線，手與眼都不必來回。 */
-    <div className="mt-6 flex flex-col items-center gap-2">
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page <= 1}
-          onClick={() => onPage(page - 1)}
-        >
-          上一頁
-        </Button>
-        <div className="flex items-center gap-1">
-          {pageWindow(page, totalPages).map((pageNum) => (
-            <Button
-              key={pageNum}
-              variant={pageNum === page ? "default" : "outline"}
-              size="sm"
-              onClick={() => onPage(pageNum)}
-            >
-              {pageNum}
-            </Button>
-          ))}
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page >= totalPages}
-          onClick={() => onPage(page + 1)}
-        >
-          下一頁
-        </Button>
-        {/* 三頁的清單擺一個跳頁框是多的：數字鍵已經走得到每一頁。 */}
-        {totalPages > PAGE_WINDOW && (
-          <PageJump totalPages={totalPages} onJump={onPage} />
-        )}
+       而清單越寬跨得越遠。控制項擺在中線，手與眼都不必來回。
+       也只有一列：頁次曾經自己佔一行，但那是同一件事拆成兩處在講。 */
+    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={page <= 1}
+        onClick={() => onPage(page - 1)}
+      >
+        上一頁
+      </Button>
+      <div className="flex items-center gap-1">
+        {pageWindow(page, totalPages).map((pageNum) => (
+          <Button
+            key={pageNum}
+            variant={pageNum === page ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPage(pageNum)}
+          >
+            {pageNum}
+          </Button>
+        ))}
       </div>
-      {/* 數字鍵只走得到附近幾頁，讀者仍需要知道自己站在多長的一條路上。 */}
-      <p className="text-sm text-muted-foreground">
-        第 {page} / {totalPages} 頁
-      </p>
+      {/* 數字鍵只走得到附近幾頁，讀者仍需要知道自己站在多長的一條路上。頁數在
+          數字鍵走得完的範圍內時，那句話沒有框可以住，就自己站著。 */}
+      {totalPages > PAGE_WINDOW ? (
+        <PageJump page={page} totalPages={totalPages} onJump={onPage} />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          第 {page} / {totalPages} 頁
+        </p>
+      )}
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={page >= totalPages}
+        onClick={() => onPage(page + 1)}
+      >
+        下一頁
+      </Button>
     </div>
   );
 }

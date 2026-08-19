@@ -20,18 +20,16 @@ export function LinkPager({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="mt-4 flex flex-col items-center gap-2">
-      <div className="flex items-center gap-2">
-        <PagerButton href={pageHref(page - 1)} disabled={page <= 1}>
-          上一頁
-        </PagerButton>
-        <PagerButton href={pageHref(page + 1)} disabled={page >= totalPages}>
-          下一頁
-        </PagerButton>
-      </div>
+    <div className="mt-4 flex items-center justify-center gap-2">
+      <PagerButton href={pageHref(page - 1)} disabled={page <= 1}>
+        上一頁
+      </PagerButton>
       <p className="text-sm text-muted-foreground">
         第 {page} / {totalPages} 頁
       </p>
+      <PagerButton href={pageHref(page + 1)} disabled={page >= totalPages}>
+        下一頁
+      </PagerButton>
     </div>
   );
 }
