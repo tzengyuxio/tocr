@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -190,7 +191,18 @@ export default async function EditLogsPage({
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatTaipei(log.createdAt, "yyyy/MM/dd HH:mm")}
                     </TableCell>
-                    <TableCell>{log.user.name || log.user.email}</TableCell>
+                    <TableCell>
+                      <span className="flex items-center gap-1.5">
+                        {log.user.name || log.user.email}
+                        {/* Only the exception is marked: everything without a
+                            badge was typed into this admin by hand. */}
+                        {log.via === "token" && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0">
+                            API
+                          </Badge>
+                        )}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       <span className="flex items-center gap-1.5">
                         {actionIcon(log.action)}

@@ -112,6 +112,9 @@ export default async function ContributorsPage() {
                         {c.breakdown.DELETE && (
                           <span className="text-red-600">{c.breakdown.DELETE} 刪除</span>
                         )}
+                        {/* Counted in the total above; shown apart so it stays
+                            visible how much of the work arrived by script. */}
+                        {c.apiEdits > 0 && <span>其中 {c.apiEdits} 次來自 API</span>}
                       </div>
                     </div>
                     <Badge variant="secondary" className="shrink-0">

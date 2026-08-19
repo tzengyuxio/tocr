@@ -32,6 +32,9 @@ model User {
   // 匯出紀錄
   exportLogs ExportLog[]
 
+  // 腳本寫入用的 API token
+  apiTokens ApiToken[]
+
   @@map("users")
 }
 
@@ -365,6 +368,10 @@ model EditLog {
   batchId   String? @map("batch_id")
   batchSize Int?    @map("batch_size")
 
+  // 這筆是拿 API token 寫的就是 "token"，從後台改的是 null。
+  // 只標例外的那一種，既有紀錄因此不必回填。
+  via String?
+
   user User @relation(fields: [userId], references: [id])
 
   @@index([entityType, entityId])
@@ -401,6 +408,36 @@ model ExportLog {
   @@index([createdAt])
   @@index([userId])
   @@map("export_logs")
+}
+
+// ==================== API Token ====================
+
+/**
+ * 讓貢獻者用腳本寫入的憑證。持有 token 等同該使用者本人的操作：編輯紀錄署他的名，
+ * 權限也讀他當下的 role——降級或刪帳號，token 立刻跟著失效，不必另外撤銷。
+ *
+ * 只存 sha256，明碼在建立當下回傳一次就不再存在。prefix 是明碼的前 12 碼，
+ * 純粹讓人在列表上認出「這支是哪一台機器的」。
+ */
+model ApiToken {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  // 使用者自己取的名字，例如「筆電的匯入腳本」。
+  name      String
+  tokenHash String @unique @map("token_hash")
+  prefix    String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  // 一次匯入會打上百個請求，所以節流更新，只求「這支還在用嗎」。
+  lastUsedAt DateTime? @map("last_used_at")
+  // 撤銷不刪列：刪掉就看不出這支存在過。
+  revokedAt DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("api_tokens")
 }
 
 // ==================== AI OCR 紀錄 ====================

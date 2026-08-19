@@ -57,7 +57,7 @@
 
 例外是四支會花錢或寫檔的路由——`/api/ocr`、`/api/upload`、`/api/import/magazines-issues`、`/api/games/search-cover`（燒 RAWG 配額）——它們另外用 `requireEditor()`（`src/lib/require-editor.ts`）自己再檢查一次。規則與 middleware 相同（API token 或 EDITOR／ADMIN session），目的是讓 middleware 一旦被繞過（Next.js 出過 CVE-2025-29927）不會直接換來一次模型帳單。
 
-`API_TOKEN` 可代替 session 用於寫入，但不適用於 `/api/users`，也不適用於任何讀取。
+`API_TOKEN` 與貢獻者自己的 per-user token（`/admin/profile` 產生，`tocr_` 開頭）都可代替 session 用於寫入，但不適用於 `/api/users` 與 `/api/tokens`，也不適用於任何讀取。per-user token 每次都要查一次資料庫確認沒被撤銷、且持有人仍是 EDITOR 以上，所以 middleware 先比對前綴，不是我們的字串就不去打資料庫。
 
 ### 期刊 / 單期 / 文章
 
@@ -93,6 +93,8 @@
 | GET | `/api/users` | 使用者列表 |
 | GET · PUT | `/api/users/[id]` | 詳情 / 更新角色（ADMIN，且不能改自己的角色） |
 | PATCH | `/api/users/me` | 修改自己的顯示名稱（不看 id，所以只能改自己；系統帳號拒絕） |
+| GET · POST | `/api/tokens` | 自己的 API token 清單 / 產生一支（明碼只在這個回應裡出現一次） |
+| DELETE | `/api/tokens/[id]` | 撤銷自己的 token（標記 `revokedAt`，不刪列） |
 | GET | `/api/contributors` | 貢獻排行 |
 | GET | `/api/contributors/[id]` | 單一貢獻者 |
 

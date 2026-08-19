@@ -8,7 +8,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DisplayNameForm } from "@/components/admin/DisplayNameForm";
+import { ApiTokenManager } from "@/components/admin/ApiTokenManager";
 import { isSyntheticUser } from "@/lib/validators/user";
+import { prisma } from "@/lib/prisma";
 
 export default async function ProfilePage() {
   const user = isDevBypass ? DEV_USER : (await auth())?.user;
@@ -18,6 +20,19 @@ export default async function ProfilePage() {
   if (!user) return null;
 
   const synthetic = isSyntheticUser(user.id);
+
+  const tokens = await prisma.apiToken.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      prefix: true,
+      createdAt: true,
+      lastUsedAt: true,
+      revokedAt: true,
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -41,6 +56,28 @@ export default async function ProfilePage() {
           ) : (
             <DisplayNameForm initialName={user.name ?? ""} />
           )}
+        </CardContent>
+      </Card>
+
+      {/* Deliberately unexplained: most contributors have no use for this and
+          would only be puzzled by instructions for it. Whoever needs one knows
+          what it is, and what it costs them is on the card. */}
+      <Card className="max-w-xl">
+        <CardHeader>
+          <CardTitle>API Token</CardTitle>
+          <CardDescription>
+            用於腳本寫入。權限與你的帳號相同，寫入的紀錄會署你的名。
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ApiTokenManager
+            tokens={tokens.map((token) => ({
+              ...token,
+              createdAt: token.createdAt.toISOString(),
+              lastUsedAt: token.lastUsedAt?.toISOString() ?? null,
+              revokedAt: token.revokedAt?.toISOString() ?? null,
+            }))}
+          />
         </CardContent>
       </Card>
     </div>

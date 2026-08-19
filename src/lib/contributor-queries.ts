@@ -20,6 +20,12 @@ export interface ContributorEntry {
   user: { id: string; name: string | null; email?: string; image: string | null };
   totalEdits: number;
   breakdown: Record<string, number>;
+  /**
+   * How many of `totalEdits` came in through an API token. Counted, not
+   * discounted: cataloguing by script is still cataloguing, and the rank reads
+   * the total. Kept apart so the split stays visible if that ever changes.
+   */
+  apiEdits: number;
 }
 
 /**
@@ -80,8 +86,8 @@ export async function getContributorLeaderboard(options: ContributorOptions = {}
     return { contributors: [], totalContributors: 0 };
   }
 
-  // Second batch: users + action breakdowns in parallel
-  const [users, actionBreakdowns] = await Promise.all([
+  // Second batch: users + action breakdowns + API share in parallel
+  const [users, actionBreakdowns, apiCounts] = await Promise.all([
     prisma.user.findMany({
       where: { id: { in: userIds } },
       select: { id: true, name: true, ...(includeEmail && { email: true }), image: true },
@@ -89,6 +95,11 @@ export async function getContributorLeaderboard(options: ContributorOptions = {}
     prisma.editLog.groupBy({
       by: ["userId", "action"],
       where: { ...where, userId: { in: userIds } },
+      _count: { id: true },
+    }),
+    prisma.editLog.groupBy({
+      by: ["userId"],
+      where: { ...where, userId: { in: userIds }, via: "token" },
       _count: { id: true },
     }),
   ]);
@@ -102,11 +113,14 @@ export async function getContributorLeaderboard(options: ContributorOptions = {}
     breakdownMap.get(row.userId)![row.action] = row._count.id;
   }
 
+  const apiMap = new Map(apiCounts.map((row) => [row.userId, row._count.id]));
+
   const contributors = editCounts.map((entry, index) => ({
     rank: skip + index + 1,
     user: userMap.get(entry.userId) || { id: entry.userId, name: "Unknown", image: null },
     totalEdits: entry._count.id,
     breakdown: breakdownMap.get(entry.userId) || {},
+    apiEdits: apiMap.get(entry.userId) ?? 0,
   }));
 
   return { contributors, totalContributors };

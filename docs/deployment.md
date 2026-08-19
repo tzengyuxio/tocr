@@ -73,6 +73,9 @@
 
 > *至少需要設定一個 AI API Key
 
+貢獻者自己的 per-user token 不是環境變數，存在資料庫裡（`api_tokens`，只有 sha256），
+在 `/admin/profile` 產生與撤銷，不必設定也不必 redeploy。
+
 #### API_TOKEN 存哪裡
 
 `API_TOKEN` 是對稱的共享密鑰：伺服器拿請求帶來的值跟自己的 `process.env.API_TOKEN`

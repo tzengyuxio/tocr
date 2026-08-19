@@ -5,6 +5,7 @@ import { prisma } from "./prisma";
 import { auth } from "./auth";
 import { isDevBypass, DEV_USER } from "./dev-auth";
 import { API_USER, isValidApiToken } from "./api-token";
+import { resolveApiToken } from "./user-api-token";
 
 export type EditAction = "CREATE" | "UPDATE" | "DELETE";
 
@@ -40,27 +41,52 @@ export const CONTRIBUTION_FEED_SCOPE: Prisma.EditLogWhereInput = {
 };
 
 /**
+ * Who is making this request, and whether they came through a script.
+ *
+ * `via` is the exception, not the norm: null means a person in the admin UI,
+ * which is most rows and all of the ones written before tokens existed.
+ */
+export interface EditActor {
+  userId: string;
+  via: "token" | null;
+}
+
+async function resolveActor(): Promise<EditActor | null> {
+  if (isDevBypass) {
+    return { userId: DEV_USER.id, via: null };
+  }
+  const session = await auth();
+  if (session?.user?.id) {
+    return { userId: session.user.id, via: null };
+  }
+
+  const authorization = await requestAuthorization();
+  if (!authorization) return null;
+
+  // The shared env-var token has no person behind it, so it keeps being the
+  // 司書 -- a per-user token names its owner instead.
+  if (isValidApiToken(authorization)) {
+    return { userId: API_USER.id, via: "token" };
+  }
+  const bearer = await resolveApiToken(authorization);
+  return bearer ? { userId: bearer.userId, via: "token" } : null;
+}
+
+/**
  * Get the current authenticated user's ID.
  * Returns null if not authenticated (should not happen for write operations
  * since middleware enforces auth).
  */
 export async function getCurrentUserId(): Promise<string | null> {
-  if (isDevBypass) {
-    return DEV_USER.id;
-  }
-  const session = await auth();
-  if (session?.user?.id) {
-    return session.user.id;
-  }
-  return (await isApiTokenRequest()) ? API_USER.id : null;
+  return (await resolveActor())?.userId ?? null;
 }
 
-async function isApiTokenRequest(): Promise<boolean> {
+async function requestAuthorization(): Promise<string | null> {
   try {
-    return isValidApiToken((await headers()).get("authorization"));
+    return (await headers()).get("authorization");
   } catch {
     // No request scope (scripts, tests) -- there is no token to read.
-    return false;
+    return null;
   }
 }
 
@@ -108,10 +134,21 @@ function ensureUser(user: SyntheticUser): Promise<void> {
  * Exported for writes that log inside their own transaction rather than
  * through logEdit -- the merge in lib/merge-game.ts is one.
  */
-export async function resolveAuthor(): Promise<string | null> {
-  const userId = await getCurrentUserId();
-  if (!userId) return null;
+export async function resolveAuthor(): Promise<EditActor | null> {
+  const actor = await resolveActor();
+  if (!actor) return null;
 
+  await ensureUserRow(actor.userId);
+
+  return actor;
+}
+
+/**
+ * Make sure `users` has a row for this id, for the two accounts that never
+ * sign in. Exported for writes that reference the user outside an edit log --
+ * creating an API token is one.
+ */
+export async function ensureUserRow(userId: string): Promise<void> {
   const synthetic =
     userId === DEV_USER.id
       ? DEV_USER
@@ -119,8 +156,6 @@ export async function resolveAuthor(): Promise<string | null> {
         ? API_USER
         : null;
   if (synthetic) await ensureUser(synthetic);
-
-  return userId;
 }
 
 /**
@@ -155,17 +190,18 @@ export async function logEdit(
     return;
   }
 
-  const userId = await resolveAuthor();
-  if (!userId) return;
+  const author = await resolveAuthor();
+  if (!author) return;
 
   await writeLog(() =>
     prisma.editLog.create({
       data: {
-        userId,
+        userId: author.userId,
         entityType,
         entityId,
         action,
         changes: changes as never,
+        via: author.via,
       },
     })
   );
@@ -187,21 +223,22 @@ export async function logEditBatch(
 ) {
   if (entityIds.length === 0) return;
 
-  const userId = await resolveAuthor();
-  if (!userId) return;
+  const author = await resolveAuthor();
+  if (!author) return;
 
   const batchId = randomUUID();
 
   await writeLog(() =>
     prisma.editLog.createMany({
       data: entityIds.map((entityId, index) => ({
-        userId,
+        userId: author.userId,
         entityType,
         entityId,
         action,
         changes: changes as never,
         batchId,
         batchSize: index === 0 ? entityIds.length : null,
+        via: author.via,
       })),
     })
   );

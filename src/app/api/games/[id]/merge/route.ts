@@ -74,12 +74,12 @@ export const POST = withErrorHandler(async (request: NextRequest, context) => {
     return NextResponse.json({ applied: false, ...summary });
   }
 
-  const userId = await resolveAuthor();
-  if (!userId) {
+  const author = await resolveAuthor();
+  if (!author) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await prisma.$transaction((tx) => applyGameMerge(tx, plan, userId, loser.name));
+  await prisma.$transaction((tx) => applyGameMerge(tx, plan, author, loser.name));
 
   return NextResponse.json({ applied: true, ...summary });
 }, "Merge games");

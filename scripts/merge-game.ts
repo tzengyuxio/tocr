@@ -70,7 +70,15 @@ async function main() {
     return;
   }
 
-  await prisma.$transaction((tx) => applyGameMerge(tx, plan, API_USER.id, loser.name));
+  await prisma.$transaction((tx) =>
+    applyGameMerge(
+      tx,
+      plan,
+      // Unattended, like every other write the 司書 makes.
+      { userId: API_USER.id, via: "token" },
+      loser.name
+    )
+  );
 
   console.log("\n完成。");
 }
