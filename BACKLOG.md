@@ -156,6 +156,12 @@
 
   **不急**：重置一次就恢復，而且知道原因就不會慌。等 PR 開始並行得更頻繁再處理（2026-08-18）
 
+- [ ] **nostalibrary 把電玩通 PS 系列三本併成一筆，要拆開對齊** — 上游那三本共用一個 slug `fmtps-tw`，而這裡是三筆獨立的期刊：`fmtps2-tw`（電玩通PS2，VOL.1～102）、`fmtpsplus-tw`（電玩通PLAYSTATION +，VOL.103～115）、`fmtpsp-tw`（FAMITSU PSP+PS3 TAIWAN，VOL.116～132）。
+
+  **拆開才是編目規則的做法**：正題名改變就另立書目，在附註寫明「改為 XXX」與「繼續自 YYY」——三本的 `description` 都已經照這條寫了。上游併成一筆的話，`data/magazines.json` 回填時會對不起來，`backfill-magazine-categories.ts` 這類以 slug 比對的腳本也會找不到。
+
+  **這裡是正本、上游要跟著改**（yuxio 2026-08-20）。順帶一提，`fmtps-tw` 這個代號在這裡沒有用掉，要沿用給其中一本也還來得及（2026-08-20）
+
 ## 2026-08-17 簡化盤點
 
 以下來自一次以「找可簡化的地方」為目標的全 repo 盤點，每條都附了呼叫端證據。刻意的重複不在此列：三個 OCR provider 是有意的抽換座（`OPENAI_BASE_URL` 指向自架模型）、`requireEditor()` 與 middleware 的雙重檢查是 [routes.md](docs/routes.md) 寫明的防繞過設計。
