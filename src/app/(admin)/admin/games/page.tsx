@@ -3,6 +3,11 @@
 import { useState, useEffect, useCallback, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  CommaListInput,
+  formatStringList,
+  parseStringList,
+} from "@/components/ui/comma-list-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -723,17 +728,11 @@ export default function GamesPage() {
 
             <div className="space-y-2">
               <Label>別名</Label>
-              <Input
-                value={formData.aliases.join(", ")}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setFormData({
-                    ...formData,
-                    aliases: val
-                      ? val.split(",").map((s) => s.trim()).filter(Boolean)
-                      : [],
-                  });
-                }}
+              <CommaListInput
+                value={formData.aliases}
+                format={formatStringList}
+                parse={parseStringList}
+                onChange={(aliases) => setFormData({ ...formData, aliases })}
                 placeholder="以逗號分隔（例如：竹籬笆外的春天）"
               />
               <p className="text-xs text-muted-foreground">

@@ -95,7 +95,7 @@ export function EditableArticleRow({
     summary: article.summary,
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [authorsText, setAuthorsText] = useState(article.authors.join(", "));
+  const [authorsDraft, setAuthorsDraft] = useState(article.authors);
   const [gamesDraft, setGamesDraft] = useState<string[]>(gameNames);
   const [tagsDraft, setTagsDraft] = useState<TagInput[]>(tagInputs);
 
@@ -109,7 +109,7 @@ export function EditableArticleRow({
       authors: article.authors,
       summary: article.summary,
     });
-    setAuthorsText(article.authors.join(", "));
+    setAuthorsDraft(article.authors);
     setGamesDraft(gameNames());
     setTagsDraft(tagInputs());
     onStartEdit();
@@ -119,11 +119,12 @@ export function EditableArticleRow({
     if (!formData.title.trim()) return;
     setIsSaving(true);
     try {
-      const authors = authorsText
-        .split(",")
-        .map((a) => a.trim())
-        .filter(Boolean);
-      await onSaveEdit({ ...formData, authors, games: gamesDraft, tags: tagsDraft });
+      await onSaveEdit({
+        ...formData,
+        authors: authorsDraft,
+        games: gamesDraft,
+        tags: tagsDraft,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -225,10 +226,12 @@ export function EditableArticleRow({
           </div>
           <div className="space-y-1">
             <Label className="text-xs">作者（逗號分隔）</Label>
-            <Input
-              value={authorsText}
-              onChange={(e) => setAuthorsText(e.target.value)}
-              onKeyDown={handleKeyDown}
+            <CommaListInput
+              value={authorsDraft}
+              format={formatStringList}
+              parse={parseStringList}
+              onChange={setAuthorsDraft}
+              onEscape={onCancelEdit}
             />
           </div>
         </div>

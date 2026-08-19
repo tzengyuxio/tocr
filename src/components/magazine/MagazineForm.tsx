@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  CommaListInput,
+  formatStringList,
+  parseStringList,
+} from "@/components/ui/comma-list-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -214,17 +219,12 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label>別名</Label>
-                    <Input
+                    <CommaListInput
                       placeholder="輸入別名，以逗號分隔（例如：ファミ通, fami通）"
-                      value={(field.value || []).join(", ")}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        field.onChange(
-                          val
-                            ? val.split(",").map((s) => s.trim()).filter(Boolean)
-                            : []
-                        );
-                      }}
+                      value={field.value}
+                      format={formatStringList}
+                      parse={parseStringList}
+                      onChange={field.onChange}
                     />
                     <p className="text-xs text-muted-foreground">
                       可用於搜尋的替代名稱，以逗號分隔

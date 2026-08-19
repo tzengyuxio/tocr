@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  CommaListInput,
+  formatStringList,
+  parseStringList,
+} from "@/components/ui/comma-list-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -168,17 +173,12 @@ export function IssueForm({
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label>其他編號</Label>
-                    <Input
+                    <CommaListInput
                       placeholder="以逗號分隔（例如：2014 02, HK VOL 308, 1月30日號）"
-                      value={(field.value || []).join(", ")}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        field.onChange(
-                          val
-                            ? val.split(",").map((s) => s.trim()).filter(Boolean)
-                            : []
-                        );
-                      }}
+                      value={field.value}
+                      format={formatStringList}
+                      parse={parseStringList}
+                      onChange={field.onChange}
                     />
                     <p className="text-xs text-muted-foreground">
                       同一期封面／版權頁上並存的其他編號。期號欄放最主要的那個（有總號就放總號），
