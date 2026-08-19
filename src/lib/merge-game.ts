@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import type { EditActor } from "./edit-log";
 
 /**
  * Folding a duplicate game entry into the one that survives.
@@ -118,7 +119,7 @@ export function suggestKeeper<T extends KeeperCandidate>(a: T, b: T): T {
 export async function applyGameMerge(
   tx: Prisma.TransactionClient,
   plan: GameMergePlan,
-  userId: string,
+  author: EditActor,
   loserName: string
 ): Promise<void> {
   for (const articleId of plan.movedArticleIds) {
@@ -144,7 +145,7 @@ export async function applyGameMerge(
   // id. `mergedInto` is the only breadcrumb back to where the articles went.
   await tx.editLog.create({
     data: {
-      userId,
+      userId: author.userId,
       entityType: "Game",
       entityId: plan.loserId,
       action: "DELETE",
@@ -156,6 +157,7 @@ export async function applyGameMerge(
         discardedDuplicateLinks: plan.discardedLinkCount,
         promotedPrimaryLinks: plan.promotedArticleIds.length,
       },
+      via: author.via,
     },
   });
 

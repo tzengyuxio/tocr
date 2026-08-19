@@ -49,7 +49,8 @@ tocr/
 | `Tag` | 標籤：六種類型 |
 | `Game` | 遊戲：原文名、英文名、別名、平台、開發商、發行商、類型 |
 | `OcrRecord` | 辨識紀錄：原始結果、Provider、狀態 |
-| `EditLog` | 編輯紀錄：使用者、動作、對象、diff |
+| `EditLog` | 編輯紀錄：使用者、動作、對象、diff、是不是走 API token 寫的 |
+| `ApiToken` | 貢獻者的寫入憑證：只存 sha256，可撤銷 |
 | `User` | 使用者與角色，Auth.js 的 `Account` / `Session` 隨附 |
 
 ### 關聯
@@ -60,6 +61,7 @@ Article  N:N Tag   (ArticleTag)
 Article  N:N Game  (ArticleGame)
 Issue    1:N OcrRecord
 User     1:N EditLog
+User     1:N ApiToken
 ```
 
 ### 幾個刻意的設計
@@ -82,8 +84,8 @@ User     1:N EditLog
 |---|---|
 | `/admin/**` | 登入且為 EDITOR 或 ADMIN |
 | `/admin/users`、`/admin/edit-logs` | ADMIN |
-| `/api/**` 的寫入方法 | EDITOR 或 ADMIN，或有效的 `API_TOKEN` |
-| `/api/users` 的寫入 | 只接受 session，不接受 token |
+| `/api/**` 的寫入方法 | EDITOR 或 ADMIN，或有效的 `API_TOKEN`，或某位 EDITOR／ADMIN 的 per-user token |
+| `/api/users`、`/api/tokens` | 只接受 session，不接受任何 token |
 | `/api/export` | 登入且為 EDITOR 或 ADMIN，不接受 token |
 | 其餘 `/api/**` 的 GET | 公開 |
 

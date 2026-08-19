@@ -117,6 +117,9 @@ ISSN 刻意不設唯一性、日期採 EDTF 等建檔準則見 [data-conventions
 - 首位使用者自動成為 ADMIN；也可用 `ADMIN_EMAILS` 指定
 - 授權集中在 `src/middleware.ts`：寫入操作需要 EDITOR 以上，`/admin/users` 與 `/admin/edit-logs` 只給 ADMIN
 - 批次腳本可用 `API_TOKEN` 以 Bearer token 認證寫入。**token 不能用於使用者管理，也不能用於讀取**——它是為無人值守的匯入而存在的
+- 貢獻者也可以在 `/admin/profile` 自己產生 **per-user token**（`tocr_` 開頭）。拿它寫入等同本人操作：編輯紀錄署他的名，權限讀他當下的 role，所以**降級或刪帳號就等於撤銷他所有的 token**。只存 sha256，明碼在產生當下顯示一次；撤銷是標記不是刪列，不然事後看不出這支存在過
+- **per-user token 與 `API_TOKEN` 的差別只在署名**：後者沒有人在背後，寫入一律掛給司書(NPC)，也照舊不列入貢獻排行。前者是某個人，所以算他的貢獻——`EditLog.via` 記下這筆是不是走 token 進來的，`/admin/edit-logs` 標成 API，貢獻排行合併計算但把數字分開留著
+- token 一律不能讀，也不能拿來產生另一支 token（`/api/tokens` 只收 session）——能生 token 的 token 撤不掉
 - `DEV_BYPASS_AUTH=true` 可在開發時免登入，該旗標在 production 一律無效
 
 ## 檔案儲存

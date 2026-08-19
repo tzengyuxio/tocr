@@ -2,13 +2,16 @@
  * @jest-environment node
  */
 jest.mock("@/lib/auth", () => ({ auth: jest.fn() }));
-jest.mock("@/lib/dev-auth", () => ({ isDevBypass: false }));
+jest.mock("@/lib/dev-auth", () => ({ isDevBypass: false, DEV_USER: { id: "dev-user", role: "ADMIN" } }));
+jest.mock("@/lib/user-api-token", () => ({ resolveApiToken: jest.fn() }));
 
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireEditor } from "@/lib/require-editor";
+import { resolveApiToken } from "@/lib/user-api-token";
+import { requireEditor, sessionEditorId } from "@/lib/require-editor";
 
 const authMock = auth as unknown as jest.Mock;
+const resolveApiTokenMock = resolveApiToken as jest.Mock;
 
 const ORIGINAL_TOKEN = process.env.API_TOKEN;
 
@@ -21,6 +24,7 @@ function requestWith(headers: Record<string, string> = {}) {
 
 beforeEach(() => {
   authMock.mockReset().mockResolvedValue(null);
+  resolveApiTokenMock.mockReset().mockResolvedValue(null);
   delete process.env.API_TOKEN;
 });
 
@@ -88,5 +92,46 @@ describe("requireEditor", () => {
     );
 
     expect(response?.status).toBe(401);
+  });
+
+  it("lets a contributor's own token through", async () => {
+    resolveApiTokenMock.mockResolvedValue({ userId: "u1", tokenId: "tok-1" });
+
+    const response = await requireEditor(
+      requestWith({ authorization: "Bearer tocr_whatever" })
+    );
+
+    expect(response).toBeNull();
+  });
+
+  it("rejects a token that resolves to nobody", async () => {
+    const response = await requireEditor(
+      requestWith({ authorization: "Bearer tocr_revoked" })
+    );
+
+    expect(response?.status).toBe(401);
+  });
+});
+
+// Minting a token is the one thing a token must not buy: a token that can
+// create another one cannot be revoked.
+describe("sessionEditorId", () => {
+  it("ignores an API token entirely", async () => {
+    process.env.API_TOKEN = "s3cret-token";
+    resolveApiTokenMock.mockResolvedValue({ userId: "u1", tokenId: "tok-1" });
+
+    expect(await sessionEditorId()).toBeNull();
+  });
+
+  it("returns the signed-in editor", async () => {
+    authMock.mockResolvedValue({ user: { id: "u1", role: "EDITOR" } });
+
+    expect(await sessionEditorId()).toBe("u1");
+  });
+
+  it("turns down a VIEWER", async () => {
+    authMock.mockResolvedValue({ user: { id: "u1", role: "VIEWER" } });
+
+    expect(await sessionEditorId()).toBeNull();
   });
 });

@@ -2,8 +2,12 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { isDevBypass } from "@/lib/dev-auth";
 import { isValidApiToken } from "@/lib/api-token";
+import { resolveApiToken } from "@/lib/user-api-token";
 
-export default auth((req) => {
+/** Endpoints no token may touch, however valid it is. */
+const SESSION_ONLY_PATHS = ["/api/users", "/api/tokens"];
+
+export default auth(async (req) => {
   if (isDevBypass) {
     return NextResponse.next();
   }
@@ -45,16 +49,21 @@ export default auth((req) => {
     const isProtectedRead = pathname.startsWith("/api/export");
 
     if (isWriteOperation || isProtectedRead) {
-      // Scripted writes may authenticate with the API token instead of a
-      // session. User management stays session-only so a leaked token cannot
-      // be used to grant roles, and the token buys no reads at all -- it
-      // exists for unattended imports, not for pulling data out.
-      if (
-        isWriteOperation &&
-        !pathname.startsWith("/api/users") &&
-        isValidApiToken(req.headers.get("authorization"))
-      ) {
-        return NextResponse.next();
+      // Scripted writes may authenticate with an API token instead of a
+      // session -- either the shared env-var one or a contributor's own.
+      // Account and token management stay session-only so a leaked token can
+      // neither grant roles nor mint another token, and no token buys a read
+      // at all: they exist for writing data in, not for pulling it out.
+      if (isWriteOperation && !SESSION_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
+        const authorization = req.headers.get("authorization");
+        if (isValidApiToken(authorization)) {
+          return NextResponse.next();
+        }
+        // A per-user token is a database lookup, so it goes second: the header
+        // has to be one of ours before it is worth a round trip.
+        if (await resolveApiToken(authorization)) {
+          return NextResponse.next();
+        }
       }
 
       if (!isLoggedIn) {

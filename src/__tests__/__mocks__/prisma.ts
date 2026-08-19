@@ -33,6 +33,7 @@ interface PrismaMock {
   exportLog: MockModel;
   user: MockModel;
   editLog: MockModel;
+  apiToken: MockModel;
   $transaction: jest.Mock;
   $queryRaw: jest.Mock;
 }
@@ -63,6 +64,7 @@ export const prismaMock: PrismaMock = {
   exportLog: createMockModel(),
   user: createMockModel(),
   editLog: createMockModel(),
+  apiToken: createMockModel(),
   $transaction: jest.fn((fn: TransactionCallback) => fn(prismaMock)),
   // Tagged-template call, so tests assert on the interpolated values rather
   // than on a query object.
