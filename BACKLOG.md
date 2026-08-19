@@ -96,9 +96,11 @@
 
   免費方案的條件（2026-08-15 查，官網掛掉所以是從搜尋摘要與 readme 鏡像拼的，**未經官方頁面確認**）：要在每個用到資料的頁面標示來源並附上連往 RAWG 的有效連結；月活躍用戶 ≤ 100,000 或月瀏覽 ≤ 500,000 可免費商用；用量兩處說法不一致（TOS 說 20,000／月，readme 說免費 key 共 50,000）
 
-- [ ] [#34] **純數字期號加上「第 N 期」** — 549 期裡 544 期的 `issueNumber` 是純數字，單獨顯示「216」讀起來不像期號。建議抽 `formatIssueNumber()` 放在 `formatEdtf` 旁邊：純數字才加「第 N 期」，`創刊號`、`試刊號`、`70+71` 這類原樣保留。不要只改一處——`issueNumber` 散落在 32 個檔案，只改單期複查會讓同一期在不同頁面長得不一樣。不用 `Vol.`／`No.`：前者會跟另一個獨立欄位 `volumeNumber` 混淆，後者偏西式。
+- [x] [#34] **純數字期號加上「第 N 期」**（2026-08-20 完成：`src/lib/issue-number.ts` 的 `formatIssueNumber()`，19 個顯示點一起改） — 549 期裡 544 期的 `issueNumber` 是純數字，單獨顯示「216」讀起來不像期號。純數字才加「第 N 期」，`創刊號`、`試刊號`、`70+71` 這類原樣保留。不用 `Vol.`／`No.`：前者會跟另一個獨立欄位 `volumeNumber` 混淆，後者偏西式。慣例寫進 [data-conventions.md](docs/data-conventions.md#存的是封面上的字顯示時才補第-n-期)。
 
-  **但先不要動手**：目前看到的特殊刊號（`創刊號`、`試刊號`、`創刊驚嘆號`、`70+71`）只來自 3 本雜誌，而已匯入 30 本、還有 27 本沒進來。等更多期刊的刊號樣貌浮現，再一次決定規則會更完整——現在定案等於用不到十分之一的樣本立規矩（2026-08-13）
+  **原本記著「先不要動手」**（樣本只有 3 本雜誌，27 本還沒匯入），2026-08-20 動手時判斷那個顧慮不成立：規則是**白名單**——只認純數字，其他一律原樣穿過去，所以新期刊帶來沒見過的刊號寫法不會被猜錯，只是不加字，不必先改規則。真要改的是「哪些非數字寫法也該包裝」，那本來就得等樣本。
+
+  匯入預覽與匯入結果兩張表（`ImportPreviewTable`、`ImportResultDialog`）刻意不套：那裡要對照的是來源資料原文（2026-08-13，2026-08-20 完成）
 
 - [ ] **重複的遊戲條目要合併（持續）** — 同一款遊戲被建成兩筆的來源是不同期的目錄抄寫不同；名稱完全相同的反而不會發生，那在建立時就比對到了。**只有 slug 正規化後撞在一起才看得見**。
 
@@ -113,12 +115,24 @@
   能做的事，由淺到深：
 
   1. ~~**`app/sitemap.ts` 與 `app/robots.ts`**~~ — **2026-08-19 完成**。動態產生，1157 條網址（靜態頁 + 期刊 + 單期 + 遊戲 + 標籤），`/admin`、`/api`、`/auth` 已 disallow。中文 slug 逐段百分比編碼——沒編碼的話 XML 裡是不合法的網址，搜尋引擎會整筆丟掉，而那正是這個站大部分內容所在的層。`/i/<code>` 短碼刻意不收：同一份內容不報兩個網址
-  2. **結構化資料（JSON-LD）** — 期刊可以是 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙，用在雜誌目錄上幾乎是量身訂做。這也是 AEO 的主要施力點：讓模型答得出「電腦玩家 1999 年 5 月號有哪些文章」
+  2. **結構化資料（JSON-LD）** — 期刊可以是 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙，用在雜誌目錄上幾乎是量身訂做。這同時是 AEO 的主要施力點，細節見下面的「AEO：讓答題引擎答得出這個站的內容」
   3. **標題與描述** — 目前逐頁 `generateMetadata` 只有 title，description 多半沿用站台預設
 
   **原本寫著「sitemap 要等網址定案」，那個條件早就滿足了**——readable URLs 在 2026-08-16 就上線（`docs/plans/2026-08-16-readable-urls-design.md`），「網址裡的 ID 太長」也已經不在這份清單上。那是一條指向不存在項目的過時交叉引用，2026-08-19 覆核時才發現，sitemap 因此白等了三天。
 
   剩下的 2 與 3 仍**與 OG meta 共用同一個 `generateMetadata`**，一起做比較省。
+
+- [ ] **AEO：讓答題引擎答得出這個站的內容** — SEO 求的是「有人搜尋時排得上」，AEO 求的是「有人問模型時答得出來、而且答得對」。對這個站來說後者更值得投資：沒有人會用關鍵字搜「電腦玩家 1999 年 5 月號有哪些文章」，但會這樣問模型，而全世界只有這裡有那份目錄（2026-08-20）。
+
+  分成兩件不同的事——**讓模型讀得到**，以及**讀到之後對得起來**：
+
+  - **JSON-LD 結構化資料** — 主要施力點。期刊 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙。與 OG meta 共用同一個 `generateMetadata`，一起做比較省。這條與 SEO 那項的第 2 點是同一件事，做的時候一起收
+  - **`llms.txt`** — 站台給模型的導覽：這裡有什麼、怎麼定址（slug 與 `/i/<code>` 短碼）、資料從哪來、什麼算可信。目前沒有這個檔
+  - **AI 爬蟲的放行政策要明講** — `robots.ts` 現在只有 `userAgent: "*"`，等於預設全放行，包含 GPTBot／ClaudeBot／PerplexityBot。**那應該是一個決定，不是預設值**：要不要被訓練、要不要被即時檢索，兩件事可以分開設。決定了就寫進 `robots.ts` 的註解，別讓下一個人以為是漏掉的
+  - **內容要在 HTML 裡** — 目錄若靠 client 端才渲染，抓取端多半只會拿到空殼。單期頁目前是 server component，先確認這點成立，之後改動也別破壞
+  - **可引用的穩定網址** — 短碼 `/i/<code>` 已經是這個角色（期刊改名、期號重排、slug 重填都不動它），但沒對外說明過。寫進 `llms.txt`
+
+  **可驗證**：做完之後直接拿幾個模型問「電腦玩家 1999 年 5 月號有哪些文章」「哪本雜誌報導過《仙劍奇俠傳》」，看答不答得出、有沒有引到這個站。答錯比答不出更該記下來——那是資料或標記出了問題
 
 - [ ] **Open Graph meta 與縮圖** — 現在整個 repo 沒有一處 `openGraph` 設定（`layout.tsx` 只有 `title` 與 `description`），所以任何一頁貼到 LINE／Threads／Discord 都只是一段光禿禿的網址。四個公開的動態頁（`magazines/[id]`、`issues/[issueId]`、`games/[id]`、`tags/[id]`）都已經有 `generateMetadata`，補 `openGraph` 就在同一個函式裡（2026-08-16）。
 
@@ -166,13 +180,13 @@
 
 以下來自一次以「找可簡化的地方」為目標的全 repo 盤點，每條都附了呼叫端證據。刻意的重複不在此列：三個 OCR provider 是有意的抽換座（`OPENAI_BASE_URL` 指向自架模型）、`requireEditor()` 與 middleware 的雙重檢查是 [routes.md](docs/routes.md) 寫明的防繞過設計。
 
-- [ ] **`OcrRecord.status` 有四個狀態，只有一個到得了** — 唯一的寫入端（`src/app/api/ocr/route.ts:212`）永遠寫 `COMPLETED`，兩個讀取端（`src/app/api/issues/[id]/ocr/route.ts:18`、`src/app/(admin)/admin/issues/page.tsx:93`）也都只查 `COMPLETED`。`errorMessage` 在 `src/` 與 `scripts/` **零次引用**——沒人寫也沒人讀。dev 的 10 筆紀錄全是 COMPLETED、全無錯誤訊息。
+- [x] **`OcrRecord.status` 有四個狀態，只有一個到得了**（2026-08-20 完成：`status` 與 `errorMessage` 連同 `OcrStatus` enum 一起拿掉，migration `drop_ocr_record_status`） — 唯一的寫入端（`src/app/api/ocr/route.ts:212`）永遠寫 `COMPLETED`，兩個讀取端（`src/app/api/issues/[id]/ocr/route.ts:18`、`src/app/(admin)/admin/issues/page.tsx:93`）也都只查 `COMPLETED`。`errorMessage` 在 `src/` 與 `scripts/` **零次引用**——沒人寫也沒人讀。dev 的 10 筆紀錄全是 COMPLETED、全無錯誤訊息。
 
   失敗之所以不可達，是因為 route 的 catch 只 `console.error` 就回 500，不落庫。所以有兩條路，**選哪條是產品決定**：把失敗也記下來（那是新功能，得想清楚錯誤訊息會不會帶出自架後端的內部網址——route 的註解正是為此才不回傳細節），或者承認這個站不追蹤失敗，把 `errorMessage` 與 `OcrStatus` 一起拿掉。
 
   傾向後者：欄位存在會讓人以為查得到失敗紀錄。**要做趁現在**——`ocr_records` 目前資料量極小，之後只會更難動（2026-08-17）
 
-- [ ] **OCR provider 的 `config` 參數沒有任何呼叫端傳過** — 三個 provider 的 `extractTableOfContents(images, config?: Partial<OcrProviderConfig>)` 都得帶這個參數，但唯一的呼叫端（`route.ts:209`）只傳 images，設定一律從環境變數讀。`OcrProviderConfig` 這個型別除了這三個簽名之外沒有別的用途。
+- [x] **OCR provider 的 `config` 參數沒有任何呼叫端傳過**（2026-08-20 完成：參數與 `OcrProviderConfig` 型別移除；`clearCache()` 刪掉，`getDefaultProvider()` 換成 `getDefaultProviderType()`，route 兩處 inline 的預設值改呼叫它） — 三個 provider 的 `extractTableOfContents(images, config?: Partial<OcrProviderConfig>)` 都得帶這個參數，但唯一的呼叫端（`route.ts:209`）只傳 images，設定一律從環境變數讀。`OcrProviderConfig` 這個型別除了這三個簽名之外沒有別的用途。
 
   同一區還有兩個死的 public API：`OcrProviderFactory.clearCache()`（註解寫「主要用於測試」，實際上 0 個測試用到）與 `getDefaultProvider()`（0 個呼叫端）——而 route 第 65 行與第 244 行各自 inline 了一份 `DEFAULT_OCR_PROVIDER || "claude"`，等於同一個預設值有三份寫法。刪掉沒人用的那份、讓 route 呼叫 factory，或反過來把 factory 那份刪掉，兩者都比現在好（2026-08-17）
 
@@ -180,7 +194,7 @@
 
   落點已經有了：[`src/lib/image-policy.ts`](src/lib/image-policy.ts) 的開頭就寫著「一張表，兩邊不會走鐘」，尺寸與編碼格式早就收斂在那裡，只有這份清單漏掉。搬過去即可（2026-08-17）
 
-- [ ] **逗號分隔的陣列輸入抄了四次** — `MagazineForm.tsx:224`（別名）、`IssueForm.tsx:178`（其他編號）、`admin/games/page.tsx:776`（別名）、`EditableArticleRow.tsx:123`（作者），四段 `split(",").map(trim).filter(Boolean)` 完全相同，連 placeholder 的寫法都同一個模子。
+- [x] **逗號分隔的陣列輸入抄了四次**（2026-08-20 完成：四處都改用 `CommaListInput`） — `MagazineForm.tsx:224`（別名）、`IssueForm.tsx:178`（其他編號）、`admin/games/page.tsx:776`（別名）、`EditableArticleRow.tsx:123`（作者），四段 `split(",").map(trim).filter(Boolean)` 完全相同，連 placeholder 的寫法都同一個模子。
 
   抽成一個受控元件（值是 `string[]`、顯示成逗號字串）可以少掉三份，也讓「要不要改成 tag 式輸入」之後只有一處要改。**條件已達成**：原本寫「下次再出現第四個陣列欄位時就該做」，2026-08-18 覆核發現第四份（作者）早就在那裡了。`src/lib/tag-input.ts` 不算——它處理的是 `TYPE:name` 的標籤語法，是另一件事（2026-08-17，2026-08-18 覆核）
 
