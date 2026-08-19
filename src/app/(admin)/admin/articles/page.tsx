@@ -30,6 +30,7 @@ import { Search, FileText, Loader2, Pencil, BookOpen } from "lucide-react";
 import { formatEdtf } from "@/lib/edtf";
 import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip } from "@/components/chips";
+import { ListPager } from "@/components/admin/ListPager";
 
 interface Article {
   id: string;
@@ -259,51 +260,7 @@ export default function ArticlesPage() {
                 </TableBody>
               </Table>
 
-              {/* 分頁 */}
-              {totalPages > 1 && (
-                <div className="mt-6 flex justify-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage(page - 1)}
-                  >
-                    上一頁
-                  </Button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum: number;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (page <= 3) {
-                        pageNum = i + 1;
-                      } else if (page >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = page - 2 + i;
-                      }
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={pageNum === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setPage(pageNum)}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage(page + 1)}
-                  >
-                    下一頁
-                  </Button>
-                </div>
-              )}
+              <ListPager page={page} totalPages={totalPages} onPage={setPage} />
             </>
           )}
         </CardContent>
