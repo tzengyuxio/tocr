@@ -374,6 +374,43 @@ psql "$URL" -tAc 'select count(*) from issues'
 neonctl branches delete restore-test --project-id <project-id>
 ```
 
+#### 在本機驗證（不必開 Neon branch）
+
+私鑰本來就留在自己機器上，所以這一步也可以完全在本機跑，少一層網路與 Neon 額度。
+
+⚠️ **不要灌進 `tocr-db-dev`**。那支是 `postgres:15-alpine`，而備份是 PG18 的 `pg_dump` 產物——PG17 才有的 `transaction_timeout` 這類 GUC 在 PG15 會報錯，你會分不清是備份壞了還是版本不合；而且灌進去等於洗掉手上的開發資料。開一個拋棄式的 PG18 容器。
+
+```bash
+# 1. 取回備份：從 Cloudflare 後台下載，或（裝了 aws CLI 的話）
+aws s3 cp s3://<bucket>/db/<日期>.sql.gz.age . \
+  --endpoint-url https://<account-id>.r2.cloudflarestorage.com
+
+# 2. 拋棄式的 PG18 容器
+podman run -d --name tocr-restore-test -e POSTGRES_PASSWORD=postgres postgres:18-alpine
+until podman exec tocr-restore-test pg_isready -U postgres; do sleep 1; done
+
+# 3. 灌進一個新資料庫（新建而非清空 public，少一種出錯方式）
+podman exec tocr-restore-test psql -U postgres -tAc 'create database restore_test'
+age -d -i <你的 age 私鑰> <日期>.sql.gz.age | gunzip \
+  | podman exec -i tocr-restore-test psql -U postgres -v ON_ERROR_STOP=1 -q restore_test
+
+# 4. 斷言筆數與正式庫相近
+podman exec tocr-restore-test psql -U postgres -tAc \
+  'select (select count(*) from magazines), (select count(*) from issues),
+          (select count(*) from articles), (select count(*) from games)' restore_test
+
+# 5. 收工
+podman rm -f tocr-restore-test
+```
+
+`ON_ERROR_STOP=1` 不能省——沒有它，psql 會把錯誤印一印繼續跑完，最後 exit 0，於是一份灌不進去的備份看起來像成功。
+
+可攜性沒問題：workflow 的 `pg_dump` 帶 `--no-owner --no-privileges`，dump 裡沒有 Neon 專屬的 role 與 grant；唯一的 extension 是 `pg_trgm`（`20260331000000_add_trgm_search_indexes`），官方 postgres image 內建。
+
+**本機驗證不了的是「灌得進 Neon」**——Neon 專屬的行為只有真開一條 branch 才測得到。但這一步要回答的問題是「備份檔解得開、資料完整」，那本機答得了；真要還原時本來就會在 Neon 上再跑一次。
+
+還原出來的筆數**就是正式站的筆數**（截至該備份日），可以拿來更新文件裡引用的數字——注意是這個容器的數字，不是 `tocr-db-dev` 的。
+
 ### 手動備份
 
 ```bash
