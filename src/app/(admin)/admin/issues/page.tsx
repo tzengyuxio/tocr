@@ -26,6 +26,7 @@ import {
 import { Calendar } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { LinkPager } from "@/components/admin/LinkPager";
 
 export const metadata: Metadata = {
   title: "單期複查 - Admin",
@@ -205,33 +206,7 @@ export default async function IssueReviewPage({
             </Table>
           )}
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                第 {page} / {totalPages} 頁
-              </p>
-              <div className="flex gap-2">
-                {page > 1 ? (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={pageHref(page - 1)}>上一頁</Link>
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="sm" disabled>
-                    上一頁
-                  </Button>
-                )}
-                {page < totalPages ? (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={pageHref(page + 1)}>下一頁</Link>
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="sm" disabled>
-                    下一頁
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
+          <LinkPager page={page} totalPages={totalPages} pageHref={pageHref} />
         </CardContent>
       </Card>
     </div>

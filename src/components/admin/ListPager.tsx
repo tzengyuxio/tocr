@@ -27,12 +27,10 @@ export function ListPager({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-      {/* 數字鍵只走得到附近幾頁，讀者仍需要知道自己站在多長的一條路上。 */}
-      <p className="text-sm text-muted-foreground">
-        第 {page} / {totalPages} 頁
-      </p>
-      <div className="flex flex-wrap items-center gap-2">
+    /* 置中而非左右對齊：靠著兩端時，看完頁碼再去按鍵要橫跨整個表格寬度，
+       而清單越寬跨得越遠。控制項擺在中線，手與眼都不必來回。 */
+    <div className="mt-6 flex flex-col items-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -66,6 +64,10 @@ export function ListPager({
           <PageJump totalPages={totalPages} onJump={onPage} />
         )}
       </div>
+      {/* 數字鍵只走得到附近幾頁，讀者仍需要知道自己站在多長的一條路上。 */}
+      <p className="text-sm text-muted-foreground">
+        第 {page} / {totalPages} 頁
+      </p>
     </div>
   );
 }

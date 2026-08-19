@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { formatValue } from "@/lib/edit-log-format";
 import { prisma } from "@/lib/prisma";
@@ -14,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -31,6 +29,7 @@ import type { FieldDiff } from "@/lib/edit-log-diff";
 import { EditLogTargetLink } from "@/components/EditLogEntry";
 import { formatTaipei } from "@/lib/datetime";
 import { EditLogFilters } from "./EditLogFilters";
+import { LinkPager } from "@/components/admin/LinkPager";
 
 export const metadata: Metadata = {
   title: "編輯紀錄 - Admin",
@@ -222,33 +221,7 @@ export default async function EditLogsPage({
             </Table>
           )}
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                第 {page} / {totalPages} 頁
-              </p>
-              <div className="flex gap-2">
-                {page > 1 ? (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={pageHref(page - 1)}>上一頁</Link>
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="sm" disabled>
-                    上一頁
-                  </Button>
-                )}
-                {page < totalPages ? (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={pageHref(page + 1)}>下一頁</Link>
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="sm" disabled>
-                    下一頁
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
+          <LinkPager page={page} totalPages={totalPages} pageHref={pageHref} />
         </CardContent>
       </Card>
     </div>

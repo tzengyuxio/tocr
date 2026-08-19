@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
 import { auth } from "@/lib/auth";
@@ -9,7 +8,6 @@ import { isDevBypass } from "@/lib/dev-auth";
 import { prisma } from "@/lib/prisma";
 import { measure } from "@/lib/perf";
 import { formatTaipei } from "@/lib/datetime";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -25,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { LinkPager } from "@/components/admin/LinkPager";
 
 export const metadata: Metadata = {
   title: "匯出紀錄 - Admin",
@@ -119,33 +118,7 @@ export default async function ExportLogsPage({ searchParams }: PageProps) {
             </Table>
           )}
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                第 {page} / {totalPages} 頁
-              </p>
-              <div className="flex gap-2">
-                {page > 1 ? (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={pageHref(page - 1)}>上一頁</Link>
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="sm" disabled>
-                    上一頁
-                  </Button>
-                )}
-                {page < totalPages ? (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={pageHref(page + 1)}>下一頁</Link>
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="sm" disabled>
-                    下一頁
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
+          <LinkPager page={page} totalPages={totalPages} pageHref={pageHref} />
         </CardContent>
       </Card>
     </div>
