@@ -33,12 +33,10 @@ export class OcrProviderFactory {
   }
 
   /**
-   * 取得預設 Provider（從環境變數讀取）
+   * 取得預設 Provider 類型（從環境變數讀取）
    */
-  static getDefaultProvider(): IOcrProvider {
-    const defaultProvider =
-      (process.env.DEFAULT_OCR_PROVIDER as OcrProviderType) || "claude";
-    return this.getProvider(defaultProvider);
+  static getDefaultProviderType(): OcrProviderType {
+    return (process.env.DEFAULT_OCR_PROVIDER as OcrProviderType) || "claude";
   }
 
   /**
@@ -58,12 +56,5 @@ export class OcrProviderFactory {
     }
 
     return available;
-  }
-
-  /**
-   * 清除快取的 Provider 實例（主要用於測試）
-   */
-  static clearCache(): void {
-    this.providers.clear();
   }
 }

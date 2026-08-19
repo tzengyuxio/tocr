@@ -48,7 +48,7 @@ export default async function EditIssuePage({ params }: PageProps) {
   // A stored result means the recognition step is already done and what is left
   // is the review, so the button should not read like it starts from scratch.
   const savedOcr = await prisma.ocrRecord.findFirst({
-    where: { issueId, status: "COMPLETED" },
+    where: { issueId },
     orderBy: { processedAt: "desc" },
     select: { processedAt: true },
   });

@@ -1,10 +1,5 @@
 import OpenAI from "openai";
-import type {
-  IOcrProvider,
-  OcrResult,
-  OcrProviderConfig,
-  OcrImage,
-} from "../ocr.interface";
+import type { IOcrProvider, OcrResult, OcrImage } from "../ocr.interface";
 import { TOC_EXTRACTION_PROMPT } from "../prompts/toc-extraction";
 import { parseOcrResponse } from "../ocr.utils";
 
@@ -20,10 +15,7 @@ export class OpenAIOcrProvider implements IOcrProvider {
     });
   }
 
-  async extractTableOfContents(
-    images: OcrImage[],
-    config?: Partial<OcrProviderConfig>
-  ): Promise<OcrResult> {
+  async extractTableOfContents(images: OcrImage[]): Promise<OcrResult> {
     const startTime = Date.now();
 
     try {
@@ -36,10 +28,9 @@ export class OpenAIOcrProvider implements IOcrProvider {
       }));
 
       const response = await this.client.chat.completions.create({
-        model: config?.model || process.env.OPENAI_MODEL || "gpt-4o",
-        max_tokens:
-          config?.maxTokens || Number(process.env.OPENAI_MAX_TOKENS) || 8192,
-        temperature: config?.temperature ?? 0.1,
+        model: process.env.OPENAI_MODEL || "gpt-4o",
+        max_tokens: Number(process.env.OPENAI_MAX_TOKENS) || 8192,
+        temperature: 0.1,
         messages: [
           {
             role: "user",

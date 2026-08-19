@@ -32,14 +32,6 @@ export interface OcrResult {
   processingTime: number; // 毫秒
 }
 
-// Provider 設定
-export interface OcrProviderConfig {
-  apiKey: string;
-  model?: string;
-  maxTokens?: number;
-  temperature?: number;
-}
-
 // 單張圖片資料
 export interface OcrImage {
   base64: string;
@@ -53,12 +45,8 @@ export interface IOcrProvider {
   /**
    * 從圖片中提取目錄資訊（支援多張圖片）
    * @param images 圖片陣列，每張包含 base64 編碼和 MIME 類型
-   * @param config 可選的 Provider 設定
    */
-  extractTableOfContents(
-    images: OcrImage[],
-    config?: Partial<OcrProviderConfig>
-  ): Promise<OcrResult>;
+  extractTableOfContents(images: OcrImage[]): Promise<OcrResult>;
 }
 
 // 支援的 Provider 類型

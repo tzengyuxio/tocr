@@ -15,7 +15,7 @@ export const GET = withErrorHandler(async (
   const { id } = await context!.params;
 
   const record = await prisma.ocrRecord.findFirst({
-    where: { issueId: id, status: "COMPLETED" },
+    where: { issueId: id },
     orderBy: { processedAt: "desc" },
     select: { id: true, rawResult: true, provider: true, processedAt: true },
   });

@@ -88,10 +88,7 @@ export default async function IssueReviewPage({
     const byIssue = new Map<string, Date>();
     if (issues.length > 0) {
       const records = await prisma.ocrRecord.findMany({
-        where: {
-          issueId: { in: issues.map((issue) => issue.id) },
-          status: "COMPLETED",
-        },
+        where: { issueId: { in: issues.map((issue) => issue.id) } },
         select: { issueId: true, processedAt: true },
         orderBy: { processedAt: "desc" },
       });
