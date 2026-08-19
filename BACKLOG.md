@@ -13,6 +13,8 @@
 
     **改在本機做**（yuxio 2026-08-18）：私鑰本來就留在自己機器上，本機還原少一層網路與 Neon 額度，理由跟「不進 CI」是同一個。步驟寫在 [deployment.md](docs/deployment.md#在本機驗證不必開-neon-branch)，最容易踩的一點是**不要灌進 `tocr-db-dev`**——那支是 PG15，備份是 PG18 的 dump，而且會洗掉開發資料
 
+    **2026-08-20：包成 `scripts/verify-backup-restore.sh`**，起容器、解密、灌入、報筆數、收容器一支搞定，失敗也收容器。已用一份自製的加密 dump 實跑過正常與壞檔兩條路徑。**卡住的仍是第一步「取回備份檔」**：R2 憑證只在 GitHub secrets 裡，本機沒有 `aws` 也沒有 `~/.aws`，所以要嘛從 Cloudflare 後台下載一次，要嘛把 R2 憑證放到本機。這是整條驗證裡唯一需要人的地方
+
   上線過程踩到的三件事都已修並記在文件裡：`pg_dump` 要指名 `/usr/lib/postgresql/18/bin/`（pg_wrapper 會挑到舊版）、`aws s3 ls` 對空前綴 exit 1、S3 對「看不到的 bucket」回 `AccessDenied` 而非 `NoSuchBucket`（bucket 名字打錯時很難判讀）（2026-08-17）
 
 - [ ] **期刊改名之後，整段歷史都顯示新名** — `Magazine.name` 是單一字串，一本刊改名就只剩得下一個。已知案例：電擊王 → DengekiGAMES（2003）、電視遊樂雜誌 → GAMEfans（293 期起）、電玩雙週刊 → 電玩宅速配（2019-02，刊期另起）。
