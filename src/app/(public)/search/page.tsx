@@ -35,6 +35,7 @@ import {
   isArticleCategory,
 } from "@/lib/article-categories";
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 const PAGE_SIZE = 20;
 
@@ -471,7 +472,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                         href={`/magazines/${article.issue.magazine.slug}/issues/${encodeURIComponent(article.issue.slug)}`}
                         className="hover:underline"
                       >
-                        {article.issue.issueNumber}
+                        {formatIssueNumber(article.issue.issueNumber)}
                       </Link>
                       <span>·</span>
                       <span>

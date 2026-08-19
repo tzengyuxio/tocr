@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ArticleForm } from "@/components/article/ArticleForm";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface ArticleEditPageProps {
   params: Promise<{ id: string }>;
@@ -48,7 +49,7 @@ export default async function ArticleEditPage({ params }: ArticleEditPageProps) 
         articleId={article.id}
         issueId={article.issue.id}
         magazineId={article.issue.magazine.id}
-        issueName={article.issue.issueNumber}
+        issueName={formatIssueNumber(article.issue.issueNumber)}
         magazineName={article.issue.magazine.name}
         initialData={{
           title: article.title,

@@ -31,6 +31,7 @@ import { formatEdtf } from "@/lib/edtf";
 import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip } from "@/components/chips";
 import { ListPager } from "@/components/admin/ListPager";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Article {
   id: string;
@@ -219,7 +220,7 @@ export default function ArticlesPage() {
                             href={`/admin/magazines/${article.issue.magazine.id}/issues/${article.issue.id}`}
                             className="hover:underline"
                           >
-                            {article.issue.issueNumber}
+                            {formatIssueNumber(article.issue.issueNumber)}
                           </Link>
                         </div>
                         <div className="text-xs text-muted-foreground">

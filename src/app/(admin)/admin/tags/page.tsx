@@ -40,6 +40,7 @@ import Link from "next/link";
 import { TAG_TYPES } from "@/lib/tag-colors";
 import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip, TagTypeChip } from "@/components/chips";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Tag {
   id: string;
@@ -321,7 +322,7 @@ export default function TagsPage() {
                                     </span>
                                     <span className="shrink-0 text-muted-foreground">›</span>
                                     <span className="shrink-0 text-muted-foreground">
-                                      {at.article.issue.issueNumber}
+                                      {formatIssueNumber(at.article.issue.issueNumber)}
                                     </span>
                                     <span className="shrink-0 text-muted-foreground">›</span>
                                     <span className="flex-1 truncate font-medium">

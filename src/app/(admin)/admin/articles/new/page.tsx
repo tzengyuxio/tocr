@@ -29,6 +29,7 @@ import {
 } from "@/lib/validators/article";
 import { Loader2, X, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Issue {
   id: string;
@@ -179,7 +180,7 @@ function NewArticleForm() {
                   <SelectContent>
                     {issues.map((issue) => (
                       <SelectItem key={issue.id} value={issue.id}>
-                        {issue.magazine.name} - {issue.issueNumber}
+                        {issue.magazine.name} - {formatIssueNumber(issue.issueNumber)}
                       </SelectItem>
                     ))}
                   </SelectContent>

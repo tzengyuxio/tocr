@@ -40,6 +40,7 @@ import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip } from "@/components/chips";
 import { ListPager } from "@/components/admin/ListPager";
 import { suggestKeeper } from "@/lib/merge-game";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Game {
   id: string;
@@ -615,7 +616,7 @@ export default function GamesPage() {
                                 </span>
                                 <span className="shrink-0 text-muted-foreground">›</span>
                                 <span className="shrink-0 text-muted-foreground">
-                                  {ag.article.issue.issueNumber}
+                                  {formatIssueNumber(ag.article.issue.issueNumber)}
                                 </span>
                                 <span className="shrink-0 text-muted-foreground">›</span>
                                 <span className="flex-1 truncate font-medium">

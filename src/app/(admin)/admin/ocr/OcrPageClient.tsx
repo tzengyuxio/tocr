@@ -17,6 +17,7 @@ import { OcrUploader } from "@/components/ocr/OcrUploader";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import type { OcrResult } from "@/services/ai/ocr.interface";
 import { formatEdtf } from "@/lib/edtf";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Issue {
   id: string;
@@ -67,7 +68,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
 
   const issueOptions = (selectedMagazine?.issues ?? []).map((issue) => ({
     value: issue.id,
-    label: `${issue.issueNumber}（${formatEdtf(issue.publishDate)}）${issue.tocImages.length > 0 ? ` [${issue.tocImages.length} 張目錄圖]` : ""}`,
+    label: `${formatIssueNumber(issue.issueNumber)}（${formatEdtf(issue.publishDate)}）${issue.tocImages.length > 0 ? ` [${issue.tocImages.length} 張目錄圖]` : ""}`,
   }));
 
   const handleMagazineChange = (value: string) => {

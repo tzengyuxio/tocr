@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { ArrowLeft, ScanText } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -80,7 +81,7 @@ export default async function EditIssuePage({ params }: PageProps) {
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-2xl font-bold">
-          {issue.magazine.name} - {issue.issueNumber}
+          {issue.magazine.name} - {formatIssueNumber(issue.issueNumber)}
         </h1>
       </div>
       <div className="mx-auto max-w-2xl">

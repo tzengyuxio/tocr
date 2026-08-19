@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Calendar } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 export const metadata: Metadata = {
   title: "單期複查 - Admin",
@@ -175,7 +176,7 @@ export default async function IssueReviewPage({
                       >
                         {issue.magazine.name}{" "}
                         <span className="font-semibold">
-                          {issue.issueNumber}
+                          {formatIssueNumber(issue.issueNumber)}
                         </span>
                       </Link>
                     </TableCell>

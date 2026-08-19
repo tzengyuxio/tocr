@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { isValidEdtf } from "@/lib/edtf";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 const quickCreateSchema = z.object({
   issueNumber: z.string().min(1, "期號為必填"),
@@ -72,7 +73,7 @@ export function QuickCreateIssueDialog({
         throw new Error(err.error || "Failed to create issue");
       }
 
-      toast.success(`已新增單期：${data.issueNumber}`);
+      toast.success(`已新增單期：${formatIssueNumber(data.issueNumber)}`);
       reset();
       onOpenChange(false);
       router.refresh();
