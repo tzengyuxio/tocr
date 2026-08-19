@@ -120,7 +120,12 @@ function SortableRow({
         )}
       </TableCell>
       <TableCell className="font-medium">
-        {formatIssueNumber(issue.issueNumber)}
+        <Link
+          href={`/admin/magazines/${magazineId}/issues/${issue.id}`}
+          className="hover:underline"
+        >
+          {formatIssueNumber(issue.issueNumber)}
+        </Link>
       </TableCell>
       <TableCell>{issue.title || "-"}</TableCell>
       <TableCell>
