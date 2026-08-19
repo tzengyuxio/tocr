@@ -12,6 +12,8 @@ const magazine: ExportMagazine = {
   nameOriginal: null,
   publisher: "第三波",
   issn: "1021-8033",
+  description: null,
+  foundedDate: "1991-08",
   isActive: false,
 };
 
@@ -33,11 +35,13 @@ function article(overrides: Partial<ExportArticle> = {}): ExportArticle {
 function issue(overrides: Partial<ExportIssue> = {}): ExportIssue {
   return {
     issueNumber: "105",
+    altNumbers: [],
     volumeNumber: null,
     title: null,
     publishDate: "1999-05",
     pageCount: 200,
     price: null,
+    notes: null,
     articles: [article()],
     ...overrides,
   };
@@ -48,6 +52,11 @@ const COLUMN_COUNT = CSV_HEADERS.length;
 function columnsOf(line: string): number {
   // No test fixture here contains a quoted comma, so a plain split is enough.
   return line.split(",").length;
+}
+
+/** By header name, so inserting a column does not silently move an assertion. */
+function field(line: string, header: string): string {
+  return line.split(",")[CSV_HEADERS.indexOf(header)];
 }
 
 describe("headerLine", () => {
@@ -114,20 +123,35 @@ describe("rowsFor", () => {
 
   it("renders null optionals as empty and false isActive as 'false'", () => {
     const [line] = rowsFor(magazine, [
-      issue({ volumeNumber: null, title: null, price: null }),
+      issue({ volumeNumber: null, title: null, price: null, notes: null }),
     ]);
-    const fields = line.split(",");
-    expect(fields[4]).toBe("false"); // is_active
-    expect(fields[6]).toBe(""); // volume_number
-    expect(fields[7]).toBe(""); // issue_title
-    expect(fields[10]).toBe(""); // price
+
+    expect(field(line, "is_active")).toBe("false");
+    expect(field(line, "volume_number")).toBe("");
+    expect(field(line, "issue_title")).toBe("");
+    expect(field(line, "price")).toBe("");
+    expect(field(line, "notes")).toBe("");
+  });
+
+  // The backup has to hold what the admin form no longer shows: volume_number
+  // is off the form but still in the schema, and altNumbers is where the other
+  // printed numbers now live.
+  it("carries the fields the admin form does not offer", () => {
+    const [line] = rowsFor(magazine, [
+      issue({ altNumbers: ["HK VOL 308", "1月30日號"], volumeNumber: "第六卷第九號" }),
+    ]);
+
+    expect(field(line, "alt_numbers")).toBe("HK VOL 308;1月30日號");
+    expect(field(line, "volume_number")).toBe("第六卷第九號");
+    expect(field(line, "founded_date")).toBe("1991-08");
   });
 
   it("stringifies a Decimal-like price", () => {
     const [line] = rowsFor(magazine, [
       issue({ price: { toString: () => "180.00" } }),
     ]);
-    expect(line.split(",")[10]).toBe("180.00");
+
+    expect(field(line, "price")).toBe("180.00");
   });
 
   it("escapes a title that would otherwise be read as a formula", () => {

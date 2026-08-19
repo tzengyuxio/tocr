@@ -23,6 +23,7 @@ import {
 import { SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -111,7 +112,7 @@ export default async function MagazineDetailPage({
   const gallery: GalleryImage[] = [
     ...(magazine.logoImage ? [{ url: magazine.logoImage }] : []),
     ...(standIn?.coverImage
-      ? [{ url: standIn.coverImage, note: `${standIn.issueNumber} 封面` }]
+      ? [{ url: standIn.coverImage, note: `${formatIssueNumber(standIn.issueNumber)} 封面` }]
       : []),
     ...magazine.photos.map((url) => ({ url, note: "藏書照" })),
   ];

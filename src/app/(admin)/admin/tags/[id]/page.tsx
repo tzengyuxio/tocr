@@ -27,6 +27,7 @@ import {
 import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-articles";
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip, TagTypeChip } from "@/components/chips";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 export default function TagDetailPage() {
   const params = useParams<{ id: string }>();
@@ -137,7 +138,7 @@ export default function TagDetailPage() {
                           <CollapsibleTrigger className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm hover:bg-muted/50 transition-colors [&[data-state=open]>svg]:rotate-90">
                             <ChevronRight className="h-3 w-3 shrink-0 transition-transform" />
                             <span className="font-medium">
-                              {issueGroup.issue.issueNumber}
+                              {formatIssueNumber(issueGroup.issue.issueNumber)}
                             </span>
                             <span className="text-muted-foreground">
                               ({formatEdtf(issueGroup.issue.publishDate)})

@@ -17,24 +17,27 @@ export function CommaListInput<T>({
   parse,
   onChange,
   onEscape,
+  placeholder,
 }: {
   value: T[] | undefined;
   format: (value: T[] | undefined) => string;
   parse: (text: string) => T[];
   onChange: (value: T[]) => void;
-  onEscape: () => void;
+  onEscape?: () => void;
+  placeholder?: string;
 }) {
   const [text, setText] = useState(() => format(value));
 
   return (
     <Input
+      placeholder={placeholder}
       value={text}
       onChange={(e) => {
         setText(e.target.value);
         onChange(parse(e.target.value));
       }}
       onKeyDown={(e) => {
-        if (e.key === "Escape") onEscape();
+        if (e.key === "Escape") onEscape?.();
       }}
     />
   );

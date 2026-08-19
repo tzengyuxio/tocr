@@ -7,6 +7,20 @@ import { resolveApiToken } from "@/lib/user-api-token";
 /** Endpoints no token may touch, however valid it is. */
 const SESSION_ONLY_PATHS = ["/api/users", "/api/tokens"];
 
+/**
+ * 後台裡只有 ADMIN 進得去的幾頁。側欄本來就不會把它們畫給 EDITOR，但藏起來不是
+ * 擋住——網址還是打得進來。
+ *
+ * 收成一份清單，是因為漏掉的那一頁不會有任何徵兆：頁面各自也有 notFound() 的
+ * 防線，所以少列一條的後果只是「同樣是進不去，但一個轉址、一個 404」，看不出來。
+ * 匯出紀錄就是這樣漏了。
+ */
+const ADMIN_ONLY_PATHS = [
+  "/admin/users",
+  "/admin/edit-logs",
+  "/admin/export-logs",
+];
+
 export default auth(async (req) => {
   if (isDevBypass) {
     return NextResponse.next();
@@ -27,10 +41,8 @@ export default auth(async (req) => {
       return NextResponse.redirect(new URL("/auth/unauthorized", req.url));
     }
 
-    // 使用者管理與編輯紀錄只有 ADMIN 可存取
     if (
-      (pathname.startsWith("/admin/users") ||
-        pathname.startsWith("/admin/edit-logs")) &&
+      ADMIN_ONLY_PATHS.some((p) => pathname.startsWith(p)) &&
       userRole !== "ADMIN"
     ) {
       return NextResponse.redirect(new URL("/admin", req.url));

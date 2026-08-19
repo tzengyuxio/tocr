@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  CommaListInput,
+  formatStringList,
+  parseStringList,
+} from "@/components/ui/comma-list-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,7 +26,8 @@ import {
   issueCreateSchema,
   type IssueCreateInput,
 } from "@/lib/validators/issue";
-import { Loader2 } from "lucide-react";
+import { Check, Copy, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface IssueFormProps {
   magazineId: string;
@@ -31,6 +37,52 @@ interface IssueFormProps {
   code?: string;
   initialData?: Partial<IssueCreateInput> & { id?: string };
   mode: "create" | "edit";
+  /**
+   * Pin the save row to the foot of the form's own scrollport.
+   *
+   * Only right where the form is taller than the box that scrolls it -- the
+   * edit page's sidebar. On a page that scrolls as a whole, a sticky row would
+   * float over the fields instead of sitting under them.
+   */
+  stickyActions?: boolean;
+}
+
+/**
+ * The short code is worth copying as a whole URL, not as "/i/x9k": what an
+ * editor does with it is paste it somewhere, and a path on its own does not
+ * resolve. The origin comes from the browser so it is right in dev too.
+ */
+function CopyButton({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/i/${code}`);
+      setCopied(true);
+      toast.success("已複製永久連結");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("複製失敗，請手動選取");
+    }
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7"
+      title="複製永久連結"
+      onClick={copy}
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5 text-green-600" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" />
+      )}
+      <span className="sr-only">複製永久連結</span>
+    </Button>
+  );
 }
 
 export function IssueForm({
@@ -39,6 +91,7 @@ export function IssueForm({
   code,
   initialData,
   mode,
+  stickyActions = false,
 }: IssueFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +112,10 @@ export function IssueForm({
       issueNumber: initialData?.issueNumber || "",
       altNumbers: initialData?.altNumbers || [],
       slug: initialData?.slug || "",
+      // No field of its own: one issue in the whole catalogue uses it, and what
+      // it holds -- 第六卷第九號 -- is what altNumbers is for. Kept in the
+      // defaults so editing an issue does not silently clear a value it no
+      // longer shows.
       volumeNumber: initialData?.volumeNumber || "",
       title: initialData?.title || "",
       publishDate: initialData?.publishDate || "",
@@ -118,14 +175,17 @@ export function IssueForm({
             {mode === "create" ? "填寫單期的基本資訊" : "修改單期的基本資訊"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        {/* @container, not the viewport: this form is a narrow sidebar on the
+            edit page and a wide card on the create page, and the fields should
+            follow the space they actually have. */}
+        <CardContent className="@container space-y-6">
           {error && (
             <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
               {error}
             </div>
           )}
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 @md:grid-cols-2">
             {/* 期號 */}
             <div className="space-y-2">
               <Label htmlFor="issueNumber">
@@ -133,11 +193,13 @@ export function IssueForm({
               </Label>
               <Input
                 id="issueNumber"
-                placeholder="例如：42、No.3、2024年8月號"
+                placeholder="例如：42、創刊號、2024年8月號"
                 {...register("issueNumber")}
               />
               <p className="text-xs text-muted-foreground">
-                每期的流水編號，例如「42」「No.3」「2024年8月號」
+                照封面登錄，但數字就寫數字：「42」不寫成「No.42」「Vol.42」「第42期」，
+                顯示時會自動補成「第 42 期」。沒有數字的照原樣寫，例如「創刊號」「試刊號」
+                「新春合併號」「2024年8月號」
               </p>
               {errors.issueNumber && (
                 <p className="text-sm text-red-500">
@@ -161,24 +223,19 @@ export function IssueForm({
             </div>
 
             {/* 其他編號 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="altNumbers"
                 control={control}
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label>其他編號</Label>
-                    <Input
+                    <CommaListInput
                       placeholder="以逗號分隔（例如：2014 02, HK VOL 308, 1月30日號）"
-                      value={(field.value || []).join(", ")}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        field.onChange(
-                          val
-                            ? val.split(",").map((s) => s.trim()).filter(Boolean)
-                            : []
-                        );
-                      }}
+                      value={field.value}
+                      format={formatStringList}
+                      parse={parseStringList}
+                      onChange={field.onChange}
                     />
                     <p className="text-xs text-muted-foreground">
                       同一期封面／版權頁上並存的其他編號。期號欄放最主要的那個（有總號就放總號），
@@ -191,29 +248,19 @@ export function IssueForm({
 
             {/* 永久短碼 */}
             {code && (
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2 @md:col-span-2">
                 <Label>永久短碼</Label>
-                <p className="text-sm">
-                  <code className="rounded bg-muted px-1.5 py-0.5">/i/{code}</code>
-                </p>
+                <div className="flex items-center gap-2">
+                  <code className="rounded bg-muted px-1.5 py-0.5 text-sm">
+                    /i/{code}
+                  </code>
+                  <CopyButton code={code} />
+                </div>
                 <p className="text-xs text-muted-foreground">
                   自動產生、不會變動。期刊改名或網址代號改動時，這條連結仍然到得了本期
                 </p>
               </div>
             )}
-
-            {/* 卷號 */}
-            <div className="space-y-2">
-              <Label htmlFor="volumeNumber">卷號</Label>
-              <Input
-                id="volumeNumber"
-                placeholder="例如：Vol.5、第 3 卷"
-                {...register("volumeNumber")}
-              />
-              <p className="text-xs text-muted-foreground">
-                將多期歸為一卷的編號，通常以年份或固定期數為單位，選填
-              </p>
-            </div>
 
             {/* 出版日期 */}
             <div className="space-y-2">
@@ -286,7 +333,7 @@ export function IssueForm({
             </div>
 
             {/* 目錄頁圖片（多張） */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="tocImages"
                 control={control}
@@ -303,7 +350,7 @@ export function IssueForm({
             </div>
 
             {/* 目錄複查狀態 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <label className="flex items-start gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -320,7 +367,7 @@ export function IssueForm({
             </div>
 
             {/* 備註 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Label htmlFor="notes">備註</Label>
               <Textarea
                 id="notes"
@@ -331,7 +378,15 @@ export function IssueForm({
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          {/* Only from lg, where the sidebar exists: below that the page
+              scrolls as a whole and a pinned row would float over the fields. */}
+          <div
+            className={
+              stickyActions
+                ? "flex gap-4 pt-4 lg:sticky lg:bottom-0 lg:-mx-5 lg:border-t lg:bg-card lg:px-5 lg:py-4"
+                : "flex gap-4 pt-4"
+            }
+          >
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

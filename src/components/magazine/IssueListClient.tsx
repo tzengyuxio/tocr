@@ -50,6 +50,7 @@ import { Plus, Edit, BookOpen, GripVertical, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatEdtf } from "@/lib/edtf";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface IssueItem {
   id: string;
@@ -106,7 +107,7 @@ function SortableRow({
         {issue.coverImage ? (
           <Image
             src={issue.coverImage}
-            alt={issue.issueNumber}
+            alt={formatIssueNumber(issue.issueNumber)}
             width={36}
             height={48}
             unoptimized
@@ -118,7 +119,14 @@ function SortableRow({
           </div>
         )}
       </TableCell>
-      <TableCell className="font-medium">{issue.issueNumber}</TableCell>
+      <TableCell className="font-medium">
+        <Link
+          href={`/admin/magazines/${magazineId}/issues/${issue.id}`}
+          className="hover:underline"
+        >
+          {formatIssueNumber(issue.issueNumber)}
+        </Link>
+      </TableCell>
       <TableCell>{issue.title || "-"}</TableCell>
       <TableCell>
         {formatEdtf(issue.publishDate)}
@@ -198,7 +206,7 @@ export function IssueListClient({
       });
       if (!res.ok) throw new Error("Delete failed");
       setIssues((prev) => prev.filter((i) => i.id !== deleteTarget.id));
-      toast.success(`已刪除單期：${deleteTarget.issueNumber}`);
+      toast.success(`已刪除單期：${formatIssueNumber(deleteTarget.issueNumber)}`);
       router.refresh();
     } catch {
       toast.error("刪除失敗");
@@ -283,8 +291,8 @@ export function IssueListClient({
             <AlertDialogTitle>確定要刪除此單期？</AlertDialogTitle>
             <AlertDialogDescription>
               {deleteTarget && deleteTarget._count.articles > 0
-                ? `此單期「${deleteTarget.issueNumber}」包含 ${deleteTarget._count.articles} 篇文章，刪除後將無法復原。`
-                : `確定要刪除單期「${deleteTarget?.issueNumber}」嗎？此操作無法復原。`}
+                ? `此單期「${formatIssueNumber(deleteTarget.issueNumber)}」包含 ${deleteTarget._count.articles} 篇文章，刪除後將無法復原。`
+                : `確定要刪除單期「${formatIssueNumber(deleteTarget?.issueNumber ?? "")}」嗎？此操作無法復原。`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -8,11 +8,14 @@ import {
 } from "@/lib/csv/export-rows";
 
 /**
- * The export was rewritten to stream, and the promise made at the time was that
- * not a single byte of the output would change. This file holds the previous
- * implementation and compares whole documents against it. It is verbatim apart
- * from one marked correction -- the rewrite fixed a short row, and that fix is
- * the only intended difference in the entire output.
+ * A whole-document check: a second, independent assembly of the same CSV, so a
+ * change to rowsFor that only looks right in a one-row fixture shows up here
+ * against 26 issues, batch boundaries, quoting and empty magazines.
+ *
+ * It began as the pre-streaming implementation, kept verbatim to prove the
+ * rewrite changed not one byte. The format has deliberately changed twice
+ * since -- a short row was fixed, and 2026-08-20 added the backup columns --
+ * so the baseline is now maintained alongside rowsFor rather than frozen.
  *
  * When the CSV format is deliberately changed, this test is expected to fail --
  * update the baseline below in the same commit, deliberately.
@@ -30,28 +33,29 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
       mag.nameOriginal ?? "",
       mag.publisher ?? "",
       mag.issn ?? "",
+      mag.description ?? "",
+      mag.foundedDate ?? "",
       mag.isActive ? "true" : "false",
     ];
 
     if (mag.issues.length === 0) {
-      // DELIBERATE DEVIATION from the original, which had 14 blanks here.
-      // 5 magazine fields + 14 blanks is 19 columns against a 20-column
-      // header, so a magazine with no issues produced a short row that a
-      // strict parser rejects or misaligns. The rewrite emits 15 blanks; this
-      // baseline matches, so the rest of the document is still compared byte
-      // for byte. See the column-count assertions in export-rows.test.ts.
-      rows.push([...magFields, "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]);
+      // 7 magazine fields + 17 blanks against a 24-column header. The
+      // original emitted a short row here, which a strict parser rejects or
+      // misaligns; see the column-count assertions in export-rows.test.ts.
+      rows.push([...magFields, ...Array(17).fill("")]);
       continue;
     }
 
     for (const issue of mag.issues) {
       const issueFields: string[] = [
         issue.issueNumber,
+        issue.altNumbers.join(";"),
         issue.volumeNumber ?? "",
         issue.title ?? "",
         issue.publishDate,
         issue.pageCount != null ? String(issue.pageCount) : "",
         issue.price != null ? String(issue.price) : "",
+        issue.notes ?? "",
       ];
 
       if (issue.articles.length === 0) {
@@ -113,11 +117,13 @@ function buildCsvTheNewWay(magazines: Magazine[], batchSize: number): string {
 function issue(n: number, articleCount: number): ExportIssue {
   return {
     issueNumber: String(n),
+    altNumbers: n % 5 === 0 ? [`HK VOL ${n}`, `${n} 月號`] : [],
     volumeNumber: n % 3 === 0 ? `Vol.${n}` : null,
     title: n % 4 === 0 ? "特輯" : null,
     publishDate: `1999-${String((n % 12) + 1).padStart(2, "0")}`,
     pageCount: n % 5 === 0 ? null : 200 + n,
     price: n % 2 === 0 ? { toString: () => "180.00" } : null,
+    notes: n % 6 === 0 ? "附贈海報，含逗號" : null,
     articles: Array.from({ length: articleCount }, (_, i) => ({
       title: `文章 ${n}-${i}`,
       subtitle: i % 2 === 0 ? null : "副標，含逗號",
@@ -138,6 +144,8 @@ const FIXTURE: Magazine[] = [
     nameOriginal: null,
     publisher: "第三波",
     issn: "1021-8033",
+    description: "含,逗號的描述",
+    foundedDate: "1991-08",
     isActive: false,
     issues: Array.from({ length: 23 }, (_, i) => issue(i + 1, (i % 4) + 1)),
   },
@@ -147,6 +155,8 @@ const FIXTURE: Magazine[] = [
     nameOriginal: "Software World",
     publisher: null,
     issn: null,
+    description: null,
+    foundedDate: null,
     isActive: true,
     issues: [],
   },
@@ -155,6 +165,8 @@ const FIXTURE: Magazine[] = [
     nameOriginal: null,
     publisher: null,
     issn: null,
+    description: null,
+    foundedDate: "1998",
     isActive: true,
     // Includes an issue with no articles.
     issues: [issue(100, 2), issue(101, 0), issue(102, 3)],

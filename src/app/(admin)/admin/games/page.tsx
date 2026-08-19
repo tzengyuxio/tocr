@@ -3,6 +3,11 @@
 import { useState, useEffect, useCallback, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  CommaListInput,
+  formatStringList,
+  parseStringList,
+} from "@/components/ui/comma-list-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -35,6 +40,7 @@ import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip } from "@/components/chips";
 import { ListPager } from "@/components/admin/ListPager";
 import { suggestKeeper } from "@/lib/merge-game";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Game {
   id: string;
@@ -610,7 +616,7 @@ export default function GamesPage() {
                                 </span>
                                 <span className="shrink-0 text-muted-foreground">›</span>
                                 <span className="shrink-0 text-muted-foreground">
-                                  {ag.article.issue.issueNumber}
+                                  {formatIssueNumber(ag.article.issue.issueNumber)}
                                 </span>
                                 <span className="shrink-0 text-muted-foreground">›</span>
                                 <span className="flex-1 truncate font-medium">
@@ -723,17 +729,11 @@ export default function GamesPage() {
 
             <div className="space-y-2">
               <Label>別名</Label>
-              <Input
-                value={formData.aliases.join(", ")}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setFormData({
-                    ...formData,
-                    aliases: val
-                      ? val.split(",").map((s) => s.trim()).filter(Boolean)
-                      : [],
-                  });
-                }}
+              <CommaListInput
+                value={formData.aliases}
+                format={formatStringList}
+                parse={parseStringList}
+                onChange={(aliases) => setFormData({ ...formData, aliases })}
                 placeholder="以逗號分隔（例如：竹籬笆外的春天）"
               />
               <p className="text-xs text-muted-foreground">

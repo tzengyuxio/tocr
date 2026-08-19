@@ -12,16 +12,22 @@ import type { ImportResult } from "@/lib/validators/csv-import";
 
 type Stage = "upload" | "preview" | "importing";
 
-const CSV_TEMPLATE_HEADERS = [
+/**
+ * The columns the downloadable template ships with. Exported so a test can
+ * hold it against csvRowSchema: this list once offered magazine_name_en, which
+ * the parser did not read, and an optional field that is merely absent raises
+ * nothing -- the value just never arrived.
+ */
+export const CSV_TEMPLATE_HEADERS = [
   "magazine_name",
-  "magazine_name_en",
+  "magazine_name_original",
   "publisher",
   "issn",
   "description",
   "founded_date",
   "is_active",
   "issue_number",
-  "volume_number",
+  "alt_numbers",
   "issue_title",
   "publish_date",
   "page_count",
@@ -31,13 +37,13 @@ const CSV_TEMPLATE_HEADERS = [
 
 const CSV_TEMPLATE_ROWS = [
   // Magazine A - first issue: fill all magazine fields
-  ["電玩通", "Game Express", "範例出版社", "1234-5678", "台灣老牌電玩雜誌", "1995-06-01", "true", "42", "Vol.5", "年度大作特輯", "2024-01-15", "128", "150", ""],
+  ["電玩通", "ファミ通", "範例出版社", "1234-5678", "台灣老牌電玩雜誌", "1995-06", "true", "42", "HK VOL 308;1月30日號", "年度大作特輯", "2024-01-15", "128", "150", ""],
   // Magazine A - second issue: magazine fields can be empty since it already exists
-  ["電玩通", "", "", "", "", "", "", "43", "Vol.5", "", "2024-02-15", "120", "150", ""],
+  ["電玩通", "", "", "", "", "", "", "43", "", "", "2024-02-15", "120", "150", ""],
   // Magazine A - third issue
-  ["電玩通", "", "", "", "", "", "", "44", "Vol.6", "E3 特別報導", "2024-03-15", "144", "150", "附贈海報"],
+  ["電玩通", "", "", "", "", "", "", "44", "", "E3 特別報導", "2024-03-15", "144", "150", "附贈海報"],
   // Magazine B - first issue: fill all magazine fields for the new magazine
-  ["遊戲世界", "Game World", "另一出版社", "8765-4321", "綜合遊戲情報誌", "2000-03-01", "true", "100", "", "百期紀念號", "2024-01-20", "160", "200", "限量封面"],
+  ["遊戲世界", "", "另一出版社", "8765-4321", "綜合遊戲情報誌", "2000-03", "true", "創刊號", "", "百期紀念號", "2024-01-20", "160", "200", "限量封面"],
   // Magazine B - second issue
   ["遊戲世界", "", "", "", "", "", "", "101", "", "", "2024-02-20", "140", "200", ""],
 ];
@@ -143,21 +149,21 @@ export function CsvImporter() {
                   <p className="mb-1.5 font-medium text-foreground">期刊欄位</p>
                   <ul className="list-inside list-disc space-y-0.5">
                     <li><span className="font-medium">magazine_name *</span>：期刊名稱，用來識別期刊，如「電玩通」</li>
-                    <li><span className="font-medium">magazine_name_en</span>：期刊英文名稱</li>
+                    <li><span className="font-medium">magazine_name_original</span>：期刊原文名稱，如「ファミ通」</li>
                     <li><span className="font-medium">publisher</span>：出版社名稱</li>
                     <li><span className="font-medium">issn</span>：國際標準期刊號</li>
                     <li><span className="font-medium">description</span>：期刊描述</li>
-                    <li><span className="font-medium">founded_date</span>：創刊日期，格式 YYYY-MM-DD</li>
+                    <li><span className="font-medium">founded_date</span>：創刊日期，知道多少寫多少：<code>1995</code>、<code>1995-06</code>、<code>1995-06-01</code></li>
                     <li><span className="font-medium">is_active</span>：是否仍在發行，true 或 false（預設 true）</li>
                   </ul>
                 </div>
                 <div>
                   <p className="mb-1.5 font-medium text-foreground">單期欄位</p>
                   <ul className="list-inside list-disc space-y-0.5">
-                    <li><span className="font-medium">issue_number *</span>：期號，每一期的編號，如「42」「No.3」「2024年8月號」</li>
-                    <li><span className="font-medium">volume_number</span>：卷號，將多期歸為一卷的編號，如「Vol.5」「第 3 卷」</li>
+                    <li><span className="font-medium">issue_number *</span>：期號，照封面登錄但數字就寫數字，如「42」「創刊號」「2024年8月號」</li>
+                    <li><span className="font-medium">alt_numbers</span>：同一期封面／版權頁上並存的其他編號，以分號分隔，如「HK VOL 308;1月30日號」</li>
                     <li><span className="font-medium">issue_title</span>：本期標題或特輯名稱</li>
-                    <li><span className="font-medium">publish_date *</span>：出版日期，格式 YYYY-MM-DD</li>
+                    <li><span className="font-medium">publish_date *</span>：出版日期，知道多少寫多少：<code>1999</code>、<code>1999-05</code>、<code>1999-05-20</code>；季別用 21 春、22 夏、23 秋、24 冬</li>
                     <li><span className="font-medium">page_count</span>：頁數</li>
                     <li><span className="font-medium">price</span>：售價</li>
                     <li><span className="font-medium">notes</span>：備註</li>
@@ -165,7 +171,7 @@ export function CsvImporter() {
                 </div>
                 <div className="rounded border border-blue-200 bg-blue-50 p-2 text-blue-800 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300">
                   <p className="font-medium">💡 關於重複期刊</p>
-                  <p className="mt-0.5">同一期刊第一次出現時，會使用該行的期刊欄位（英文名、出版社、ISSN 等）建立期刊資料。之後若期刊已存在，期刊欄位會被略過，因此同一期刊的後續行可以只填 magazine_name 和單期欄位，其餘期刊欄位留空即可。</p>
+                  <p className="mt-0.5">同一期刊第一次出現時，會使用該行的期刊欄位（原文名、出版社、ISSN 等）建立期刊資料。之後若期刊已存在，期刊欄位會被略過，因此同一期刊的後續行可以只填 magazine_name 和單期欄位，其餘期刊欄位留空即可。</p>
                 </div>
               </div>
             </div>

@@ -42,6 +42,72 @@ describe("resolveEditLogTargets", () => {
     });
   });
 
+  it("points at the public pages when asked, since a feed shows finished work", async () => {
+    prismaMock.magazine.findMany.mockResolvedValue([
+      { id: "m1", name: "電腦玩家", slug: "pcgamer" },
+    ]);
+    prismaMock.issue.findMany.mockResolvedValue([
+      {
+        id: "i1",
+        issueNumber: "96",
+        slug: "96",
+        magazine: { id: "m1", name: "電腦玩家", slug: "pcgamer" },
+      },
+    ]);
+    // No public page of its own: an article is a line in an issue's contents.
+    prismaMock.article.findMany.mockResolvedValue([
+      {
+        id: "a1",
+        title: "太空戰士 VII 攻略",
+        issue: { slug: "96", magazine: { slug: "pcgamer" } },
+      },
+    ]);
+
+    const targetOf = await resolveEditLogTargets(
+      [
+        { entityType: "Magazine", entityId: "m1" },
+        { entityType: "Issue", entityId: "i1" },
+        { entityType: "Article", entityId: "a1" },
+      ],
+      { linkTo: "public" }
+    );
+
+    expect(targetOf({ entityType: "Magazine", entityId: "m1" })).toEqual({
+      label: "電腦玩家",
+      href: "/magazines/pcgamer",
+    });
+    expect(targetOf({ entityType: "Issue", entityId: "i1" })).toEqual({
+      label: "電腦玩家 第 96 期",
+      href: "/magazines/pcgamer/issues/96",
+    });
+    expect(targetOf({ entityType: "Article", entityId: "a1" })).toEqual({
+      label: "太空戰士 VII 攻略",
+      href: "/magazines/pcgamer/issues/96",
+    });
+  });
+
+  // Chinese slugs are the common case on this site, and an unencoded one is
+  // not a valid URL.
+  it("percent-encodes an issue slug", async () => {
+    prismaMock.issue.findMany.mockResolvedValue([
+      {
+        id: "i1",
+        issueNumber: "創刊號",
+        slug: "創刊號",
+        magazine: { id: "m1", name: "軟體世界", slug: "swm" },
+      },
+    ]);
+
+    const targetOf = await resolveEditLogTargets(
+      [{ entityType: "Issue", entityId: "i1" }],
+      { linkTo: "public" }
+    );
+
+    expect(targetOf({ entityType: "Issue", entityId: "i1" })?.href).toBe(
+      `/magazines/swm/issues/${encodeURIComponent("創刊號")}`
+    );
+  });
+
   it("queries once per entity type, not once per log", async () => {
     prismaMock.issue.findMany.mockResolvedValue([
       { id: "i1", issueNumber: "1", magazine: { id: "m1", name: "A" } },

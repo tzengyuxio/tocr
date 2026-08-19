@@ -6,6 +6,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  CommaListInput,
+  formatStringList,
+  parseStringList,
+} from "@/components/ui/comma-list-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -105,14 +110,17 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               : "修改期刊的基本資訊"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        {/* @container, not the viewport: this form is a narrow sidebar on the
+            magazine page and a wide card on the create page, and the fields
+            should follow the space they actually have. */}
+        <CardContent className="@container space-y-6">
           {error && (
             <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
               {error}
             </div>
           )}
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 @md:grid-cols-2">
             {/* 期刊名稱 */}
             <div className="space-y-2">
               <Label htmlFor="name">
@@ -207,24 +215,19 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* 別名 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="aliases"
                 control={control}
                 render={({ field }) => (
                   <div className="space-y-2">
                     <Label>別名</Label>
-                    <Input
+                    <CommaListInput
                       placeholder="輸入別名，以逗號分隔（例如：ファミ通, fami通）"
-                      value={(field.value || []).join(", ")}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        field.onChange(
-                          val
-                            ? val.split(",").map((s) => s.trim()).filter(Boolean)
-                            : []
-                        );
-                      }}
+                      value={field.value}
+                      format={formatStringList}
+                      parse={parseStringList}
+                      onChange={field.onChange}
                     />
                     <p className="text-xs text-muted-foreground">
                       可用於搜尋的替代名稱，以逗號分隔
@@ -235,7 +238,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* 分類 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="categories"
                 control={control}
@@ -277,7 +280,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* Logo 圖片 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="logoImage"
                 control={control}
@@ -294,7 +297,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* 藏書照 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="photos"
                 control={control}
@@ -311,7 +314,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* 描述 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Label htmlFor="description">描述</Label>
               <Textarea
                 id="description"

@@ -443,22 +443,13 @@ model ApiToken {
 // ==================== AI OCR 紀錄 ====================
 
 model OcrRecord {
-  id           String    @id @default(cuid())
-  issueId      String?   @map("issue_id")
-  imageUrl     String    @map("image_url")
-  provider     String // "claude", "openai", "gemini"
-  rawResult    Json      @map("raw_result")
-  processedAt  DateTime  @default(now()) @map("processed_at")
-  status       OcrStatus @default(PENDING)
-  errorMessage String?   @map("error_message")
+  id          String   @id @default(cuid())
+  issueId     String?  @map("issue_id")
+  imageUrl    String   @map("image_url")
+  provider    String // "claude", "openai", "gemini"
+  rawResult   Json     @map("raw_result")
+  processedAt DateTime @default(now()) @map("processed_at")
 
   @@index([issueId])
   @@map("ocr_records")
-}
-
-enum OcrStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
 }

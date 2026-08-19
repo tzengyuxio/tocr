@@ -25,6 +25,20 @@
 
 - [ ] **後台期刊列表補齊出版狀態欄位** — 加入創刊／改版日、休刊日，以及可多選的頻率（週刊、雙週刊、月刊、季刊等）（2026-08-18）。
 
+- [ ] **標籤管理沒有分頁，而且清單在第 100 筆就停了** — `/admin/tags` 一次抓 `limit=100`（`admin/tags/page.tsx:113`）就不再往下。API 本身是有分頁的（`api/tags/route.ts:14` 用 `parsePagination(searchParams, 50)`），是頁面沒接。
+
+  **正式站現在有 362 個標籤**（2026-08-20 查），所以**有 262 個在後台看不到也搜不到**——不是「將來會不夠」，是現在就已經看不到。掛上 `ListPager` 就好，遊戲與文章兩份清單已經是這個做法（2026-08-20）。
+
+- [ ] **後台遊戲管理只有關鍵字搜尋，沒有篩選與排序** — 目前只送 `search`（`admin/games/page.tsx:172`）。**API 已經收 `platform` 與 `genre` 了**（`api/games/route.ts:12-13`），是介面沒有把它們接出來，所以這兩個是接線而不是新功能。
+
+  排序則是連 API 都還沒有：`orderBy` 寫死 `{ name: "asc" }`（`api/games/route.ts:35`）。想得到會用的排序是文章數（哪些遊戲被報導最多）、發售日、建立時間（最近新增的）。文章數要排序就得先解決下一條的索引問題——那是個 correlated subquery（2026-08-20）。
+
+- [ ] **`article_games.game_id` 與 `article_tags.tag_id` 沒有索引** — 兩張表都只有 `@@unique([articleId, gameId])`／`([articleId, tagId])`，複合索引的前導欄是 `article_id`，所以「這款遊戲被幾篇文章提到」這種以 `game_id` 出發的查詢用不到它。
+
+  正式站 `EXPLAIN ANALYZE` 實測（2026-08-20）：`/admin/games` 那句每一列都跑一次 `Seq Scan on article_games`，20 列就是 20 次全表掃描，每次濾掉 1,534 列。**目前只有 6ms，所以這不是「遊戲管理開得慢」的原因**（那頁的資料庫查詢是有分頁的，見下），但它隨資料量線性惡化，而且擋著「依文章數排序」這個需求。
+
+  **「遊戲管理開得慢」的答案：不是把資料全撈出來再切**。`api/games/route.ts:37-38` 是 `skip`／`take`，一頁 20 筆，`count` 另外一句。慢的地方在別處——那頁是 client component，要等 HTML → JS → `fetch` 才看得到第一列（在那之前是 spinner），而後台 layout 每次導覽還會先付一次 session 的資料庫往返加一次待複查計數（`admin/layout.tsx` 的註解自己寫了）。真要處理得從那條瀑布下手，不是從查詢（2026-08-20）。
+
 - [ ] **編輯者可設定頭像與個人網頁連結** — 在使用者設定中提供頭像與個人網站欄位，供公開的編輯者資訊顯示（2026-08-18）。
 
 - [ ] **加入《電玩雙週刊》資料** — 匯入《電玩宅速配》的前身《電玩雙週刊》（2026-08-18）。
@@ -48,6 +62,18 @@
 
   **目前不急**：正式站 3 個使用者、改名是自助操作，實際碰撞機率極低。等使用者變多、或哪天真的看到重複名字再做（2026-08-16，code review 指出）
 - [ ] [#33] **辨識信心度可能是無效訊號** — `confidence` 是模型自評。原本 UI 依它上色（≥90% 綠、≥70% 黃），但電腦玩家 105 期那 61 筆**全部都是 1.0**，等於永遠綠燈——比沒有訊號更糟，因為它讀起來像「已檢查、沒問題」。色彩編碼先前拿掉、數值保留，**2026-08-16 起連數值也不再顯示**——顯示它的複查編輯器隨整合刪除了，而 `articles` 沒有這個欄位，值只留在 `ocr_records`。所以現在的決定變成：要嘛就這樣算了，要嘛換成比較實在的訊號（頁碼不連續、標題過短、缺頁碼）並存進文章。另注意 `ocr.utils.ts` 在模型沒回這欄時補 `0.8`，所以 80% 不代表模型沒把握（2026-08-12，2026-08-13 更新）
+- [ ] **辨識出來的遊戲與標籤對不回既有條目，只好事後再合併一次** — 目錄照片上寫什麼就存什麼，而寫法每一期都可能不同。`resolveGameIds()`（`src/lib/resolve-relations.ts`）比對的是 `name`／`nameEn`／`nameOriginal` 三欄的**完全相等**（不分大小寫），對不上就直接建一筆新的。標籤更少，只比 `name` 一欄。
+
+  三個對不上的洞，每一個都會生出一筆要事後合併的重複條目：
+
+  - **不看 `aliases`**。這一欄正是合併時用來停放落選名稱的地方（見「重複的遊戲條目要合併」），而**遊戲搜尋 API 是有比對它的**（`api/games/route.ts:23`）——所以同一個名字，用搜尋找得到，用辨識寫入卻會建新的。這是最不該有的落差
+  - **不做正規化**。`P.47` 與 `P-47` 是兩筆，而它們 slug 相同——現有的重複偵測靠的就是 slug 撞號，寫入時卻沒用上同一把尺
+  - **合併掉的名字沒有留下轉址**。落選那筆是真的刪掉，只有 `EditLog` 的 `mergedInto` 記著；下一期目錄再寫一次舊名，沒有任何東西把它導回保留的那筆
+
+  順帶一提，正式站 926 款遊戲裡**只有 1 款填了 `aliases`**（2026-08-20 查），所以第一個洞今天還很少發作——但那也表示「別名」這條路目前幾乎沒被使用，改用它之前要先想清楚是誰、在什麼時候把別名填進去（合併時自動補？還是編輯手動填？）。
+
+  要做的是一支共用的比對器，寫入與搜尋共用同一套規則（正規化後的名稱、別名、以及合併留下的舊名），而不是讓寫入路徑各自長一套。順序上這比「逐張辨識」更值得先做：辨識再準，對不回既有條目一樣要人工收尾（2026-08-20）。
+
 - [ ] **多頁目錄改成逐張辨識再合併成一筆記錄** — 目前 `/api/ocr` 把所有圖一次送給模型，一次呼叫存一筆 `ocr_records`。兩張圖沒問題（101 期 79 篇、105 期 59 篇，比對原圖幾乎無缺），**三張就開始成段掉東西**：114 期漏 9 筆、錯 4 處，而且漏的集中在後半段（96–110 與 300–354），像是輸出預算用完後草草收尾。
 
   不能只是「呼叫端自己拆成三次」——每次呼叫存一筆記錄，而複查頁只讀最新一筆，拆了只會留下最後一張的結果。要改的是路由：逐張辨識、合併 `articles`（依 `pageStart` 排序）、寫成**一筆**記錄。順帶要想的是 `maxDuration = 60`（Vercel Hobby 上限）：三張序列跑很可能超時，可能得平行送或改成非同步。
@@ -96,9 +122,11 @@
 
   免費方案的條件（2026-08-15 查，官網掛掉所以是從搜尋摘要與 readme 鏡像拼的，**未經官方頁面確認**）：要在每個用到資料的頁面標示來源並附上連往 RAWG 的有效連結；月活躍用戶 ≤ 100,000 或月瀏覽 ≤ 500,000 可免費商用；用量兩處說法不一致（TOS 說 20,000／月，readme 說免費 key 共 50,000）
 
-- [ ] [#34] **純數字期號加上「第 N 期」** — 549 期裡 544 期的 `issueNumber` 是純數字，單獨顯示「216」讀起來不像期號。建議抽 `formatIssueNumber()` 放在 `formatEdtf` 旁邊：純數字才加「第 N 期」，`創刊號`、`試刊號`、`70+71` 這類原樣保留。不要只改一處——`issueNumber` 散落在 32 個檔案，只改單期複查會讓同一期在不同頁面長得不一樣。不用 `Vol.`／`No.`：前者會跟另一個獨立欄位 `volumeNumber` 混淆，後者偏西式。
+- [x] [#34] **純數字期號加上「第 N 期」**（2026-08-20 完成：`src/lib/issue-number.ts` 的 `formatIssueNumber()`，19 個顯示點一起改） — 549 期裡 544 期的 `issueNumber` 是純數字，單獨顯示「216」讀起來不像期號。純數字才加「第 N 期」，`創刊號`、`試刊號`、`70+71` 這類原樣保留。不用 `Vol.`／`No.`：前者會跟另一個獨立欄位 `volumeNumber` 混淆，後者偏西式。慣例寫進 [data-conventions.md](docs/data-conventions.md#存的是封面上的字顯示時才補第-n-期)。
 
-  **但先不要動手**：目前看到的特殊刊號（`創刊號`、`試刊號`、`創刊驚嘆號`、`70+71`）只來自 3 本雜誌，而已匯入 30 本、還有 27 本沒進來。等更多期刊的刊號樣貌浮現，再一次決定規則會更完整——現在定案等於用不到十分之一的樣本立規矩（2026-08-13）
+  **原本記著「先不要動手」**（樣本只有 3 本雜誌，27 本還沒匯入），2026-08-20 動手時判斷那個顧慮不成立：規則是**白名單**——只認純數字，其他一律原樣穿過去，所以新期刊帶來沒見過的刊號寫法不會被猜錯，只是不加字，不必先改規則。真要改的是「哪些非數字寫法也該包裝」，那本來就得等樣本。
+
+  匯入預覽與匯入結果兩張表（`ImportPreviewTable`、`ImportResultDialog`）刻意不套：那裡要對照的是來源資料原文（2026-08-13，2026-08-20 完成）
 
 - [ ] **重複的遊戲條目要合併（持續）** — 同一款遊戲被建成兩筆的來源是不同期的目錄抄寫不同；名稱完全相同的反而不會發生，那在建立時就比對到了。**只有 slug 正規化後撞在一起才看得見**。
 
@@ -108,17 +136,43 @@
 
   下次全庫回填或匯入新期刊時，若 `backfill-slugs.ts` 又報出 `-2` 後綴，就是新的候選——後綴本身就是偵測器（2026-08-17）
 
+- [ ] **CSV 匯入匯出跟不上資料模型了** — 2026-08-20 逐欄比對 schema 與 `CSV_HEADERS`／`csvRowSchema` 的結果。同一次盤點裡「範本欄名 `magazine_name_en` 解析器根本不讀」已修，剩下的分三類：
+
+  **一、匯出漏欄**（2026-08-20 完成）：補上 `description`、`founded_date`、`notes`。**兩者不對稱是刻意的**（yuxio 2026-08-20）——匯出是備份、匯入是批次建檔的入口，匯出不必餵得回匯入，欄位只會比匯入多。
+
+  **二、`alt_numbers` 兩邊都沒有**（2026-08-20 完成）：匯入匯出都加了，分號分隔。`volume_number` 依同一條原則處理：匯出留著（schema 還有值，備份不能漏），範本與匯入頁的欄位說明拿掉（後台表單也已經不顯示），但解析器仍收——既有檔案還帶著它。
+
+  **三、整批只存在於後台的欄位**：期刊的 `slug`、`aliases`、`categories`、`endedDate`、`logoImage`、`photos`；單期的 `slug`、`coverImage`、`tocImages`、`tocReviewedAt`、`order`。`slug` 這兩個特別值得想——匯入時是從期號推的，而 [data-conventions.md](docs/data-conventions.md#網址代號與期號是兩回事) 寫明那只是預設值不是規則，所以電玩通那種「slug 是封面日期」的刊物，CSV 匯入根本產不出正確網址。
+
+  剩下的還有一件要決定：**匯入永遠只新增、不更新**（`issueNumber` 撞到就跳過）。所以 CSV 修不了既有資料，只能拿來灌新的。
+
+  第三類在「匯出是備份」這個定位下比原本更重要：**沒有 slug、封面與目錄頁圖的備份還原不回一個能用的站**。
+
+  範本（`CSV_TEMPLATE_HEADERS`）與匯入頁的欄位說明要跟著改，而且**要用測試釘住**——欄名對不上時 zod 只當那一欄沒填，不會報錯，這正是 `magazine_name_en` 藏了那麼久的原因（2026-08-20）。
+
 - [ ] **sitemap、robots.txt 與 SEO／AEO 基本盤** — 目前兩個檔案都沒有（`src/` 與 `public/` 都找不到 `sitemap` 或 `robots`），搜尋引擎與 AI 檢索只能靠爬連結摸索，而這個站大部分內容藏在 `/magazines/[id]/issues/[issueId]` 這種要點兩層才到的頁面（2026-08-16）。
 
   能做的事，由淺到深：
 
   1. ~~**`app/sitemap.ts` 與 `app/robots.ts`**~~ — **2026-08-19 完成**。動態產生，1157 條網址（靜態頁 + 期刊 + 單期 + 遊戲 + 標籤），`/admin`、`/api`、`/auth` 已 disallow。中文 slug 逐段百分比編碼——沒編碼的話 XML 裡是不合法的網址，搜尋引擎會整筆丟掉，而那正是這個站大部分內容所在的層。`/i/<code>` 短碼刻意不收：同一份內容不報兩個網址
-  2. **結構化資料（JSON-LD）** — 期刊可以是 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙，用在雜誌目錄上幾乎是量身訂做。這也是 AEO 的主要施力點：讓模型答得出「電腦玩家 1999 年 5 月號有哪些文章」
+  2. **結構化資料（JSON-LD）** — 期刊可以是 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙，用在雜誌目錄上幾乎是量身訂做。這同時是 AEO 的主要施力點，細節見下面的「AEO：讓答題引擎答得出這個站的內容」
   3. **標題與描述** — 目前逐頁 `generateMetadata` 只有 title，description 多半沿用站台預設
 
   **原本寫著「sitemap 要等網址定案」，那個條件早就滿足了**——readable URLs 在 2026-08-16 就上線（`docs/plans/2026-08-16-readable-urls-design.md`），「網址裡的 ID 太長」也已經不在這份清單上。那是一條指向不存在項目的過時交叉引用，2026-08-19 覆核時才發現，sitemap 因此白等了三天。
 
   剩下的 2 與 3 仍**與 OG meta 共用同一個 `generateMetadata`**，一起做比較省。
+
+- [ ] **AEO：讓答題引擎答得出這個站的內容** — SEO 求的是「有人搜尋時排得上」，AEO 求的是「有人問模型時答得出來、而且答得對」。對這個站來說後者更值得投資：沒有人會用關鍵字搜「電腦玩家 1999 年 5 月號有哪些文章」，但會這樣問模型，而全世界只有這裡有那份目錄（2026-08-20）。
+
+  分成兩件不同的事——**讓模型讀得到**，以及**讀到之後對得起來**：
+
+  - **JSON-LD 結構化資料** — 主要施力點。期刊 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙。與 OG meta 共用同一個 `generateMetadata`，一起做比較省。這條與 SEO 那項的第 2 點是同一件事，做的時候一起收
+  - **`llms.txt`** — 站台給模型的導覽：這裡有什麼、怎麼定址（slug 與 `/i/<code>` 短碼）、資料從哪來、什麼算可信。目前沒有這個檔
+  - **AI 爬蟲的放行政策要明講** — `robots.ts` 現在只有 `userAgent: "*"`，等於預設全放行，包含 GPTBot／ClaudeBot／PerplexityBot。**那應該是一個決定，不是預設值**：要不要被訓練、要不要被即時檢索，兩件事可以分開設。決定了就寫進 `robots.ts` 的註解，別讓下一個人以為是漏掉的
+  - **內容要在 HTML 裡** — 目錄若靠 client 端才渲染，抓取端多半只會拿到空殼。單期頁目前是 server component，先確認這點成立，之後改動也別破壞
+  - **可引用的穩定網址** — 短碼 `/i/<code>` 已經是這個角色（期刊改名、期號重排、slug 重填都不動它），但沒對外說明過。寫進 `llms.txt`
+
+  **可驗證**：做完之後直接拿幾個模型問「電腦玩家 1999 年 5 月號有哪些文章」「哪本雜誌報導過《仙劍奇俠傳》」，看答不答得出、有沒有引到這個站。答錯比答不出更該記下來——那是資料或標記出了問題
 
 - [ ] **Open Graph meta 與縮圖** — 現在整個 repo 沒有一處 `openGraph` 設定（`layout.tsx` 只有 `title` 與 `description`），所以任何一頁貼到 LINE／Threads／Discord 都只是一段光禿禿的網址。四個公開的動態頁（`magazines/[id]`、`issues/[issueId]`、`games/[id]`、`tags/[id]`）都已經有 `generateMetadata`，補 `openGraph` 就在同一個函式裡（2026-08-16）。
 
@@ -166,13 +220,13 @@
 
 以下來自一次以「找可簡化的地方」為目標的全 repo 盤點，每條都附了呼叫端證據。刻意的重複不在此列：三個 OCR provider 是有意的抽換座（`OPENAI_BASE_URL` 指向自架模型）、`requireEditor()` 與 middleware 的雙重檢查是 [routes.md](docs/routes.md) 寫明的防繞過設計。
 
-- [ ] **`OcrRecord.status` 有四個狀態，只有一個到得了** — 唯一的寫入端（`src/app/api/ocr/route.ts:212`）永遠寫 `COMPLETED`，兩個讀取端（`src/app/api/issues/[id]/ocr/route.ts:18`、`src/app/(admin)/admin/issues/page.tsx:93`）也都只查 `COMPLETED`。`errorMessage` 在 `src/` 與 `scripts/` **零次引用**——沒人寫也沒人讀。dev 的 10 筆紀錄全是 COMPLETED、全無錯誤訊息。
+- [x] **`OcrRecord.status` 有四個狀態，只有一個到得了**（2026-08-20 完成：`status` 與 `errorMessage` 連同 `OcrStatus` enum 一起拿掉，migration `drop_ocr_record_status`） — 唯一的寫入端（`src/app/api/ocr/route.ts:212`）永遠寫 `COMPLETED`，兩個讀取端（`src/app/api/issues/[id]/ocr/route.ts:18`、`src/app/(admin)/admin/issues/page.tsx:93`）也都只查 `COMPLETED`。`errorMessage` 在 `src/` 與 `scripts/` **零次引用**——沒人寫也沒人讀。dev 的 10 筆紀錄全是 COMPLETED、全無錯誤訊息。
 
   失敗之所以不可達，是因為 route 的 catch 只 `console.error` 就回 500，不落庫。所以有兩條路，**選哪條是產品決定**：把失敗也記下來（那是新功能，得想清楚錯誤訊息會不會帶出自架後端的內部網址——route 的註解正是為此才不回傳細節），或者承認這個站不追蹤失敗，把 `errorMessage` 與 `OcrStatus` 一起拿掉。
 
   傾向後者：欄位存在會讓人以為查得到失敗紀錄。**要做趁現在**——`ocr_records` 目前資料量極小，之後只會更難動（2026-08-17）
 
-- [ ] **OCR provider 的 `config` 參數沒有任何呼叫端傳過** — 三個 provider 的 `extractTableOfContents(images, config?: Partial<OcrProviderConfig>)` 都得帶這個參數，但唯一的呼叫端（`route.ts:209`）只傳 images，設定一律從環境變數讀。`OcrProviderConfig` 這個型別除了這三個簽名之外沒有別的用途。
+- [x] **OCR provider 的 `config` 參數沒有任何呼叫端傳過**（2026-08-20 完成：參數與 `OcrProviderConfig` 型別移除；`clearCache()` 刪掉，`getDefaultProvider()` 換成 `getDefaultProviderType()`，route 兩處 inline 的預設值改呼叫它） — 三個 provider 的 `extractTableOfContents(images, config?: Partial<OcrProviderConfig>)` 都得帶這個參數，但唯一的呼叫端（`route.ts:209`）只傳 images，設定一律從環境變數讀。`OcrProviderConfig` 這個型別除了這三個簽名之外沒有別的用途。
 
   同一區還有兩個死的 public API：`OcrProviderFactory.clearCache()`（註解寫「主要用於測試」，實際上 0 個測試用到）與 `getDefaultProvider()`（0 個呼叫端）——而 route 第 65 行與第 244 行各自 inline 了一份 `DEFAULT_OCR_PROVIDER || "claude"`，等於同一個預設值有三份寫法。刪掉沒人用的那份、讓 route 呼叫 factory，或反過來把 factory 那份刪掉，兩者都比現在好（2026-08-17）
 
@@ -180,7 +234,7 @@
 
   落點已經有了：[`src/lib/image-policy.ts`](src/lib/image-policy.ts) 的開頭就寫著「一張表，兩邊不會走鐘」，尺寸與編碼格式早就收斂在那裡，只有這份清單漏掉。搬過去即可（2026-08-17）
 
-- [ ] **逗號分隔的陣列輸入抄了四次** — `MagazineForm.tsx:224`（別名）、`IssueForm.tsx:178`（其他編號）、`admin/games/page.tsx:776`（別名）、`EditableArticleRow.tsx:123`（作者），四段 `split(",").map(trim).filter(Boolean)` 完全相同，連 placeholder 的寫法都同一個模子。
+- [x] **逗號分隔的陣列輸入抄了四次**（2026-08-20 完成：四處都改用 `CommaListInput`） — `MagazineForm.tsx:224`（別名）、`IssueForm.tsx:178`（其他編號）、`admin/games/page.tsx:776`（別名）、`EditableArticleRow.tsx:123`（作者），四段 `split(",").map(trim).filter(Boolean)` 完全相同，連 placeholder 的寫法都同一個模子。
 
   抽成一個受控元件（值是 `string[]`、顯示成逗號字串）可以少掉三份，也讓「要不要改成 tag 式輸入」之後只有一處要改。**條件已達成**：原本寫「下次再出現第四個陣列欄位時就該做」，2026-08-18 覆核發現第四份（作者）早就在那裡了。`src/lib/tag-input.ts` 不算——它處理的是 `TYPE:name` 的標籤語法，是另一件事（2026-08-17，2026-08-18 覆核）
 

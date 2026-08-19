@@ -34,6 +34,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       nameOriginal: true,
       publisher: true,
       issn: true,
+      description: true,
+      foundedDate: true,
       isActive: true,
     },
   });

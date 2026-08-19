@@ -20,6 +20,11 @@ jest.mock("@/services/ai/ocr.factory", () => ({
       extractTableOfContents: jest.fn().mockResolvedValue({ articles: [] }),
     })),
     getAvailableProviders: jest.fn(() => ["claude", "openai", "gemini"]),
+    // Kept in step with the real factory: these cases are about the route
+    // reading the deployment default, not about where the default lives.
+    getDefaultProviderType: jest.fn(
+      () => process.env.DEFAULT_OCR_PROVIDER || "claude"
+    ),
   },
 }));
 

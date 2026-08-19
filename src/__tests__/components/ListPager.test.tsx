@@ -17,10 +17,19 @@ function shownPages(): number[] {
 }
 
 describe("ListPager", () => {
+  // Where you are and how far it goes live in the jump box once there is one,
+  // so the two are not stated twice in one row.
   it("says how long the run is, not just where you are", () => {
     renderPager(3, 32);
 
-    expect(screen.getByText("第 3 / 32 頁")).toBeInTheDocument();
+    expect(screen.getByLabelText("跳至")).toHaveValue(3);
+    expect(screen.getByText("/ 32 頁")).toBeInTheDocument();
+  });
+
+  it("still says it on a run the numbers can walk", () => {
+    renderPager(2, 3);
+
+    expect(screen.getByText("第 2 / 3 頁")).toBeInTheDocument();
   });
 
   it("renders nothing when everything fits on one page", () => {

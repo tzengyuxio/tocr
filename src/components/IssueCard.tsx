@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 import { formatEdtf } from "@/lib/edtf";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface IssueCardProps {
   issue: {
@@ -35,7 +36,7 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
           // the height follows the scan.
           <Image
             src={issue.coverImage}
-            alt={issue.issueNumber}
+            alt={formatIssueNumber(issue.issueNumber)}
             width={400}
             height={560}
             unoptimized
@@ -55,7 +56,7 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
             </p>
           )}
           <p className="font-medium text-sm line-clamp-1">
-            {issue.issueNumber}
+            {formatIssueNumber(issue.issueNumber)}
           </p>
           {issue.title && (
             <p className="text-xs text-muted-foreground line-clamp-1">

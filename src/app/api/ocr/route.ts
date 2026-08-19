@@ -69,8 +69,7 @@ export async function POST(request: NextRequest) {
     // deployment may not even have a key for. GET reports the same default.
     const provider =
       (formData.get("provider") as OcrProviderType) ||
-      (process.env.DEFAULT_OCR_PROVIDER as OcrProviderType) ||
-      "claude";
+      OcrProviderFactory.getDefaultProviderType();
     // Asking for a provider this deployment has no key for fails deep inside
     // the SDK, and the handler reports that as a generic "OCR processing
     // failed" -- an afternoon of debugging for a request that was answerable
@@ -213,7 +212,6 @@ export async function POST(request: NextRequest) {
         imageUrl: imageUrlsRaw || formData.get("imageUrl") as string || "",
         provider,
         rawResult: result as object,
-        status: "COMPLETED",
       },
     });
 
@@ -239,6 +237,6 @@ export async function GET() {
 
   return NextResponse.json({
     providers: availableProviders,
-    default: process.env.DEFAULT_OCR_PROVIDER || "claude",
+    default: OcrProviderFactory.getDefaultProviderType(),
   });
 }

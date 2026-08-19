@@ -2,7 +2,6 @@ import Anthropic from "@anthropic-ai/sdk";
 import type {
   IOcrProvider,
   OcrResult,
-  OcrProviderConfig,
   OcrImage,
   ImageMimeType,
 } from "../ocr.interface";
@@ -19,10 +18,7 @@ export class ClaudeOcrProvider implements IOcrProvider {
     });
   }
 
-  async extractTableOfContents(
-    images: OcrImage[],
-    config?: Partial<OcrProviderConfig>
-  ): Promise<OcrResult> {
+  async extractTableOfContents(images: OcrImage[]): Promise<OcrResult> {
     const startTime = Date.now();
 
     try {
@@ -36,8 +32,8 @@ export class ClaudeOcrProvider implements IOcrProvider {
       }));
 
       const response = await this.client.messages.create({
-        model: config?.model || "claude-sonnet-4-20250514",
-        max_tokens: config?.maxTokens || 8192,
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 8192,
         messages: [
           {
             role: "user",

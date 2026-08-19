@@ -27,6 +27,7 @@ import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip } from "@/components/chips";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -243,7 +244,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                             href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`}
                             className="hover:underline"
                           >
-                            {ag.article.issue.issueNumber}
+                            {formatIssueNumber(ag.article.issue.issueNumber)}
                           </Link>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
@@ -285,7 +286,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                       </Link>
                       <span>·</span>
                       <Link href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`} className="hover:underline">
-                        {ag.article.issue.issueNumber}
+                        {formatIssueNumber(ag.article.issue.issueNumber)}
                       </Link>
                       <span>·</span>
                       <span>{formatEdtf(ag.article.issue.publishDate)}</span>

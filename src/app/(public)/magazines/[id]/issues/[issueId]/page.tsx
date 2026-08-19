@@ -17,6 +17,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { IssueImages } from "@/components/issue/IssueImages";
 import { formatEdtf } from "@/lib/edtf";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -35,7 +36,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     select: { issueNumber: true, magazine: { select: { name: true } } },
   });
   if (!issue) return { title: "單期詳情" };
-  return { title: `${issue.magazine.name} ${issue.issueNumber}` };
+  return {
+    title: `${issue.magazine.name} ${formatIssueNumber(issue.issueNumber)}`,
+  };
 }
 
 export default async function IssueDetailPage({ params }: PageProps) {
@@ -103,7 +106,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: issue.issueNumber }]} />
+      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: formatIssueNumber(issue.issueNumber) }]} />
 
       {/* Title block: the cover no longer sets the height, so nothing has to
           fill 256px of space beside it. */}
@@ -118,7 +121,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
             >
               {issue.magazine.name}
             </Link>{" "}
-            {issue.issueNumber}
+            {formatIssueNumber(issue.issueNumber)}
           </h1>
           {canEdit && (
             <Link

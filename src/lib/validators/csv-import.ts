@@ -4,12 +4,21 @@ import { isValidEdtf } from "../edtf";
 export const csvRowSchema = z.object({
   magazine_name: z.string().min(1, "期刊名稱為必填"),
   magazine_name_original: z.string().optional(),
+  // The downloadable template shipped this column as magazine_name_en, which
+  // the parser never read -- an optional field that is simply absent, so the
+  // value vanished without an error. The template is fixed; this stays for the
+  // files people already made from it.
+  magazine_name_en: z.string().optional(),
   publisher: z.string().optional(),
   issn: z.string().optional(),
   description: z.string().optional(),
   founded_date: z.string().optional(),
   is_active: z.string().optional(),
   issue_number: z.string().min(1, "期號為必填"),
+  // 分號分隔，與 authors／tags／games 同一套寫法。
+  alt_numbers: z.string().optional(),
+  // 後台表單已經不顯示卷號，範本也不再提供這一欄，但既有的檔案還帶著它，收下
+  // 比丟掉好——欄位本身還在 schema 裡。見 docs/data-conventions.md。
   volume_number: z.string().optional(),
   issue_title: z.string().optional(),
   publish_date: z.string().min(1, "出版日期為必填"),
@@ -22,6 +31,7 @@ export type CsvRow = z.infer<typeof csvRowSchema>;
 
 export interface ParsedIssue {
   issueNumber: string;
+  altNumbers?: string[];
   volumeNumber?: string;
   title?: string;
   publishDate: string;
@@ -54,6 +64,7 @@ export const importRequestSchema = z.object({
       issues: z.array(
         z.object({
           issueNumber: z.string().min(1),
+          altNumbers: z.array(z.string()).optional(),
           volumeNumber: z.string().optional(),
           title: z.string().optional(),
           publishDate: z.string().min(1).refine(isValidEdtf, "publish_date 需為 EDTF（例如 1999、1999-05、1999-05-20、1994-22）"),

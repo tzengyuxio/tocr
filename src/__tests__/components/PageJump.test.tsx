@@ -2,61 +2,80 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PageJump } from "@/components/admin/PageJump";
 
-function renderJump(totalPages = 32) {
+function renderJump(page = 1, totalPages = 32) {
   const onJump = jest.fn();
-  render(<PageJump totalPages={totalPages} onJump={onJump} />);
-  return { onJump, input: screen.getByLabelText("跳至") };
+  const view = render(
+    <PageJump page={page} totalPages={totalPages} onJump={onJump} />
+  );
+  return { onJump, view, input: screen.getByLabelText("跳至") };
 }
 
 describe("PageJump", () => {
+  // The box is the page indicator as well as the way to leave it, so what it
+  // holds when nobody has touched it is where you are.
+  it("shows the current page, and the length of the run beside it", () => {
+    renderJump(7, 32);
+
+    expect(screen.getByLabelText("跳至")).toHaveValue(7);
+    expect(screen.getByText("/ 32 頁")).toBeInTheDocument();
+  });
+
   it("jumps to the page that was typed", async () => {
     const { onJump, input } = renderJump();
 
-    await userEvent.type(input, "20");
-    await userEvent.click(screen.getByRole("button", { name: "前往" }));
+    await userEvent.clear(input);
+    await userEvent.type(input, "20{Enter}");
 
     expect(onJump).toHaveBeenCalledWith(20);
   });
 
-  it("takes Enter as well as the button", async () => {
-    const { onJump, input } = renderJump();
-
-    await userEvent.type(input, "7{Enter}");
-
-    expect(onJump).toHaveBeenCalledWith(7);
-  });
-
   // Someone typing 999 wants the last page, not an error message.
   it("clamps a number past the end to the last page", async () => {
-    const { onJump, input } = renderJump(32);
+    const { onJump, input } = renderJump(1, 32);
 
+    await userEvent.clear(input);
     await userEvent.type(input, "999{Enter}");
 
     expect(onJump).toHaveBeenCalledWith(32);
   });
 
   it("clamps zero and negatives to the first page", async () => {
-    const { onJump, input } = renderJump();
+    const { onJump, input } = renderJump(5);
 
+    await userEvent.clear(input);
     await userEvent.type(input, "0{Enter}");
 
     expect(onJump).toHaveBeenCalledWith(1);
   });
 
-  it("stays put when nothing was typed", async () => {
-    const { onJump } = renderJump();
+  it("does nothing with an empty box", async () => {
+    const { onJump, input } = renderJump(5);
 
-    expect(screen.getByRole("button", { name: "前往" })).toBeDisabled();
+    await userEvent.clear(input);
+    await userEvent.type(input, "{Enter}");
+
     expect(onJump).not.toHaveBeenCalled();
   });
 
-  // The box empties after a jump: the number left behind is where you were,
-  // not where you are going next.
-  it("clears the box after jumping", async () => {
-    const { input } = renderJump();
+  // A number left in the box unsent reads as the page you are on, which is a
+  // lie about where the list is.
+  it("goes back to the current page when abandoned", async () => {
+    const { input } = renderJump(5);
 
-    await userEvent.type(input, "12{Enter}");
+    await userEvent.clear(input);
+    await userEvent.type(input, "12");
+    await userEvent.tab();
 
-    expect(input).toHaveValue(null);
+    expect(input).toHaveValue(5);
+  });
+
+  // Numbers, 上一頁 and 下一頁 all move the list too, and the box is what says
+  // where the list now is.
+  it("follows a page change it did not cause", () => {
+    const { view } = renderJump(3, 32);
+
+    view.rerender(<PageJump page={4} totalPages={32} onJump={jest.fn()} />);
+
+    expect(screen.getByLabelText("跳至")).toHaveValue(4);
   });
 });

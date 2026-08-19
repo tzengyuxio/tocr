@@ -24,6 +24,7 @@ import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip, TagTypeChip } from "@/components/chips";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -168,7 +169,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                             href={`/magazines/${at.article.issue.magazine.slug}/issues/${encodeURIComponent(at.article.issue.slug)}`}
                             className="hover:underline"
                           >
-                            {at.article.issue.issueNumber}
+                            {formatIssueNumber(at.article.issue.issueNumber)}
                           </Link>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
@@ -207,7 +208,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                       </Link>
                       <span>·</span>
                       <Link href={`/magazines/${at.article.issue.magazine.slug}/issues/${encodeURIComponent(at.article.issue.slug)}`} className="hover:underline">
-                        {at.article.issue.issueNumber}
+                        {formatIssueNumber(at.article.issue.issueNumber)}
                       </Link>
                       <span>·</span>
                       <span>{formatEdtf(at.article.issue.publishDate)}</span>

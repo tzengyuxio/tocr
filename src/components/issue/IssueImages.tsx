@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BookOpen, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 interface IssueImagesProps {
   coverImage: string | null;
@@ -53,7 +54,7 @@ export function IssueImages({
           >
             <Image
               src={coverImage}
-              alt={`${issueNumber} 封面`}
+              alt={`${formatIssueNumber(issueNumber)} 封面`}
               width={400}
               height={560}
               unoptimized
@@ -108,7 +109,7 @@ export function IssueImages({
           onClick={() => setZoomedIndex(null)}
         >
           <DialogTitle className="sr-only">
-            {issueNumber} {zoomed?.label}
+            {formatIssueNumber(issueNumber)} {zoomed?.label}
           </DialogTitle>
           <button
             type="button"
