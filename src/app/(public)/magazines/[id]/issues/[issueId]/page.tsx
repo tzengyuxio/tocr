@@ -18,6 +18,9 @@ import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { IssueImages } from "@/components/issue/IssueImages";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { JsonLd } from "@/components/JsonLd";
+import { publicationIssueJsonLd } from "@/lib/structured-data";
+import { getSiteOrigin } from "@/lib/site-origin";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -106,6 +109,14 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* 這一份目錄多半只有這裡有，所以要讓抓取端讀得到它，而不只是人眼看得到。 */}
+      <JsonLd
+        data={publicationIssueJsonLd(
+          getSiteOrigin(),
+          issue.magazine,
+          issue
+        )}
+      />
       <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: formatIssueNumber(issue.issueNumber) }]} />
 
       {/* Title block: the cover no longer sets the height, so nothing has to

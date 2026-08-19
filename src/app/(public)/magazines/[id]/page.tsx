@@ -24,6 +24,9 @@ import { SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { JsonLd } from "@/components/JsonLd";
+import { periodicalJsonLd } from "@/lib/structured-data";
+import { getSiteOrigin } from "@/lib/site-origin";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -119,6 +122,7 @@ export default async function MagazineDetailPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <JsonLd data={periodicalJsonLd(getSiteOrigin(), magazine)} />
       <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: magazine.name }]} />
 
       {/* 期刊資訊。刊頭與詳細資料左右並列，兩欄等高——刊頭原本是頂上一條 96px
