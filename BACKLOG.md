@@ -269,6 +269,8 @@
 以下來自一次完整的 code review。已修的部分不在此列（`DEV_BYPASS_AUTH` 的 production 護欄、`parsePagination` 的 clamp、contributors 的 eslint error、prisma mock 的 tsc errors、信心度色彩編碼）。
 
 - [x] [#26] **匯入腳本沒有進版控，每次都要重寫**（2026-08-18 完成：`scripts/import-issues.ts`） — 已匯入 30 本、還有 27 本沒進來，而每次要用都得重寫一次。等資料面的決定收斂、開始在 production 上傳目錄頁時，這支腳本會被反覆使用，屆時「上次是怎麼跑的」會變成實際問題。動手時順帶決定三件事：放 `scripts/`、資料來源怎麼取（Google Sheet 是正本）、以及用 API token 還是直接連 DB（2026-08-13）
-- [ ] [#39] **兩個檔案超過 650 行** — `src/app/(admin)/admin/games/page.tsx` 1054、`src/components/article/ArticleForm.tsx` 663（`src/app/(public)/search/page.tsx` 614 在門檻邊上）。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構。
+- [ ] [#39] **兩個檔案超過 650 行** — `src/app/(admin)/admin/games/page.tsx` 1011、`src/components/article/ArticleForm.tsx` 663（`src/app/(public)/search/page.tsx` 615 在門檻邊上）。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構。
+
+  **2026-08-20 覆核**：行數幾乎沒動（games 少的 43 行來自逗號輸入收斂，不是拆檔）。而且「下次動到就順手處理」在 #103 沒有生效——那個 PR 為了三件事各動過 `games/page.tsx` 一次，三次都只有幾行，都不到值得順帶拆檔的程度。這條等的是一次真的要動內部的改動。抽離對象仍是合併對話框，現在量得出來：JSX 130 行，加上 8 個 `useState`、2 個 `useEffect` 與 `requestMerge`，一個 `<MergeGameDialog>` 大約帶得走 200 行。詳見 issue 留言
 
   **2026-08-18 覆核**：games 那支從 681 漲到 1054，整整多出來的是 #95 的合併對話框——它自成一塊（搜尋候選、選保留方、預覽、送出），是現成的抽離對象。原本榜首的 `OcrResultEditor.tsx` 已隨複查整合刪除（2026-08-16 覆核）
