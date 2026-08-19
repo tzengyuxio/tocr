@@ -432,6 +432,20 @@ podman rm -f tocr-restore-test
 
 還原出來的筆數**就是正式站的筆數**（截至該備份日），可以拿來更新文件裡引用的數字——注意是這個容器的數字，不是 `tocr-db-dev` 的。
 
+### 孤兒圖清查
+
+換過的圖不會自己消失：`/api/upload` 每次都產新檔名，欄位改指新網址之後，舊檔就永遠留在 store 裡。本機測試上傳的垃圾檔同樣會進去。
+
+```bash
+npx tsx --env-file=.env.local scripts/find-orphan-blobs.ts
+```
+
+列出 store 裡沒有任何資料列指向的物件，以及反過來「資料庫指著、store 裡卻沒有」的路徑（那是壞掉的圖，另一種問題）。**只列清單，不刪任何東西**——Vercel Blob 沒有版本歷史，而圖片鏡像是每週一跑的增量，剛上傳又剛被判為孤兒的檔案可能還沒進備份。
+
+⚠️ **資料庫與 store 必須是同一個環境**。`.env.local` 的 `BLOB_READ_WRITE_TOKEN` 指向正式站的 store，而 `DATABASE_URL` 指向本機的 dev 庫——那樣算出來的「孤兒」其實是正式站正在用的圖。所以 `DATABASE_URL` 指著 localhost 時腳本預設拒跑，只想看它跑不跑得動再加 `--allow-local-db`。
+
+比對涵蓋每一個存得下網址的欄位：`magazines.logo_image`／`photos`、`issues.cover_image`／`toc_images`、`games.cover_image`、`ocr_records.image_url`、`users.image`。**新增存網址的欄位時要一起加進去**，漏掉一欄就會把還在用的圖報成孤兒。
+
 ### 手動備份
 
 ```bash
