@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { OcrProviderFactory } from "@/services/ai/ocr.factory";
 import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
 import { resolveImageUrl, isSafeImageUrl } from "@/lib/resolve-image-url";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { requireEditor } from "@/lib/require-editor";
 import {
   ALLOWED_IMAGE_LABEL,
@@ -15,13 +14,43 @@ import {
 // default timeout; 60s is the Vercel Hobby ceiling.
 export const maxDuration = 60;
 
-// Best-effort only: the limiter keeps its counters in memory, so on Vercel each
-// function instance counts on its own and the real ceiling is higher than this.
-// It smooths accidental repeat submissions; it is not a defence against abuse.
-const OCR_RATE_LIMIT = {
-  maxRequests: 10,
-  windowMs: 60_000,
-};
+// Best-effort only: the counters live in memory, so on Vercel each function
+// instance counts on its own and the real ceiling is higher than this. It
+// smooths accidental repeat submissions; it is not a defence against abuse.
+// The route also sits behind requireEditor(), so whoever reaches it is already
+// an editor or an API token.
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+
+/** Recent request timestamps per caller, newest last. */
+const recentRequests = new Map<string, number[]>();
+
+/**
+ * How long until this caller may try again, or null when it may go now.
+ *
+ * Deliberately small. This used to be a general-purpose limiter with a config
+ * object, a remaining count and a cleanup timer, serving exactly one caller
+ * with one hardcoded setting — it read like a defence line while its own
+ * comment said it was not one.
+ */
+function retryAfterMs(key: string): number | null {
+  const now = Date.now();
+  const hits = (recentRequests.get(key) ?? []).filter(
+    (at) => now - at < RATE_LIMIT_WINDOW_MS
+  );
+
+  if (hits.length >= RATE_LIMIT_MAX) {
+    return hits[0] + RATE_LIMIT_WINDOW_MS - now;
+  }
+
+  hits.push(now);
+  recentRequests.set(key, hits);
+  // Keys are IPs and nothing prunes the ones that stop coming back, so the map
+  // is emptied wholesale once it grows past anything a real instance would see.
+  // The cost of being wrong is that someone gets a fresh allowance.
+  if (recentRequests.size > 500) recentRequests.clear();
+  return null;
+}
 
 // A table of contents runs to a handful of pages. Anything beyond this is a
 // mistake or abuse, and each image is a billed model call against a 60s budget.
@@ -45,20 +74,17 @@ export async function POST(request: NextRequest) {
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       request.headers.get("x-real-ip") ||
       "unknown";
-    const rateLimitResult = checkRateLimit(`ocr:${ip}`, OCR_RATE_LIMIT);
+    const retryAfter = retryAfterMs(`ocr:${ip}`);
 
-    if (!rateLimitResult.allowed) {
+    if (retryAfter !== null) {
       return NextResponse.json(
         {
           error: "Too many OCR requests. Please try again later.",
-          retryAfterMs: rateLimitResult.resetMs,
+          retryAfterMs: retryAfter,
         },
         {
           status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil(rateLimitResult.resetMs / 1000)),
-            "X-RateLimit-Remaining": "0",
-          },
+          headers: { "Retry-After": String(Math.ceil(retryAfter / 1000)) },
         }
       );
     }
