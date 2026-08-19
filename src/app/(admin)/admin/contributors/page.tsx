@@ -49,8 +49,11 @@ export default async function ContributorsPage() {
     ])
   );
 
+  // Public pages, not the edit forms: this feed says what was finished, and the
+  // form shows today's fields rather than what the edit changed. /admin/edit-logs
+  // keeps the admin links -- there the next step is usually to fix something.
   const targetOf = await measure("admin/contributors:targets", () =>
-    resolveEditLogTargets(recentActivity)
+    resolveEditLogTargets(recentActivity, { linkTo: "public" })
   );
 
   return (

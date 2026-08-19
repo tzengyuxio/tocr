@@ -1,11 +1,22 @@
 import { prisma } from "./prisma";
+import { formatIssueNumber } from "./issue-number";
 
 export interface EditLogTarget {
   /** Human-readable name of the edited record. */
   label: string;
-  /** Admin page for the record, or null when there is nothing to open. */
+  /** Page for the record, or null when there is nothing to open. */
   href: string | null;
 }
+
+/**
+ * Which page the link opens.
+ *
+ * "admin" is the edit form -- right for /admin/edit-logs, where the next thing
+ * you do is usually fix something. "public" is the record as a reader sees it,
+ * which is what a feed of finished work should show: the edit form displays the
+ * fields, not the change, so it answers a question nobody asked.
+ */
+export type EditLogLinkTo = "admin" | "public";
 
 export interface EditLogRef {
   entityType: string;
@@ -64,21 +75,33 @@ function deletedTarget(
   };
 }
 
+/** The public URL of an issue, which is scoped to its magazine's slug. */
+function issueHref(magazineSlug: string, issueSlug: string): string {
+  return `/magazines/${magazineSlug}/issues/${encodeURIComponent(issueSlug)}`;
+}
+
 /** Names are only loaded for the entity types that appear in the logs. */
 async function loadTargets(
   entityType: string,
   ids: string[],
-  revealUsers: boolean
+  revealUsers: boolean,
+  linkTo: EditLogLinkTo
 ): Promise<[string, EditLogTarget][]> {
   switch (entityType) {
     case "Magazine": {
       const rows = await prisma.magazine.findMany({
         where: { id: { in: ids } },
-        select: { id: true, name: true },
+        select: { id: true, name: true, slug: true },
       });
       return rows.map((row) => [
         row.id,
-        { label: row.name, href: `/admin/magazines/${row.id}` },
+        {
+          label: row.name,
+          href:
+            linkTo === "public"
+              ? `/magazines/${row.slug}`
+              : `/admin/magazines/${row.id}`,
+        },
       ]);
     }
     case "Issue": {
@@ -87,45 +110,73 @@ async function loadTargets(
         select: {
           id: true,
           issueNumber: true,
-          magazine: { select: { id: true, name: true } },
+          slug: true,
+          magazine: { select: { id: true, name: true, slug: true } },
         },
       });
       return rows.map((row) => [
         row.id,
         {
-          label: `${row.magazine.name} ${row.issueNumber}`,
-          href: `/admin/magazines/${row.magazine.id}/issues/${row.id}`,
+          label: `${row.magazine.name} ${formatIssueNumber(row.issueNumber)}`,
+          href:
+            linkTo === "public"
+              ? issueHref(row.magazine.slug, row.slug)
+              : `/admin/magazines/${row.magazine.id}/issues/${row.id}`,
         },
       ]);
     }
     case "Article": {
+      // An article has no page of its own in public: it is a line in an issue's
+      // table of contents, so that is where the reader is sent.
       const rows = await prisma.article.findMany({
         where: { id: { in: ids } },
-        select: { id: true, title: true },
+        select: {
+          id: true,
+          title: true,
+          issue: {
+            select: { slug: true, magazine: { select: { slug: true } } },
+          },
+        },
       });
       return rows.map((row) => [
         row.id,
-        { label: row.title, href: `/admin/articles/${row.id}` },
+        {
+          label: row.title,
+          href:
+            linkTo === "public"
+              ? issueHref(row.issue.magazine.slug, row.issue.slug)
+              : `/admin/articles/${row.id}`,
+        },
       ]);
     }
     case "Tag": {
       const rows = await prisma.tag.findMany({
         where: { id: { in: ids } },
-        select: { id: true, name: true },
+        select: { id: true, name: true, slug: true },
       });
       return rows.map((row) => [
         row.id,
-        { label: row.name, href: `/admin/tags/${row.id}` },
+        {
+          label: row.name,
+          href:
+            linkTo === "public" ? `/tags/${row.slug}` : `/admin/tags/${row.id}`,
+        },
       ]);
     }
     case "Game": {
       const rows = await prisma.game.findMany({
         where: { id: { in: ids } },
-        select: { id: true, name: true },
+        select: { id: true, name: true, slug: true },
       });
       return rows.map((row) => [
         row.id,
-        { label: row.name, href: `/admin/games/${row.id}` },
+        {
+          label: row.name,
+          href:
+            linkTo === "public"
+              ? `/games/${row.slug}`
+              : `/admin/games/${row.id}`,
+        },
       ]);
     }
     case "User": {
@@ -156,7 +207,10 @@ async function loadTargets(
  */
 export async function resolveEditLogTargets(
   refs: EditLogRef[],
-  { revealUsers = false }: { revealUsers?: boolean } = {}
+  {
+    revealUsers = false,
+    linkTo = "admin",
+  }: { revealUsers?: boolean; linkTo?: EditLogLinkTo } = {}
 ): Promise<EditLogTargetLookup> {
   const idsByType = new Map<string, Set<string>>();
   const add = (entityType: string, id: string) => {
@@ -176,7 +230,12 @@ export async function resolveEditLogTargets(
 
   const loaded = await Promise.all(
     [...idsByType].map(async ([entityType, ids]) => {
-      const entries = await loadTargets(entityType, [...ids], revealUsers);
+      const entries = await loadTargets(
+        entityType,
+        [...ids],
+        revealUsers,
+        linkTo
+      );
       return entries.map(
         ([id, target]) => [`${entityType}:${id}`, target] as const
       );
