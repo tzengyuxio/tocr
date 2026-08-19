@@ -397,7 +397,14 @@ neonctl branches delete restore-test --project-id <project-id>
 
 #### 在本機驗證（不必開 Neon branch）
 
-私鑰本來就留在自己機器上，所以這一步也可以完全在本機跑，少一層網路與 Neon 額度。
+私鑰本來就留在自己機器上，所以這一步也可以完全在本機跑，少一層網路與 Neon 額度。下面那串步驟包成了一支腳本，取回備份檔之後只要：
+
+```bash
+scripts/verify-backup-restore.sh <日期>.sql.gz.age
+# 私鑰預設讀 ~/.config/age/tocr-backup.txt，第二個參數可以指定別的
+```
+
+起容器、解密、灌入、報筆數、收容器，中途失敗也會把容器收掉（留著的話下次跑會撞名，而那時的錯誤訊息看起來會像備份有問題）。**取回備份檔仍要自己來**——R2 憑證只在 GitHub secrets 裡，本機沒有。
 
 ⚠️ **不要灌進 `tocr-db-dev`**。那支是 `postgres:15-alpine`，而備份是 PG18 的 `pg_dump` 產物——PG17 才有的 `transaction_timeout` 這類 GUC 在 PG15 會報錯，你會分不清是備份壞了還是版本不合；而且灌進去等於洗掉手上的開發資料。開一個拋棄式的 PG18 容器。
 
