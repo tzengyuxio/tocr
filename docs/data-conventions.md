@@ -219,7 +219,7 @@ curl -s -X POST http://localhost:3000/api/upload \
   -F "file=@<slug>_no-<期號>_logo.png;type=image/png" -F "folder=magazines"
 
 # 2. 掛到期刊上。正式站的 token 在 keychain（見 docs/deployment.md）。
-TOKEN=$(security find-generic-password -s tocr-prod-api-token -a "$USER" -w)
+TOKEN=$(security find-generic-password -s tocr-prod-token-claude -a "$USER" -w)
 curl -s -X PUT "https://tocr.simagame.me/api/magazines/<magazine id>" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"logoImage":"<上一步回傳的 url>"}'

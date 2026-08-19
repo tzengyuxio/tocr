@@ -19,10 +19,10 @@
  *   npx tsx scripts/backfill-magazine-categories.ts --base https://tocr.simagame.me
  *
  * 打正式站需要 API token，從 keychain 取（見 docs/deployment.md）：
- *   security find-generic-password -s tocr-prod-api-token -a "$USER" -w
+ *   security find-generic-password -s tocr-prod-token-claude -a "$USER" -w
  */
 import { readFileSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { productionToken } from "./prod-token";
 
 type Category = "PC_GAME" | "TV_GAME" | "ONLINE_GAME";
 
@@ -64,12 +64,6 @@ interface ApiMagazine {
   slug: string;
   name: string;
   categories?: Category[];
-}
-
-function productionToken(): string {
-  return execFileSync("security", [
-    "find-generic-password", "-s", "tocr-prod-api-token", "-a", process.env.USER ?? "", "-w",
-  ]).toString().trim();
 }
 
 async function main() {
