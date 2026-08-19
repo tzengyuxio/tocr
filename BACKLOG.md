@@ -148,7 +148,9 @@
   能做的事，由淺到深：
 
   1. ~~**`app/sitemap.ts` 與 `app/robots.ts`**~~ — **2026-08-19 完成**。動態產生，1157 條網址（靜態頁 + 期刊 + 單期 + 遊戲 + 標籤），`/admin`、`/api`、`/auth` 已 disallow。中文 slug 逐段百分比編碼——沒編碼的話 XML 裡是不合法的網址，搜尋引擎會整筆丟掉，而那正是這個站大部分內容所在的層。`/i/<code>` 短碼刻意不收：同一份內容不報兩個網址
-  2. **結構化資料（JSON-LD）** — 期刊可以是 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙，用在雜誌目錄上幾乎是量身訂做。這同時是 AEO 的主要施力點，細節見下面的「AEO：讓答題引擎答得出這個站的內容」
+  2. ~~**結構化資料（JSON-LD）**~~ — **2026-08-20 完成**。`src/lib/structured-data.ts` 產出 `Periodical`（期刊頁）與 `PublicationIssue`（單期頁），文章沒有自己的網址，所以掛在單期的 `hasPart` 底下——那也是目錄本來的形狀。實測電腦玩家 105 期吐出 61 篇。
+
+     兩件被資料逼出來的判斷：`datePublished` 只在 EDTF 剛好也是合法 ISO 8601 時才給（`1994-22` 是 1994 夏、`1999-05?` 是存疑，ISO 8601 都讀不懂；拿 `publishSort` 去補會publish 一個編出來的日子）；空欄位整個不出現，而不是給 `null`——這個站大部分欄位還沒填，那是常態。網址走 sitemap 那支 `sitemapUrl`，中文 slug 的編碼兩邊一致
   3. **標題與描述** — 目前逐頁 `generateMetadata` 只有 title，description 多半沿用站台預設
 
   **原本寫著「sitemap 要等網址定案」，那個條件早就滿足了**——readable URLs 在 2026-08-16 就上線（`docs/plans/2026-08-16-readable-urls-design.md`），「網址裡的 ID 太長」也已經不在這份清單上。那是一條指向不存在項目的過時交叉引用，2026-08-19 覆核時才發現，sitemap 因此白等了三天。
@@ -159,7 +161,7 @@
 
   分成兩件不同的事——**讓模型讀得到**，以及**讀到之後對得起來**：
 
-  - **JSON-LD 結構化資料** — 主要施力點。期刊 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙。與 OG meta 共用同一個 `generateMetadata`，一起做比較省。這條與 SEO 那項的第 2 點是同一件事，做的時候一起收
+  - ~~**JSON-LD 結構化資料**~~ — **2026-08-20 完成**（見上一條的第 2 點）。做出來之後才發現它與 OG meta 其實不共用 `generateMetadata`：JSON-LD 是頁面裡的一個 `<script>`，`generateMetadata` 只管 `<head>` 的 meta 標籤。兩件事各自獨立，OG 不必等它
   - **`llms.txt`** — 站台給模型的導覽：這裡有什麼、怎麼定址（slug 與 `/i/<code>` 短碼）、資料從哪來、什麼算可信。目前沒有這個檔
   - **AI 爬蟲的放行政策要明講** — `robots.ts` 現在只有 `userAgent: "*"`，等於預設全放行，包含 GPTBot／ClaudeBot／PerplexityBot。**那應該是一個決定，不是預設值**：要不要被訓練、要不要被即時檢索，兩件事可以分開設。決定了就寫進 `robots.ts` 的註解，別讓下一個人以為是漏掉的
   - **內容要在 HTML 裡** — 目錄若靠 client 端才渲染，抓取端多半只會拿到空殼。單期頁目前是 server component，先確認這點成立，之後改動也別破壞
