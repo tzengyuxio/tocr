@@ -1,8 +1,7 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 /**
  * 直接跳到某一頁，同時就是「現在在第幾頁」的顯示。
@@ -28,9 +27,6 @@ export function PageJump({
   // 忘記同步的機會。
   const [draft, setDraft] = useState<string | null>(null);
   const value = draft ?? String(page);
-  // 一頁只會有一個跳頁框，但 id 寫死的話，日後第二個清單共用這支元件就會撞號，
-  // 而撞號的後果是點了標籤跑去另一個框。
-  const inputId = useId();
 
   const jump = () => {
     const parsed = Number.parseInt(value, 10);
@@ -45,11 +41,13 @@ export function PageJump({
 
   return (
     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-      <Label htmlFor={inputId} className="sr-only">
-        跳至
-      </Label>
+      {/* aria-label rather than a <Label className="sr-only">: an attribute has
+          no box, so there is nothing to lay out, clip or escape. sr-only is
+          position:absolute, and one at the foot of a long page was enough to
+          give /admin/articles a second scrollbar -- see the note on <main> in
+          the admin layout, which is where that is now prevented. */}
       <Input
-        id={inputId}
+        aria-label="跳至"
         type="number"
         min={1}
         max={totalPages}

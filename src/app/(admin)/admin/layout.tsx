@@ -51,7 +51,19 @@ export default async function AdminLayout({
             />
           }
         />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</main>
+        {/* relative so overflow-y-auto actually contains what it scrolls.
+            Without it this element is position:static, which is not a
+            containing block, so any absolutely positioned descendant is laid
+            out against the page instead -- unclipped, and stretching the
+            document's own scroll area down to wherever it sits. That is enough
+            to give the window a second scrollbar fighting this one: the sidebar
+            slides, the card's bottom edge drifts as you scroll, and the last
+            rows end up cut off. Tailwind's sr-only is position:absolute, so a
+            visually hidden label near the foot of a long page is all it takes;
+            three pages had it. */}
+        <main className="relative flex-1 overflow-y-auto p-4 sm:p-6">
+          {children}
+        </main>
       </div>
     </div>
   );
