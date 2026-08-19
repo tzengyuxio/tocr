@@ -4,6 +4,11 @@ import { isValidEdtf } from "../edtf";
 export const csvRowSchema = z.object({
   magazine_name: z.string().min(1, "期刊名稱為必填"),
   magazine_name_original: z.string().optional(),
+  // The downloadable template shipped this column as magazine_name_en, which
+  // the parser never read -- an optional field that is simply absent, so the
+  // value vanished without an error. The template is fixed; this stays for the
+  // files people already made from it.
+  magazine_name_en: z.string().optional(),
   publisher: z.string().optional(),
   issn: z.string().optional(),
   description: z.string().optional(),

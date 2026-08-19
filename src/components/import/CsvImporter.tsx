@@ -12,9 +12,15 @@ import type { ImportResult } from "@/lib/validators/csv-import";
 
 type Stage = "upload" | "preview" | "importing";
 
-const CSV_TEMPLATE_HEADERS = [
+/**
+ * The columns the downloadable template ships with. Exported so a test can
+ * hold it against csvRowSchema: this list once offered magazine_name_en, which
+ * the parser did not read, and an optional field that is merely absent raises
+ * nothing -- the value just never arrived.
+ */
+export const CSV_TEMPLATE_HEADERS = [
   "magazine_name",
-  "magazine_name_en",
+  "magazine_name_original",
   "publisher",
   "issn",
   "description",
@@ -143,7 +149,7 @@ export function CsvImporter() {
                   <p className="mb-1.5 font-medium text-foreground">期刊欄位</p>
                   <ul className="list-inside list-disc space-y-0.5">
                     <li><span className="font-medium">magazine_name *</span>：期刊名稱，用來識別期刊，如「電玩通」</li>
-                    <li><span className="font-medium">magazine_name_en</span>：期刊英文名稱</li>
+                    <li><span className="font-medium">magazine_name_original</span>：期刊原文名稱，如「ファミ通」</li>
                     <li><span className="font-medium">publisher</span>：出版社名稱</li>
                     <li><span className="font-medium">issn</span>：國際標準期刊號</li>
                     <li><span className="font-medium">description</span>：期刊描述</li>
@@ -154,7 +160,7 @@ export function CsvImporter() {
                 <div>
                   <p className="mb-1.5 font-medium text-foreground">單期欄位</p>
                   <ul className="list-inside list-disc space-y-0.5">
-                    <li><span className="font-medium">issue_number *</span>：期號，每一期的編號，如「42」「No.3」「2024年8月號」</li>
+                    <li><span className="font-medium">issue_number *</span>：期號，照封面登錄但數字就寫數字，如「42」「創刊號」「2024年8月號」</li>
                     <li><span className="font-medium">volume_number</span>：卷號，將多期歸為一卷的編號，如「Vol.5」「第 3 卷」</li>
                     <li><span className="font-medium">issue_title</span>：本期標題或特輯名稱</li>
                     <li><span className="font-medium">publish_date *</span>：出版日期，格式 YYYY-MM-DD</li>

@@ -69,7 +69,9 @@ export function parseCsvFile(file: File): Promise<ParseResult> {
 
             magazineMap.set(magazineKey, {
               name: row.magazine_name.trim(),
-              nameOriginal: emptyToUndefined(row.magazine_name_original),
+              nameOriginal:
+                emptyToUndefined(row.magazine_name_original) ??
+                emptyToUndefined(row.magazine_name_en),
               publisher: emptyToUndefined(row.publisher),
               issn,
               description: emptyToUndefined(row.description),

@@ -110,6 +110,21 @@
 
   下次全庫回填或匯入新期刊時，若 `backfill-slugs.ts` 又報出 `-2` 後綴，就是新的候選——後綴本身就是偵測器（2026-08-17）
 
+- [ ] **CSV 匯入匯出跟不上資料模型了** — 2026-08-20 逐欄比對 schema 與 `CSV_HEADERS`／`csvRowSchema` 的結果。同一次盤點裡「範本欄名 `magazine_name_en` 解析器根本不讀」已修，剩下的分三類：
+
+  **一、匯出比匯入少，所以匯出的檔重新匯入會掉東西**：匯入收 `description`、`founded_date`、`notes`，匯出這三欄一欄都沒有。匯出目前只有 5 個期刊欄、6 個單期欄。這是最沒有爭議的一項——匯出的用途之一就是備份，而備份不該比它能還原的東西少。
+
+  **二、`alt_numbers` 兩邊都沒有**。它現在是「期號以外的其他編號」的正本（港版卷號、日期發行號、期別），2026-08-20 卷號那筆值也搬進去了，但 CSV 進不來也出不去。
+
+  **三、整批只存在於後台的欄位**：期刊的 `slug`、`aliases`、`categories`、`endedDate`、`logoImage`、`photos`；單期的 `slug`、`coverImage`、`tocImages`、`tocReviewedAt`、`order`。`slug` 這兩個特別值得想——匯入時是從期號推的，而 [data-conventions.md](docs/data-conventions.md#網址代號與期號是兩回事) 寫明那只是預設值不是規則，所以電玩通那種「slug 是封面日期」的刊物，CSV 匯入根本產不出正確網址。
+
+  另外兩件動手時要一起決定：
+
+  - **匯入永遠只新增、不更新**（`issueNumber` 撞到就跳過）。所以 CSV 修不了既有資料，只能拿來灌新的
+  - **`volume_number` 還在 CSV 裡**，但後台表單已經看不到它。留著等於 CSV 設得了、編輯者改不了；要嘛匯入時把它併進 `alt_numbers`，要嘛整欄退休
+
+  範本（`CSV_TEMPLATE_HEADERS`）與匯入頁的欄位說明要跟著改，而且**要用測試釘住**——欄名對不上時 zod 只當那一欄沒填，不會報錯，這正是 `magazine_name_en` 藏了那麼久的原因（2026-08-20）。
+
 - [ ] **sitemap、robots.txt 與 SEO／AEO 基本盤** — 目前兩個檔案都沒有（`src/` 與 `public/` 都找不到 `sitemap` 或 `robots`），搜尋引擎與 AI 檢索只能靠爬連結摸索，而這個站大部分內容藏在 `/magazines/[id]/issues/[issueId]` 這種要點兩層才到的頁面（2026-08-16）。
 
   能做的事，由淺到深：
