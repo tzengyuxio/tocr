@@ -47,6 +47,7 @@ import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip } from "@/components/chips";
 import { ListPager } from "@/components/admin/ListPager";
 import { MergeGameDialog } from "@/components/admin/MergeGameDialog";
+import { GAME_SORTS, type GameDirection } from "@/lib/game-browse";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Game {
@@ -77,6 +78,25 @@ const COMMON_GENRES = ["RPG", "動作", "冒險", "射擊", "模擬", "策略", 
 
 const PAGE_SIZE = 20;
 
+/**
+ * 排序選項攤平成一個下拉。
+ *
+ * 公開索引把「排序」與「方向」分成兩個控制項（點目前這個就反轉），後台這裡只有
+ * 四種組合，攤平成單一下拉少一個控制項，也不必再寫一次「反轉之後會變怎樣」的提示。
+ * 名目仍取自 `game-browse.ts`，措辭沿用那邊的「由前往後／多到少」。
+ */
+const SORT_OPTIONS = GAME_SORTS.flatMap((sort) =>
+  (["asc", "desc"] as const).map((direction) => ({
+    value: `${sort.value}:${direction}`,
+    label:
+      sort.value === "articles"
+        ? `文章數（${direction === "desc" ? "多到少" : "少到多"}）`
+        : `名稱（${direction === "asc" ? "由前往後" : "由後往前"}）`,
+  }))
+);
+
+const DEFAULT_SORT = "name:asc";
+
 export default function GamesPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,6 +104,7 @@ export default function GamesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [genreFilter, setGenreFilter] = useState("all");
+  const [sortOption, setSortOption] = useState(DEFAULT_SORT);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -164,6 +185,9 @@ export default function GamesPage() {
       if (genreFilter !== "all") {
         params.set("genre", genreFilter);
       }
+      const [sort, direction] = sortOption.split(":");
+      params.set("sort", sort);
+      params.set("direction", direction as GameDirection);
       const response = await fetch(`/api/games?${params}`);
       const data = await response.json();
       setGames(data.data);
@@ -174,7 +198,7 @@ export default function GamesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, platformFilter, genreFilter, page]);
+  }, [debouncedSearch, platformFilter, genreFilter, sortOption, page]);
 
   // 打字要等使用者停手，翻頁不必——debounce 掛在關鍵字上而不是整個查詢，
   // 按下一頁才會立刻有反應。
@@ -187,10 +211,10 @@ export default function GamesPage() {
     debouncedSearch !== "" || platformFilter !== "all" || genreFilter !== "all";
 
   // 在第 5 頁換關鍵字，新的結果多半沒有第 5 頁，留在原頁只會看到空白。
-  // 篩選同理，所以三個條件共用這一條。
+  // 篩選與排序同理——換了排序，第 5 頁講的已經是別的東西。
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, platformFilter, genreFilter]);
+  }, [debouncedSearch, platformFilter, genreFilter, sortOption]);
 
   useEffect(() => {
     fetchGames();
@@ -387,6 +411,18 @@ export default function GamesPage() {
                   {COMMON_GENRES.map((genre) => (
                     <SelectItem key={genre} value={genre}>
                       {genre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
