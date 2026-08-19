@@ -213,33 +213,7 @@
 
 以下來自一次以「找可簡化的地方」為目標的全 repo 盤點，每條都附了呼叫端證據。刻意的重複不在此列：三個 OCR provider 是有意的抽換座（`OPENAI_BASE_URL` 指向自架模型）、`requireEditor()` 與 middleware 的雙重檢查是 [routes.md](docs/routes.md) 寫明的防繞過設計。
 
-（本區另有 4 條已完成，移到檔尾「已完成」。）
-
-- [ ] **rate limiter 的通用程度遠超過它的用途** — `src/lib/rate-limit.ts` 81 行，帶 config 物件、滑動視窗、定期清理計時器與 remaining 計數，只服務一個呼叫端、一組寫死的設定（`/api/ocr`，10 次／分鐘）。
-
-  而它擋不了什麼：計數在記憶體裡，Vercel 每個 function instance 各算各的（route 的註解自己寫明「it is not a defence against abuse」），且該路由在 `requireEditor()` 後面，能打到的本來就只有編輯者與 API token。
-
-  所以這條不是「刪掉」而是「降級」：留一個十來行的同檔計數就夠，或乾脆承認它只防手滑重送。**優先度低**，列著是因為它讀起來像一道防線，而它不是（2026-08-17）
-
-- [ ] **blob store 裡累積了沒有任何資料列指向的孤兒圖** — 換過的圖不會自動消失：`/api/upload` 每次都產新檔名，欄位改指新網址之後，舊檔就永遠留在 store 裡。本機測試上傳的垃圾檔同樣會進去（`.env.local` 的 `BLOB_READ_WRITE_TOKEN` 指向正式站那個 store）。
-
-  已知的九張是 2026-08-18 換掉的《軟體之星》跨頁封面（原掃描是左封底右封面，改用 nostalibrary 已裁好的正面封面），前綴都是 `issues/covers/`：
-
-  ```
-  1786937693606-glbb1u.webp  (第0期)
-  1786889532647-58683u.webp  (第2期)
-  1786937812926-j5t9ng.webp  (第4期)
-  1786937895972-a1blpk.webp  (第5期)
-  1786938287353-sethpb.webp  (第6期)
-  1786938352150-co5gtj.webp  (第7期)
-  1786938992949-p2zt09.webp  (第8期)
-  1786939106008-7r3h4n.webp  (第9期)
-  1786939160975-gndi59.webp  (第10期)
-  ```
-
-  但**逐次記錄換掉的檔案不是長久做法**——會漏，而且漏掉的那些沒有第二份記錄。真正該做的是一次掃描：列出 store 全部物件，比對 `magazines.logo_image`、`magazines.photos`、`issues.cover_image`、`issues.toc_images`（以及日後任何存網址的欄位），差集就是孤兒。
-
-  ⚠️ **刪之前先確認備份涵蓋到**：圖片鏡像是每週一跑的增量（見 [docs/deployment.md](docs/deployment.md#備份與還原)），而 Vercel Blob 本身沒有版本歷史，刪掉就是刪掉。掃描腳本應該先只輸出清單，確認過再刪（2026-08-18）
+**本區 6 條全部完成**（最後兩條是 2026-08-20 的 rate limiter 降級與孤兒圖掃描），內容移到檔尾「已完成」。
 
 ## 2026-08-13 code review 待辦
 
@@ -260,6 +234,42 @@
 ## 已完成
 
 做完的項目移到這裡，全文保留——不少條記著「當初的顧慮後來為什麼不成立」，那段判斷 commit message 裝不下。
+
+- [x] **blob store 裡累積了沒有任何資料列指向的孤兒圖**（2026-08-20 完成掃描端：`scripts/find-orphan-blobs.ts`，只列清單不刪） — 換過的圖不會自動消失：`/api/upload` 每次都產新檔名，欄位改指新網址之後，舊檔就永遠留在 store 裡。本機測試上傳的垃圾檔同樣會進去（`.env.local` 的 `BLOB_READ_WRITE_TOKEN` 指向正式站那個 store）。
+
+  已知的九張是 2026-08-18 換掉的《軟體之星》跨頁封面（原掃描是左封底右封面，改用 nostalibrary 已裁好的正面封面），前綴都是 `issues/covers/`：
+
+  ```
+  1786937693606-glbb1u.webp  (第0期)
+  1786889532647-58683u.webp  (第2期)
+  1786937812926-j5t9ng.webp  (第4期)
+  1786937895972-a1blpk.webp  (第5期)
+  1786938287353-sethpb.webp  (第6期)
+  1786938352150-co5gtj.webp  (第7期)
+  1786938992949-p2zt09.webp  (第8期)
+  1786939106008-7r3h4n.webp  (第9期)
+  1786939160975-gndi59.webp  (第10期)
+  ```
+
+  但**逐次記錄換掉的檔案不是長久做法**——會漏，而且漏掉的那些沒有第二份記錄。真正該做的是一次掃描：列出 store 全部物件，比對 `magazines.logo_image`、`magazines.photos`、`issues.cover_image`、`issues.toc_images`（以及日後任何存網址的欄位），差集就是孤兒。
+
+  ⚠️ **刪之前先確認備份涵蓋到**：圖片鏡像是每週一跑的增量（見 [docs/deployment.md](docs/deployment.md#備份與還原)），而 Vercel Blob 本身沒有版本歷史，刪掉就是刪掉。掃描腳本應該先只輸出清單，確認過再刪（2026-08-18）
+
+  **實際做出來比原本設想的多兩件事**：比對涵蓋七個欄位而不是這裡列的四個——`games.cover_image` 與 `ocr_records.image_url` 同樣存網址，漏掉會把每一張遊戲封面與辨識過的目錄圖都報成孤兒；另外 `DATABASE_URL` 指著 localhost 時預設拒跑，因為 `.env.local` 的 blob token 指向正式站，本機庫配正式站 store 算出來的「孤兒」正是正式站在用的圖。這支的輸出就是刪除清單，錯的清單比沒有清單危險。
+
+  順帶也報反向的那一半：資料列指著、store 裡卻沒有的路徑（壞掉的圖）。用法寫進 [deployment.md](docs/deployment.md#孤兒圖清查)。
+
+  **還沒做的是「刪」**——要先在正式站跑一次、確認清單、確認備份涵蓋得到（2026-08-20）
+
+- [x] **rate limiter 的通用程度遠超過它的用途**（2026-08-20 完成：81 行的 `lib/rate-limit.ts` 換成 route 內十來行的 `retryAfterMs()`） — `src/lib/rate-limit.ts` 81 行，帶 config 物件、滑動視窗、定期清理計時器與 remaining 計數，只服務一個呼叫端、一組寫死的設定（`/api/ocr`，10 次／分鐘）。
+
+  而它擋不了什麼：計數在記憶體裡，Vercel 每個 function instance 各算各的（route 的註解自己寫明「it is not a defence against abuse」），且該路由在 `requireEditor()` 後面，能打到的本來就只有編輯者與 API token。
+
+  所以這條不是「刪掉」而是「降級」：留一個十來行的同檔計數就夠，或乾脆承認它只防手滑重送。**優先度低**，列著是因為它讀起來像一道防線，而它不是（2026-08-17）
+
+  留下來的十來行沒有清理計時器：鍵是 IP、沒人再碰的鍵也不會自己消失，所以整張表超過 500 個鍵就整個倒掉——判斷錯的代價只是有人重新拿到一輪額度，而這本來就不是防線。429 少了 `X-RateLimit-Remaining`，那個標頭只出現在 429 上而且永遠是 `0`。
+
+  實際打過：前 10 次過、第 11 次 429 帶 `Retry-After: 60`，換個 IP 不受影響。原本的單元測試一併移除——它們測的是一組已經不存在的通用 API（2026-08-20）。
 
 - [x] **`article_games.game_id` 與 `article_tags.tag_id` 沒有索引**（2026-08-20 完成：migration `add_article_relation_reverse_indexes`，兩張表各補一個單欄索引） — 兩張表都只有 `@@unique([articleId, gameId])`／`([articleId, tagId])`，複合索引的前導欄是 `article_id`，所以「這款遊戲被幾篇文章提到」這種以 `game_id` 出發的查詢用不到它。
 
