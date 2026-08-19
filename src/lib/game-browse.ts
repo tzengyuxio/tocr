@@ -40,7 +40,11 @@ export const GAME_SORTS = [
   defaultDirection: "asc" | "desc";
 }>;
 
-export const DEFAULT_GAME_SORT = "name";
+/**
+ * The index opens on 相關文章數, descending: with 481 of 624 games sitting on a
+ * single article, an A-to-Z first page is a page of games nobody wrote about.
+ */
+export const DEFAULT_GAME_SORT = "articles";
 
 export const GAME_DIRECTIONS = ["asc", "desc"] as const;
 
