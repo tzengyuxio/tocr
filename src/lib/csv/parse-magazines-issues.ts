@@ -24,6 +24,15 @@ function emptyToUndefined(value: string | undefined): string | undefined {
   return value.trim();
 }
 
+/** 分號分隔的多值欄位，與作者、標籤、遊戲同一套寫法。 */
+function splitList(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(";")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
 export function parseCsvFile(file: File): Promise<ParseResult> {
   return new Promise((resolve) => {
     Papa.parse(file, {
@@ -95,8 +104,10 @@ export function parseCsvFile(file: File): Promise<ParseResult> {
           }
           issueDedupSet.add(dedupKey);
 
+          const altNumbers = splitList(row.alt_numbers);
           const issue: ParsedIssue = {
             issueNumber,
+            ...(altNumbers.length > 0 && { altNumbers }),
             volumeNumber: emptyToUndefined(row.volume_number),
             title: emptyToUndefined(row.issue_title),
             publishDate: row.publish_date.trim(),

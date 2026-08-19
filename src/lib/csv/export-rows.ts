@@ -1,17 +1,28 @@
 import { escapeCsvField } from "./escape";
 
+/**
+ * 匯出是備份，不是「餵得回匯入」的格式。
+ *
+ * 兩者刻意不對稱：匯入是批次建檔的入口，只收人打得出來的欄位；匯出要能把資料庫
+ * 裡的東西留下來，所以欄位只會比匯入多。也因此 volume_number 留在這裡——它還在
+ * schema 裡、還有值，備份漏掉它就不是備份了，即使後台已經不再顯示這個欄位。
+ */
 export const CSV_HEADERS = [
   "magazine_name",
   "magazine_name_original",
   "publisher",
   "issn",
+  "description",
+  "founded_date",
   "is_active",
   "issue_number",
+  "alt_numbers",
   "volume_number",
   "issue_title",
   "publish_date",
   "page_count",
   "price",
+  "notes",
   "article_title",
   "article_subtitle",
   "authors",
@@ -23,7 +34,7 @@ export const CSV_HEADERS = [
   "games",
 ];
 
-const ISSUE_FIELD_COUNT = 6;
+const ISSUE_FIELD_COUNT = 8;
 const ARTICLE_FIELD_COUNT = 9;
 
 // Prisma returns Decimal for price; anything with toString will do here.
@@ -34,6 +45,8 @@ export interface ExportMagazine {
   nameOriginal: string | null;
   publisher: string | null;
   issn: string | null;
+  description: string | null;
+  foundedDate: string | null;
   isActive: boolean;
 }
 
@@ -51,11 +64,13 @@ export interface ExportArticle {
 
 export interface ExportIssue {
   issueNumber: string;
+  altNumbers: string[];
   volumeNumber: string | null;
   title: string | null;
   publishDate: string;
   pageCount: number | null;
   price: Numeric | null;
+  notes: string | null;
   articles: ExportArticle[];
 }
 
@@ -90,6 +105,8 @@ export function rowsFor(
     magazine.nameOriginal ?? "",
     magazine.publisher ?? "",
     magazine.issn ?? "",
+    magazine.description ?? "",
+    magazine.foundedDate ?? "",
     magazine.isActive ? "true" : "false",
   ];
 
@@ -102,11 +119,15 @@ export function rowsFor(
   for (const issue of issues) {
     const issueFields = [
       issue.issueNumber,
+      // 分號分隔，與作者、標籤、遊戲同一套寫法：逗號是欄位分隔字元，用它會逼出
+      // 引號跳脫，而這些值本身就常帶逗號。
+      issue.altNumbers.join(";"),
       issue.volumeNumber ?? "",
       issue.title ?? "",
       issue.publishDate,
       issue.pageCount != null ? String(issue.pageCount) : "",
       issue.price != null ? String(issue.price) : "",
+      issue.notes ?? "",
     ];
 
     if (issue.articles.length === 0) {

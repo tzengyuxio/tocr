@@ -111,7 +111,7 @@ export function ImportPreviewTable({ result }: ImportPreviewTableProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>期號</TableHead>
-                  <TableHead>卷號</TableHead>
+                  <TableHead>其他編號</TableHead>
                   <TableHead>標題</TableHead>
                   <TableHead>出版日期</TableHead>
                   <TableHead>頁數</TableHead>
@@ -122,7 +122,7 @@ export function ImportPreviewTable({ result }: ImportPreviewTableProps) {
                 {magazine.issues.map((issue, iIdx) => (
                   <TableRow key={iIdx}>
                     <TableCell className="font-medium">{issue.issueNumber}</TableCell>
-                    <TableCell>{issue.volumeNumber || "-"}</TableCell>
+                    <TableCell>{issue.altNumbers?.join("、") || "-"}</TableCell>
                     <TableCell>{issue.title || "-"}</TableCell>
                     <TableCell>{issue.publishDate}</TableCell>
                     <TableCell>{issue.pageCount ?? "-"}</TableCell>

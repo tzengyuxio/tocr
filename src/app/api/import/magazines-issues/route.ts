@@ -85,6 +85,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
               // one magazine aborts the transaction rather than being silently
               // suffixed -- see lib/slugify.ts.
               slug: issueSlugify(iss.issueNumber),
+              altNumbers: iss.altNumbers ?? [],
               volumeNumber: iss.volumeNumber,
               title: iss.title,
               ...withPublishSort({ publishDate: iss.publishDate }),
