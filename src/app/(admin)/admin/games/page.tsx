@@ -34,6 +34,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Edit, Trash2, Loader2, Gamepad2, Search, Eye, ExternalLink, GitMerge, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import type { ArticleCategory } from "@/lib/article-categories";
@@ -97,6 +104,8 @@ export default function GamesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [platformFilter, setPlatformFilter] = useState("all");
+  const [genreFilter, setGenreFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -179,6 +188,12 @@ export default function GamesPage() {
       if (debouncedSearch) {
         params.set("search", debouncedSearch);
       }
+      if (platformFilter !== "all") {
+        params.set("platform", platformFilter);
+      }
+      if (genreFilter !== "all") {
+        params.set("genre", genreFilter);
+      }
       const response = await fetch(`/api/games?${params}`);
       const data = await response.json();
       setGames(data.data);
@@ -189,7 +204,7 @@ export default function GamesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, page]);
+  }, [debouncedSearch, platformFilter, genreFilter, page]);
 
   // 打字要等使用者停手，翻頁不必——debounce 掛在關鍵字上而不是整個查詢，
   // 按下一頁才會立刻有反應。
@@ -198,10 +213,14 @@ export default function GamesPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  const isFiltered =
+    debouncedSearch !== "" || platformFilter !== "all" || genreFilter !== "all";
+
   // 在第 5 頁換關鍵字，新的結果多半沒有第 5 頁，留在原頁只會看到空白。
+  // 篩選同理，所以三個條件共用這一條。
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, platformFilter, genreFilter]);
 
   useEffect(() => {
     fetchGames();
@@ -476,19 +495,49 @@ export default function GamesPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <CardTitle>遊戲列表</CardTitle>
               <CardDescription>共 {total} 款遊戲</CardDescription>
             </div>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="搜尋遊戲..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+            <div className="flex flex-wrap items-center gap-2">
+              {/* 選項沿用新增／編輯表單的那兩份清單：能挑的就是能篩的。
+                  辨識寫入的遊戲可能帶著清單外的平台或類型，那種只能靠關鍵字找。 */}
+              <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="全部平台" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部平台</SelectItem>
+                  {COMMON_PLATFORMS.map((platform) => (
+                    <SelectItem key={platform} value={platform}>
+                      {platform}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={genreFilter} onValueChange={setGenreFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="全部類型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部類型</SelectItem>
+                  {COMMON_GENRES.map((genre) => (
+                    <SelectItem key={genre} value={genre}>
+                      {genre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="搜尋遊戲..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -500,10 +549,23 @@ export default function GamesPage() {
           ) : games.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Gamepad2 className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">尚無遊戲資料</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                點擊「新增遊戲」按鈕開始建立
-              </p>
+              {/* 篩掉之後的空白不是「還沒有資料」，是這組條件挑不到。
+                  兩句話混用會讓人以為資料不見了。 */}
+              {isFiltered ? (
+                <>
+                  <h3 className="mt-4 text-lg font-semibold">沒有符合條件的遊戲</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    換個關鍵字，或把平台與類型調回「全部」
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="mt-4 text-lg font-semibold">尚無遊戲資料</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    點擊「新增遊戲」按鈕開始建立
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <>
