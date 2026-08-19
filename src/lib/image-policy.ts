@@ -22,6 +22,37 @@ export interface ImagePolicy {
 const TOC_POLICY: ImagePolicy = { maxEdge: 2400, quality: 85, format: "jpeg" };
 const DISPLAY_POLICY: ImagePolicy = { maxEdge: 1600, quality: 80, format: "webp" };
 
+/**
+ * The image formats the site accepts, on upload and for OCR alike.
+ *
+ * One table, because this list used to be typed out in three places -- the
+ * OcrProvider interface, /api/upload and /api/ocr -- plus a loose "image/jpeg"
+ * default in two more. Four copies had to be edited together to add a format,
+ * which is exactly the drift resolvePolicy above exists to prevent.
+ */
+export const ALLOWED_IMAGE_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+] as const;
+
+export type ImageMimeType = (typeof ALLOWED_IMAGE_MIME_TYPES)[number];
+
+/** Compared whole, so `image/jpeg; charset=binary` is not an image we accept. */
+export function isAllowedImageMimeType(value: string): value is ImageMimeType {
+  return (ALLOWED_IMAGE_MIME_TYPES as readonly string[]).includes(value);
+}
+
+/** How the list reads in an error message. Kept next to the list it describes. */
+export const ALLOWED_IMAGE_LABEL = "JPEG, PNG, WebP, GIF";
+
+/**
+ * What to assume when a remote server serves an image without saying what it
+ * is. /api/ocr fetches images by URL, and some hosts send no Content-Type.
+ */
+export const DEFAULT_IMAGE_MIME_TYPE: ImageMimeType = "image/jpeg";
+
 export function resolvePolicy(folder: string): ImagePolicy {
   return folder.startsWith("issues/toc") ? TOC_POLICY : DISPLAY_POLICY;
 }

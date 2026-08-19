@@ -112,11 +112,13 @@
 
   能做的事，由淺到深：
 
-  1. **`app/sitemap.ts` 與 `app/robots.ts`** — Next.js 原生支援，從資料庫列出全部期刊、單期、遊戲、標籤頁。549 期加 397 款遊戲已經超過手寫的規模，一定要動態產生。注意後台 `/admin/*` 要 disallow
+  1. ~~**`app/sitemap.ts` 與 `app/robots.ts`**~~ — **2026-08-19 完成**。動態產生，1157 條網址（靜態頁 + 期刊 + 單期 + 遊戲 + 標籤），`/admin`、`/api`、`/auth` 已 disallow。中文 slug 逐段百分比編碼——沒編碼的話 XML 裡是不合法的網址，搜尋引擎會整筆丟掉，而那正是這個站大部分內容所在的層。`/i/<code>` 短碼刻意不收：同一份內容不報兩個網址
   2. **結構化資料（JSON-LD）** — 期刊可以是 `Periodical`、單期 `PublicationIssue`、文章 `Article`，schema.org 本來就有這組詞彙，用在雜誌目錄上幾乎是量身訂做。這也是 AEO 的主要施力點：讓模型答得出「電腦玩家 1999 年 5 月號有哪些文章」
   3. **標題與描述** — 目前逐頁 `generateMetadata` 只有 title，description 多半沿用站台預設
 
-  跟另外兩條綁在一起：**sitemap 要等網址定案**（見「網址裡的 ID 太長」，改網址等於整份 sitemap 重來），**OG meta 與這條共用同一個 `generateMetadata`**。三件事一起規劃比較省。
+  **原本寫著「sitemap 要等網址定案」，那個條件早就滿足了**——readable URLs 在 2026-08-16 就上線（`docs/plans/2026-08-16-readable-urls-design.md`），「網址裡的 ID 太長」也已經不在這份清單上。那是一條指向不存在項目的過時交叉引用，2026-08-19 覆核時才發現，sitemap 因此白等了三天。
+
+  剩下的 2 與 3 仍**與 OG meta 共用同一個 `generateMetadata`**，一起做比較省。
 
 - [ ] **Open Graph meta 與縮圖** — 現在整個 repo 沒有一處 `openGraph` 設定（`layout.tsx` 只有 `title` 與 `description`），所以任何一頁貼到 LINE／Threads／Discord 都只是一段光禿禿的網址。四個公開的動態頁（`magazines/[id]`、`issues/[issueId]`、`games/[id]`、`tags/[id]`）都已經有 `generateMetadata`，補 `openGraph` 就在同一個函式裡（2026-08-16）。
 
@@ -168,7 +170,7 @@
 
   同一區還有兩個死的 public API：`OcrProviderFactory.clearCache()`（註解寫「主要用於測試」，實際上 0 個測試用到）與 `getDefaultProvider()`（0 個呼叫端）——而 route 第 65 行與第 244 行各自 inline 了一份 `DEFAULT_OCR_PROVIDER || "claude"`，等於同一個預設值有三份寫法。刪掉沒人用的那份、讓 route 呼叫 factory，或反過來把 factory 那份刪掉，兩者都比現在好（2026-08-17）
 
-- [ ] **允許上傳的圖片格式散在四個地方** — `src/services/ai/ocr.interface.ts:69` 的 `ImageMimeType`、`src/app/api/upload/route.ts:33` 與 `src/app/api/ocr/route.ts:87` 各自的 `allowedTypes` 陣列，外加兩處 `|| "image/jpeg"` 的 fallback。四份要一起改才不會走鐘。
+- [x] **允許上傳的圖片格式散在四個地方**（2026-08-19 完成：收斂進 `image-policy.ts`） — `src/services/ai/ocr.interface.ts:69` 的 `ImageMimeType`、`src/app/api/upload/route.ts:33` 與 `src/app/api/ocr/route.ts:87` 各自的 `allowedTypes` 陣列，外加兩處 `|| "image/jpeg"` 的 fallback。四份要一起改才不會走鐘。
 
   落點已經有了：[`src/lib/image-policy.ts`](src/lib/image-policy.ts) 的開頭就寫著「一張表，兩邊不會走鐘」，尺寸與編碼格式早就收斂在那裡，只有這份清單漏掉。搬過去即可（2026-08-17）
 

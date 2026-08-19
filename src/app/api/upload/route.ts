@@ -3,7 +3,7 @@ import { put } from "@vercel/blob";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { optimizeImage } from "@/lib/image-optimize";
-import { MAX_UPLOAD_BYTES } from "@/lib/image-policy";
+import { ALLOWED_IMAGE_LABEL, isAllowedImageMimeType, MAX_UPLOAD_BYTES } from "@/lib/image-policy";
 import { requireEditor } from "@/lib/require-editor";
 
 async function uploadLocal(
@@ -30,10 +30,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 驗證檔案類型
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
+    if (!isAllowedImageMimeType(file.type)) {
       return NextResponse.json(
-        { error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF" },
+        { error: `Invalid file type. Allowed: ${ALLOWED_IMAGE_LABEL}` },
         { status: 400 }
       );
     }
