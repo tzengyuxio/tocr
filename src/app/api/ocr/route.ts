@@ -5,6 +5,11 @@ import type { OcrProviderType, OcrImage } from "@/services/ai/ocr.interface";
 import { resolveImageUrl, isSafeImageUrl } from "@/lib/resolve-image-url";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { requireEditor } from "@/lib/require-editor";
+import {
+  ALLOWED_IMAGE_LABEL,
+  DEFAULT_IMAGE_MIME_TYPE,
+  isAllowedImageMimeType,
+} from "@/lib/image-policy";
 
 // Vision OCR on a full table-of-contents page routinely exceeds the platform
 // default timeout; 60s is the Vercel Hobby ceiling.
@@ -83,13 +88,6 @@ export async function POST(request: NextRequest) {
 
     const issueId = formData.get("issueId") as string | null;
 
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/gif",
-    ];
-
     const images: OcrImage[] = [];
 
     // 多圖：FormData 中多個 "images" 欄位
@@ -99,9 +97,9 @@ export async function POST(request: NextRequest) {
     }
     if (imageFiles.length > 0) {
       for (const file of imageFiles) {
-        if (!allowedTypes.includes(file.type)) {
+        if (!isAllowedImageMimeType(file.type)) {
           return NextResponse.json(
-            { error: `Invalid image type: ${file.type}. Allowed: JPEG, PNG, WebP, GIF` },
+            { error: `Invalid image type: ${file.type}. Allowed: ${ALLOWED_IMAGE_LABEL}` },
             { status: 400 }
           );
         }
@@ -136,8 +134,8 @@ export async function POST(request: NextRequest) {
           );
         }
         const buffer = await response.arrayBuffer();
-        const mimeType = response.headers.get("content-type") || "image/jpeg";
-        if (!allowedTypes.includes(mimeType)) {
+        const mimeType = response.headers.get("content-type") || DEFAULT_IMAGE_MIME_TYPE;
+        if (!isAllowedImageMimeType(mimeType)) {
           return NextResponse.json(
             { error: `Invalid image type from URL: ${mimeType}` },
             { status: 400 }
@@ -156,9 +154,9 @@ export async function POST(request: NextRequest) {
       const imageUrl = formData.get("imageUrl") as string | null;
 
       if (image) {
-        if (!allowedTypes.includes(image.type)) {
+        if (!isAllowedImageMimeType(image.type)) {
           return NextResponse.json(
-            { error: "Invalid image type. Allowed: JPEG, PNG, WebP, GIF" },
+            { error: "Invalid image type. Allowed: ${ALLOWED_IMAGE_LABEL}" },
             { status: 400 }
           );
         }
@@ -183,10 +181,10 @@ export async function POST(request: NextRequest) {
           );
         }
         const buffer = await response.arrayBuffer();
-        const mimeType = response.headers.get("content-type") || "image/jpeg";
-        if (!allowedTypes.includes(mimeType)) {
+        const mimeType = response.headers.get("content-type") || DEFAULT_IMAGE_MIME_TYPE;
+        if (!isAllowedImageMimeType(mimeType)) {
           return NextResponse.json(
-            { error: "Invalid image type. Allowed: JPEG, PNG, WebP, GIF" },
+            { error: "Invalid image type. Allowed: ${ALLOWED_IMAGE_LABEL}" },
             { status: 400 }
           );
         }

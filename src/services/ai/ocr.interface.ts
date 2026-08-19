@@ -64,9 +64,5 @@ export interface IOcrProvider {
 // 支援的 Provider 類型
 export type OcrProviderType = "claude" | "openai" | "gemini";
 
-// 圖片 MIME 類型
-export type ImageMimeType =
-  | "image/jpeg"
-  | "image/png"
-  | "image/webp"
-  | "image/gif";
+// 圖片 MIME 類型。清單在 lib/image-policy.ts，與上傳與辨識路由共用同一份。
+export type { ImageMimeType } from "@/lib/image-policy";
