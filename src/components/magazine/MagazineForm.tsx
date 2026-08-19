@@ -110,14 +110,17 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               : "修改期刊的基本資訊"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        {/* @container, not the viewport: this form is a narrow sidebar on the
+            magazine page and a wide card on the create page, and the fields
+            should follow the space they actually have. */}
+        <CardContent className="@container space-y-6">
           {error && (
             <div className="rounded-md bg-red-50 p-4 text-sm text-red-600">
               {error}
             </div>
           )}
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 @md:grid-cols-2">
             {/* 期刊名稱 */}
             <div className="space-y-2">
               <Label htmlFor="name">
@@ -212,7 +215,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* 別名 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="aliases"
                 control={control}
@@ -235,7 +238,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* 分類 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="categories"
                 control={control}
@@ -277,7 +280,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* Logo 圖片 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="logoImage"
                 control={control}
@@ -294,7 +297,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* 藏書照 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Controller
                 name="photos"
                 control={control}
@@ -311,7 +314,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             </div>
 
             {/* 描述 */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 @md:col-span-2">
               <Label htmlFor="description">描述</Label>
               <Textarea
                 id="description"
