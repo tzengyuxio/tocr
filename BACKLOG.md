@@ -303,7 +303,7 @@
 
   **「遊戲管理開得慢」的答案：不是把資料全撈出來再切**。`api/games/route.ts:37-38` 是 `skip`／`take`，一頁 20 筆，`count` 另外一句。慢的地方在別處——那頁是 client component，要等 HTML → JS → `fetch` 才看得到第一列（在那之前是 spinner），而後台 layout 每次導覽還會先付一次 session 的資料庫往返加一次待複查計數（`admin/layout.tsx` 的註解自己寫了）。真要處理得從那條瀑布下手，不是從查詢（2026-08-20）。
 
-  **實際效果只有部署到正式站才量得到**——dev 的資料量太小，規劃器本來就會選 Seq Scan。本機能確認的是索引建得起來、而且那句查詢用得到它（`SET enable_seqscan = off` 之後是 Index Only Scan）。下次在正式站跑一次 `EXPLAIN ANALYZE`，就能把那 20 次全表掃描的數字換掉（2026-08-20）。
+  **正式站量到了**（2026-08-20 部署後）：同一句查詢的子計畫從 `Seq Scan on article_games`（每列一次、20 列共 20 次全表掃描）變成 `Index Only Scan using article_games_game_id_idx`，`Index Searches: 20`、`Heap Fetches: 9`，執行時間 **6ms → 0.604ms**。dev 上量不到是因為資料量太小，規劃器本來就會選 Seq Scan（2026-08-20）。
 
 - [x] **後台遊戲管理的篩選與排序**（2026-08-20 完成） — **篩選**：平台與類型兩個下拉接上 `api/games/route.ts` 早就收著的 `platform`／`genre`，選項沿用新增／編輯表單的那兩份清單——能挑的就是能篩的。順帶修掉一個被篩選放大的舊問題：篩到空的時候原本顯示「尚無遊戲資料／點擊新增遊戲按鈕開始建立」，那句話在庫裡有 900 多款時讀起來像資料不見了。
 
