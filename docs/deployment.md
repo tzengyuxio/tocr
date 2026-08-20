@@ -393,6 +393,16 @@ age -d -i backup-key.txt 2026-08-17.sql.gz.age | gunzip | psql "$DATABASE_URL"
 
 ### 定期驗證還原（手動，每季）
 
+**最近一次：2026-08-20**，用 `db/2026-08-19.sql.gz.age`（610 KB）。解得開、灌得進去，五張表的筆數與當下的正式站完全一致：
+
+| | 備份 | 正式站 |
+|---|---|---|
+| magazines | 37 | 37 |
+| issues | 955 | 955 |
+| articles | 1843 | 1843 |
+| games | 926 | 926 |
+| tags | 362 | 362 |
+
 **只備份不驗證，等於不知道備份能不能用。** 這一步刻意不放進 CI：驗證需要 age 私鑰，放進 GitHub secrets 就等於私鑰進了 CI，加密只剩「防 R2 token 外洩」的效果。私鑰留在自己機器上，這一步就手動跑。
 
 ```bash
@@ -449,6 +459,18 @@ podman exec tocr-restore-test psql -U postgres -tAc \
 podman rm -f tocr-restore-test
 ```
 
+**沒有 aws CLI 也可以**，`rclone` 講的是同一個協定，而且憑證走環境變數不會出現在 `ps` 裡：
+
+```fish
+set -x RCLONE_S3_PROVIDER Cloudflare
+set -x RCLONE_S3_ACCESS_KEY_ID <Access Key ID>
+set -x RCLONE_S3_SECRET_ACCESS_KEY <Secret>
+set -x RCLONE_S3_ENDPOINT https://<account-id>.r2.cloudflarestorage.com
+
+rclone lsl :s3:tocr-backup/db/ --config /dev/null
+rclone copy :s3:tocr-backup/db/<日期>.sql.gz.age . --config /dev/null
+```
+
 憑證用一組**唯讀、只綁這個 bucket** 的 R2 API token 就夠（Cloudflare Dashboard → R2 → Manage API tokens → Create API token，權限選 Object Read only）。secret 那半**只在建立當下顯示一次**，之後 Cloudflare 也拿不回來，要重新建一組。
 
 ```fish
@@ -459,7 +481,7 @@ set -x AWS_DEFAULT_REGION    auto
 
 ⚠️ **憑證與取回的備份都不要留在 repo 裡**——這個 repo 是 public 的，而 dump 含 `users.email` 與 `accounts` 的 OAuth token。`.gitignore` 已經擋掉 `tocr-local-restore` 與 `*.sql.gz.age`，但那是安全網不是許可。
 
-⚠️ `aws s3 ls` 對**看不到的 bucket** 回的是 `AccessDenied` 而不是 `NoSuchBucket`，所以看到權限錯誤時，也可能只是 bucket 名字打錯。
+⚠️ `aws s3 ls` 對**看不到的 bucket** 回的是 `AccessDenied` 而不是 `NoSuchBucket`，所以看到權限錯誤時，也可能只是 bucket 名字打錯。**只綁單一 bucket 的 token 也列不出 bucket 清單**（`ListBuckets` 會 403），那是正常的——bucket 名字看 GitHub variable `R2_BUCKET`。
 
 `ON_ERROR_STOP=1` 不能省——沒有它，psql 會把錯誤印一印繼續跑完，最後 exit 0，於是一份灌不進去的備份看起來像成功。
 
