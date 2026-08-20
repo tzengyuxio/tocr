@@ -342,7 +342,23 @@ Vercel 預設會在每次推送到 main 分支時自動部署。
 
 ### 需要的設定
 
-**Cloudflare R2**：建一個 bucket（例如 `tocr-backups`），產一組 R2 API token（Object Read & Write）。保留策略用 **bucket 的 lifecycle rule**，不要寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西。建議 `db/` 前綴留 90 天。
+**Cloudflare R2**：建一個 bucket（例如 `tocr-backups`），產一組 R2 API token（Object Read & Write）。
+
+保留策略用 **bucket 的 lifecycle rule**，不要寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西。
+
+**現行設定（2026-08-20 起）**：
+
+| Rule | 前綴 | 動作 |
+|---|---|---|
+| `expire-db-snapshots` | `db/` | 上傳 30 天後刪除 |
+
+設定位置在 Cloudflare Dashboard → R2 → bucket → Settings → Object lifecycle rules。
+
+**為什麼是 30 天**：這份備份要回答的是「昨天弄壞了，救回來」，不是保存歷史。備份每天一份，30 天就是 30 個還原點；而資料是持續累積的（一期一期抄進去），真要出事時不會有人選兩個月前那份，那等於把中間的謄錄一起丟掉。
+
+**前綴不能留空**，否則會把 `images/` 那份鏡像一起清掉——而那批目錄掃描圖是唯一完全不可再生的資產。
+
+**這條規則接不住的情況**：很久以前混進一筆錯資料、現在才發現時，30 天內的備份全都已經含著它了。那類問題靠 `EditLog` 追（改了什麼、誰改的都查得到），不是靠備份。
 
 **age 金鑰對**：`age-keygen -o backup-key.txt`。公鑰放 GitHub variable，**私鑰自己保管、不要進 CI**（理由見下）。
 
@@ -409,7 +425,9 @@ scripts/verify-backup-restore.sh <日期>.sql.gz.age
 ⚠️ **不要灌進 `tocr-db-dev`**。那支是 `postgres:15-alpine`，而備份是 PG18 的 `pg_dump` 產物——PG17 才有的 `transaction_timeout` 這類 GUC 在 PG15 會報錯，你會分不清是備份壞了還是版本不合；而且灌進去等於洗掉手上的開發資料。開一個拋棄式的 PG18 容器。
 
 ```bash
-# 1. 取回備份：從 Cloudflare 後台下載，或（裝了 aws CLI 的話）
+# 1. 取回備份：從 Cloudflare 後台下載，或用 aws CLI（brew install awscli）
+aws s3 ls s3://<bucket>/db/ \
+  --endpoint-url https://<account-id>.r2.cloudflarestorage.com
 aws s3 cp s3://<bucket>/db/<日期>.sql.gz.age . \
   --endpoint-url https://<account-id>.r2.cloudflarestorage.com
 
@@ -430,6 +448,18 @@ podman exec tocr-restore-test psql -U postgres -tAc \
 # 5. 收工
 podman rm -f tocr-restore-test
 ```
+
+憑證用一組**唯讀、只綁這個 bucket** 的 R2 API token 就夠（Cloudflare Dashboard → R2 → Manage API tokens → Create API token，權限選 Object Read only）。secret 那半**只在建立當下顯示一次**，之後 Cloudflare 也拿不回來，要重新建一組。
+
+```fish
+set -x AWS_ACCESS_KEY_ID     <Access Key ID>
+set -x AWS_SECRET_ACCESS_KEY <Secret Access Key>
+set -x AWS_DEFAULT_REGION    auto
+```
+
+⚠️ **憑證與取回的備份都不要留在 repo 裡**——這個 repo 是 public 的，而 dump 含 `users.email` 與 `accounts` 的 OAuth token。`.gitignore` 已經擋掉 `tocr-local-restore` 與 `*.sql.gz.age`，但那是安全網不是許可。
+
+⚠️ `aws s3 ls` 對**看不到的 bucket** 回的是 `AccessDenied` 而不是 `NoSuchBucket`，所以看到權限錯誤時，也可能只是 bucket 名字打錯。
 
 `ON_ERROR_STOP=1` 不能省——沒有它，psql 會把錯誤印一印繼續跑完，最後 exit 0，於是一份灌不進去的備份看起來像成功。
 

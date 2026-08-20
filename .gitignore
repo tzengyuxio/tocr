@@ -60,3 +60,8 @@ next-env.d.ts
 
 # playwright mcp scratch output
 /.playwright-mcp
+
+# 本機還原驗證用的 R2 憑證與取回的備份。這個 repo 是 public 的，而備份 dump
+# 含 users.email 與 accounts 的 OAuth token——兩種都不能進版控。
+/tocr-local-restore
+*.sql.gz.age
