@@ -127,14 +127,17 @@ function SortableRow({
           {formatIssueNumber(issue.issueNumber)}
         </Link>
       </TableCell>
-      {/* Capped and clipped: a feature title runs to a list of five games --
-          電腦玩家 216 is 48 characters -- and the cell has nothing to wrap on.
-          Unbounded it widens the table past its scrollport, which pushes the
-          action buttons out of view. The full text stays in the tooltip. */}
-      <TableCell>
-        {/* The cap lives on a child, not the cell: with table-layout auto a
-            max-width on the cell itself is only a suggestion, and the column
-            still grows to fit the text. */}
+      {/* A feature title runs to a list of five games -- 電腦玩家 216 is 48
+          characters -- and the cell has nothing to wrap on, so the column grows
+          to fit it and takes the whole table past its scrollport with it.
+
+          300px is the ceiling, not the floor: the cell takes what the other
+          columns leave and the cap sits on its child, so the text stops growing
+          at 300 on a wide window and keeps shrinking on a narrow one. Neither
+          half works alone -- max-width on the cell also clamps its min-content,
+          which is what pinned the column at 300 and left the table 132px too
+          wide at 1280. The full text stays in the tooltip. */}
+      <TableCell className="w-full max-w-0">
         <div className="max-w-[300px] truncate" title={issue.title ?? undefined}>
           {issue.title || "-"}
         </div>
@@ -143,7 +146,11 @@ function SortableRow({
         {formatEdtf(issue.publishDate)}
       </TableCell>
       <TableCell>{issue._count.articles} 篇</TableCell>
-      <TableCell>
+      {/* Pinned to the right edge of the scrollport: on a window too narrow for
+          the rest of the columns the table still scrolls, and the buttons are
+          the one thing that must not scroll away. Opaque, or the cells passing
+          underneath show through. */}
+      <TableCell className="sticky right-0 bg-card">
         <div className="flex gap-1">
           <Button asChild variant="ghost" size="icon" title="編輯單期">
             <Link href={`/admin/magazines/${magazineId}/issues/${issue.id}`}>
@@ -270,7 +277,9 @@ export function IssueListClient({
                   <TableHead>特輯標題</TableHead>
                   <TableHead>出版日期</TableHead>
                   <TableHead>文章數</TableHead>
-                  <TableHead className="w-[100px]">操作</TableHead>
+                  <TableHead className="sticky right-0 w-[100px] bg-card">
+                    操作
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <SortableContext
