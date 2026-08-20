@@ -4,19 +4,6 @@
 格式：`- [ ] [#issue] 標題 — 一句說明（日期）`。做完的打勾，移到檔尾的「已完成」。
 這份檔是正本，GitHub issue 是鏡像——決定要做的項目才開 issue，編號回填到行首。
 
-- [ ] **備份還缺保留策略與第一次還原驗證** — 排程備份已經上線並實跑驗證過（2026-08-17）：資料庫每日、圖片每週，存到 R2 的 `tocr-backup`，設定與還原步驟見 [docs/deployment.md](docs/deployment.md#備份與還原)。
-
-  剩兩件：
-
-  - **`db/` 前綴的 lifecycle rule**（建議 90 天）。刻意不寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西
-  - **跑一次還原驗證**。只備份不驗證等於不知道備份能不能用；步驟在文件裡（開臨時 Neon branch 灌入、斷言筆數、刪掉）。這一步刻意不進 CI，因為需要 age 私鑰，放進 secrets 就等於私鑰進了 CI
-
-    **改在本機做**（yuxio 2026-08-18）：私鑰本來就留在自己機器上，本機還原少一層網路與 Neon 額度，理由跟「不進 CI」是同一個。步驟寫在 [deployment.md](docs/deployment.md#在本機驗證不必開-neon-branch)，最容易踩的一點是**不要灌進 `tocr-db-dev`**——那支是 PG15，備份是 PG18 的 dump，而且會洗掉開發資料
-
-    **2026-08-20：包成 `scripts/verify-backup-restore.sh`**，起容器、解密、灌入、報筆數、收容器一支搞定，失敗也收容器。已用一份自製的加密 dump 實跑過正常與壞檔兩條路徑。**卡住的仍是第一步「取回備份檔」**：R2 憑證只在 GitHub secrets 裡，本機沒有 `aws` 也沒有 `~/.aws`，所以要嘛從 Cloudflare 後台下載一次，要嘛把 R2 憑證放到本機。這是整條驗證裡唯一需要人的地方
-
-  上線過程踩到的三件事都已修並記在文件裡：`pg_dump` 要指名 `/usr/lib/postgresql/18/bin/`（pg_wrapper 會挑到舊版）、`aws s3 ls` 對空前綴 exit 1、S3 對「看不到的 bucket」回 `AccessDenied` 而非 `NoSuchBucket`（bucket 名字打錯時很難判讀）（2026-08-17）
-
 - [ ] **期刊改名之後，整段歷史都顯示新名** — `Magazine.name` 是單一字串，一本刊改名就只剩得下一個。已知案例：電擊王 → DengekiGAMES（2003）、電視遊樂雜誌 → GAMEfans（293 期起）、電玩雙週刊 → 電玩宅速配（2019-02，刊期另起）。
 
   `aliases String[]` 收得下舊名供搜尋，但表達不了「哪一段期間叫什麼」，所以單期頁的標題仍會用今天的名字稱呼 1999 年的那一期。
@@ -232,6 +219,29 @@
 ## 已完成
 
 做完的項目移到這裡，全文保留——不少條記著「當初的顧慮後來為什麼不成立」，那段判斷 commit message 裝不下。
+
+- [x] **備份還缺保留策略與第一次還原驗證**（2026-08-20 兩件都完成） — 排程備份已經上線並實跑驗證過（2026-08-17）：資料庫每日、圖片每週，存到 R2 的 `tocr-backup`，設定與還原步驟見 [docs/deployment.md](docs/deployment.md#備份與還原)。
+
+  剩兩件：
+
+  - **`db/` 前綴的 lifecycle rule**（建議 90 天）。刻意不寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西
+  - **跑一次還原驗證**。只備份不驗證等於不知道備份能不能用；步驟在文件裡（開臨時 Neon branch 灌入、斷言筆數、刪掉）。這一步刻意不進 CI，因為需要 age 私鑰，放進 secrets 就等於私鑰進了 CI
+
+    **改在本機做**（yuxio 2026-08-18）：私鑰本來就留在自己機器上，本機還原少一層網路與 Neon 額度，理由跟「不進 CI」是同一個。步驟寫在 [deployment.md](docs/deployment.md#在本機驗證不必開-neon-branch)，最容易踩的一點是**不要灌進 `tocr-db-dev`**——那支是 PG15，備份是 PG18 的 dump，而且會洗掉開發資料
+
+    **2026-08-20：包成 `scripts/verify-backup-restore.sh`**，起容器、解密、灌入、報筆數、收容器一支搞定，失敗也收容器。已用一份自製的加密 dump 實跑過正常與壞檔兩條路徑。**卡住的仍是第一步「取回備份檔」**：R2 憑證只在 GitHub secrets 裡，本機沒有 `aws` 也沒有 `~/.aws`，所以要嘛從 Cloudflare 後台下載一次，要嘛把 R2 憑證放到本機。這是整條驗證裡唯一需要人的地方
+
+  上線過程踩到的三件事都已修並記在文件裡：`pg_dump` 要指名 `/usr/lib/postgresql/18/bin/`（pg_wrapper 會挑到舊版）、`aws s3 ls` 對空前綴 exit 1、S3 對「看不到的 bucket」回 `AccessDenied` 而非 `NoSuchBucket`（bucket 名字打錯時很難判讀）（2026-08-17）
+
+  **保留策略**：R2 上建了 `expire-db-snapshots`，`db/` 前綴上傳 30 天後刪除（yuxio 2026-08-20 設定；原本寫 90 天，判斷太長——這份備份要回答的是「昨天弄壞了」，而資料是持續累積的，真出事時不會有人選兩個月前那份）。規則與理由寫進 [deployment.md](docs/deployment.md#需要的設定)。
+
+  **還原驗證**：2026-08-20 實跑，`db/2026-08-19.sql.gz.age`（610 KB）解得開、灌得進去，五張表與當下正式站**完全一致**（37 / 955 / 1843 / 926 / 362）。流程包成 `scripts/verify-backup-restore.sh`，一個指令跑完並自動收容器。
+
+  三件做的時候才知道的事：
+
+  - **不需要 aws CLI**。`rclone` 講同一個協定、本機已經有，而且憑證走環境變數不會出現在 `ps` 裡
+  - **只綁單一 bucket 的 token 列不出 bucket 清單**（`ListBuckets` 403）。那不是憑證壞掉，bucket 名字去看 GitHub variable `R2_BUCKET`
+  - **備份目前只有三份**（8/17 起才開始跑），所以 30 天那條規則還沒刪過任何東西——第一次生效會是 9/16 左右
 
 - [x] **Open Graph meta 與縮圖**（2026-08-20 完成，走 A 方案：一張站台預設圖，不做動態產生） — 原本整個 repo 沒有一處 `openGraph`，任何一頁貼到 LINE／Threads／Discord 都只是一段光禿禿的網址。
 
