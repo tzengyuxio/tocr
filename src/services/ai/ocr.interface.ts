@@ -23,6 +23,14 @@ export interface OcrArticleResult {
 export interface OcrResult {
   articles: OcrArticleResult[];
   rawText?: string;
+  /**
+   * Why the model's answer could not be read, when it could not be.
+   *
+   * An empty `articles` is otherwise ambiguous -- a scan with nothing on it and
+   * a response that failed to parse look the same, and the second one spent a
+   * model call. /api/ocr turns this into a 4xx instead of a silent success.
+   */
+  parseError?: string;
   metadata?: {
     issueTitle?: string;
     publishDate?: string;
