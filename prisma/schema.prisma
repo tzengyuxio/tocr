@@ -334,6 +334,8 @@ model ArticleTag {
   tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([articleId, tagId])
+  // 複合唯一鍵的前導欄是 article_id，所以「這個標籤被幾篇文章用到」用不到它
+  @@index([tagId])
   @@map("article_tags")
 }
 
@@ -349,6 +351,8 @@ model ArticleGame {
   game    Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@unique([articleId, gameId])
+  // 同上：以 game_id 出發的查詢（後台列表的每一列都跑一次）原本是全表掃描
+  @@index([gameId])
   @@map("article_games")
 }
 

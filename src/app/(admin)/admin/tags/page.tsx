@@ -40,6 +40,7 @@ import Link from "next/link";
 import { TAG_TYPES } from "@/lib/tag-colors";
 import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip, TagTypeChip } from "@/components/chips";
+import { ListPager } from "@/components/admin/ListPager";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Tag {
@@ -53,10 +54,15 @@ interface Tag {
   };
 }
 
+const PAGE_SIZE = 50;
+
 export default function TagsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeType, setActiveType] = useState("all");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [formData, setFormData] = useState({
@@ -110,19 +116,24 @@ export default function TagsPage() {
   const fetchTags = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ limit: "100" });
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(PAGE_SIZE),
+      });
       if (activeType !== "all") {
         params.set("type", activeType);
       }
       const response = await fetch(`/api/tags?${params}`);
       const data = await response.json();
       setTags(data.data);
+      setTotal(data.pagination?.total ?? 0);
+      setTotalPages(data.pagination?.totalPages ?? 1);
     } catch (err) {
       console.error("Failed to fetch tags:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [activeType]);
+  }, [activeType, page]);
 
   useEffect(() => {
     fetchTags();
@@ -222,10 +233,17 @@ export default function TagsPage() {
       <Card>
         <CardHeader>
           <CardTitle>標籤列表</CardTitle>
-          <CardDescription>共 {tags.length} 個標籤</CardDescription>
+          <CardDescription>共 {total} 個標籤</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeType} onValueChange={setActiveType}>
+          {/* 換類型等於換一份清單，第 4 頁的位置在新清單上多半是空的 */}
+          <Tabs
+            value={activeType}
+            onValueChange={(value) => {
+              setActiveType(value);
+              setPage(1);
+            }}
+          >
             <TabsList className="mb-4">
               <TabsTrigger value="all">全部</TabsTrigger>
               {TAG_TYPES.map((type) => (
@@ -249,6 +267,7 @@ export default function TagsPage() {
                   </p>
                 </div>
               ) : (
+                <>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -357,6 +376,9 @@ export default function TagsPage() {
                     ))}
                   </TableBody>
                 </Table>
+
+                <ListPager page={page} totalPages={totalPages} onPage={setPage} />
+                </>
               )}
             </TabsContent>
           </Tabs>

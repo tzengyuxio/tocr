@@ -342,7 +342,23 @@ Vercel 預設會在每次推送到 main 分支時自動部署。
 
 ### 需要的設定
 
-**Cloudflare R2**：建一個 bucket（例如 `tocr-backups`），產一組 R2 API token（Object Read & Write）。保留策略用 **bucket 的 lifecycle rule**，不要寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西。建議 `db/` 前綴留 90 天。
+**Cloudflare R2**：建一個 bucket（例如 `tocr-backups`），產一組 R2 API token（Object Read & Write）。
+
+保留策略用 **bucket 的 lifecycle rule**，不要寫在 workflow 裡——CI 裡的刪除迴圈只要有一個 bug 就會清掉它該保護的東西。
+
+**現行設定（2026-08-20 起）**：
+
+| Rule | 前綴 | 動作 |
+|---|---|---|
+| `expire-db-snapshots` | `db/` | 上傳 30 天後刪除 |
+
+設定位置在 Cloudflare Dashboard → R2 → bucket → Settings → Object lifecycle rules。
+
+**為什麼是 30 天**：這份備份要回答的是「昨天弄壞了，救回來」，不是保存歷史。備份每天一份，30 天就是 30 個還原點；而資料是持續累積的（一期一期抄進去），真要出事時不會有人選兩個月前那份，那等於把中間的謄錄一起丟掉。
+
+**前綴不能留空**，否則會把 `images/` 那份鏡像一起清掉——而那批目錄掃描圖是唯一完全不可再生的資產。
+
+**這條規則接不住的情況**：很久以前混進一筆錯資料、現在才發現時，30 天內的備份全都已經含著它了。那類問題靠 `EditLog` 追（改了什麼、誰改的都查得到），不是靠備份。
 
 **age 金鑰對**：`age-keygen -o backup-key.txt`。公鑰放 GitHub variable，**私鑰自己保管、不要進 CI**（理由見下）。
 
@@ -377,6 +393,16 @@ age -d -i backup-key.txt 2026-08-17.sql.gz.age | gunzip | psql "$DATABASE_URL"
 
 ### 定期驗證還原（手動，每季）
 
+**最近一次：2026-08-20**，用 `db/2026-08-19.sql.gz.age`（610 KB）。解得開、灌得進去，五張表的筆數與當下的正式站完全一致：
+
+| | 備份 | 正式站 |
+|---|---|---|
+| magazines | 37 | 37 |
+| issues | 955 | 955 |
+| articles | 1843 | 1843 |
+| games | 926 | 926 |
+| tags | 362 | 362 |
+
 **只備份不驗證，等於不知道備份能不能用。** 這一步刻意不放進 CI：驗證需要 age 私鑰，放進 GitHub secrets 就等於私鑰進了 CI，加密只剩「防 R2 token 外洩」的效果。私鑰留在自己機器上，這一步就手動跑。
 
 ```bash
@@ -397,12 +423,21 @@ neonctl branches delete restore-test --project-id <project-id>
 
 #### 在本機驗證（不必開 Neon branch）
 
-私鑰本來就留在自己機器上，所以這一步也可以完全在本機跑，少一層網路與 Neon 額度。
+私鑰本來就留在自己機器上，所以這一步也可以完全在本機跑，少一層網路與 Neon 額度。下面那串步驟包成了一支腳本，取回備份檔之後只要：
+
+```bash
+scripts/verify-backup-restore.sh <日期>.sql.gz.age
+# 私鑰預設讀 ~/.config/age/tocr-backup.txt，第二個參數可以指定別的
+```
+
+起容器、解密、灌入、報筆數、收容器，中途失敗也會把容器收掉（留著的話下次跑會撞名，而那時的錯誤訊息看起來會像備份有問題）。**取回備份檔仍要自己來**——R2 憑證只在 GitHub secrets 裡，本機沒有。
 
 ⚠️ **不要灌進 `tocr-db-dev`**。那支是 `postgres:15-alpine`，而備份是 PG18 的 `pg_dump` 產物——PG17 才有的 `transaction_timeout` 這類 GUC 在 PG15 會報錯，你會分不清是備份壞了還是版本不合；而且灌進去等於洗掉手上的開發資料。開一個拋棄式的 PG18 容器。
 
 ```bash
-# 1. 取回備份：從 Cloudflare 後台下載，或（裝了 aws CLI 的話）
+# 1. 取回備份：從 Cloudflare 後台下載，或用 aws CLI（brew install awscli）
+aws s3 ls s3://<bucket>/db/ \
+  --endpoint-url https://<account-id>.r2.cloudflarestorage.com
 aws s3 cp s3://<bucket>/db/<日期>.sql.gz.age . \
   --endpoint-url https://<account-id>.r2.cloudflarestorage.com
 
@@ -424,6 +459,30 @@ podman exec tocr-restore-test psql -U postgres -tAc \
 podman rm -f tocr-restore-test
 ```
 
+**沒有 aws CLI 也可以**，`rclone` 講的是同一個協定，而且憑證走環境變數不會出現在 `ps` 裡：
+
+```fish
+set -x RCLONE_S3_PROVIDER Cloudflare
+set -x RCLONE_S3_ACCESS_KEY_ID <Access Key ID>
+set -x RCLONE_S3_SECRET_ACCESS_KEY <Secret>
+set -x RCLONE_S3_ENDPOINT https://<account-id>.r2.cloudflarestorage.com
+
+rclone lsl :s3:tocr-backup/db/ --config /dev/null
+rclone copy :s3:tocr-backup/db/<日期>.sql.gz.age . --config /dev/null
+```
+
+憑證用一組**唯讀、只綁這個 bucket** 的 R2 API token 就夠（Cloudflare Dashboard → R2 → Manage API tokens → Create API token，權限選 Object Read only）。secret 那半**只在建立當下顯示一次**，之後 Cloudflare 也拿不回來，要重新建一組。
+
+```fish
+set -x AWS_ACCESS_KEY_ID     <Access Key ID>
+set -x AWS_SECRET_ACCESS_KEY <Secret Access Key>
+set -x AWS_DEFAULT_REGION    auto
+```
+
+⚠️ **憑證與取回的備份都不要留在 repo 裡**——這個 repo 是 public 的，而 dump 含 `users.email` 與 `accounts` 的 OAuth token。`.gitignore` 已經擋掉 `tocr-local-restore` 與 `*.sql.gz.age`，但那是安全網不是許可。
+
+⚠️ `aws s3 ls` 對**看不到的 bucket** 回的是 `AccessDenied` 而不是 `NoSuchBucket`，所以看到權限錯誤時，也可能只是 bucket 名字打錯。**只綁單一 bucket 的 token 也列不出 bucket 清單**（`ListBuckets` 會 403），那是正常的——bucket 名字看 GitHub variable `R2_BUCKET`。
+
 `ON_ERROR_STOP=1` 不能省——沒有它，psql 會把錯誤印一印繼續跑完，最後 exit 0，於是一份灌不進去的備份看起來像成功。
 
 可攜性沒問題：workflow 的 `pg_dump` 帶 `--no-owner --no-privileges`，dump 裡沒有 Neon 專屬的 role 與 grant；唯一的 extension 是 `pg_trgm`（`20260331000000_add_trgm_search_indexes`），官方 postgres image 內建。
@@ -431,6 +490,20 @@ podman rm -f tocr-restore-test
 **本機驗證不了的是「灌得進 Neon」**——Neon 專屬的行為只有真開一條 branch 才測得到。但這一步要回答的問題是「備份檔解得開、資料完整」，那本機答得了；真要還原時本來就會在 Neon 上再跑一次。
 
 還原出來的筆數**就是正式站的筆數**（截至該備份日），可以拿來更新文件裡引用的數字——注意是這個容器的數字，不是 `tocr-db-dev` 的。
+
+### 孤兒圖清查
+
+換過的圖不會自己消失：`/api/upload` 每次都產新檔名，欄位改指新網址之後，舊檔就永遠留在 store 裡。本機測試上傳的垃圾檔同樣會進去。
+
+```bash
+npx tsx --env-file=.env.local scripts/find-orphan-blobs.ts
+```
+
+列出 store 裡沒有任何資料列指向的物件，以及反過來「資料庫指著、store 裡卻沒有」的路徑（那是壞掉的圖，另一種問題）。**只列清單，不刪任何東西**——Vercel Blob 沒有版本歷史，而圖片鏡像是每週一跑的增量，剛上傳又剛被判為孤兒的檔案可能還沒進備份。
+
+⚠️ **資料庫與 store 必須是同一個環境**。`.env.local` 的 `BLOB_READ_WRITE_TOKEN` 指向正式站的 store，而 `DATABASE_URL` 指向本機的 dev 庫——那樣算出來的「孤兒」其實是正式站正在用的圖。所以 `DATABASE_URL` 指著 localhost 時腳本預設拒跑，只想看它跑不跑得動再加 `--allow-local-db`。
+
+比對涵蓋每一個存得下網址的欄位：`magazines.logo_image`／`photos`、`issues.cover_image`／`toc_images`、`games.cover_image`、`ocr_records.image_url`、`users.image`。**新增存網址的欄位時要一起加進去**，漏掉一欄就會把還在用的圖報成孤兒。
 
 ### 手動備份
 

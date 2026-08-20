@@ -21,12 +21,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Gamepad2, Calendar, FileText, SquarePen } from "lucide-react";
+import { Calendar, FileText, SquarePen } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip } from "@/components/chips";
+import { CoverPlaceholder } from "@/components/CoverPlaceholder";
+import { pageOpenGraph } from "@/lib/og";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
@@ -40,9 +42,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const game = await prisma.game.findUnique({
     where: { id: found.id },
-    select: { name: true },
+    select: {
+      name: true,
+      description: true,
+      coverImage: true,
+      _count: { select: { articleGames: true } },
+    },
   });
-  return { title: game?.name ?? "遊戲詳情" };
+  if (!game) return { title: "遊戲詳情" };
+
+  const description =
+    // 空字串也算沒有——資料庫裡那欄常常是 ""，`??` 接不住。
+    game.description || `這款遊戲在 ${game._count.articleGames} 篇雜誌文章裡出現過`;
+
+  return {
+    title: game.name,
+    description,
+    openGraph: pageOpenGraph({
+      title: game.name,
+      description,
+      image: game.coverImage,
+    }),
+  };
 }
 
 export default async function GameDetailPage({ params }: PageProps) {
@@ -112,9 +133,7 @@ export default async function GameDetailPage({ params }: PageProps) {
             className="h-48 w-36 rounded-lg object-cover shadow-lg"
           />
         ) : (
-          <div className="flex h-48 w-36 items-center justify-center rounded-lg bg-muted shadow-lg">
-            <Gamepad2 className="h-12 w-12 text-muted-foreground/50" />
-          </div>
+          <CoverPlaceholder kind="game" className="w-36 rounded-lg shadow-lg" />
         )}
         <div className="flex-1">
           <div className="flex items-center gap-3">
@@ -220,8 +239,10 @@ export default async function GameDetailPage({ params }: PageProps) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>期刊</TableHead>
-                      <TableHead>單期</TableHead>
+                      {/* 期刊與單期併成一欄，形狀沿用 /admin/issues。這一欄要回答的是
+                          「哪一本的哪一期」，那本來就是一件事；而拆成兩欄時，左邊那個
+                          連到期刊首頁的連結幫不上忙——來到這頁的人要找的是這一期。 */}
+                      <TableHead>刊期</TableHead>
                       <TableHead>出版日期</TableHead>
                       <TableHead>文章標題</TableHead>
                       <TableHead>分類</TableHead>
@@ -233,18 +254,13 @@ export default async function GameDetailPage({ params }: PageProps) {
                       <TableRow key={ag.id}>
                         <TableCell>
                           <Link
-                            href={`/magazines/${ag.article.issue.magazine.slug}`}
-                            className="hover:underline"
-                          >
-                            {ag.article.issue.magazine.name}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Link
                             href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`}
                             className="hover:underline"
                           >
-                            {formatIssueNumber(ag.article.issue.issueNumber)}
+                            {ag.article.issue.magazine.name}{" "}
+                            <span className="font-semibold">
+                              {formatIssueNumber(ag.article.issue.issueNumber)}
+                            </span>
                           </Link>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
@@ -281,11 +297,11 @@ export default async function GameDetailPage({ params }: PageProps) {
                       <div className="text-sm text-muted-foreground">{ag.article.subtitle}</div>
                     )}
                     <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                      <Link href={`/magazines/${ag.article.issue.magazine.slug}`} className="hover:underline">
-                        {ag.article.issue.magazine.name}
-                      </Link>
-                      <span>·</span>
-                      <Link href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`} className="hover:underline">
+                      <Link
+                        href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`}
+                        className="hover:underline"
+                      >
+                        {ag.article.issue.magazine.name}{" "}
                         {formatIssueNumber(ag.article.issue.issueNumber)}
                       </Link>
                       <span>·</span>

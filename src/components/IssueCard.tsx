@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen } from "lucide-react";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 
 interface IssueCardProps {
   issue: {
@@ -45,9 +45,7 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
         ) : (
           // No scan: the placeholder keeps a 3:4 frame, so a gap still reads as
           // a magazine-shaped hole rather than as a squashed card.
-          <div className="flex aspect-[3/4] w-full min-h-0 items-center justify-center bg-muted">
-            <BookOpen className="h-10 w-10 text-muted-foreground/50" />
-          </div>
+          <CoverPlaceholder kind="issue" className="w-full min-h-0" />
         )}
         <CardContent className="space-y-0.5 !p-2.5">
           {magazineName && (

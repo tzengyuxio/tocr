@@ -18,6 +18,10 @@ import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { IssueImages } from "@/components/issue/IssueImages";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { JsonLd } from "@/components/JsonLd";
+import { publicationIssueJsonLd } from "@/lib/structured-data";
+import { getSiteOrigin } from "@/lib/site-origin";
+import { pageOpenGraph } from "@/lib/og";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -33,11 +37,30 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const issue = await prisma.issue.findUnique({
     where: { id: found.id },
-    select: { issueNumber: true, magazine: { select: { name: true } } },
+    select: {
+      issueNumber: true,
+      title: true,
+      publishDate: true,
+      coverImage: true,
+      magazine: { select: { name: true } },
+    },
   });
   if (!issue) return { title: "單期詳情" };
+
+  const name = `${issue.magazine.name} ${formatIssueNumber(issue.issueNumber)}`;
+  // 貼出去的那一行要讓人知道是哪一期、什麼時候的，以及這期在講什麼。
+  const description = [formatEdtf(issue.publishDate), issue.title]
+    .filter(Boolean)
+    .join("｜");
+
   return {
-    title: `${issue.magazine.name} ${formatIssueNumber(issue.issueNumber)}`,
+    title: name,
+    description,
+    openGraph: pageOpenGraph({
+      title: name,
+      description,
+      image: issue.coverImage,
+    }),
   };
 }
 
@@ -106,6 +129,14 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* 這一份目錄多半只有這裡有，所以要讓抓取端讀得到它，而不只是人眼看得到。 */}
+      <JsonLd
+        data={publicationIssueJsonLd(
+          getSiteOrigin(),
+          issue.magazine,
+          issue
+        )}
+      />
       <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: formatIssueNumber(issue.issueNumber) }]} />
 
       {/* Title block: the cover no longer sets the height, so nothing has to

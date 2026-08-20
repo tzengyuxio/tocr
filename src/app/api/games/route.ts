@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { gameCreateSchema } from "@/lib/validators/game";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
+import {
+  GAME_SORTS,
+  gameOrderBy,
+  parseGameDirection,
+  parseGameSort,
+} from "@/lib/game-browse";
 import { logEdit } from "@/lib/edit-log";
 
 // GET /api/games - 取得遊戲列表
@@ -11,6 +17,22 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const search = searchParams.get("search") || "";
   const platform = searchParams.get("platform");
   const genre = searchParams.get("genre");
+  // 排序的詞彙與公開的遊戲索引共用一份（`game-browse.ts`），兩邊才不會對「文章數
+  // 排序」的意思有兩種說法——包括並列時要拿名稱當第二鍵這件事。
+  //
+  // 只有預設值不同：沒帶 sort 時這裡是名稱，而公開索引是文章數。那邊是逛的，
+  // 開頭就給沒人寫過的遊戲沒有意義；這裡是管理清單，找得到某一筆比較重要。
+  // 認不得的值要一起落到名稱——不然網址打錯時，後台的預設會變成公開索引的預設。
+  const requestedSort = searchParams.get("sort");
+  const sort = parseGameSort(
+    GAME_SORTS.some((option) => option.value === requestedSort)
+      ? requestedSort!
+      : "name"
+  );
+  const direction = parseGameDirection(
+    searchParams.get("direction") ?? undefined,
+    sort
+  );
 
   const where = {
     ...(search && {
@@ -33,7 +55,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const [games, total] = await Promise.all([
     prisma.game.findMany({
       where,
-      orderBy: { name: "asc" },
+      orderBy: gameOrderBy(sort, direction),
       skip,
       take: limit,
       include: {

@@ -34,12 +34,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Loader2, Gamepad2, Search, Eye, ExternalLink, GitMerge, AlertTriangle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Edit, Trash2, Loader2, Gamepad2, Search, Eye, ExternalLink, GitMerge } from "lucide-react";
 import Link from "next/link";
 import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip } from "@/components/chips";
 import { ListPager } from "@/components/admin/ListPager";
-import { suggestKeeper } from "@/lib/merge-game";
+import { MergeGameDialog } from "@/components/admin/MergeGameDialog";
+import { GAME_SORTS, type GameDirection } from "@/lib/game-browse";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Game {
@@ -61,18 +69,6 @@ interface Game {
   };
 }
 
-/** What POST /api/games/[id]/merge reports, applied or as a dry run. */
-interface MergePlan {
-  keeperId: string;
-  loserId: string;
-  keeperName: string;
-  loserName: string;
-  movedArticleLinks: number;
-  discardedLinkCount: number;
-  promotedPrimaryLinks: number;
-  mergedAliases: string[];
-}
-
 // Hidden unless the deployment has a RAWG key: without one the button can only
 // ever fail. next.config.ts derives this from RAWG_API_KEY.
 const RAWG_ENABLED = process.env.NEXT_PUBLIC_RAWG_ENABLED === "true";
@@ -83,20 +79,32 @@ const COMMON_GENRES = ["RPG", "動作", "冒險", "射擊", "模擬", "策略", 
 const PAGE_SIZE = 20;
 
 /**
- * 開啟合併時預填的關鍵字。
+ * 排序選項攤平成一個下拉。
  *
- * 兩筆重複的名字必然相近，但差的那個字往往在後半（1990世界杯／1990世界盃），
- * 所以拿整個名稱去搜只會撈到自己。取前半——兩邊共有的那段——才問得出對方。
+ * 公開索引把「排序」與「方向」分成兩個控制項（點目前這個就反轉），後台這裡只有
+ * 四種組合，攤平成單一下拉少一個控制項，也不必再寫一次「反轉之後會變怎樣」的提示。
+ * 名目仍取自 `game-browse.ts`，措辭沿用那邊的「由前往後／多到少」。
  */
-function mergeSeed(name: string): string {
-  return name.slice(0, Math.max(2, Math.ceil(name.length / 2)));
-}
+const SORT_OPTIONS = GAME_SORTS.flatMap((sort) =>
+  (["asc", "desc"] as const).map((direction) => ({
+    value: `${sort.value}:${direction}`,
+    label:
+      sort.value === "articles"
+        ? `文章數（${direction === "desc" ? "多到少" : "少到多"}）`
+        : `名稱（${direction === "asc" ? "由前往後" : "由後往前"}）`,
+  }))
+);
+
+const DEFAULT_SORT = "name:asc";
 
 export default function GamesPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [platformFilter, setPlatformFilter] = useState("all");
+  const [genreFilter, setGenreFilter] = useState("all");
+  const [sortOption, setSortOption] = useState(DEFAULT_SORT);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -141,14 +149,6 @@ export default function GamesPage() {
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   // 合併重複條目
   const [mergeSource, setMergeSource] = useState<Game | null>(null);
-  const [mergeSearch, setMergeSearch] = useState("");
-  const [mergeResults, setMergeResults] = useState<Game[]>([]);
-  const [isSearchingPartner, setIsSearchingPartner] = useState(false);
-  const [mergePartner, setMergePartner] = useState<Game | null>(null);
-  const [keeperId, setKeeperId] = useState<string | null>(null);
-  const [mergePlan, setMergePlan] = useState<MergePlan | null>(null);
-  const [isMerging, setIsMerging] = useState(false);
-  const [mergeError, setMergeError] = useState<string | null>(null);
 
   const handleToggleExpand = async (gameId: string) => {
     if (expandedGameId === gameId) {
@@ -179,6 +179,15 @@ export default function GamesPage() {
       if (debouncedSearch) {
         params.set("search", debouncedSearch);
       }
+      if (platformFilter !== "all") {
+        params.set("platform", platformFilter);
+      }
+      if (genreFilter !== "all") {
+        params.set("genre", genreFilter);
+      }
+      const [sort, direction] = sortOption.split(":");
+      params.set("sort", sort);
+      params.set("direction", direction as GameDirection);
       const response = await fetch(`/api/games?${params}`);
       const data = await response.json();
       setGames(data.data);
@@ -189,7 +198,7 @@ export default function GamesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, page]);
+  }, [debouncedSearch, platformFilter, genreFilter, sortOption, page]);
 
   // 打字要等使用者停手，翻頁不必——debounce 掛在關鍵字上而不是整個查詢，
   // 按下一頁才會立刻有反應。
@@ -198,84 +207,18 @@ export default function GamesPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  const isFiltered =
+    debouncedSearch !== "" || platformFilter !== "all" || genreFilter !== "all";
+
   // 在第 5 頁換關鍵字，新的結果多半沒有第 5 頁，留在原頁只會看到空白。
+  // 篩選與排序同理——換了排序，第 5 頁講的已經是別的東西。
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, platformFilter, genreFilter, sortOption]);
 
   useEffect(() => {
     fetchGames();
   }, [fetchGames]);
-
-  const requestMerge = useCallback(
-    async (keeper: string, loser: string, dryRun: boolean) => {
-      const response = await fetch(`/api/games/${keeper}/merge`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loserId: loser, dryRun }),
-      });
-      const data = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(data?.error || "合併失敗");
-      }
-      return data as MergePlan;
-    },
-    []
-  );
-
-  // 候選清單。合併對象可能在別的分頁上，所以這裡查的是整個資料庫，不是目前這頁。
-  useEffect(() => {
-    if (!mergeSource) return;
-    const keyword = mergeSearch.trim();
-    if (!keyword) {
-      setMergeResults([]);
-      return;
-    }
-    let cancelled = false;
-    setIsSearchingPartner(true);
-    const timer = setTimeout(async () => {
-      try {
-        const params = new URLSearchParams({ search: keyword, limit: "10" });
-        const response = await fetch(`/api/games?${params}`);
-        const data = await response.json();
-        if (cancelled) return;
-        setMergeResults(
-          (data.data as Game[]).filter((candidate) => candidate.id !== mergeSource.id)
-        );
-      } catch {
-        if (!cancelled) setMergeResults([]);
-      } finally {
-        if (!cancelled) setIsSearchingPartner(false);
-      }
-    }, 300);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [mergeSearch, mergeSource]);
-
-  // 刪掉的那筆救不回來，所以確認之前先讓伺服器算一遍會發生什麼事。
-  useEffect(() => {
-    if (!mergeSource || !mergePartner || !keeperId) {
-      setMergePlan(null);
-      return;
-    }
-    const loserId = keeperId === mergeSource.id ? mergePartner.id : mergeSource.id;
-    let cancelled = false;
-    requestMerge(keeperId, loserId, true)
-      .then((plan) => {
-        if (!cancelled) setMergePlan(plan);
-      })
-      .catch((err: Error) => {
-        if (!cancelled) {
-          setMergePlan(null);
-          setMergeError(err.message);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [mergeSource, mergePartner, keeperId, requestMerge]);
 
   const handleOpenCreate = () => {
     setEditingGame(null);
@@ -371,44 +314,6 @@ export default function GamesPage() {
     }
   };
 
-  const handleOpenMerge = (game: Game) => {
-    setMergeSource(game);
-    setMergeSearch(mergeSeed(game.name));
-    setMergeResults([]);
-    setMergePartner(null);
-    setKeeperId(null);
-    setMergePlan(null);
-    setMergeError(null);
-  };
-
-  const handlePickPartner = (partner: Game) => {
-    setMergePartner(partner);
-    setMergeError(null);
-    setKeeperId(
-      suggestKeeper(
-        { id: mergeSource!.id, createdAt: new Date(mergeSource!.createdAt), articleCount: mergeSource!._count.articleGames },
-        { id: partner.id, createdAt: new Date(partner.createdAt), articleCount: partner._count.articleGames }
-      ).id
-    );
-  };
-
-  const handleConfirmMerge = async () => {
-    if (!mergeSource || !mergePartner || !keeperId) return;
-    const loserId = keeperId === mergeSource.id ? mergePartner.id : mergeSource.id;
-
-    setIsMerging(true);
-    setMergeError(null);
-    try {
-      await requestMerge(keeperId, loserId, false);
-      setMergeSource(null);
-      fetchGames();
-    } catch (err) {
-      setMergeError(err instanceof Error ? err.message : "合併失敗");
-    } finally {
-      setIsMerging(false);
-    }
-  };
-
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -476,19 +381,61 @@ export default function GamesPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <CardTitle>遊戲列表</CardTitle>
               <CardDescription>共 {total} 款遊戲</CardDescription>
             </div>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="搜尋遊戲..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+            <div className="flex flex-wrap items-center gap-2">
+              {/* 選項沿用新增／編輯表單的那兩份清單：能挑的就是能篩的。
+                  辨識寫入的遊戲可能帶著清單外的平台或類型，那種只能靠關鍵字找。 */}
+              <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="全部平台" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部平台</SelectItem>
+                  {COMMON_PLATFORMS.map((platform) => (
+                    <SelectItem key={platform} value={platform}>
+                      {platform}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={genreFilter} onValueChange={setGenreFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="全部類型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部類型</SelectItem>
+                  {COMMON_GENRES.map((genre) => (
+                    <SelectItem key={genre} value={genre}>
+                      {genre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="搜尋遊戲..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -500,10 +447,23 @@ export default function GamesPage() {
           ) : games.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Gamepad2 className="h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">尚無遊戲資料</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                點擊「新增遊戲」按鈕開始建立
-              </p>
+              {/* 篩掉之後的空白不是「還沒有資料」，是這組條件挑不到。
+                  兩句話混用會讓人以為資料不見了。 */}
+              {isFiltered ? (
+                <>
+                  <h3 className="mt-4 text-lg font-semibold">沒有符合條件的遊戲</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    換個關鍵字，或把平台與類型調回「全部」
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="mt-4 text-lg font-semibold">尚無遊戲資料</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    點擊「新增遊戲」按鈕開始建立
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <>
@@ -582,7 +542,7 @@ export default function GamesPage() {
                           variant="ghost"
                           size="icon"
                           title="合併重複條目"
-                          onClick={() => handleOpenMerge(game)}
+                          onClick={() => setMergeSource(game)}
                         >
                           <GitMerge className="h-4 w-4" />
                         </Button>
@@ -878,134 +838,11 @@ export default function GamesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 合併重複條目 */}
-      <Dialog
-        open={mergeSource !== null}
-        onOpenChange={(open) => {
-          if (!open) setMergeSource(null);
-        }}
-      >
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>合併重複條目</DialogTitle>
-            <DialogDescription>
-              目前這筆：{mergeSource?.name}（{mergeSource?._count.articleGames} 篇）
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2">
-            <div className="space-y-2">
-              <Label>找出重複的那一筆</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="pl-9"
-                  placeholder="輸入遊戲名稱"
-                  value={mergeSearch}
-                  onChange={(e) => {
-                    setMergeSearch(e.target.value);
-                    setMergePartner(null);
-                    setKeeperId(null);
-                  }}
-                />
-              </div>
-              {isSearchingPartner ? (
-                <div className="flex justify-center py-3">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                </div>
-              ) : mergeResults.length === 0 ? (
-                <p className="py-2 text-sm text-muted-foreground">
-                  {mergeSearch.trim() ? "沒有其他符合的條目" : "輸入關鍵字開始搜尋"}
-                </p>
-              ) : (
-                <div className="divide-y rounded-md border">
-                  {mergeResults.map((candidate) => (
-                    <button
-                      key={candidate.id}
-                      type="button"
-                      onClick={() => handlePickPartner(candidate)}
-                      className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-muted ${
-                        mergePartner?.id === candidate.id ? "bg-muted" : ""
-                      }`}
-                    >
-                      <span className="flex-1 truncate font-medium">{candidate.name}</span>
-                      <span className="shrink-0 text-muted-foreground">
-                        {candidate._count.articleGames} 篇
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {mergeSource && mergePartner && (
-              <div className="space-y-2">
-                <Label>保留哪一筆？</Label>
-                <div className="space-y-1">
-                  {[mergeSource, mergePartner].map((option) => (
-                    <label
-                      key={option.id}
-                      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted"
-                    >
-                      <input
-                        type="radio"
-                        name="merge-keeper"
-                        checked={keeperId === option.id}
-                        onChange={() => setKeeperId(option.id)}
-                      />
-                      <span className="font-medium">{option.name}</span>
-                      <span className="text-muted-foreground">
-                        （{option._count.articleGames} 篇）
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {mergePlan && (
-              <div className="space-y-1 rounded-md border bg-muted/30 p-3 text-sm">
-                <p>
-                  搬移 {mergePlan.movedArticleLinks} 筆文章關聯
-                  {mergePlan.discardedLinkCount > 0 &&
-                    `，${mergePlan.discardedLinkCount} 筆重複丟棄`}
-                </p>
-                {mergePlan.promotedPrimaryLinks > 0 && (
-                  <p>
-                    {mergePlan.promotedPrimaryLinks} 篇文章的主要遊戲改記在保留方
-                  </p>
-                )}
-                <p className="text-muted-foreground">
-                  合併後別名：{mergePlan.mergedAliases.join("、") || "（無）"}
-                </p>
-                <p className="flex items-start gap-1.5 pt-1 text-destructive">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>「{mergePlan.loserName}」將被刪除，無法復原</span>
-                </p>
-              </div>
-            )}
-
-            {mergeError && <p className="text-sm text-destructive">{mergeError}</p>}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setMergeSource(null)}
-              disabled={isMerging}
-            >
-              取消
-            </Button>
-            <Button
-              onClick={handleConfirmMerge}
-              disabled={isMerging || !mergePlan}
-            >
-              {isMerging && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              確認合併
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <MergeGameDialog
+        source={mergeSource}
+        onClose={() => setMergeSource(null)}
+        onMerged={fetchGames}
+      />
     </div>
   );
 }

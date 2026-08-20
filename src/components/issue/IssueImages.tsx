@@ -8,7 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface IssueImagesProps {
@@ -62,9 +63,10 @@ export function IssueImages({
             />
           </button>
         ) : (
-          <div className="flex aspect-[3/4] w-32 shrink-0 items-center justify-center self-start rounded-lg bg-muted sm:w-40 lg:w-full">
-            <BookOpen className="h-10 w-10 text-muted-foreground/50" />
-          </div>
+          <CoverPlaceholder
+            kind="issue"
+            className="w-32 shrink-0 self-start rounded-lg sm:w-40 lg:w-full"
+          />
         )}
 
         {tocImages.length > 0 && (
