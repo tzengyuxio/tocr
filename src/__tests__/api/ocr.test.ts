@@ -106,3 +106,50 @@ describe("POST /api/ocr authorisation", () => {
     expect(getProvider).not.toHaveBeenCalled();
   });
 });
+
+// An unreadable answer used to come back as 200 with an empty article list,
+// which is indistinguishable from a scan that has nothing on it. 軟體世界 35
+// and 36 were re-run seven times against that silence.
+describe("POST /api/ocr unreadable answers", () => {
+  it("reports a response the parser could not read", async () => {
+    getProvider.mockReturnValue({
+      extractTableOfContents: jest.fn().mockResolvedValue({
+        articles: [],
+        rawText: '{ "articles": [ {{{ ] }',
+        parseError: "Unexpected token",
+      }),
+    });
+
+    const res = await POST(requestWith({}));
+    const json = await res.json();
+
+    expect(res.status).toBe(422);
+    expect(json.error).toContain("無法解析");
+  });
+
+  it("keeps the raw answer even when it cannot be read", async () => {
+    getProvider.mockReturnValue({
+      extractTableOfContents: jest.fn().mockResolvedValue({
+        articles: [],
+        rawText: "not json",
+        parseError: "AI 沒有回傳 JSON",
+      }),
+    });
+
+    await POST(requestWith({}));
+
+    expect(prismaMock.ocrRecord.create).toHaveBeenCalled();
+  });
+
+  it("still accepts a scan that genuinely lists nothing", async () => {
+    getProvider.mockReturnValue({
+      extractTableOfContents: jest
+        .fn()
+        .mockResolvedValue({ articles: [], rawText: '{"articles":[]}' }),
+    });
+
+    const res = await POST(requestWith({}));
+
+    expect(res.status).toBe(200);
+  });
+});

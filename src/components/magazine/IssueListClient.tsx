@@ -127,7 +127,18 @@ function SortableRow({
           {formatIssueNumber(issue.issueNumber)}
         </Link>
       </TableCell>
-      <TableCell>{issue.title || "-"}</TableCell>
+      {/* Capped and clipped: a feature title runs to a list of five games --
+          電腦玩家 216 is 48 characters -- and the cell has nothing to wrap on.
+          Unbounded it widens the table past its scrollport, which pushes the
+          action buttons out of view. The full text stays in the tooltip. */}
+      <TableCell>
+        {/* The cap lives on a child, not the cell: with table-layout auto a
+            max-width on the cell itself is only a suggestion, and the column
+            still grows to fit the text. */}
+        <div className="max-w-[300px] truncate" title={issue.title ?? undefined}>
+          {issue.title || "-"}
+        </div>
+      </TableCell>
       <TableCell>
         {formatEdtf(issue.publishDate)}
       </TableCell>

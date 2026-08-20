@@ -241,6 +241,20 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Stored first, then reported: the response is the only evidence of what
+    // the model actually said, and it is what a repair rule gets written
+    // against. Answering 200 with an empty list -- which is what this did --
+    // reads as "the scan has nothing on it" and hides a billed, failed call.
+    if (result.parseError) {
+      return NextResponse.json(
+        {
+          id: ocrRecord.id,
+          error: `AI 回傳的內容無法解析（${result.parseError}），沒有取得任何文章。請重新辨識；若持續失敗，辨識紀錄 ${ocrRecord.id} 留有原始回應可供檢查。`,
+        },
+        { status: 422 }
+      );
+    }
+
     return NextResponse.json({
       id: ocrRecord.id,
       result,

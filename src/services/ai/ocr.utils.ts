@@ -6,28 +6,64 @@ import { isArticleCategory } from "@/lib/article-categories";
  * Shared across all providers (Claude, OpenAI, Gemini).
  */
 
+/**
+ * Put back the opening quote of a string value that lost one.
+ *
+ * The self-hosted qwen-tw backend drops it, reproducibly: `"title":囂張拳王",`
+ * cost 軟體世界 35 and 36 seven runs each, every one returning zero articles
+ * with no sign of why. Only a value that ends in a quote without starting with
+ * one is touched, so numbers, null, arrays and objects are left alone.
+ *
+ * The value has to close on its own line: [^"] matches a newline as well, so a
+ * pattern without the guard runs `"pageStart": 12,` into the quote on the line
+ * below and breaks a field that was never wrong.
+ */
+function repairUnquotedValues(json: string): string {
+  return json.replace(
+    /^(\s*"[A-Za-z]\w*":\s*)([^"\s[{][^"\n]*")(,?)[ \t]*$/gm,
+    '$1"$2$3'
+  );
+}
+
 export function parseOcrResponse(
   text: string
 ): Omit<OcrResult, "provider" | "processingTime"> {
-  try {
-    // Try to extract JSON block (with or without ```json wrapper)
-    const jsonMatch = text.match(/```json\n?([\s\S]*?)\n?```/);
-    let jsonStr = jsonMatch ? jsonMatch[1] : text;
+  // Try to extract JSON block (with or without ```json wrapper)
+  const jsonMatch = text.match(/```json\n?([\s\S]*?)\n?```/);
+  const jsonStr = (jsonMatch ? jsonMatch[1] : text).trim();
 
-    jsonStr = jsonStr.trim();
-    if (jsonStr.startsWith("{") || jsonStr.startsWith("[")) {
-      const parsed = JSON.parse(jsonStr);
+  if (!jsonStr.startsWith("{") && !jsonStr.startsWith("[")) {
+    return {
+      articles: [],
+      rawText: text,
+      parseError: "AI 沒有回傳 JSON",
+    };
+  }
+
+  // The repair is a second attempt, never the first: a response that parses as
+  // it stands must not be rewritten on the way in.
+  let lastError: unknown;
+  for (const candidate of [jsonStr, repairUnquotedValues(jsonStr)]) {
+    try {
+      const parsed = JSON.parse(candidate);
       return {
         articles: normalizeArticles(parsed.articles || []),
         metadata: parsed.metadata || {},
         rawText: text,
       };
+    } catch (error) {
+      lastError = error;
     }
-
-    return { articles: [], rawText: text };
-  } catch {
-    return { articles: [], rawText: text };
   }
+
+  // Reported rather than swallowed: returning an empty list here is what made
+  // a malformed response look like a scan with nothing on it.
+  return {
+    articles: [],
+    rawText: text,
+    parseError:
+      lastError instanceof Error ? lastError.message : "AI 回傳的內容無法解析",
+  };
 }
 
 function normalizeArticles(articles: unknown[]): OcrArticleResult[] {
