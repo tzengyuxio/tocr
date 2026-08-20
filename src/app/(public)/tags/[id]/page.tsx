@@ -25,6 +25,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip, TagTypeChip } from "@/components/chips";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { pageOpenGraph } from "@/lib/og";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -37,9 +38,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const tag = await prisma.tag.findUnique({
     where: { id: found.id },
-    select: { name: true },
+    select: {
+      name: true,
+      description: true,
+      _count: { select: { articleTags: true } },
+    },
   });
-  return { title: tag?.name ?? "標籤詳情" };
+  if (!tag) return { title: "標籤詳情" };
+
+  const description =
+    // 空字串也算沒有——資料庫裡那欄常常是 ""，`??` 接不住。
+    tag.description || `標記了 ${tag._count.articleTags} 篇雜誌文章`;
+
+  return {
+    title: tag.name,
+    description,
+    // 標籤沒有自己的圖，所以吃站台預設圖。
+    openGraph: pageOpenGraph({ title: tag.name, description }),
+  };
 }
 
 export default async function TagDetailPage({ params }: PageProps) {

@@ -28,6 +28,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip } from "@/components/chips";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
+import { pageOpenGraph } from "@/lib/og";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
@@ -41,9 +42,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const game = await prisma.game.findUnique({
     where: { id: found.id },
-    select: { name: true },
+    select: {
+      name: true,
+      description: true,
+      coverImage: true,
+      _count: { select: { articleGames: true } },
+    },
   });
-  return { title: game?.name ?? "遊戲詳情" };
+  if (!game) return { title: "遊戲詳情" };
+
+  const description =
+    // 空字串也算沒有——資料庫裡那欄常常是 ""，`??` 接不住。
+    game.description || `這款遊戲在 ${game._count.articleGames} 篇雜誌文章裡出現過`;
+
+  return {
+    title: game.name,
+    description,
+    openGraph: pageOpenGraph({
+      title: game.name,
+      description,
+      image: game.coverImage,
+    }),
+  };
 }
 
 export default async function GameDetailPage({ params }: PageProps) {
