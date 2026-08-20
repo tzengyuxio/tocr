@@ -21,12 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Gamepad2, Calendar, FileText, SquarePen } from "lucide-react";
+import { Calendar, FileText, SquarePen } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip } from "@/components/chips";
+import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
@@ -112,9 +113,7 @@ export default async function GameDetailPage({ params }: PageProps) {
             className="h-48 w-36 rounded-lg object-cover shadow-lg"
           />
         ) : (
-          <div className="flex h-48 w-36 items-center justify-center rounded-lg bg-muted shadow-lg">
-            <Gamepad2 className="h-12 w-12 text-muted-foreground/50" />
-          </div>
+          <CoverPlaceholder kind="game" className="w-36 rounded-lg shadow-lg" />
         )}
         <div className="flex-1">
           <div className="flex items-center gap-3">
