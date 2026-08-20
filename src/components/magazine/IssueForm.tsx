@@ -3,7 +3,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -103,6 +103,7 @@ export function IssueForm({
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<IssueCreateInput>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,6 +128,15 @@ export function IssueForm({
       tocReviewed: initialTocReviewed,
     },
   });
+
+  // The banner in the article list marks the review while this form is on
+  // screen, and the refresh that follows only updates the props: the checkbox
+  // keeps the value it was mounted with. Left alone, the two halves disagree,
+  // the comparison below reads that as "the editor unticked it", and the next
+  // save writes the review back off -- which is what happened to 15 issues.
+  useEffect(() => {
+    setValue("tocReviewed", initialTocReviewed);
+  }, [initialTocReviewed, setValue]);
 
   const onSubmit = async (data: IssueCreateInput) => {
     setIsSubmitting(true);
