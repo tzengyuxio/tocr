@@ -161,19 +161,23 @@ export default async function IssueReviewPage({
               </TableHeader>
               <TableBody>
                 {issues.map((issue) => (
-                  <TableRow
-                    key={issue.id}
-                    className="relative cursor-pointer hover:bg-muted/50"
-                  >
+                  <TableRow key={issue.id} className="hover:bg-muted/50">
                     {/* The magazine and its number name one thing, so they
                         read as one line at one size -- stacking them shrank the
-                        legible half and enlarged the digits. The link stretches
-                        over the row: the number alone was a small target for
-                        the one action this table exists to start. */}
+                        legible half and enlarged the digits.
+
+                        The link is the text and nothing more. It used to
+                        stretch over the whole row via an ::after on a
+                        position:relative <tr> -- which CSS 2.1 leaves
+                        undefined for table rows, and WebKit does not make a
+                        containing block. In Safari every row's overlay was
+                        laid out against an ancestor instead, the last row's
+                        covered the table, and every click in the list opened
+                        that one issue. */}
                     <TableCell>
                       <Link
                         href={`/admin/magazines/${issue.magazine.id}/issues/${issue.id}`}
-                        className="after:absolute after:inset-0"
+                        className="hover:underline"
                       >
                         {issue.magazine.name}{" "}
                         <span className="font-semibold">
