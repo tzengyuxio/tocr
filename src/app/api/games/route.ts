@@ -9,6 +9,7 @@ import {
   parseGameSort,
 } from "@/lib/game-browse";
 import { logEdit } from "@/lib/edit-log";
+import { gameNameKeys, nameKey } from "@/lib/name-match";
 
 // GET /api/games - 取得遊戲列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -42,6 +43,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         { nameOriginal: { contains: search, mode: "insensitive" as const } },
         // 陣列欄位只能整串比對，做不到 contains
         { aliases: { has: search } },
+        // 正規化後的精確比對：搜「P.47」找得到存成「P-47」的那筆。與辨識寫入
+        // 共用 nameKey()，兩邊對「同一個名字」的定義才會一致。
+        { nameKeys: { has: nameKey(search) } },
       ],
     }),
     ...(platform && {
@@ -88,7 +92,9 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   const game = await prisma.game.create({
-    data: validatedData,
+    // Derived, never supplied: the keys are how recognition finds this game
+    // again when a table of contents spells it differently.
+    data: { ...validatedData, nameKeys: gameNameKeys(validatedData) },
   });
 
   await logEdit("Game", game.id, "CREATE");

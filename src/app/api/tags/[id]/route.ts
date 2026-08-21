@@ -4,6 +4,7 @@ import { tagUpdateSchema } from "@/lib/validators/tag";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 import { diffChanges } from "@/lib/edit-log-diff";
+import { tagNameKey } from "@/lib/name-match";
 
 // GET /api/tags/[id] - 取得單一標籤
 export const GET = withErrorHandler(async (
@@ -85,7 +86,12 @@ export const PUT = withErrorHandler(async (
 
   const tag = await prisma.tag.update({
     where: { id },
-    data: validatedData,
+    // Renaming a tag has to move its key, or recognition goes on matching the
+    // name it used to have.
+    data: {
+      ...validatedData,
+      ...(validatedData.name && { nameKey: tagNameKey(validatedData.name) }),
+    },
   });
 
   await logEdit("Tag", id, "UPDATE", diffChanges(before, tag));

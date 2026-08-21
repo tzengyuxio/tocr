@@ -40,24 +40,39 @@ describe("resolveGameIds", () => {
     await resolveGameIds(prismaMock as never, ["宇宙傳奇Ⅱ"]);
 
     expect(prismaMock.game.create).toHaveBeenCalledWith({
-      data: { name: "宇宙傳奇Ⅱ", slug: "宇宙傳奇ii" },
+      data: {
+        name: "宇宙傳奇Ⅱ",
+        slug: "宇宙傳奇ii",
+        nameKeys: ["宇宙傳奇ii"],
+      },
     });
   });
 
-  it("matches case-insensitively across all three name columns", async () => {
+  // The search box already matched aliases and the recognition path did not,
+  // so a name that could be *found* was still *created* a second time.
+  it("looks a game up by its normalised key, aliases included", async () => {
     prismaMock.game.findFirst.mockResolvedValue({ id: "game-1" });
 
-    await resolveGameIds(prismaMock as never, ["zelda"]);
+    await resolveGameIds(prismaMock as never, ["銀河飛將 II"]);
 
     expect(prismaMock.game.findFirst).toHaveBeenCalledWith({
-      where: {
-        OR: [
-          { name: { equals: "zelda", mode: "insensitive" } },
-          { nameEn: { equals: "zelda", mode: "insensitive" } },
-          { nameOriginal: { equals: "zelda", mode: "insensitive" } },
-        ],
-      },
+      where: { nameKeys: { has: "銀河飛將ii" } },
     });
+  });
+
+  it("reuses the game a differently punctuated name keys to", async () => {
+    prismaMock.game.findFirst.mockImplementation(({ where }: never) =>
+      Promise.resolve(
+        (where as { nameKeys: { has: string } }).nameKeys.has === "蝙蝠俠電影版"
+          ? { id: "game-1" }
+          : null
+      )
+    );
+
+    const ids = await resolveGameIds(prismaMock as never, ["蝙蝠俠·電影版"]);
+
+    expect(ids).toEqual(["game-1"]);
+    expect(prismaMock.game.create).not.toHaveBeenCalled();
   });
 
   it("keeps input order, so the caller can pick the first as primary", async () => {
@@ -82,6 +97,29 @@ describe("resolveTagIds", () => {
 
     expect(ids).toEqual(["tag-1"]);
     expect(prismaMock.tag.create).not.toHaveBeenCalled();
+  });
+
+  // The type *is* the disambiguating dimension for tags, so SERIES:三國志 and
+  // GENERAL:三國志 are two tags -- see docs/data-conventions.md.
+  it("looks a tag up by key and type together", async () => {
+    prismaMock.tag.findFirst.mockResolvedValue(null);
+    prismaMock.tag.create.mockResolvedValue({ id: "tag-new" });
+
+    await resolveTagIds(prismaMock as never, [
+      { name: "三國志", type: "SERIES" },
+    ]);
+
+    expect(prismaMock.tag.findFirst).toHaveBeenCalledWith({
+      where: { nameKey: "三國志", type: "SERIES" },
+    });
+    expect(prismaMock.tag.create).toHaveBeenCalledWith({
+      data: {
+        name: "三國志",
+        nameKey: "三國志",
+        slug: "三國志",
+        type: "SERIES",
+      },
+    });
   });
 
   it("falls back to GENERAL for a type the enum does not know", async () => {

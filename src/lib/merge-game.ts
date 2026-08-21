@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import type { EditActor } from "./edit-log";
+import { gameNameKeys } from "./name-match";
 
 /**
  * Folding a duplicate game entry into the one that survives.
@@ -136,9 +137,22 @@ export async function applyGameMerge(
     });
   }
 
+  // Read back rather than carried in the plan: the plan says what the merge
+  // changes, and the keeper's other names are not part of that.
+  const keeper = await tx.game.findUniqueOrThrow({
+    where: { id: plan.keeperId },
+    select: { name: true, nameEn: true, nameOriginal: true },
+  });
+
   await tx.game.update({
     where: { id: plan.keeperId },
-    data: { aliases: plan.mergedAliases },
+    // The keys move with the aliases. Without this the losing spelling stays
+    // searchable but stops being recognisable, and the next issue that prints
+    // it creates the row again -- undoing the merge one table of contents later.
+    data: {
+      aliases: plan.mergedAliases,
+      nameKeys: gameNameKeys({ ...keeper, aliases: plan.mergedAliases }),
+    },
   });
 
   // The log outlives the row, so it has to say what was deleted, not just which

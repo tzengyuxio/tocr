@@ -7,6 +7,7 @@ import {
   parsePagination,
 } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { tagNameKey } from "@/lib/name-match";
 
 // GET /api/tags - 取得標籤列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -61,7 +62,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   const tag = await prisma.tag.create({
-    data: validatedData,
+    // Derived, never supplied -- same ruler recognition uses.
+    data: { ...validatedData, nameKey: tagNameKey(validatedData.name) },
   });
 
   await logEdit("Tag", tag.id, "CREATE");

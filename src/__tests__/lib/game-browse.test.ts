@@ -59,6 +59,15 @@ describe("gameSearchWhere", () => {
       { nameEn: { contains: "快打", mode: "insensitive" } },
       { nameOriginal: { contains: "快打", mode: "insensitive" } },
       { aliases: { has: "快打" } },
+      { nameKeys: { has: "快打" } },
     ]);
+  });
+
+  // The point of keying the search too: the box and the recognition path
+  // measure "same name" the same way.
+  it("normalises the query the way the keys were normalised", () => {
+    const where = gameSearchWhere("P.47");
+
+    expect(where.OR).toContainEqual({ nameKeys: { has: "p47" } });
   });
 });

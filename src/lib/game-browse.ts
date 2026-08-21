@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { nameKey } from "./name-match";
 
 /**
  * The ways the game index can be narrowed and ordered.
@@ -99,6 +100,9 @@ export function gameSearchWhere(query: string): Prisma.GameWhereInput {
       { nameOriginal: { contains: query, mode: "insensitive" } },
       // aliases is an array column, so it matches whole entries only.
       { aliases: { has: query } },
+      // The normalised form, so "P.47" finds the entry stored as "P-47". Same
+      // key the recognition path matches on -- one ruler, two callers.
+      { nameKeys: { has: nameKey(query) } },
     ],
   };
 }

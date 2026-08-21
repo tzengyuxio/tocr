@@ -267,6 +267,10 @@ enum ArticleCategory {
 model Tag {
   id          String   @id @default(cuid())
   name        String
+  // The normalised name, same ruler as Game.nameKeys. A tag has one name, so
+  // one key. Not unique: production already holds two GENERAL 法律 tags, and a
+  // constraint that cannot be applied to the data is not a constraint.
+  nameKey     String   @default("") @map("name_key")
   slug        String   @unique
   type        TagType  @default(GENERAL)
   description String?
@@ -277,6 +281,7 @@ model Tag {
   articleTags ArticleTag[]
 
   @@index([type])
+  @@index([nameKey, type])
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_tags_name_trgm")
   @@map("tags")
 }
@@ -303,6 +308,13 @@ model Game {
   // holds the bare name when a disambiguating suffix is added.
   // See docs/data-conventions.md.
   aliases      String[]  @default([])
+  // Every name above, normalised -- see lib/name-match.ts. Derived, never
+  // typed in: it is how a name coming off a table of contents is recognised as
+  // one already here, and how the search box and the recognition path can
+  // finally use the same ruler. Kept as a column rather than computed per
+  // query because it has to be searchable across `aliases`, which an array
+  // column cannot do on anything but a whole entry.
+  nameKeys     String[]  @default([]) @map("name_keys")
   slug         String    @unique
   releaseDate  DateTime? @map("release_date")
   platforms    String[] // ["PC", "PS5", "Switch"]
@@ -318,6 +330,7 @@ model Game {
   articleGames ArticleGame[]
 
   @@index([releaseDate])
+  @@index([nameKeys], type: Gin, map: "idx_games_name_keys")
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_games_name_trgm")
   @@index([nameEn(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_games_name_en_trgm")
   @@map("games")
