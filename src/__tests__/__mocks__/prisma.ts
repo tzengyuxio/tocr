@@ -7,6 +7,7 @@ interface MockModel {
   findMany: jest.Mock;
   groupBy: jest.Mock;
   findUnique: jest.Mock;
+  findUniqueOrThrow: jest.Mock;
   findFirst: jest.Mock;
   create: jest.Mock;
   createMany: jest.Mock;
@@ -42,6 +43,7 @@ const createMockModel = (): MockModel => ({
   findMany: jest.fn(),
   groupBy: jest.fn(),
   findUnique: jest.fn(),
+  findUniqueOrThrow: jest.fn(),
   findFirst: jest.fn(),
   create: jest.fn(),
   createMany: jest.fn(),

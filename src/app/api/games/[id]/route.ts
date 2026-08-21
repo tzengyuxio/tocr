@@ -4,6 +4,7 @@ import { gameUpdateSchema } from "@/lib/validators/game";
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 import { diffChanges } from "@/lib/edit-log-diff";
+import { gameNameKeys } from "@/lib/name-match";
 
 // GET /api/games/[id] - 取得單一遊戲
 export const GET = withErrorHandler(async (
@@ -85,7 +86,13 @@ export const PUT = withErrorHandler(async (
 
   const game = await prisma.game.update({
     where: { id },
-    data: validatedData,
+    // Keyed off the row as it will be, not as it was: a rename or a new alias
+    // has to take the keys with it, or recognition goes on matching the old
+    // spelling and stops matching the new one.
+    data: {
+      ...validatedData,
+      ...(before && { nameKeys: gameNameKeys({ ...before, ...validatedData }) }),
+    },
   });
 
   await logEdit("Game", id, "UPDATE", diffChanges(before, game));

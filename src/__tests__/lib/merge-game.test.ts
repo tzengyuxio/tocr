@@ -1,4 +1,10 @@
-import { planGameMerge, suggestKeeper, type MergeCandidate } from "@/lib/merge-game";
+import { prismaMock, resetPrismaMock } from "../__mocks__/prisma";
+import {
+  applyGameMerge,
+  planGameMerge,
+  suggestKeeper,
+  type MergeCandidate,
+} from "@/lib/merge-game";
 
 function candidate(over: Partial<MergeCandidate> & { id: string }): MergeCandidate {
   return {
@@ -122,5 +128,40 @@ describe("suggestKeeper", () => {
 
     expect(suggestKeeper(sparse, rich).id).toBe("rich");
     expect(suggestKeeper(rich, sparse).id).toBe("rich");
+  });
+});
+
+describe("applyGameMerge", () => {
+  beforeEach(() => {
+    resetPrismaMock();
+    prismaMock.game.findUniqueOrThrow.mockResolvedValue({
+      name: "P-47",
+      nameEn: null,
+      nameOriginal: null,
+    });
+  });
+
+  // Without this the merge undoes itself: the losing spelling stays searchable
+  // through `aliases`, but recognition matches on the keys, so the next issue
+  // that prints it creates the row all over again.
+  it("moves the keys along with the aliases", async () => {
+    await applyGameMerge(
+      prismaMock as never,
+      {
+        keeperId: "keeper",
+        loserId: "loser",
+        movedArticleIds: [],
+        discardedLinkCount: 0,
+        promotedArticleIds: [],
+        mergedAliases: ["P.47"],
+      },
+      { userId: "u1", via: null },
+      "P.47"
+    );
+
+    expect(prismaMock.game.update).toHaveBeenCalledWith({
+      where: { id: "keeper" },
+      data: { aliases: ["P.47"], nameKeys: ["p47"] },
+    });
   });
 });
