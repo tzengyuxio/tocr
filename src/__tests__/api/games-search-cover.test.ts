@@ -1,7 +1,11 @@
 /**
  * @jest-environment node
  */
-import { POST, searchQueries } from "@/app/api/games/search-cover/route";
+import {
+  POST,
+  searchQueries,
+  toCandidates,
+} from "@/app/api/games/search-cover/route";
 import { requireEditor } from "@/lib/require-editor";
 import { NextRequest } from "next/server";
 
@@ -21,12 +25,16 @@ function requestWith(body: Record<string, unknown>) {
   );
 }
 
-/** What RAWG answers for a hit; only the two fields the route reads. */
-function hit(name: string) {
+/** What RAWG answers for a hit; only the fields the route reads. */
+function hit(...names: string[]) {
   return {
     ok: true,
     json: async () => ({
-      results: [{ name, background_image: `https://rawg.example/${name}.jpg` }],
+      results: names.map((name) => ({
+        name,
+        background_image: `https://rawg.example/${name}.jpg`,
+        released: "1997-01-31",
+      })),
     }),
   };
 }
@@ -74,6 +82,61 @@ describe("searchQueries", () => {
   });
 });
 
+describe("toCandidates", () => {
+  const row = (name: string, extra: Record<string, unknown> = {}) => ({
+    name,
+    background_image: `https://rawg.example/${name}.jpg`,
+    ...extra,
+  });
+
+  it("drops results with no image -- a coverless candidate wastes a slot", () => {
+    const candidates = toCandidates(
+      [{ name: "No Art", background_image: null }, row("Has Art")],
+      { name: "Whatever" }
+    );
+
+    expect(candidates.map((c) => c.rawgName)).toEqual(["Has Art"]);
+  });
+
+  it("keeps only the year -- month and day do not help pick a cover", () => {
+    const [candidate] = toCandidates([row("Doom", { released: "1993-12-10" })], {
+      name: "Doom",
+    });
+
+    expect(candidate.released).toBe("1993");
+  });
+
+  it("has no year when RAWG gives none", () => {
+    const [candidate] = toCandidates([row("Doom")], { name: "Doom" });
+
+    expect(candidate.released).toBeNull();
+  });
+
+  it("marks a name that matches any of the game's names", () => {
+    const candidates = toCandidates(
+      [row("Final Fantasy VII"), row("Final Fantasy VIII")],
+      { name: "太空戰士VII", nameEn: "Final Fantasy VII" }
+    );
+
+    expect(candidates.map((c) => c.exact)).toEqual([true, false]);
+  });
+
+  it("matches on the same ruler as recognition, not on raw equality", () => {
+    // nameKey() folds case, punctuation and spacing -- see lib/name-match.ts.
+    const [candidate] = toCandidates([row("Wing Commander II")], {
+      name: "銀河飛將 II",
+      nameEn: "wing commander ii",
+    });
+
+    expect(candidate.exact).toBe(true);
+  });
+
+  it("survives a shape RAWG did not promise", () => {
+    expect(toCandidates(undefined, { name: "Doom" })).toEqual([]);
+    expect(toCandidates([null, 7, {}], { name: "Doom" })).toEqual([]);
+  });
+});
+
 describe("POST /api/games/search-cover", () => {
   const fetchMock = jest.fn();
 
@@ -92,7 +155,7 @@ describe("POST /api/games/search-cover", () => {
     );
 
     expect(await res.json()).toMatchObject({
-      rawgName: "Final Fantasy VII",
+      candidates: [expect.objectContaining({ rawgName: "Final Fantasy VII" })],
       matchedQuery: "Final Fantasy VII",
     });
     expect(queriesSent(fetchMock)).toEqual(["Final Fantasy VII"]);
@@ -111,15 +174,32 @@ describe("POST /api/games/search-cover", () => {
     expect(queriesSent(fetchMock)).toEqual(["Sword and Fairy", "仙劍奇俠傳"]);
   });
 
-  it("reports no cover once every name has missed", async () => {
+  it("reports no candidates once every name has missed", async () => {
     fetchMock.mockResolvedValue(miss);
 
     const res = await POST(
       requestWith({ name: "查無此作", nameEn: "Nothing Here" })
     );
 
-    expect(await res.json()).toEqual({ coverImage: null, rawgName: null });
+    expect(await res.json()).toEqual({ candidates: [], matchedQuery: null });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("hands back every candidate rather than picking one", async () => {
+    // What RAWG actually answered for 《A-6入侵者》 on 2026-08-22: a confident
+    // first result that is a different game entirely. Choosing for the editor
+    // is exactly the bug.
+    fetchMock.mockResolvedValueOnce(
+      hit("Avernum 6", "Resident Evil 6", "Tekken 6 (PSP)")
+    );
+
+    const res = await POST(requestWith({ name: "A-6入侵者" }));
+    const body = await res.json();
+
+    expect(body.candidates.map((c: { rawgName: string }) => c.rawgName)).toEqual(
+      ["Avernum 6", "Resident Evil 6", "Tekken 6 (PSP)"]
+    );
+    expect(body).not.toHaveProperty("coverImage");
   });
 
   it("says RAWG failed rather than reporting a miss", async () => {
