@@ -22,7 +22,7 @@ import { formatIssueNumber } from "@/lib/issue-number";
 interface Issue {
   id: string;
   issueNumber: string;
-  publishDate: string;
+  publishDate: string | null;
   tocImages: string[];
   magazine?: {
     id: string;
@@ -36,7 +36,7 @@ interface Magazine {
   issues: {
     id: string;
     issueNumber: string;
-    publishDate: string;
+    publishDate: string | null;
     tocImages: string[];
   }[];
 }

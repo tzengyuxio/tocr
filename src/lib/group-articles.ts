@@ -8,8 +8,8 @@ export interface ArticleData {
   issue: {
     id: string;
     issueNumber: string;
-    publishDate: string;
-    publishSort: string | Date;
+    publishDate: string | null;
+    publishSort: string | Date | null;
     magazine: { id: string; name: string };
   };
 }
@@ -20,8 +20,8 @@ export interface GroupedData {
     issue: {
       id: string;
       issueNumber: string;
-      publishDate: string;
-      publishSort: string | Date;
+      publishDate: string | null;
+      publishSort: string | Date | null;
     };
     articles: ArticleData[];
   }[];
@@ -60,13 +60,15 @@ export function groupArticles(articles: ArticleData[]): GroupedData[] {
   }
 
   // Sort on publishSort, not publishDate: the latter is EDTF, where "1994"
-  // and "1994-22" cannot be compared as strings or parsed as dates.
+  // and "1994-22" cannot be compared as strings or parsed as dates. Issues
+  // with no date sort last, the same way the database orders them.
   for (const group of magazineMap.values()) {
-    group.issues.sort(
-      (a, b) =>
-        new Date(b.issue.publishSort).getTime() -
-        new Date(a.issue.publishSort).getTime()
-    );
+    group.issues.sort((a, b) => {
+      const at = a.issue.publishSort ? new Date(a.issue.publishSort).getTime() : null;
+      const bt = b.issue.publishSort ? new Date(b.issue.publishSort).getTime() : null;
+      if (at === null || bt === null) return (at === null ? 1 : 0) - (bt === null ? 1 : 0);
+      return bt - at;
+    });
   }
 
   return Array.from(magazineMap.values()).sort((a, b) =>

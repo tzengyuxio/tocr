@@ -33,13 +33,15 @@ export const ISSUE_FILTERS = [
 export const DEFAULT_ISSUE_FILTER = "cover";
 
 export const ISSUE_SORTS = [
-  // Ordering by the issue number would put "10" before "9"; the publish date is
-  // what the number stands for anyway, and it is already indexed.
+  // `order` and not the date: not every issue states one, and a run with a few
+  // undated issues in it still has an order everyone agrees on. Ordering by
+  // the issue number would put "10" before "9"; ordering by the date leaves
+  // the undated ones in a heap at one end.
   //
   // Each sort carries the direction it means first: a run of a magazine reads
   // from its first issue forward, while "recently updated" is only ever asking
   // what changed last.
-  { value: "date", label: "出版日期", field: "publishSort", defaultDirection: "asc" },
+  { value: "order", label: "刊期順序", field: "order", defaultDirection: "asc" },
   { value: "updated", label: "最近更新", field: "updatedAt", defaultDirection: "desc" },
 ] as const satisfies ReadonlyArray<{
   value: string;
@@ -48,7 +50,9 @@ export const ISSUE_SORTS = [
   defaultDirection: "asc" | "desc";
 }>;
 
-export const DEFAULT_ISSUE_SORT = "date";
+// An older ?sort=date link falls through parseIssueSort to this, which is the
+// same run in the same direction -- the ruler changed, not the reading.
+export const DEFAULT_ISSUE_SORT = "order";
 
 export const ISSUE_DIRECTIONS = ["asc", "desc"] as const;
 

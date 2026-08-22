@@ -67,7 +67,7 @@ export interface ExportIssue {
   altNumbers: string[];
   volumeNumber: string | null;
   title: string | null;
-  publishDate: string;
+  publishDate: string | null;
   pageCount: number | null;
   price: Numeric | null;
   notes: string | null;
@@ -124,7 +124,7 @@ export function rowsFor(
       issue.altNumbers.join(";"),
       issue.volumeNumber ?? "",
       issue.title ?? "",
-      issue.publishDate,
+      issue.publishDate ?? "",
       issue.pageCount != null ? String(issue.pageCount) : "",
       issue.price != null ? String(issue.price) : "",
       issue.notes ?? "",

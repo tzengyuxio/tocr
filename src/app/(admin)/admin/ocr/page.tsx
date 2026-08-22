@@ -33,7 +33,8 @@ export default async function OcrPage({ searchParams }: PageProps) {
     orderBy: { name: "asc" },
     include: {
       issues: {
-        orderBy: { publishSort: "desc" },
+        // Within one magazine the run is `order`; dates are optional.
+        orderBy: { order: "desc" },
         select: {
           id: true,
           issueNumber: true,

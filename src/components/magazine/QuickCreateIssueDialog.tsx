@@ -20,10 +20,10 @@ import { formatIssueNumber } from "@/lib/issue-number";
 
 const quickCreateSchema = z.object({
   issueNumber: z.string().min(1, "期號為必填"),
+  // 留空是合法的：有些期數查不到出版日，位置由 order 決定。
   publishDate: z
     .string()
-    .min(1, "出版日期為必填")
-    .refine(isValidEdtf, "日期格式無效，例如 1999、1999-05、1999-05-20、1994-22"),
+    .refine((v) => v === "" || isValidEdtf(v), "日期格式無效，例如 1999、1999-05、1999-05-20、1994-22"),
   title: z.string().optional(),
 });
 
@@ -107,7 +107,7 @@ export function QuickCreateIssueDialog({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="publishDate">出版日期 *</Label>
+            <Label htmlFor="publishDate">出版日期</Label>
             <Input
               id="publishDate"
               placeholder="1999-05-20、1999-05、1999、1999-22"

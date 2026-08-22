@@ -42,7 +42,11 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const [articles, total] = await Promise.all([
     prisma.article.findMany({
       where,
-      orderBy: [{ issue: { publishSort: "desc" } }, { sortOrder: "asc" }],
+      // Nulls last: undated issues have no place on a timeline.
+      orderBy: [
+        { issue: { publishSort: { sort: "desc", nulls: "last" } } },
+        { sortOrder: "asc" },
+      ],
       skip,
       take: limit,
       include: {

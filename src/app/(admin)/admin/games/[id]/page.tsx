@@ -165,9 +165,11 @@ export default function GameDetailPage() {
                             <span className="font-medium">
                               {formatIssueNumber(issueGroup.issue.issueNumber)}
                             </span>
-                            <span className="text-muted-foreground">
-                              ({formatEdtf(issueGroup.issue.publishDate)})
-                            </span>
+                            {formatEdtf(issueGroup.issue.publishDate) && (
+                              <span className="text-muted-foreground">
+                                ({formatEdtf(issueGroup.issue.publishDate)})
+                              </span>
+                            )}
                             <span className="text-muted-foreground">
                               — {issueGroup.articles.length} 篇
                             </span>

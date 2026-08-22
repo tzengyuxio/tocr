@@ -34,11 +34,16 @@ export const issueCreateSchema = z.object({
   volumeNumber: optionalText,
   title: optionalText,
   // EDTF (ISO 8601-2), not a calendar date: a cover may give only the month
-  // or the season. See docs/data-conventions.md.
-  publishDate: z
-    .string()
-    .min(1, "出版日期為必填")
-    .refine(isValidEdtf, "日期格式無效，請使用 EDTF（例如 1999、1999-05、1999-05-20、1994-22）"),
+  // or the season. Optional, because some issues state no date at all and
+  // their place in the run is held by `order`. See docs/data-conventions.md.
+  publishDate: z.preprocess(
+    blankToNull,
+    z
+      .string()
+      .refine(isValidEdtf, "日期格式無效，請使用 EDTF（例如 1999、1999-05、1999-05-20、1994-22）")
+      .nullable()
+      .optional()
+  ),
   coverImage: optionalText,
   tocImages: z.array(z.string()).default([]),
   pageCount: optionalInt,
@@ -62,13 +67,14 @@ export const issueUpdateSchema = issueCreateSchema
 
 /**
  * publishSort is derived, never supplied by the caller, so that the ordering
- * key cannot drift from the EDTF value it represents. publishSort is NOT NULL,
- * hence the split: on create the date is required and the key always exists;
- * on update the field may be absent and the existing key is left alone.
+ * key cannot drift from the EDTF value it represents. Both columns are
+ * nullable and they are null together: an issue with no stated date has no
+ * position on a timeline either, and cross-magazine lists sort it last.
  */
-export function withPublishSort<T extends { publishDate: string }>(
+export function withPublishSort<T extends { publishDate?: string | null }>(
   data: T
-): T & { publishSort: Date } {
+): T & { publishSort: Date | null } {
+  if (!data.publishDate) return { ...data, publishSort: null };
   const sort = edtfSortDate(data.publishDate);
   if (!sort) {
     // Unreachable: the schema rejects anything isValidEdtf refuses.
@@ -104,10 +110,18 @@ export function withIssueSlugIfPresent<T extends { slug?: string | null }>(
   return slug ? { ...rest, slug } : rest;
 }
 
-export function withPublishSortIfPresent<T extends { publishDate?: string }>(
+/**
+ * On update the field may be absent, and absent means "leave it alone".
+ *
+ * Present-but-empty is a different instruction: the editor cleared the date
+ * (blankToNull has already turned "" into null), so both columns are cleared
+ * together. Only `undefined` counts as absent -- testing truthiness instead
+ * would leave a sort key behind for a date that no longer exists.
+ */
+export function withPublishSortIfPresent<T extends { publishDate?: string | null }>(
   data: T
-): T & { publishSort?: Date } {
-  return data.publishDate ? withPublishSort({ ...data, publishDate: data.publishDate }) : data;
+): T & { publishSort?: Date | null } {
+  return data.publishDate !== undefined ? withPublishSort(data) : data;
 }
 
 /**

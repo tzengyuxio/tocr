@@ -56,7 +56,7 @@ interface IssueItem {
   id: string;
   issueNumber: string;
   title: string | null;
-  publishDate: string;
+  publishDate: string | null;
   coverImage: string | null;
   order: number;
   _count: { articles: number };
@@ -143,7 +143,7 @@ function SortableRow({
         </div>
       </TableCell>
       <TableCell>
-        {formatEdtf(issue.publishDate)}
+        {formatEdtf(issue.publishDate) || "-"}
       </TableCell>
       <TableCell>{issue._count.articles} 篇</TableCell>
       {/* Pinned to the right edge of the scrollport: on a window too narrow for

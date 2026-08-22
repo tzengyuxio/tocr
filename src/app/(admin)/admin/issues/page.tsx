@@ -71,7 +71,9 @@ export default async function IssueReviewPage({
     Promise.all([
       prisma.issue.findMany({
         where: filter.where,
-        orderBy: { publishSort: "desc" },
+        // Every magazine at once, so this is a timeline: undated issues sort
+        // last rather than leading the list.
+        orderBy: [{ publishSort: { sort: "desc", nulls: "last" } }, { id: "asc" }],
         skip: (page - 1) * PAGE_SIZE,
         take: PAGE_SIZE,
         include: {
@@ -186,7 +188,7 @@ export default async function IssueReviewPage({
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {issue.publishDate}
+                      {issue.publishDate ?? "-"}
                     </TableCell>
                     <TableCell>{issue.tocImages.length}</TableCell>
                     <TableCell>{issue._count.articles}</TableCell>

@@ -12,7 +12,7 @@ interface IssueCardProps {
     coverImage: string | null;
     issueNumber: string;
     title?: string | null;
-    publishDate: string;
+    publishDate: string | null;
     _count: { articles: number };
   };
   magazineSlug: string;
@@ -63,7 +63,9 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
           )}
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-0.5">
             <span>
-              {formatEdtf(issue.publishDate)}
+              {/* Said outright rather than left blank: the gap between the
+                  issue number and the article count reads as a layout fault. */}
+              {formatEdtf(issue.publishDate) || "日期不詳"}
             </span>
             <span>{issue._count.articles} 篇</span>
           </div>

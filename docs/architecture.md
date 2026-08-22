@@ -68,6 +68,8 @@ User     1:N ApiToken
 
 **日期存 EDTF 字串，另存一個排序欄位。** 期刊與單期常常只知道年或月，EDTF（ISO 8601-2）能表達「1994」「1999-05」「1994-22（季）」而不必虛構日期。EDTF 字串無法直接排序，所以寫入時同時算出 `foundedSort` / `publishSort` 供排序用。
 
+`Issue.publishDate` 與 `publishSort` 都可為空，而且一起空——有些期數什麼日期都沒印。**一本刊之內的順序看 `Issue.order`**（匯入時取來源自己的序列，`PUT /api/issues/reorder` 重排），日期只在跨刊清單（搜尋、標籤、遊戲）當時間軸用，沒有日期的排在最後。
+
 **ISSN 不設唯一性。** 改名可以沿用同一組 ISSN，《電擊王》與《電玩通》就共用 1561-8099。
 
 **文章分類是 enum，不是自由字串。** 中文標籤放在 `src/lib/article-categories.ts`，改字不需要資料 migration——這個欄位的名稱被改過兩次。該清單刻意不從 `@prisma/client` 匯入（那是伺服器執行期，而表單元件是 `"use client"`），改以一個測試斷言它與 enum 一致。

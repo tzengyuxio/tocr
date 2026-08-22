@@ -139,7 +139,7 @@ export default function GamesPage() {
         issue: {
           id: string;
           issueNumber: string;
-          publishDate: string;
+          publishDate: string | null;
           magazine: { id: string; name: string };
         };
       };

@@ -3,6 +3,8 @@ import {
   issueUpdateSchema,
   withIssueSlug,
   withIssueSlugIfPresent,
+  withPublishSort,
+  withPublishSortIfPresent,
 } from "@/lib/validators/issue";
 
 describe("issueCreateSchema", () => {
@@ -70,13 +72,25 @@ describe("issueCreateSchema", () => {
     }
   });
 
-  it("should fail when publishDate is missing", () => {
-    const input = {
+  // Optional since 2026-08-22: plenty of issues from this era state no date
+  // anywhere, and `order` is what holds their place in the run.
+  it("accepts an issue with no publishDate", () => {
+    const result = issueCreateSchema.safeParse({
       magazineId: "mag-123",
       issueNumber: "第1期",
-    };
-    const result = issueCreateSchema.safeParse(input);
-    expect(result.success).toBe(false);
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.publishDate).toBeUndefined();
+  });
+
+  it("reads a blank publishDate as absent, not as an empty string", () => {
+    const result = issueCreateSchema.safeParse({
+      magazineId: "mag-123",
+      issueNumber: "第1期",
+      publishDate: "",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.publishDate).toBeNull();
   });
 
   it("keeps publishDate as EDTF, at whatever precision", () => {
@@ -309,6 +323,32 @@ describe("issueUpdateSchema defaults", () => {
 });
 
 // 期號會被修（打錯字、補全名），但 slug 一旦公開就不能自己跑掉。
+describe("withPublishSort", () => {
+  it("derives the sort key from the EDTF value", () => {
+    const data = withPublishSort({ publishDate: "1999-05" });
+    expect(data.publishSort).toEqual(new Date("1999-05-01T00:00:00.000Z"));
+  });
+
+  it("leaves the sort key null when there is no date", () => {
+    expect(withPublishSort({ publishDate: null }).publishSort).toBeNull();
+    expect(withPublishSort({}).publishSort).toBeNull();
+  });
+});
+
+describe("withPublishSortIfPresent", () => {
+  it("leaves both columns alone when the field is absent", () => {
+    const data = withPublishSortIfPresent({ title: "特輯" } as { title: string; publishDate?: string });
+    expect("publishSort" in data).toBe(false);
+  });
+
+  // Clearing the date has to clear the key with it, or the issue keeps a
+  // position on the timeline it no longer has a date for.
+  it("clears the sort key when the date is cleared", () => {
+    const data = withPublishSortIfPresent({ publishDate: null });
+    expect(data.publishSort).toBeNull();
+  });
+});
+
 describe("withIssueSlug", () => {
   it("derives the slug from the issue number when none is given", () => {
     expect(withIssueSlug({ issueNumber: "第163期" })).toEqual({
