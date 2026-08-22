@@ -47,6 +47,6 @@ describe("parseCsvFile", () => {
       )
     );
 
-    expect(result.magazines[0].nameOriginal).toBe("ファミ通");
+    expect(result.magazines[0].nameParallel).toBe("ファミ通");
   });
 });

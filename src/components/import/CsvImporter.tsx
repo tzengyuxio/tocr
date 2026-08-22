@@ -20,7 +20,7 @@ type Stage = "upload" | "preview" | "importing";
  */
 export const CSV_TEMPLATE_HEADERS = [
   "magazine_name",
-  "magazine_name_original",
+  "magazine_name_parallel",
   "publisher",
   "issn",
   "description",
@@ -37,13 +37,13 @@ export const CSV_TEMPLATE_HEADERS = [
 
 const CSV_TEMPLATE_ROWS = [
   // Magazine A - first issue: fill all magazine fields
-  ["電玩通", "ファミ通", "範例出版社", "1234-5678", "台灣老牌電玩雜誌", "1995-06", "true", "42", "HK VOL 308;1月30日號", "年度大作特輯", "2024-01-15", "128", "150", ""],
+  ["電玩通", "", "範例出版社", "1234-5678", "台灣老牌電玩雜誌", "1995-06", "true", "42", "HK VOL 308;1月30日號", "年度大作特輯", "2024-01-15", "128", "150", ""],
   // Magazine A - second issue: magazine fields can be empty since it already exists
   ["電玩通", "", "", "", "", "", "", "43", "", "", "2024-02-15", "120", "150", ""],
   // Magazine A - third issue
   ["電玩通", "", "", "", "", "", "", "44", "", "E3 特別報導", "2024-03-15", "144", "150", "附贈海報"],
   // Magazine B - first issue: fill all magazine fields for the new magazine
-  ["遊戲世界", "", "另一出版社", "8765-4321", "綜合遊戲情報誌", "2000-03", "true", "創刊號", "", "百期紀念號", "2024-01-20", "160", "200", "限量封面"],
+  ["遊戲世界", "GAME WORLD", "另一出版社", "8765-4321", "綜合遊戲情報誌", "2000-03", "true", "創刊號", "", "百期紀念號", "2024-01-20", "160", "200", "限量封面"],
   // Magazine B - second issue
   ["遊戲世界", "", "", "", "", "", "", "101", "", "", "2024-02-20", "140", "200", ""],
 ];

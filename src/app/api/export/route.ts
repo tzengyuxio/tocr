@@ -31,7 +31,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     select: {
       id: true,
       name: true,
-      nameOriginal: true,
+      nameParallel: true,
+      sourceTitle: true,
       publisher: true,
       issn: true,
       description: true,

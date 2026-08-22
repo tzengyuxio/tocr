@@ -20,7 +20,7 @@ import { QuickCreateIssueDialog } from "./QuickCreateIssueDialog";
 interface MagazineItem {
   id: string;
   name: string;
-  nameOriginal: string | null;
+  nameParallel: string | null;
   publisher: string | null;
   issn: string | null;
   logoImage: string | null;
@@ -88,9 +88,9 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                     >
                       {magazine.name}
                     </Link>
-                    {magazine.nameOriginal && (
+                    {magazine.nameParallel && (
                       <div className="text-sm text-muted-foreground">
-                        {magazine.nameOriginal}
+                        {magazine.nameParallel}
                       </div>
                     )}
                     {magazine.otherTitles.length > 0 && (

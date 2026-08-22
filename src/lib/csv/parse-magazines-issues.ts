@@ -78,7 +78,10 @@ export function parseCsvFile(file: File): Promise<ParseResult> {
 
             magazineMap.set(magazineKey, {
               name: row.magazine_name.trim(),
-              nameOriginal:
+              // 欄名改過兩次：magazine_name_en → magazine_name_original →
+              // magazine_name_parallel。舊檔還在人手上，三個都收。
+              nameParallel:
+                emptyToUndefined(row.magazine_name_parallel) ??
                 emptyToUndefined(row.magazine_name_original) ??
                 emptyToUndefined(row.magazine_name_en),
               publisher: emptyToUndefined(row.publisher),

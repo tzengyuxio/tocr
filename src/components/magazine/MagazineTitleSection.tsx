@@ -22,6 +22,7 @@ import Image from "next/image";
 interface TitleRow {
   id: string;
   title: string;
+  titleParallel: string | null;
   startIssueId: string;
   logoImage: string | null;
   note: string | null;
@@ -45,6 +46,7 @@ interface FormState {
   /** null = 新增。 */
   id: string | null;
   title: string;
+  titleParallel: string;
   startIssueId: string;
   logoImage: string;
   note: string;
@@ -98,6 +100,7 @@ export function MagazineTitleSection({
       // 第一筆預帶「通行名＋第一期」，引導把第一段建齊——通行名不一定等於
       // 首段名（電視遊樂報導的首段叫電視遊樂情報），帶進來讓編輯改。
       title: titles.length === 0 ? magazineName : "",
+      titleParallel: "",
       startIssueId: titles.length === 0 && issues.length > 0 ? issues[0].id : "",
       logoImage: "",
       note: "",
@@ -109,6 +112,7 @@ export function MagazineTitleSection({
     setForm({
       id: row.id,
       title: row.title,
+      titleParallel: row.titleParallel ?? "",
       startIssueId: row.startIssueId,
       logoImage: row.logoImage ?? "",
       note: row.note ?? "",
@@ -128,6 +132,7 @@ export function MagazineTitleSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: form.title,
+          titleParallel: form.titleParallel || null,
           startIssueId: form.startIssueId,
           logoImage: form.logoImage || null,
           note: form.note || null,
@@ -237,6 +242,17 @@ export function MagazineTitleSection({
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="這個時期封面上的刊名"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="period-title-parallel">並列刊名</Label>
+              <Input
+                id="period-title-parallel"
+                value={form.titleParallel}
+                onChange={(e) =>
+                  setForm({ ...form, titleParallel: e.target.value })
+                }
+                placeholder="這個時期的另一語言刊名，如 GAME fans"
               />
             </div>
             <div className="space-y-1.5">

@@ -15,7 +15,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     ...(search && {
       OR: [
         { name: { contains: search, mode: "insensitive" as const } },
-        { nameOriginal: { contains: search, mode: "insensitive" as const } },
+        { nameParallel: { contains: search, mode: "insensitive" as const } },
         { aliases: { has: search } },
         { publisher: { contains: search, mode: "insensitive" as const } },
         { titles: { some: { title: { contains: search, mode: "insensitive" as const } } } },

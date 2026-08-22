@@ -23,7 +23,10 @@ export const magazineCreateSchema = z.object({
     .string()
     .min(1, "Slug 為必填")
     .regex(/^[a-z0-9-]+$/, "Slug 只能包含小寫英文字母、數字和連字號"),
-  nameOriginal: optionalText,
+  // 並列刊名存招牌形式（ACE，不是 Amazing Computer Entertainment）；原刊只在
+  // 本刊整體即該外刊的中文版時填。語意見 prisma/schema.prisma 的欄位註解
+  nameParallel: optionalText,
+  sourceTitle: optionalText,
   aliases: z.array(z.string()).default([]),
   publisher: optionalText,
   issn: optionalText,

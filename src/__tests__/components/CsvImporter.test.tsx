@@ -15,8 +15,10 @@ describe("the CSV template", () => {
   // Both are accepted so files that already have them still import; neither is
   // something a new file should be taught to write.
   const NOT_OFFERED = [
-    // The template shipped this name; the parser reads magazine_name_original.
+    // Two superseded names for the parallel-title column; the parser reads
+    // magazine_name_parallel.
     "magazine_name_en",
+    "magazine_name_original",
     // Off the admin form since 2026-08-20 -- see docs/data-conventions.md.
     "volume_number",
   ];

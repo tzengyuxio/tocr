@@ -27,7 +27,8 @@ async function drain(response: Response) {
 const magazine = {
   id: "mag-1",
   name: "電腦玩家",
-  nameOriginal: null,
+  nameParallel: null,
+  sourceTitle: null,
   publisher: "第三波",
   issn: null,
   isActive: true,

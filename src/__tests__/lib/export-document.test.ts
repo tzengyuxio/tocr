@@ -30,7 +30,8 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
   for (const mag of magazines) {
     const magFields: string[] = [
       mag.name,
-      mag.nameOriginal ?? "",
+      mag.nameParallel ?? "",
+      mag.sourceTitle ?? "",
       mag.publisher ?? "",
       mag.issn ?? "",
       mag.description ?? "",
@@ -141,7 +142,8 @@ function issue(n: number, articleCount: number): ExportIssue {
 const FIXTURE: Magazine[] = [
   {
     name: "電腦玩家",
-    nameOriginal: null,
+    nameParallel: null,
+    sourceTitle: null,
     publisher: "第三波",
     issn: "1021-8033",
     description: "含,逗號的描述",
@@ -152,7 +154,8 @@ const FIXTURE: Magazine[] = [
   {
     // A magazine with no issues at all.
     name: "軟體世界",
-    nameOriginal: "Software World",
+    nameParallel: "Software World",
+    sourceTitle: null,
     publisher: null,
     issn: null,
     description: null,
@@ -162,7 +165,8 @@ const FIXTURE: Magazine[] = [
   },
   {
     name: "新遊戲時代",
-    nameOriginal: null,
+    nameParallel: null,
+    sourceTitle: null,
     publisher: null,
     issn: null,
     description: null,

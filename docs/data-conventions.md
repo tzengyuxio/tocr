@@ -88,6 +88,56 @@ spreadsheetId `1QN5sBTGJSAcPpTzpkLj3qchWmgg9bb6ht6yV22LYukI`。nostalibrary repo
 
 理由是「創刊」在期刊學上有明確定義，跨雜誌比較時才有一致的基準；試刊號的數量與性質各家不一，有些甚至未對外發行。試刊號本身仍應建為 `Issue`，其出版日期記在該期數上。
 
+## 名稱欄位
+
+一本刊身上的名字有四種，差別在**它與這本刊的關係**，不在它是什麼語言。分錯欄位，
+查詢就查不出東西——`aliases` 曾經同時裝著四種，於是誰也查不出什麼。
+
+| 關係 | 是什麼 | 存哪 | 例 |
+| --- | --- | --- | --- |
+| 正題名 | 主要刊名，取創刊時的 | `Magazine.name` | 電玩通 |
+| 並列刊名 | 同一個封面上並列的另一語言刊名，**與正題名同時存在** | `Magazine.nameParallel` | TV GAME MAGAZINE、ACE |
+| 先後刊名 | 同一條出版脈絡上的**先後**刊名 | `MagazineTitle.title` | 遊戲世界、GAME fans |
+| 原刊 | **另一本雜誌**，本刊翻譯或授權自它 | `Magazine.sourceTitle` | ファミ通 |
+
+剩下的進 `aliases`——俗稱、簡稱、並列刊名的其他寫法，以及不值得切段的短命題名
+（見「刊名沿革」）。那是搜尋的 fallback。
+
+### 並列刊名存招牌形式，不是最完整的形式
+
+判準是「刊物拿哪個形式當識別」。《電腦玩家》封面印過 Amazing Computer Entertainment，
+但它自稱 ACE，`nameParallel` 就填 `ACE`，全名進 `aliases`。《軟體世界》封面用過
+The Softworld、SOFT WORLD MONTHLY、SOFT WORLD MAGAZINE、
+COMPUTER SOFT WORLD MAGAZINE MONTHLY 四種，官網是 swm.com.tw，填 `SWM`。
+
+「最完整」是個壞判準：COMPUTER SOFT WORLD MAGAZINE MONTHLY 最完整，但沒有人用它稱呼
+這本雜誌。
+
+**出處的證據不限於封面刊頭**：封面上的小 logo、官方網域、版權頁、社論自稱都算，網域
+這種證據往往比封面更明確——它是刊物自己選的識別。反過來說，**「看起來像編輯自己取的」
+不能當判斷依據**：`wolf`、`fashion`、`gwalker` 三個 slug 看起來最像憑感覺取名，封面
+印的卻分別是 WOLF Weekly、FASHION GAME、GAME WALKER。只能去查。
+
+### `sourceTitle` 記的是「本刊整體即該外刊的中文版」
+
+不是「有文章授權」。《電玩通》整本就是ファミ通的台灣版，填；《電腦玩家》取得 PC GAMER
+的文章授權、封面甚至標過「PC GAMER 國際中文版」，但它有自己的編輯部與大量原創內容，
+不是那本雜誌，**留空**——那些標示進 `aliases`。
+
+判準看的是**刊物的識別重心在哪**，不是封面上有沒有出現那個名字。這一欄空著，就表示這是
+一本原創刊。
+
+### 並列刊名的變動不切刊名時期
+
+`MagazineTitle` 的切段判準是**正題名改變**。並列刊名跟著改名一起換時（電視遊樂雜誌
+TV GAME MAGAZINE → GAME fans），填 `MagazineTitle.titleParallel`；正題名沒變而並列刊名
+自己在變的，**不切段**。
+
+《電腦玩家》是後者：正題名從頭到尾沒變，並列刊名卻換了三輪——ACE（創刊–63）、無（64–95）、
+PC GAMER（96–），中間 109–111 期 PC GAMER 還一度成為主標題字。這些**不建結構**：
+`nameParallel` 取創刊值、其餘寫法進 `aliases`、沿革寫進 `description`，與下一節「歷史值取
+創刊時的版本」同一個原則。**版面權重不是刊名**，主副易位照錄進 `MagazineTitle.note` 即可。
+
 ## 單值欄位
 
 ### 歷史值取創刊時的版本
@@ -98,7 +148,8 @@ spreadsheetId `1QN5sBTGJSAcPpTzpkLj3qchWmgg9bb6ht6yV22LYukI`。nostalibrary repo
 
 變動歷史記在 `description`，寫成「某時間（或某期）出版社由 A 改為 B」即可，不必展開來由。例如《電遊人》創刊時屬華彩軟體，2001 年 11 月前後獨立為富利恒，`publisher` 填「華彩軟體」，`description` 記下這次變動。
 
-同一原則適用於其他單值欄位；雜誌**改名**則另有 `aliases` 可放，不受此節限制。
+同一原則適用於其他單值欄位，包括 `nameParallel`；雜誌**改名**不受此節限制，它有
+`MagazineTitle`（見「刊名沿革」）。
 
 ## 期號
 
@@ -174,7 +225,8 @@ spreadsheetId `1QN5sBTGJSAcPpTzpkLj3qchWmgg9bb6ht6yV22LYukI`。nostalibrary repo
 
 ## 刊名沿革
 
-**改名不拆刊**：一筆 `Magazine` 代表整條出版脈絡，每個題名穩定的連續階段建一筆 `MagazineTitle`（刊名時期），只記「從哪一期起用這個名字」——一段的終點就是下一段起點的前一期，最後一段開放至今。**只有改名過的雜誌才建**；要建就把整段沿革建齊（第一筆從第一期起），因為通行名不一定等於首段名（《電視遊樂報導》的首段叫「電視遊樂情報」），靠 fallback `Magazine.name` 代打會顯示錯。設計討論見 `docs/plans/2026-08-22-magazine-title-design.md`。
+**改名不拆刊**：一筆 `Magazine` 代表整條出版脈絡，每個題名穩定的連續階段建一筆 `MagazineTitle`（刊名時期），只記「從哪一期起用這個名字」——一段的終點就是下一段起點的前一期，最後一段開放至今。**只有改名過的雜誌才建**；要建就把整段沿革建齊（第一筆從第一期起），因為通行名不一定等於首段名（《電視遊樂報導》的首段可能叫「電視遊樂情報」——
+2026-08-23 查無實據，待複查），靠 fallback `Magazine.name` 代打會顯示錯。設計討論見 `docs/plans/2026-08-22-magazine-title-design.md`。
 
 ### 歸併判準：這兩段是不是同一條刊系
 

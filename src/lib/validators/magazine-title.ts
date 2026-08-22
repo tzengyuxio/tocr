@@ -5,6 +5,8 @@ import { optionalText } from "./fields";
 // zod 管形狀，歸屬要查資料庫。
 export const magazineTitleCreateSchema = z.object({
   title: z.string().min(1, "刊名為必填"),
+  // 該時期的並列刊名。只在它跟著改名一起換時才有值，見 schema 的欄位註解
+  titleParallel: optionalText,
   startIssueId: z.string().min(1, "起始期為必填"),
   logoImage: optionalText,
   note: optionalText,
