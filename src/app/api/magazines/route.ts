@@ -18,6 +18,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         { nameOriginal: { contains: search, mode: "insensitive" as const } },
         { aliases: { has: search } },
         { publisher: { contains: search, mode: "insensitive" as const } },
+        { titles: { some: { title: { contains: search, mode: "insensitive" as const } } } },
       ],
     }),
     ...(isActive !== null && isActive !== undefined && {

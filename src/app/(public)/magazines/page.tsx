@@ -21,11 +21,12 @@ import { MagazineBrowseBar } from "@/components/magazine/MagazineBrowseBar";
 import { MagazineList } from "@/components/magazine/MagazineList";
 import {
   MAGAZINE_FILTERS,
-  magazineOrderBy,
+  magazineDisplayUnits,
   parseMagazineDirection,
   parseMagazineFilter,
   parseMagazineSort,
   parseMagazineView,
+  sortMagazineDisplayUnits,
 } from "@/lib/magazine-browse";
 
 export default async function MagazinesPage({
@@ -47,10 +48,17 @@ export default async function MagazinesPage({
   const [magazines, counts] = await Promise.all([
     prisma.magazine.findMany({
       where: filter.where,
-      orderBy: magazineOrderBy(sort, direction),
       include: {
         _count: {
           select: { issues: true },
+        },
+        titles: {
+          select: {
+            id: true,
+            title: true,
+            logoImage: true,
+            startIssue: { select: { order: true } },
+          },
         },
       },
     }),
@@ -60,6 +68,31 @@ export default async function MagazinesPage({
       )
     ),
   ]);
+
+  // 有刊名沿革的雜誌要展開成一時期一卡，期間與期數從各時期涵蓋的期推導，
+  // 所以把這幾本（絕大多數雜誌沒有 titles，撈不到幾筆）的期抓進來分段。
+  const withTitles = magazines.filter((magazine) => magazine.titles.length > 0);
+  const periodIssues = withTitles.length
+    ? await prisma.issue.findMany({
+        where: { magazineId: { in: withTitles.map((m) => m.id) } },
+        select: { magazineId: true, order: true, publishSort: true },
+        orderBy: { order: "asc" },
+      })
+    : [];
+  const issuesByMagazine = new Map<string, typeof periodIssues>();
+  for (const issue of periodIssues) {
+    const list = issuesByMagazine.get(issue.magazineId);
+    if (list) list.push(issue);
+    else issuesByMagazine.set(issue.magazineId, [issue]);
+  }
+
+  const units = sortMagazineDisplayUnits(
+    magazines.flatMap((magazine) =>
+      magazineDisplayUnits(magazine, issuesByMagazine.get(magazine.id) ?? [])
+    ),
+    sort,
+    direction
+  );
 
   const filterCounts = Object.fromEntries(
     MAGAZINE_FILTERS.map((option, i) => [option.value, counts[i]])
@@ -71,7 +104,7 @@ export default async function MagazinesPage({
         <h1 className="text-3xl font-bold">雜誌列表</h1>
         <p className="mt-2 text-muted-foreground">
           瀏覽所有收錄的遊戲雜誌
-          {magazines.length > 0 && `，共 ${magazines.length} 本`}
+          {units.length > 0 && `，共 ${units.length} 本`}
         </p>
       </div>
 
@@ -86,7 +119,7 @@ export default async function MagazinesPage({
         />
       </div>
 
-      {magazines.length === 0 ? (
+      {units.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <BookOpen className="h-16 w-16 text-muted-foreground/50" />
           <h2 className="mt-4 text-xl font-semibold">
@@ -97,18 +130,18 @@ export default async function MagazinesPage({
           </p>
         </div>
       ) : view === "list" ? (
-        <MagazineList magazines={magazines} />
+        <MagazineList units={units} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {magazines.map((magazine) => (
-            <Link key={magazine.id} href={`/magazines/${magazine.slug}`}>
+          {units.map((unit) => (
+            <Link key={unit.key} href={unit.href}>
               <Card className="h-full transition-shadow hover:shadow-lg gap-3">
                 <CardHeader className="pb-0 gap-1">
                   <div className="mb-2 flex h-20 items-center justify-center rounded-lg bg-muted/50">
-                    {magazine.logoImage ? (
+                    {unit.logoImage ? (
                       <Image
-                        src={magazine.logoImage}
-                        alt={magazine.name}
+                        src={unit.logoImage}
+                        alt={unit.name}
                         width={300}
                         height={80}
                         unoptimized
@@ -118,20 +151,20 @@ export default async function MagazinesPage({
                       <BookOpen className="h-10 w-10 text-muted-foreground/30" />
                     )}
                   </div>
-                  <CardTitle className="line-clamp-1 text-base">{magazine.name}</CardTitle>
-                  {magazine.nameOriginal && (
+                  <CardTitle className="line-clamp-1 text-base">{unit.name}</CardTitle>
+                  {unit.nameOriginal && (
                     <CardDescription className="line-clamp-1 text-xs">
-                      {magazine.nameOriginal}
+                      {unit.nameOriginal}
                     </CardDescription>
                   )}
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground text-xs">
-                      {magazine.publisher || "未知出版社"}
+                      {unit.publisher || "未知出版社"}
                     </span>
-                    <Badge variant={magazine.isActive ? "default" : "secondary"} className="text-xs">
-                      {magazine._count.issues} 期
+                    <Badge variant={unit.isActive ? "default" : "secondary"} className="text-xs">
+                      {unit.issueCount} 期
                     </Badge>
                   </div>
                 </CardContent>

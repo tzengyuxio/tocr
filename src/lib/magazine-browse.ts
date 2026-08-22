@@ -1,4 +1,10 @@
 import type { Prisma } from "@prisma/client";
+import { formatEdtf } from "./edtf";
+import {
+  sortTitlePeriods,
+  splitIssuesByPeriod,
+  type TitlePeriod,
+} from "./magazine-title";
 
 /**
  * 期刊列表的分類篩選。
@@ -142,4 +148,159 @@ export function magazineOrderBy(
   }
   if (sort.value === "created") return [{ createdAt: direction }];
   return [{ name: direction }];
+}
+
+// ==================== 刊名時期的展開 ====================
+
+/**
+ * `/magazines` 的顯示單位。有刊名沿革的雜誌展開成一時期一卡——改了名又各自
+ * 運行上百期的時期，對當年的讀者就是不同的雜誌，列表照那個認知呈現；資料層
+ * 仍是同一個 Magazine，所以連結全部進同一個刊系頁（時期卡帶 #period-n 錨點）。
+ * 沒有 titles 的雜誌維持一卡一本，欄位照舊。
+ */
+export interface MagazineDisplayUnit {
+  key: string;
+  href: string;
+  name: string;
+  nameOriginal: string | null;
+  publisher: string | null;
+  logoImage: string | null;
+  categories: MagazineCategory[];
+  /** 已格式化的發行期間，如「1999 年 8 月 – 2000 年 3 月」；不明則空字串。 */
+  span: string;
+  issueCount: number;
+  /** 期數徽章的樣式用：非末段的時期一律視為已結束。 */
+  isActive: boolean;
+  /** 創刊日排序鍵；時期卡用該段第一期的 publishSort。null 排最後。 */
+  sortDate: Date | null;
+}
+
+interface DisplayMagazine {
+  id: string;
+  slug: string;
+  name: string;
+  nameOriginal: string | null;
+  publisher: string | null;
+  logoImage: string | null;
+  categories: MagazineCategory[];
+  foundedDate: string | null;
+  endedDate: string | null;
+  foundedSort: Date | null;
+  isActive: boolean;
+  titles: (TitlePeriod & { id: string; logoImage: string | null })[];
+  _count: { issues: number };
+}
+
+/** publishSort 是資料庫存的 UTC 午夜，取年月來顯示，精度跟 formatEdtf 的月級一致。 */
+function yearMonth(date: Date | null): string {
+  if (!date) return "";
+  return `${date.getUTCFullYear()} 年 ${date.getUTCMonth() + 1} 月`;
+}
+
+/**
+ * 沒有停刊資訊就只講起點：單卡雜誌沿用原本的「X創刊」；時期卡用「X起」——
+ * 一個時期的開頭不是創刊。兩者缺起點都整格留白，理由見 MagazineList。
+ */
+function spanLabel(start: string, end: string, openSuffix: string): string {
+  if (!start) return "";
+  return end ? `${start} – ${end}` : `${start}${openSuffix}`;
+}
+
+export function magazineDisplayUnits(
+  magazine: DisplayMagazine,
+  issues: { order: number; publishSort: Date | null }[]
+): MagazineDisplayUnit[] {
+  const base = {
+    nameOriginal: magazine.nameOriginal,
+    publisher: magazine.publisher,
+    categories: magazine.categories,
+  };
+
+  if (magazine.titles.length === 0) {
+    return [
+      {
+        ...base,
+        key: magazine.id,
+        href: `/magazines/${magazine.slug}`,
+        name: magazine.name,
+        logoImage: magazine.logoImage,
+        span: spanLabel(
+          formatEdtf(magazine.foundedDate),
+          formatEdtf(magazine.endedDate),
+          "創刊"
+        ),
+        issueCount: magazine._count.issues,
+        isActive: magazine.isActive,
+        sortDate: magazine.foundedSort,
+      },
+    ];
+  }
+
+  const sorted = sortTitlePeriods(magazine.titles);
+  const segments = splitIssuesByPeriod(sorted, issues);
+
+  return segments.map((segment, index) => {
+    const dates = segment.issues
+      .map((issue) => issue.publishSort)
+      .filter((date): date is Date => date !== null);
+    const first = dates.length ? new Date(Math.min(...dates.map(Number))) : null;
+    const last = dates.length ? new Date(Math.max(...dates.map(Number))) : null;
+
+    const isFirst = index === 0;
+    const isLast = index === segments.length - 1;
+    // 首段的起點以雜誌的創刊日為準（EDTF 可能比 publishSort 更精確或更誠實），
+    // 末段的終點同理用停刊日；中間的邊界只能從期資料推。
+    const start = isFirst
+      ? formatEdtf(magazine.foundedDate) || yearMonth(first)
+      : yearMonth(first);
+    const end = isLast
+      ? formatEdtf(magazine.endedDate) || (magazine.isActive ? "" : yearMonth(last))
+      : yearMonth(last);
+
+    // 錨點編號跟著時期在沿革中的次序（1 起算），刊系頁的區段用同一套編號。
+    // titles 沒建齊時的 null 首段沒有錨點，它就是頁面頂端。
+    const anchorSeq = segment.period ? sorted.indexOf(segment.period) + 1 : 0;
+
+    return {
+      ...base,
+      key: segment.period ? segment.period.id : magazine.id,
+      href:
+        anchorSeq > 1
+          ? `/magazines/${magazine.slug}#period-${anchorSeq}`
+          : `/magazines/${magazine.slug}`,
+      name: segment.period?.title ?? magazine.name,
+      logoImage: segment.period?.logoImage ?? magazine.logoImage,
+      span: spanLabel(start, end, isFirst ? "創刊" : "起"),
+      issueCount: segment.issues.length,
+      isActive: magazine.isActive && isLast,
+      sortDate: isFirst ? (magazine.foundedSort ?? first) : first,
+    };
+  });
+}
+
+/**
+ * 展開之後排序只能在 JS 做：一本雜誌的三個時期名要各自落在字母序／年代序
+ * 自己的位置上，資料庫層的 orderBy 排的是 Magazine。名稱用 zh-Hant collator
+ * （筆畫序），與原本資料庫 collation 對 CJK 的 codepoint 序相比更接近讀者的
+ * 預期；創刊日比照 magazineOrderBy——null 排最後、名稱當第二鍵。
+ */
+export function sortMagazineDisplayUnits(
+  units: MagazineDisplayUnit[],
+  sort: MagazineSort,
+  direction: MagazineDirection
+): MagazineDisplayUnit[] {
+  const collator = new Intl.Collator("zh-Hant");
+  const dir = direction === "asc" ? 1 : -1;
+  return [...units].sort((a, b) => {
+    if (sort.value === "founded") {
+      if (a.sortDate === null && b.sortDate === null)
+        return collator.compare(a.name, b.name);
+      if (a.sortDate === null) return 1;
+      if (b.sortDate === null) return -1;
+      const byDate = a.sortDate.getTime() - b.sortDate.getTime();
+      if (byDate !== 0) return byDate * dir;
+      return collator.compare(a.name, b.name);
+    }
+    return collator.compare(a.name, b.name) * dir;
+  });
 }

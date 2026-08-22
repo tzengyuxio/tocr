@@ -24,6 +24,7 @@ import { SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { sortTitlePeriods, splitIssuesByPeriod } from "@/lib/magazine-title";
 import { JsonLd } from "@/components/JsonLd";
 import { periodicalJsonLd } from "@/lib/structured-data";
 import { getSiteOrigin } from "@/lib/site-origin";
@@ -79,7 +80,18 @@ export default async function MagazineDetailPage({
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
 
-  const magazine = await prisma.magazine.findUnique({ where: { id } });
+  const magazine = await prisma.magazine.findUnique({
+    where: { id },
+    include: {
+      titles: {
+        select: {
+          id: true,
+          title: true,
+          startIssue: { select: { order: true } },
+        },
+      },
+    },
+  });
 
   if (!magazine) {
     notFound();
@@ -103,6 +115,36 @@ export default async function MagazineDetailPage({
     ISSUE_FILTERS.map((option, index) => [option.value, filterCounts[index]])
   );
   const total = counts.all;
+
+  // 刊名沿革。頁首那行要涵蓋整段歷史，所以另撈全部期算各時期的期號範圍——
+  // 上面的 issues 已被篩選（預設只看有封面的），不能拿來當歷史。
+  const sortedTitles = sortTitlePeriods(magazine.titles);
+  const historySegments = sortedTitles.length
+    ? splitIssuesByPeriod(
+        sortedTitles,
+        await prisma.issue.findMany({
+          where: { magazineId: id },
+          select: { order: true, issueNumber: true },
+          orderBy: { order: "asc" },
+        })
+      )
+    : [];
+  const historyLine = historySegments
+    .map((segment) => {
+      const name = segment.period?.title ?? magazine.name;
+      const first = formatIssueNumber(segment.issues[0].issueNumber);
+      const last = formatIssueNumber(
+        segment.issues[segment.issues.length - 1].issueNumber
+      );
+      return `${name}（${first === last ? first : `${first}－${last}`}）`;
+    })
+    .join(" → ");
+
+  // 期列表只在預設的刊期順序下分時期區段；改排序或方向後時期會交錯，退回平列表。
+  const issueSegments =
+    sortedTitles.length && sort.value === "order" && direction === "asc"
+      ? splitIssuesByPeriod(sortedTitles, issues)
+      : null;
 
   // Only five magazines have a masthead on file, and an empty column beside the
   // details reads as a page that failed to load. The earliest issue's cover
@@ -133,7 +175,18 @@ export default async function MagazineDetailPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <JsonLd data={periodicalJsonLd(getSiteOrigin(), magazine)} />
+      {/* 歷任刊名也進 alternateName，搜尋引擎才把舊名連回這條刊系。 */}
+      <JsonLd
+        data={periodicalJsonLd(getSiteOrigin(), {
+          ...magazine,
+          aliases: [
+            ...magazine.aliases,
+            ...sortedTitles
+              .map((t) => t.title)
+              .filter((t) => t !== magazine.name),
+          ],
+        })}
+      />
       <Breadcrumb items={[{ label: "雜誌", href: "/magazines" }, { label: magazine.name }]} />
 
       {/* 期刊資訊。刊頭與詳細資料左右並列，兩欄等高——刊頭原本是頂上一條 96px
@@ -167,6 +220,11 @@ export default async function MagazineDetailPage({
           {magazine.aliases && magazine.aliases.length > 0 && (
             <p className="mt-0.5 text-sm text-muted-foreground">
               {magazine.aliases.join(" / ")}
+            </p>
+          )}
+          {historyLine && (
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              刊名沿革：{historyLine}
             </p>
           )}
           <div className="mt-4 space-y-2 text-sm">
@@ -253,6 +311,43 @@ export default async function MagazineDetailPage({
             <p className="text-muted-foreground">
               {total === 0 ? "尚無單期資料" : "沒有符合這個篩選的單期"}
             </p>
+          </div>
+        ) : issueSegments ? (
+          // 依刊名時期分區段。錨點編號跟著時期在沿革中的次序（與 /magazines
+          // 的時期卡同一套）；scroll-mt 讓跳轉後的段首不被 sticky header 蓋住。
+          <div className="space-y-8">
+            {issueSegments.map((segment) => {
+              const seq = segment.period
+                ? sortedTitles.indexOf(segment.period) + 1
+                : 0;
+              return (
+                <section
+                  key={segment.period?.id ?? "before-first"}
+                  id={seq > 0 ? `period-${seq}` : undefined}
+                  className="scroll-mt-20"
+                >
+                  <h3 className="mb-3 text-lg font-semibold">
+                    {segment.period?.title ?? magazine.name}
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      {formatIssueNumber(segment.issues[0].issueNumber)}
+                      {segment.issues.length > 1 &&
+                        ` － ${formatIssueNumber(
+                          segment.issues[segment.issues.length - 1].issueNumber
+                        )}`}
+                    </span>
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 sm:[grid-template-columns:repeat(auto-fill,182px)]">
+                    {segment.issues.map((issue) => (
+                      <IssueCard
+                        key={issue.id}
+                        issue={issue}
+                        magazineSlug={magazine.slug}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         ) : (
           // Fixed tracks: the covers keep their own proportions now, so the
