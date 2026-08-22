@@ -8,6 +8,8 @@ import {
   MAGAZINE_CATEGORY_VALUES,
   MAGAZINE_FILTERS,
   parseMagazineFilter,
+  DEFAULT_MAGAZINE_VIEW,
+  parseMagazineView,
 } from "@/lib/magazine-browse";
 
 describe("MAGAZINE_FILTERS", () => {
@@ -39,6 +41,17 @@ describe("parseMagazineFilter", () => {
   it("falls back to the default rather than throwing on a hand-edited URL", () => {
     expect(parseMagazineFilter("nonsense").value).toBe(DEFAULT_MAGAZINE_FILTER);
     expect(parseMagazineFilter(undefined).value).toBe(DEFAULT_MAGAZINE_FILTER);
+  });
+});
+
+describe("parseMagazineView", () => {
+  it("reads a known value", () => {
+    expect(parseMagazineView("list")).toBe("list");
+  });
+
+  it("falls back to the card view rather than throwing on a hand-edited URL", () => {
+    expect(parseMagazineView("carousel")).toBe(DEFAULT_MAGAZINE_VIEW);
+    expect(parseMagazineView(undefined)).toBe(DEFAULT_MAGAZINE_VIEW);
   });
 });
 

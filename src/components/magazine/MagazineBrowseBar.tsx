@@ -1,15 +1,28 @@
 import Link from "next/link";
-import { ArrowDown, ArrowUp, ArrowDownUp, Filter } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowDownUp, Filter, LayoutGrid, Rows3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_MAGAZINE_FILTER,
   DEFAULT_MAGAZINE_SORT,
+  DEFAULT_MAGAZINE_VIEW,
   MAGAZINE_FILTERS,
   MAGAZINE_SORTS,
   type MagazineDirection,
   type MagazineFilter,
   type MagazineSort,
+  type MagazineView,
 } from "@/lib/magazine-browse";
+
+/** 圖示與說明放這裡而不是 magazine-browse.ts：那份表要能被伺服器端的查詢讀，
+    塞進 lucide 元件會把圖示庫拖進每一個 import 它的地方。 */
+const VIEW_OPTIONS = [
+  { value: "grid", label: "卡片檢視", icon: LayoutGrid },
+  { value: "list", label: "列表檢視", icon: Rows3 },
+] as const satisfies ReadonlyArray<{
+  value: MagazineView;
+  label: string;
+  icon: typeof LayoutGrid;
+}>;
 
 /**
  * 期刊列表的篩選與排序。
@@ -17,8 +30,8 @@ import {
  * 與 IssueBrowseBar 同一個形狀：chip 是 `<Link>`、狀態在網址、整個元件不需要
  * hydrate。
  *
- * 篩選那一組是選用的：前台要分類 chip，後台的期刊管理只要排序。省略時整條列
- * 只剩排序，兩邊仍共用同一份表與同一套網址參數。
+ * 篩選與檢視兩組都是選用的：前台要分類 chip 與卡片／列表切換，後台的期刊管理
+ * 只要排序。省略時整條列只剩排序，兩邊仍共用同一份表與同一套網址參數。
  */
 export function MagazineBrowseBar({
   basePath,
@@ -26,6 +39,7 @@ export function MagazineBrowseBar({
   sort,
   sorts = MAGAZINE_SORTS,
   direction,
+  view,
   counts,
 }: {
   basePath: string;
@@ -35,6 +49,8 @@ export function MagazineBrowseBar({
   /** 可選的排序，後台傳 ADMIN_MAGAZINE_SORTS 多一種「建立日期」。 */
   sorts?: ReadonlyArray<MagazineSort>;
   direction: MagazineDirection;
+  /** 省略即不顯示卡片／列表切換。 */
+  view?: MagazineView;
   /** 以 filter 的 value 為 key，讓讀者看得出每個選擇涵蓋多少。 */
   counts?: Record<string, number>;
 }) {
@@ -42,7 +58,8 @@ export function MagazineBrowseBar({
   const hrefFor = (
     nextFilter: string,
     nextSort: string,
-    nextDirection: MagazineDirection
+    nextDirection: MagazineDirection,
+    nextView: MagazineView | undefined = view
   ) => {
     const params = new URLSearchParams();
     if (filter && nextFilter !== DEFAULT_MAGAZINE_FILTER) params.set("filter", nextFilter);
@@ -51,6 +68,7 @@ export function MagazineBrowseBar({
       (option) => option.value === nextSort
     )!.defaultDirection;
     if (nextDirection !== sortDefault) params.set("dir", nextDirection);
+    if (nextView && nextView !== DEFAULT_MAGAZINE_VIEW) params.set("view", nextView);
     const query = params.toString();
     return query ? `${basePath}?${query}` : basePath;
   };
@@ -135,6 +153,40 @@ export function MagazineBrowseBar({
           );
         })}
       </div>
+
+      {/* 切換擺在最右邊、與篩選排序同一條：它改的是同一份清單怎麼呈現，不是
+          清單裝了什麼，所以不值得另起一列，但也不該混在 chip 中間讀成第三種
+          篩選。ml-auto 在換行時會失效並排到下一列的開頭，那正好。 */}
+      {view && (
+        <div className="flex items-center gap-1 sm:ml-auto">
+          {VIEW_OPTIONS.map((option) => {
+            const active = option.value === view;
+            const Icon = option.icon;
+            return (
+              <Link
+                key={option.value}
+                href={hrefFor(
+                  filter?.value ?? DEFAULT_MAGAZINE_FILTER,
+                  sort.value,
+                  direction,
+                  option.value
+                )}
+                className={cn(
+                  "rounded-md border p-1.5 transition-colors",
+                  active
+                    ? "border-transparent bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+                aria-current={active ? "page" : undefined}
+                aria-label={option.label}
+                title={option.label}
+              >
+                <Icon className="h-4 w-4" />
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
