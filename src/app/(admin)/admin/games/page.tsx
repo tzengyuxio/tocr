@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/comma-list-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Card,
   CardContent,
@@ -790,40 +791,36 @@ export default function GamesPage() {
               />
             </div>
 
+            {/* 與單期封面、期刊刊頭同一個元件。這裡原本是一個裸的網址欄位加
+                預覽圖，少了另外兩處都有的東西：拖曳上傳，以及**清掉這張圖的
+                辦法**——RAWG 抓錯時，唯一的退路是整個取消編輯。 */}
             <div className="space-y-2">
-              <Label>封面圖片</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={formData.coverImage}
-                  onChange={(e) =>
-                    setFormData({ ...formData, coverImage: e.target.value })
-                  }
-                  placeholder="封面圖片 URL"
-                  className="flex-1"
-                />
-                {RAWG_ENABLED && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleFetchCover}
-                    disabled={isFetchingCover || !formData.name.trim()}
-                  >
-                    {isFetchingCover ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    從 RAWG 抓取
-                  </Button>
-                )}
-              </div>
-              {formData.coverImage && (
-                // The cover URL can point at RAWG, which is not in the
-                // remotePatterns allowlist next/image enforces.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={formData.coverImage}
-                  alt="Cover preview"
-                  className="mt-2 aspect-video w-full rounded-lg object-cover"
-                />
+              <ImageUpload
+                label="封面圖片"
+                value={formData.coverImage}
+                onChange={(url) =>
+                  setFormData((prev) => ({ ...prev, coverImage: url }))
+                }
+                folder="games"
+                description={
+                  RAWG_ENABLED
+                    ? "可拖曳上傳、貼網址，或從 RAWG 抓取"
+                    : "可拖曳上傳或貼網址"
+                }
+              />
+              {RAWG_ENABLED && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleFetchCover}
+                  disabled={isFetchingCover || !formData.name.trim()}
+                >
+                  {isFetchingCover ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  從 RAWG 抓取
+                </Button>
               )}
             </div>
           </div>
