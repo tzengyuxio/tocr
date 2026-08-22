@@ -9,7 +9,14 @@ import { resolveApiToken } from "./user-api-token";
 
 export type EditAction = "CREATE" | "UPDATE" | "DELETE";
 
-export type EntityType = "Magazine" | "Issue" | "Article" | "Tag" | "Game" | "User";
+export type EntityType =
+  | "Magazine"
+  | "MagazineTitle"
+  | "Issue"
+  | "Article"
+  | "Tag"
+  | "Game"
+  | "User";
 
 /**
  * Activity feeds show one line per action, not one per record: a 50-article
