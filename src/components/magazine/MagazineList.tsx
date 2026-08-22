@@ -3,9 +3,10 @@ import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
-  MAGAZINE_CATEGORY_LABELS,
+  MAGAZINE_CATEGORY_CHIPS,
   type MagazineDisplayUnit,
 } from "@/lib/magazine-browse";
+import { cn } from "@/lib/utils";
 
 /**
  * `/magazines` 的列表檢視，卡片牆之外的另一種讀法。
@@ -67,11 +68,18 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
 
           {/* 固定寬度：這欄夾在兩個固定欄之間，寬度隨 chip 數量伸縮的話，
               左邊的出版社與期間會被推得各列不對齊（電玩宅速配兩顆 chip 就
-              露了餡）。w-44 放得下兩顆，三顆的罕見情形換行。 */}
-          <div className="hidden w-44 shrink-0 flex-wrap gap-1 xl:flex">
+              露了餡）。縮寫版 w-36 放得下全部三顆；未來加了 Mobile 之後的
+              四顆換行。 */}
+          <div className="hidden w-36 shrink-0 flex-wrap gap-1 xl:flex">
             {unit.categories.map((category) => (
-              <Badge key={category} variant="outline" className="text-xs font-normal">
-                {MAGAZINE_CATEGORY_LABELS[category]}
+              <Badge
+                key={category}
+                className={cn(
+                  "border-0 text-xs font-normal",
+                  MAGAZINE_CATEGORY_CHIPS[category].className
+                )}
+              >
+                {MAGAZINE_CATEGORY_CHIPS[category].label}
               </Badge>
             ))}
           </div>

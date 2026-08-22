@@ -30,6 +30,20 @@ export const MAGAZINE_CATEGORY_LABELS: Record<MagazineCategory, string> = {
   ONLINE_GAME: "Online Game",
 };
 
+/**
+ * list 檢視的窄欄版分類 chip：全名太寬，縮寫加色相讓一整欄掃得出類別。
+ * 色相沿用 tag-colors.ts 的 -100/-800 tint 慣例。
+ * 未來若加 MOBILE_GAME（目前 enum 還沒有），在這裡補一行即可（建議 rose）。
+ */
+export const MAGAZINE_CATEGORY_CHIPS: Record<
+  MagazineCategory,
+  { label: string; className: string }
+> = {
+  PC_GAME: { label: "PC", className: "bg-blue-100 text-blue-800" },
+  TV_GAME: { label: "TV", className: "bg-green-100 text-green-800" },
+  ONLINE_GAME: { label: "Online", className: "bg-violet-100 text-violet-800" },
+};
+
 export const MAGAZINE_FILTERS = [
   { value: "all", label: "全部", where: {} },
   ...MAGAZINE_CATEGORY_VALUES.map((category) => ({
