@@ -40,6 +40,13 @@ export default async function MagazinesPage({
     },
   });
 
+  // 前台把有沿革的雜誌展開成一時期一卡，所以那邊的「共 N 本」比這裡大。
+  // 把展開後的數字並列出來，兩邊的數字才對得起來。
+  const unitCount = magazines.reduce(
+    (sum, magazine) => sum + (magazine.titles.length || 1),
+    0
+  );
+
   // 歷任刊名列在通行名底下，管理清單才 ctrl-F 得到「遊戲世界」這種舊名。
   const rows = magazines.map(({ titles, ...magazine }) => ({
     ...magazine,
@@ -74,7 +81,11 @@ export default async function MagazinesPage({
       <Card>
         <CardHeader>
           <CardTitle>雜誌列表</CardTitle>
-          <CardDescription>共 {magazines.length} 本雜誌</CardDescription>
+          <CardDescription>
+            共 {magazines.length} 本雜誌
+            {unitCount !== magazines.length &&
+              `（含刊名沿革展開為 ${unitCount} 個刊名，前台以此計數）`}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* 後台只掛排序，不掛分類篩選：這裡是管理清單，要看得到全部。 */}
