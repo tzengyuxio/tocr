@@ -62,8 +62,18 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
             {unit.publisher || "出版社不詳"}
           </div>
 
-          <div className="hidden w-56 shrink-0 truncate text-sm text-muted-foreground lg:block">
-            {unit.span}
+          {/* 有起有訖的期間拆成兩行（起訖各一行），一行擠不下就不硬擠；
+              只有起點的「X創刊」「X起」維持一行。分隔符是 spanLabel 組的
+              " – "，這裡照它拆。 */}
+          <div className="hidden w-44 shrink-0 text-sm text-muted-foreground lg:block">
+            {unit.span.includes(" – ") ? (
+              <>
+                <div className="truncate">{unit.span.split(" – ")[0]} –</div>
+                <div className="truncate">{unit.span.split(" – ")[1]}</div>
+              </>
+            ) : (
+              <div className="truncate">{unit.span}</div>
+            )}
           </div>
 
           {/* 固定寬度：這欄夾在兩個固定欄之間，寬度隨 chip 數量伸縮的話，
