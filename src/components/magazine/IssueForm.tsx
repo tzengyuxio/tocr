@@ -267,7 +267,7 @@ export function IssueForm({
                   <CopyButton code={code} />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  自動產生、不會變動。期刊改名或網址代號改動時，這條連結仍然到得了本期
+                  自動產生、不會變動。雜誌改名或網址代號改動時，這條連結仍然到得了本期
                 </p>
               </div>
             )}

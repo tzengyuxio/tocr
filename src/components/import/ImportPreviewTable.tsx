@@ -32,7 +32,7 @@ export function ImportPreviewTable({ result }: ImportPreviewTableProps) {
       <div className="flex flex-wrap gap-3">
         <Badge variant="secondary">共 {totalRows} 行</Badge>
         <Badge variant="secondary">
-          {magazines.length} 本期刊
+          {magazines.length} 本雜誌
         </Badge>
         <Badge variant="secondary">
           {magazines.reduce((sum, m) => sum + m.issues.length, 0)} 個單期

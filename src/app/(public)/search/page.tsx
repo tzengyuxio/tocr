@@ -229,7 +229,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">搜尋</h1>
         <p className="mt-2 text-muted-foreground">
-          在所有期刊、遊戲與文章目錄中搜尋關鍵字
+          在所有雜誌、遊戲與文章目錄中搜尋關鍵字
         </p>
       </div>
 
@@ -254,10 +254,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <>
                   <Select name="magazine" defaultValue={magazineId || "__all__"}>
                     <SelectTrigger className="w-full md:w-[200px]">
-                      <SelectValue placeholder="所有期刊" />
+                      <SelectValue placeholder="所有雜誌" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__all__">所有期刊</SelectItem>
+                      <SelectItem value="__all__">所有雜誌</SelectItem>
                       {magazines.map((mag) => (
                         <SelectItem key={mag.id} value={mag.id}>
                           {mag.name}
@@ -325,7 +325,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           )}
           {type === "article" && magazineId && (
             <Badge variant="secondary">
-              期刊：{magazines.find((m) => m.id === magazineId)?.name}
+              雜誌：{magazines.find((m) => m.id === magazineId)?.name}
               <Link
                 href={buildUrl({ magazine: "" })}
                 className="ml-1 hover:text-destructive"
@@ -353,7 +353,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       {/* Results Count */}
       <div className="mb-4 text-sm text-muted-foreground">
-        共找到 {total} {type === "article" ? "篇文章" : type === "magazine" ? "本期刊" : "款遊戲"}
+        共找到 {total} {type === "article" ? "篇文章" : type === "magazine" ? "本雜誌" : "款遊戲"}
         {totalPages > 1 && `，第 ${page} / ${totalPages} 頁`}
       </div>
 

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   // 沒有這個，相對路徑的 OG 圖不會被展開成絕對網址，而抓取端只認絕對網址。
   metadataBase: new URL(getSiteOrigin()),
   title: {
-    default: "TOCR - 期刊目錄索引系統",
+    default: "TOCR - 雜誌目錄索引系統",
     template: "%s | TOCR",
   },
   description: DESCRIPTION,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "TOCR",
     locale: "zh_TW",
-    title: "TOCR - 期刊目錄索引系統",
+    title: "TOCR - 雜誌目錄索引系統",
     description: DESCRIPTION,
     images: [DEFAULT_OG_IMAGE],
   },

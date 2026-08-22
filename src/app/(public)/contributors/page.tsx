@@ -29,7 +29,7 @@ export default async function ContributorsPage() {
       <section className="mb-8 text-center">
         <h1 className="mb-2 text-3xl font-bold">貢獻者</h1>
         <p className="text-muted-foreground">
-          感謝所有為期刊目錄索引貢獻資料的夥伴
+          感謝所有為雜誌目錄索引貢獻資料的夥伴
         </p>
       </section>
 

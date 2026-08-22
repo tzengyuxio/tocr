@@ -55,7 +55,7 @@ describe("issueCreateSchema", () => {
     const result = issueCreateSchema.safeParse(input);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("期刊 ID 為必填");
+      expect(result.error.issues[0].message).toBe("雜誌 ID 為必填");
     }
   });
 

@@ -98,7 +98,7 @@ export function parseCsvFile(file: File): Promise<ParseResult> {
           if (issueDedupSet.has(dedupKey)) {
             warnings.push({
               row: rowNum,
-              message: `期刊「${magazine.name}」的期號「${issueNumber}」重複，已跳過此行`,
+              message: `雜誌「${magazine.name}」的期號「${issueNumber}」重複，已跳過此行`,
             });
             continue;
           }

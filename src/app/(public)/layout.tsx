@@ -28,7 +28,7 @@ export default function PublicLayout({
             <Button variant="ghost" size="sm" asChild>
               <Link href="/magazines">
                 <BookOpen className="mr-1.5 h-4 w-4" />
-                期刊
+                雜誌
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>

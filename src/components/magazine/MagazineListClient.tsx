@@ -44,7 +44,7 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>期刊名稱</TableHead>
+            <TableHead>雜誌名稱</TableHead>
             <TableHead>出版社</TableHead>
             <TableHead>ISSN</TableHead>
             <TableHead>單期</TableHead>
@@ -113,7 +113,7 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">
-                  <Button asChild variant="ghost" size="icon" title="編輯期刊">
+                  <Button asChild variant="ghost" size="icon" title="編輯雜誌">
                     <Link href={`/admin/magazines/${magazine.id}`}>
                       <Edit className="h-4 w-4" />
                     </Link>

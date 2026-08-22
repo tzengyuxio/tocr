@@ -15,7 +15,7 @@ const optionalEdtf = z.preprocess(
 );
 
 export const magazineCreateSchema = z.object({
-  name: z.string().min(1, "期刊名稱為必填"),
+  name: z.string().min(1, "雜誌名稱為必填"),
   // Deliberately stricter than Game.slug and Tag.slug, which allow Chinese:
   // this one is the prefix of every issue URL, so a Chinese value would
   // percent-encode into the URLs people actually share.

@@ -37,13 +37,13 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id: param } = await params;
   const found = await resolveSlugParam("magazine", param);
-  if (!found) return { title: "期刊詳情" };
+  if (!found) return { title: "雜誌詳情" };
 
   const magazine = await prisma.magazine.findUnique({
     where: { id: found.id },
     select: { name: true, description: true, logoImage: true },
   });
-  if (!magazine) return { title: "期刊詳情" };
+  if (!magazine) return { title: "雜誌詳情" };
 
   return {
     title: magazine.name,
@@ -134,7 +134,7 @@ export default async function MagazineDetailPage({
   return (
     <div className="container mx-auto px-4 py-8">
       <JsonLd data={periodicalJsonLd(getSiteOrigin(), magazine)} />
-      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: magazine.name }]} />
+      <Breadcrumb items={[{ label: "雜誌", href: "/magazines" }, { label: magazine.name }]} />
 
       {/* 期刊資訊。刊頭與詳細資料左右並列，兩欄等高——刊頭原本是頂上一條 96px
           的橫幅，那個高度撐不起這頁唯一的一張圖。 */}
@@ -153,7 +153,7 @@ export default async function MagazineDetailPage({
               <Link
                 href={`/admin/magazines/${id}`}
                 className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                title="編輯此期刊"
+                title="編輯此雜誌"
               >
                 <SquarePen className="h-4 w-4" />
               </Link>

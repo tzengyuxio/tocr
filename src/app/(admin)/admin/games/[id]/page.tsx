@@ -133,7 +133,7 @@ export default function GameDetailPage() {
         <CardHeader>
           <CardTitle>相關文章</CardTitle>
           <CardDescription>
-            出現在 {grouped.length} 本期刊、
+            出現在 {grouped.length} 本雜誌、
             {grouped.reduce((sum, g) => sum + g.issues.length, 0)} 期中
           </CardDescription>
         </CardHeader>

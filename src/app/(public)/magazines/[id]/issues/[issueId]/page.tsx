@@ -137,7 +137,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
           issue
         )}
       />
-      <Breadcrumb items={[{ label: "期刊", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: formatIssueNumber(issue.issueNumber) }]} />
+      <Breadcrumb items={[{ label: "雜誌", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: formatIssueNumber(issue.issueNumber) }]} />
 
       {/* Title block: the cover no longer sets the height, so nothing has to
           fill 256px of space beside it. */}

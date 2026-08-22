@@ -49,7 +49,7 @@ export function isTocReviewMark(entityType: string, changes: unknown): boolean {
 
 export function entityLabel(type: string) {
   switch (type) {
-    case "Magazine": return "期刊";
+    case "Magazine": return "雜誌";
     case "Issue": return "單期";
     case "Article": return "文章";
     case "Tag": return "標籤";

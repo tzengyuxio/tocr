@@ -149,10 +149,10 @@ export default function ArticlesPage() {
               }}
             >
               <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="所有期刊" />
+                <SelectValue placeholder="所有雜誌" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">所有期刊</SelectItem>
+                <SelectItem value="all">所有雜誌</SelectItem>
                 {magazines.map((mag) => (
                   <SelectItem key={mag.id} value={mag.id}>
                     {mag.name}
@@ -186,7 +186,7 @@ export default function ArticlesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>標題</TableHead>
-                    <TableHead>期刊 / 單期</TableHead>
+                    <TableHead>雜誌 / 單期</TableHead>
                     <TableHead>分類</TableHead>
                     <TableHead>頁碼</TableHead>
                     <TableHead>作者</TableHead>

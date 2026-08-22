@@ -47,7 +47,7 @@ describe("magazineCreateSchema", () => {
     const result = magazineCreateSchema.safeParse(input);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("期刊名稱為必填");
+      expect(result.error.issues[0].message).toBe("雜誌名稱為必填");
     }
   });
 
@@ -141,7 +141,7 @@ describe("magazineCreateSchema slug", () => {
 describe("magazineUpdateSchema", () => {
   it("should validate partial updates", () => {
     const input = {
-      name: "新期刊名稱",
+      name: "新雜誌名稱",
     };
     const result = magazineUpdateSchema.safeParse(input);
     expect(result.success).toBe(true);

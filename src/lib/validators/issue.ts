@@ -17,7 +17,7 @@ const optionalDecimal = z.preprocess(
 );
 
 export const issueCreateSchema = z.object({
-  magazineId: z.string().min(1, "期刊 ID 為必填"),
+  magazineId: z.string().min(1, "雜誌 ID 為必填"),
   issueNumber: z.string().min(1, "期號為必填"),
   // Optional on the wire: left blank, the server derives it from the issue
   // number. Same charset as Game.slug -- 創刊號 has to survive.
