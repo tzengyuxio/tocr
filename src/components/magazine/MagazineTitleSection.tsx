@@ -13,13 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { Loader2, Pencil, Trash2 } from "lucide-react";
@@ -247,23 +241,21 @@ export function MagazineTitleSection({
             </div>
             <div className="space-y-1.5">
               <Label>起始期 *</Label>
-              <Select
+              {/* Combobox 而不是 Select：一本雜誌動輒兩百期，原生下拉會長成
+                  跨整個螢幕的列表；這個是固定高度內捲動，上方還有過濾框。 */}
+              <Combobox
+                options={issues.map((issue) => ({
+                  value: issue.id,
+                  label: formatIssueNumber(issue.issueNumber),
+                }))}
                 value={form.startIssueId}
                 onValueChange={(value) =>
                   setForm({ ...form, startIssueId: value })
                 }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="從哪一期起用這個刊名" />
-                </SelectTrigger>
-                <SelectContent>
-                  {issues.map((issue) => (
-                    <SelectItem key={issue.id} value={issue.id}>
-                      {formatIssueNumber(issue.issueNumber)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="從哪一期起用這個刊名"
+                searchPlaceholder="輸入期號過濾…"
+                emptyMessage="沒有符合的期"
+              />
               {draftCoverage && (
                 <p className="text-xs text-muted-foreground">
                   此時期涵蓋 {draftCoverage.label}（{draftCoverage.count} 期）
