@@ -5,6 +5,7 @@ import { withErrorHandler } from "@/lib/api-utils";
 import { resolveGameIds, resolveTagIds } from "@/lib/resolve-relations";
 import { logEdit } from "@/lib/edit-log";
 import { diffChanges, diffIds } from "@/lib/edit-log-diff";
+import { markIssueChanged } from "@/lib/issue-complete";
 
 // GET /api/articles/[id] - 取得單一文章
 export const GET = withErrorHandler(async (
@@ -158,6 +159,11 @@ export const PUT = withErrorHandler(async (
   }
 
   await logEdit("Article", id, "UPDATE", changes);
+  // 同一個 changes 決定要不要讓完備失效——按了儲存但什麼都沒改，紀錄不會留一行，
+  // 標記也不該掉。判斷的依據是寫入前後的資料列，不是請求送了哪些欄位。
+  if (Object.keys(changes).length > 0) {
+    await markIssueChanged(article.issueId);
+  }
 
   return NextResponse.json(article);
 }, "Update article");
@@ -176,6 +182,7 @@ export const DELETE = withErrorHandler(async (
   });
 
   await logEdit("Article", id, "DELETE", { title: { from: deleted.title, to: null } });
+  await markIssueChanged(deleted.issueId);
 
   return NextResponse.json({ success: true });
 }, "Delete article");

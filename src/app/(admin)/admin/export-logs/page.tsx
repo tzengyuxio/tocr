@@ -101,7 +101,7 @@ export default async function ExportLogsPage({ searchParams }: PageProps) {
                       {formatTaipei(log.createdAt, "yyyy/MM/dd HH:mm")}
                     </TableCell>
                     <TableCell>{log.user.name || log.user.email}</TableCell>
-                    <TableCell>{log.magazineName ?? "全部期刊"}</TableCell>
+                    <TableCell>{log.magazineName ?? "全部雜誌"}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {/* 沒有筆數代表串流沒跑完 -- 中途失敗或使用者取消。 */}
                       {log.rowCount ?? "未完成"}

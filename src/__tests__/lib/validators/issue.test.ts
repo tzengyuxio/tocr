@@ -3,6 +3,7 @@ import {
   issueUpdateSchema,
   withIssueSlug,
   withIssueSlugIfPresent,
+  withCompleteAt,
   withPublishSort,
   withPublishSortIfPresent,
 } from "@/lib/validators/issue";
@@ -55,7 +56,7 @@ describe("issueCreateSchema", () => {
     const result = issueCreateSchema.safeParse(input);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("期刊 ID 為必填");
+      expect(result.error.issues[0].message).toBe("雜誌 ID 為必填");
     }
   });
 
@@ -346,6 +347,45 @@ describe("withPublishSortIfPresent", () => {
   it("clears the sort key when the date is cleared", () => {
     const data = withPublishSortIfPresent({ publishDate: null });
     expect(data.publishSort).toBeNull();
+  });
+});
+
+describe("withCompleteAt", () => {
+  const admin = { isAdmin: true, current: null };
+
+  it("drops the flag when the caller is not an admin", () => {
+    const data = withCompleteAt({ complete: true }, { isAdmin: false, current: null });
+    expect("completeAt" in data).toBe(false);
+  });
+
+  it("leaves both columns alone when the flag is absent", () => {
+    const data = withCompleteAt({ title: "特輯" } as { title: string; complete?: boolean }, admin);
+    expect("completeAt" in data).toBe(false);
+  });
+
+  // Marking it again is how an admin says "I have looked at the changes", so
+  // the stale stamp has to go with it.
+  it("stamps the mark and clears any stale stamp", () => {
+    const data = withCompleteAt(
+      { complete: true },
+      { isAdmin: true, current: new Date("2026-01-01") }
+    );
+    expect(data.completeAt).toBeInstanceOf(Date);
+    expect(data.completeStaleAt).toBeNull();
+  });
+
+  it("clears both columns when an admin unticks it", () => {
+    const data = withCompleteAt(
+      { complete: false },
+      { isAdmin: true, current: new Date("2026-01-01") }
+    );
+    expect(data.completeAt).toBeNull();
+    expect(data.completeStaleAt).toBeNull();
+  });
+
+  it("writes nothing when unticking something that was never marked", () => {
+    const data = withCompleteAt({ complete: false }, admin);
+    expect("completeAt" in data).toBe(false);
   });
 });
 

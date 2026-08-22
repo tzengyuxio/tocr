@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { IssueForm } from "@/components/magazine/IssueForm";
+import { isSessionAdmin } from "@/lib/require-editor";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -24,6 +25,7 @@ export default async function NewIssuePage({ params }: PageProps) {
         magazineId={magazine.id}
         magazineName={magazine.name}
         mode="create"
+        canMarkComplete={await isSessionAdmin()}
       />
     </div>
   );

@@ -4,6 +4,8 @@ import { magazineUpdateSchema, withFoundedSort } from "@/lib/validators/magazine
 import { withErrorHandler } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 import { diffChanges } from "@/lib/edit-log-diff";
+import { withoutCompleteMark } from "@/lib/issue-complete";
+import { isSessionAdmin } from "@/lib/require-editor";
 
 // GET /api/magazines/[id] - 取得單一期刊
 export const GET = withErrorHandler(async (
@@ -32,7 +34,14 @@ export const GET = withErrorHandler(async (
     );
   }
 
-  return NextResponse.json(magazine);
+  // 這裡也帶著單期，所以完備標記一樣要擋。
+  if (await isSessionAdmin()) {
+    return NextResponse.json(magazine);
+  }
+  return NextResponse.json({
+    ...magazine,
+    issues: magazine.issues.map(withoutCompleteMark),
+  });
 }, "Fetch magazine");
 
 // PUT /api/magazines/[id] - 更新期刊

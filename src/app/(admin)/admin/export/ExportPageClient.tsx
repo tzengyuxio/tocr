@@ -52,7 +52,7 @@ export function ExportPageClient({
   };
 
   const stats = [
-    { label: "期刊", value: magazineCount, icon: BookOpen },
+    { label: "雜誌", value: magazineCount, icon: BookOpen },
     { label: "單期", value: issueCount, icon: Newspaper },
     { label: "文章", value: articleCount, icon: FileText },
   ];
@@ -62,7 +62,7 @@ export function ExportPageClient({
       <div>
         <h1 className="text-2xl font-bold tracking-tight">資料匯出</h1>
         <p className="text-muted-foreground">
-          將期刊、單期、文章資料匯出為 CSV 檔案
+          將雜誌、單期、文章資料匯出為 CSV 檔案
         </p>
       </div>
 
@@ -91,17 +91,17 @@ export function ExportPageClient({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>篩選期刊（可選）</Label>
+            <Label>篩選雜誌（可選）</Label>
             <Combobox
               options={magazineOptions}
               value={selectedMagazineId}
               onValueChange={setSelectedMagazineId}
-              placeholder="全部期刊"
-              searchPlaceholder="搜尋期刊..."
-              emptyMessage="找不到期刊"
+              placeholder="全部雜誌"
+              searchPlaceholder="搜尋雜誌..."
+              emptyMessage="找不到雜誌"
             />
             <p className="text-xs text-muted-foreground">
-              不選擇則匯出所有期刊的資料
+              不選擇則匯出所有雜誌的資料
             </p>
           </div>
 

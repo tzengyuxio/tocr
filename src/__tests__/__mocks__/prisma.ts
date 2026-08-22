@@ -12,6 +12,7 @@ interface MockModel {
   create: jest.Mock;
   createMany: jest.Mock;
   update: jest.Mock;
+  updateMany: jest.Mock;
   delete: jest.Mock;
   deleteMany: jest.Mock;
   count: jest.Mock;
@@ -48,6 +49,7 @@ const createMockModel = (): MockModel => ({
   create: jest.fn(),
   createMany: jest.fn(),
   update: jest.fn(),
+  updateMany: jest.fn(),
   delete: jest.fn(),
   deleteMany: jest.fn(),
   count: jest.fn(),

@@ -5,8 +5,8 @@
 | 路徑 | 說明 |
 |---|---|
 | `/` | 首頁：搜尋框、統計、最新單期 |
-| `/magazines` | 期刊列表 |
-| `/magazines/[slug]` | 期刊詳情與單期列表。網址吃 ASCII slug（`/magazines/ace`），舊的 cuid 連結永久轉址 |
+| `/magazines` | 雜誌列表 |
+| `/magazines/[slug]` | 雜誌詳情與單期列表。網址吃 ASCII slug（`/magazines/ace`），舊的 cuid 連結永久轉址 |
 | `/magazines/[slug]/issues/[issueSlug]` | 單期目錄。兩段都吃 slug；單期那段也收期號與舊 cuid，皆永久轉址 |
 | `/i/[code]` | 單期永久短碼，307 轉到當下的正規網址。`Issue.code` 是自動產生的 8 碼，正規網址的每一段都可能變，這條不會 |
 | `/games` | 遊戲列表 |
@@ -31,10 +31,10 @@
 | 路徑 | 說明 |
 |---|---|
 | `/admin` | 儀表板 |
-| `/admin/magazines` | 期刊管理 |
-| `/admin/magazines/new` | 新增期刊 |
+| `/admin/magazines` | 雜誌管理 |
+| `/admin/magazines/new` | 新增雜誌 |
 | `/admin/magazines/import` | CSV 批次匯入 |
-| `/admin/magazines/[id]` | 期刊詳情（三欄佈局） |
+| `/admin/magazines/[id]` | 雜誌詳情（三欄佈局） |
 | `/admin/magazines/[id]/issues/new` | 新增單期 |
 | `/admin/magazines/[id]/issues/[issueId]` | 單期詳情與文章管理 |
 | `/admin/issues` | 待複查清單（目錄尚未經人工確認的單期） |

@@ -202,6 +202,14 @@ model Issue {
   // When a person confirmed the table of contents. OCR run through the API
   // token leaves this null, so unreviewed issues can be found and checked.
   tocReviewedAt DateTime? @map("toc_reviewed_at")
+  // 完備：這一期該有的資料都有了，不必再回頭看。只有 ADMIN 能設，只有 ADMIN
+  // 看得到。這是對資料的陳述，不是對某個人審閱動作的紀錄——誰設的問 EditLog。
+  completeAt    DateTime? @map("complete_at")
+  // 完備之後第一次被改動的時間；null 表示標記仍然成立。
+  //
+  // 存第一次而不是拿 updatedAt 去比：設定完備這個動作本身就會更新 updatedAt，
+  // 比對永遠會讀成「已變更」。分成兩欄也就順便答得出「什麼時候開始不作數的」。
+  completeStaleAt DateTime? @map("complete_stale_at")
   pageCount    Int?     @map("page_count")
   price        Decimal? @db.Decimal(10, 2)
   notes        String?  @db.Text

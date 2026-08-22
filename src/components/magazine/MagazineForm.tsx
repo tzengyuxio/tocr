@@ -103,11 +103,11 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
         <CardHeader>
-          <CardTitle>{mode === "create" ? "新增期刊" : "編輯期刊"}</CardTitle>
+          <CardTitle>{mode === "create" ? "新增雜誌" : "編輯雜誌"}</CardTitle>
           <CardDescription>
             {mode === "create"
-              ? "填寫期刊的基本資訊"
-              : "修改期刊的基本資訊"}
+              ? "填寫雜誌的基本資訊"
+              : "修改雜誌的基本資訊"}
           </CardDescription>
         </CardHeader>
         {/* @container, not the viewport: this form is a narrow sidebar on the
@@ -124,7 +124,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
             {/* 期刊名稱 */}
             <div className="space-y-2">
               <Label htmlFor="name">
-                期刊名稱 <span className="text-red-500">*</span>
+                雜誌名稱 <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="name"
@@ -143,7 +143,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               </Label>
               <Input id="slug" placeholder="例如：fmt-tw" {...register("slug")} />
               <p className="text-xs text-muted-foreground">
-                公開網址用的短代號，只能小寫英數與連字號。已收錄的期刊沿用
+                公開網址用的短代號，只能小寫英數與連字號。已收錄的雜誌沿用
                 nostalibrary 的代號；新刊取自英文刊名。改動會讓舊網址失效
               </p>
               {errors.slug && (
@@ -318,7 +318,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               <Label htmlFor="description">描述</Label>
               <Textarea
                 id="description"
-                placeholder="簡述期刊的特色與歷史..."
+                placeholder="簡述雜誌的特色與歷史..."
                 rows={4}
                 {...register("description")}
               />
@@ -341,7 +341,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
           <div className="flex gap-4 pt-4">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "create" ? "建立期刊" : "儲存變更"}
+              {mode === "create" ? "建立雜誌" : "儲存變更"}
             </Button>
             <Button
               type="button"

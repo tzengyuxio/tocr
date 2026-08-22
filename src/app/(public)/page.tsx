@@ -100,7 +100,7 @@ export default async function HomePage() {
                   <Input
                     name="q"
                     type="text"
-                    placeholder="搜尋期刊、遊戲或文章關鍵字..."
+                    placeholder="搜尋雜誌、遊戲或文章關鍵字..."
                     className="h-11 pl-10"
                     aria-label="搜尋"
                   />
@@ -116,7 +116,7 @@ export default async function HomePage() {
           <div className="mt-10">
             <StatGrid
               items={[
-                { label: "期刊", value: magazineCount, icon: BookOpen },
+                { label: "雜誌", value: magazineCount, icon: BookOpen },
                 { label: "單期", value: issueCount, icon: Calendar },
                 { label: "文章", value: articleCount, icon: FileText },
                 { label: "遊戲", value: gameCount, icon: Gamepad2 },
@@ -137,7 +137,7 @@ export default async function HomePage() {
             </div>
             <Button variant="ghost" asChild>
               <Link href="/magazines">
-                查看所有期刊
+                查看所有雜誌
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -150,7 +150,7 @@ export default async function HomePage() {
                 <p className="text-sm text-muted-foreground mt-1">
                   {canEdit ? (
                     <Link href="/admin/magazines" className="text-primary hover:underline">
-                      前往後台新增第一本期刊
+                      前往後台新增第一本雜誌
                     </Link>
                   ) : "資料建置中，請稍後再來"}
                 </p>

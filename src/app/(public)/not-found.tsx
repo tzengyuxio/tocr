@@ -16,7 +16,7 @@ export default function PublicNotFound() {
   return (
     <NotFoundNotice
       title="找不到這個頁面"
-      description="這本期刊、這一期、或這個條目可能不存在，也可能網址打錯了。"
+      description="這本雜誌、這一期、或這個條目可能不存在，也可能網址打錯了。"
     >
       <Button asChild>
         <Link href="/">
@@ -27,7 +27,7 @@ export default function PublicNotFound() {
       <Button variant="outline" asChild>
         <Link href="/magazines">
           <BookOpen className="mr-1.5 h-4 w-4" />
-          期刊列表
+          雜誌列表
         </Link>
       </Button>
       <Button variant="outline" asChild>

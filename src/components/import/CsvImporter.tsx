@@ -142,17 +142,17 @@ export function CsvImporter() {
             <div>
               <CardTitle>CSV 批次匯入</CardTitle>
               <CardDescription>
-                上傳 CSV 檔案，批次建立期刊與單期資料。已存在的期刊和單期將自動跳過。
+                上傳 CSV 檔案，批次建立雜誌與單期資料。已存在的雜誌和單期將自動跳過。
               </CardDescription>
               <div className="mt-3 space-y-3 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
                 <div>
-                  <p className="mb-1.5 font-medium text-foreground">期刊欄位</p>
+                  <p className="mb-1.5 font-medium text-foreground">雜誌欄位</p>
                   <ul className="list-inside list-disc space-y-0.5">
-                    <li><span className="font-medium">magazine_name *</span>：期刊名稱，用來識別期刊，如「電玩通」</li>
-                    <li><span className="font-medium">magazine_name_original</span>：期刊原文名稱，如「ファミ通」</li>
+                    <li><span className="font-medium">magazine_name *</span>：雜誌名稱，用來識別雜誌，如「電玩通」</li>
+                    <li><span className="font-medium">magazine_name_original</span>：雜誌原文名稱，如「ファミ通」</li>
                     <li><span className="font-medium">publisher</span>：出版社名稱</li>
                     <li><span className="font-medium">issn</span>：國際標準期刊號</li>
-                    <li><span className="font-medium">description</span>：期刊描述</li>
+                    <li><span className="font-medium">description</span>：雜誌描述</li>
                     <li><span className="font-medium">founded_date</span>：創刊日期，知道多少寫多少：<code>1995</code>、<code>1995-06</code>、<code>1995-06-01</code></li>
                     <li><span className="font-medium">is_active</span>：是否仍在發行，true 或 false（預設 true）</li>
                   </ul>
@@ -170,8 +170,8 @@ export function CsvImporter() {
                   </ul>
                 </div>
                 <div className="rounded border border-blue-200 bg-blue-50 p-2 text-blue-800 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300">
-                  <p className="font-medium">💡 關於重複期刊</p>
-                  <p className="mt-0.5">同一期刊第一次出現時，會使用該行的期刊欄位（原文名、出版社、ISSN 等）建立期刊資料。之後若期刊已存在，期刊欄位會被略過，因此同一期刊的後續行可以只填 magazine_name 和單期欄位，其餘期刊欄位留空即可。</p>
+                  <p className="font-medium">💡 關於重複雜誌</p>
+                  <p className="mt-0.5">同一本雜誌第一次出現時，會使用該行的雜誌欄位（原文名、出版社、ISSN 等）建立雜誌資料。之後若該雜誌已存在，這些欄位會被略過，因此同一本雜誌的後續行可以只填 magazine_name 和單期欄位，其餘留空即可。</p>
                 </div>
               </div>
             </div>
@@ -215,7 +215,7 @@ export function CsvImporter() {
               )}
               確認匯入
               {hasData &&
-                ` (${parseResult.magazines.length} 本期刊, ${parseResult.magazines.reduce(
+                ` (${parseResult.magazines.length} 本雜誌, ${parseResult.magazines.reduce(
                   (sum, m) => sum + m.issues.length,
                   0
                 )} 個單期)`}

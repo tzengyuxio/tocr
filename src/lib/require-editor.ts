@@ -42,6 +42,20 @@ export async function requireEditor(
 }
 
 /**
+ * Whether this request comes from an ADMIN's own session.
+ *
+ * A token never counts, however valid: the things reserved for administrators
+ * are judgements about the catalogue (see Issue.completeAt), and a script
+ * carrying a token has not made one.
+ */
+export async function isSessionAdmin(): Promise<boolean> {
+  if (isDevBypass) return DEV_USER.role === "ADMIN";
+
+  const session = await auth();
+  return session?.user?.role === "ADMIN";
+}
+
+/**
  * The signed-in editor, or null. No token is accepted here however valid:
  * this is for the endpoints that manage the tokens themselves, and a token
  * that can mint another token is a token that cannot be revoked.

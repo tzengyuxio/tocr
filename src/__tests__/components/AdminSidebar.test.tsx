@@ -23,8 +23,8 @@ describe("AdminSidebar review badge", () => {
   it("leaves the other entries unbadged", () => {
     render(<AdminSidebar userRole="ADMIN" pendingReviewCount={3} />);
 
-    expect(screen.getByRole("link", { name: /期刊管理/ })).toHaveTextContent(
-      /^期刊管理$/
+    expect(screen.getByRole("link", { name: /雜誌管理/ })).toHaveTextContent(
+      /^雜誌管理$/
     );
   });
 

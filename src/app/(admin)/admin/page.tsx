@@ -48,13 +48,13 @@ export default async function AdminDashboardPage() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">儀表板</h2>
         <p className="text-muted-foreground">
-          期刊目錄索引系統後台管理
+          雜誌目錄索引系統後台管理
         </p>
       </div>
 
       <StatGrid
         items={[
-          { label: "期刊", value: magazineCount, icon: BookOpen, href: "/admin/magazines" },
+          { label: "雜誌", value: magazineCount, icon: BookOpen, href: "/admin/magazines" },
           { label: "單期", value: issueCount, icon: Calendar, href: "/admin/magazines" },
           { label: "文章", value: articleCount, icon: FileText, href: "/admin/articles" },
           { label: "遊戲", value: gameCount, icon: Gamepad2, href: "/admin/games" },
@@ -68,7 +68,7 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/magazines/new">
             <Plus className="mr-2 h-4 w-4 text-green-600" />
             <div className="text-left">
-              <div className="font-medium">新增期刊</div>
+              <div className="font-medium">新增雜誌</div>
               <div className="text-xs text-muted-foreground">建立新的雜誌書目</div>
             </div>
           </Link>
@@ -110,14 +110,14 @@ export default async function AdminDashboardPage() {
               {hasData ? "建檔流程" : "開始使用"}
             </CardTitle>
             <CardDescription>
-              {hasData ? "建立目錄資料的標準流程" : "按照以下步驟開始建立您的期刊目錄"}
+              {hasData ? "建立目錄資料的標準流程" : "按照以下步驟開始建立您的雜誌目錄"}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ol className="space-y-3">
               {[
-                { step: "建立期刊", desc: "設定雜誌名稱、出版社等基本資料", href: "/admin/magazines/new", done: magazineCount > 0 },
-                { step: "新增單期", desc: "為期刊加入各期的出版日期與封面", href: "/admin/magazines", done: issueCount > 0 },
+                { step: "建立雜誌", desc: "設定雜誌名稱、出版社等基本資料", href: "/admin/magazines/new", done: magazineCount > 0 },
+                { step: "新增單期", desc: "為雜誌加入各期的出版日期與封面", href: "/admin/magazines", done: issueCount > 0 },
                 { step: "AI 辨識目錄", desc: "上傳目錄頁掃描圖，AI 自動擷取文章", href: "/admin/ocr", done: articleCount > 0 },
                 { step: "校對與補充", desc: "確認辨識結果，補充標籤與遊戲關聯", href: "/admin/articles", done: tagCount > 0 || gameCount > 0 },
               ].map((item, i) => (

@@ -34,7 +34,7 @@ import { useState } from "react";
 
 const navItems = [
   { title: "儀表板", href: "/admin", icon: LayoutDashboard },
-  { title: "期刊管理", href: "/admin/magazines", icon: BookOpen },
+  { title: "雜誌管理", href: "/admin/magazines", icon: BookOpen },
   { title: "文章管理", href: "/admin/articles", icon: FileText },
   { title: "單期複查", href: "/admin/issues", icon: ClipboardCheck },
   { title: "標籤管理", href: "/admin/tags", icon: Tags },

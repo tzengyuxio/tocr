@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "首頁", icon: Home },
-  { href: "/magazines", label: "期刊", icon: BookOpen },
+  { href: "/magazines", label: "雜誌", icon: BookOpen },
   { href: "/games", label: "遊戲", icon: Gamepad2 },
   { href: "/tags", label: "標籤", icon: Tags },
   { href: "/search", label: "搜尋", icon: Search },

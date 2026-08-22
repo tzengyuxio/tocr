@@ -180,14 +180,14 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>期刊</Label>
+              <Label>雜誌</Label>
               <Combobox
                 options={magazineOptions}
                 value={selectedMagazineId}
                 onValueChange={handleMagazineChange}
-                placeholder="選擇期刊"
-                searchPlaceholder="搜尋期刊..."
-                emptyMessage="找不到期刊"
+                placeholder="選擇雜誌"
+                searchPlaceholder="搜尋雜誌..."
+                emptyMessage="找不到雜誌"
               />
             </div>
 
@@ -197,7 +197,7 @@ export function OcrPageClient({ initialIssue, magazines }: OcrPageClientProps) {
                 options={issueOptions}
                 value={selectedIssueId}
                 onValueChange={handleIssueChange}
-                placeholder={selectedMagazineId ? "選擇單期" : "請先選擇期刊"}
+                placeholder={selectedMagazineId ? "選擇單期" : "請先選擇雜誌"}
                 searchPlaceholder="搜尋單期..."
                 emptyMessage="找不到單期"
                 disabled={!selectedMagazineId}

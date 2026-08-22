@@ -2,6 +2,13 @@
  * @jest-environment node
  */
 import { prismaMock, resetPrismaMock } from "../__mocks__/prisma";
+
+// 這條路由會依角色決定要不要回傳單期的完備標記，而 require-editor 牽著 next-auth，
+// jest 解不動。同 ocr.test.ts 的做法：把它換掉，並讓這裡一律以 ADMIN 的身分讀。
+jest.mock("@/lib/require-editor", () => ({
+  isSessionAdmin: jest.fn().mockResolvedValue(true),
+}));
+
 import { GET, PUT, DELETE } from "@/app/api/magazines/[id]/route";
 import { makeRequest } from "../helpers";
 

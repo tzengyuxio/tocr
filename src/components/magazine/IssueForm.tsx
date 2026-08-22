@@ -38,6 +38,19 @@ interface IssueFormProps {
   initialData?: Partial<IssueCreateInput> & { id?: string };
   mode: "create" | "edit";
   /**
+   * Show the 完備 checkbox. ADMIN only -- the server drops the flag from
+   * anyone else's save, so this is the visible half of the same rule.
+   */
+  canMarkComplete?: boolean;
+  /**
+   * The issue was marked complete and has been changed since.
+   *
+   * Its own prop rather than a third state on the checkbox: the box says
+   * "this record is complete", and while it is stale that claim does not
+   * hold. So the box reads empty and ticking it is what re-confirms.
+   */
+  completeStale?: boolean;
+  /**
    * Pin the save row to the foot of the form's own scrollport.
    *
    * Only right where the form is taller than the box that scrolls it -- the
@@ -91,6 +104,8 @@ export function IssueForm({
   code,
   initialData,
   mode,
+  canMarkComplete = false,
+  completeStale = false,
   stickyActions = false,
 }: IssueFormProps) {
   const router = useRouter();
@@ -98,6 +113,10 @@ export function IssueForm({
   const [error, setError] = useState<string | null>(null);
 
   const initialTocReviewed = initialData?.tocReviewed ?? false;
+  // 「目前是完備」而不是「曾經標過」：已變更的期數勾選框是空的，重新勾選才是
+  // 重新確認。少了這一層，已變更的期數會帶著一個已經勾好的框進來，儲存時
+  // 「跟初始值相同」於是整個旗標被丟掉，管理員永遠清不掉那個狀態。
+  const initialComplete = (initialData?.complete ?? false) && !completeStale;
 
   const {
     register,
@@ -126,6 +145,7 @@ export function IssueForm({
       price: initialData?.price || null,
       notes: initialData?.notes || "",
       tocReviewed: initialTocReviewed,
+      complete: initialComplete,
     },
   });
 
@@ -138,6 +158,10 @@ export function IssueForm({
     setValue("tocReviewed", initialTocReviewed);
   }, [initialTocReviewed, setValue]);
 
+  useEffect(() => {
+    setValue("complete", initialComplete);
+  }, [initialComplete, setValue]);
+
   const onSubmit = async (data: IssueCreateInput) => {
     setIsSubmitting(true);
     setError(null);
@@ -146,6 +170,13 @@ export function IssueForm({
     // left open does not undo a review somebody else made in the meantime.
     if (data.tocReviewed === initialTocReviewed) {
       delete data.tocReviewed;
+    }
+
+    // Same reasoning for 完備, plus one of its own: an unchanged flag sent back
+    // would count as the admin re-confirming a record they only opened to fix
+    // a typo in.
+    if (data.complete === initialComplete) {
+      delete data.complete;
     }
 
     try {
@@ -267,7 +298,7 @@ export function IssueForm({
                   <CopyButton code={code} />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  自動產生、不會變動。期刊改名或網址代號改動時，這條連結仍然到得了本期
+                  自動產生、不會變動。雜誌改名或網址代號改動時，這條連結仍然到得了本期
                 </p>
               </div>
             )}
@@ -374,6 +405,27 @@ export function IssueForm({
                 </span>
               </label>
             </div>
+
+            {/* 完備。只有 ADMIN 看得到這一格 */}
+            {canMarkComplete && (
+              <div className="space-y-2 @md:col-span-2">
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 accent-primary"
+                    {...register("complete")}
+                  />
+                  <span>
+                    <span className="font-medium">資料完備</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {completeStale
+                        ? "先前標為完備，之後這一期或它的目錄被改動過。確認過再勾一次；不勾就維持「完備・已變更」"
+                        : "這一期該有的資料都有了，不必再回頭看。之後只要這一期或它的目錄被改動，標記會轉為「完備・已變更」，等著重新確認"}
+                    </span>
+                  </span>
+                </label>
+              </div>
+            )}
 
             {/* 備註 */}
             <div className="space-y-2 @md:col-span-2">

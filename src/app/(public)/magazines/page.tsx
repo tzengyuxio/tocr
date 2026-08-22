@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "期刊列表",
+  title: "雜誌列表",
 };
 import { prisma } from "@/lib/prisma";
 import {
@@ -60,7 +60,7 @@ export default async function MagazinesPage({
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">期刊列表</h1>
+        <h1 className="text-3xl font-bold">雜誌列表</h1>
         <p className="mt-2 text-muted-foreground">
           瀏覽所有收錄的遊戲雜誌
           {magazines.length > 0 && `，共 ${magazines.length} 本`}
@@ -81,7 +81,7 @@ export default async function MagazinesPage({
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <BookOpen className="h-16 w-16 text-muted-foreground/50" />
           <h2 className="mt-4 text-xl font-semibold">
-            {filter.value === "all" ? "尚無期刊資料" : "這個分類還沒有刊物"}
+            {filter.value === "all" ? "尚無雜誌資料" : "這個分類還沒有刊物"}
           </h2>
           <p className="mt-2 text-muted-foreground">
             {filter.value === "all" ? "資料建置中，敬請期待" : "試試其他分類"}

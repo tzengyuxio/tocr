@@ -2,7 +2,7 @@ import { z } from "zod";
 import { isValidEdtf } from "../edtf";
 
 export const csvRowSchema = z.object({
-  magazine_name: z.string().min(1, "期刊名稱為必填"),
+  magazine_name: z.string().min(1, "雜誌名稱為必填"),
   magazine_name_original: z.string().optional(),
   // The downloadable template shipped this column as magazine_name_en, which
   // the parser never read -- an optional field that is simply absent, so the
