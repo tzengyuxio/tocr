@@ -65,7 +65,10 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
             {unit.span}
           </div>
 
-          <div className="hidden shrink-0 gap-1 xl:flex">
+          {/* 固定寬度：這欄夾在兩個固定欄之間，寬度隨 chip 數量伸縮的話，
+              左邊的出版社與期間會被推得各列不對齊（電玩宅速配兩顆 chip 就
+              露了餡）。w-44 放得下兩顆，三顆的罕見情形換行。 */}
+          <div className="hidden w-44 shrink-0 flex-wrap gap-1 xl:flex">
             {unit.categories.map((category) => (
               <Badge key={category} variant="outline" className="text-xs font-normal">
                 {MAGAZINE_CATEGORY_LABELS[category]}
