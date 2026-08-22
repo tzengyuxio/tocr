@@ -12,7 +12,11 @@ import { logEdit } from "@/lib/edit-log";
 import { diffChanges } from "@/lib/edit-log-diff";
 import { isValidApiToken } from "@/lib/api-token";
 import { isSessionAdmin } from "@/lib/require-editor";
-import { markIssueChanged, touchesData } from "@/lib/issue-complete";
+import {
+  markIssueChanged,
+  touchesData,
+  withoutCompleteMark,
+} from "@/lib/issue-complete";
 
 // GET /api/issues/[id] - 取得單一單期
 export const GET = withErrorHandler(async (
@@ -45,7 +49,9 @@ export const GET = withErrorHandler(async (
     return NextResponse.json({ error: "Issue not found" }, { status: 404 });
   }
 
-  return NextResponse.json(issue);
+  return NextResponse.json(
+    (await isSessionAdmin()) ? issue : withoutCompleteMark(issue)
+  );
 }, "Fetch issue");
 
 // PUT /api/issues/[id] - 更新單期
@@ -58,6 +64,7 @@ export const PUT = withErrorHandler(async (
   const validatedData = issueUpdateSchema.parse(body);
 
   const isHuman = !isValidApiToken(request.headers.get("authorization"));
+  const isAdmin = await isSessionAdmin();
   const existing = await prisma.issue.findUnique({ where: { id } });
 
   const data = withCompleteAt(
@@ -68,7 +75,7 @@ export const PUT = withErrorHandler(async (
         current: existing?.tocReviewedAt ?? null,
       }
     ),
-    { isAdmin: await isSessionAdmin(), current: existing?.completeAt ?? null }
+    { isAdmin, current: existing?.completeAt ?? null }
   );
 
   const issue = await prisma.issue.update({ where: { id }, data });
@@ -88,7 +95,7 @@ export const PUT = withErrorHandler(async (
     await markIssueChanged(id);
   }
 
-  return NextResponse.json(issue);
+  return NextResponse.json(isAdmin ? issue : withoutCompleteMark(issue));
 }, "Update issue");
 
 // DELETE /api/issues/[id] - 刪除單期

@@ -70,7 +70,7 @@ export default async function EditIssuePage({ params }: PageProps) {
     price: issue.price ? Number(issue.price) : null,
     notes: issue.notes,
     tocReviewed: issue.tocReviewedAt !== null,
-    complete: issue.completeAt !== null,
+    complete: issue.completeAt !== null && issue.completeStaleAt === null,
   };
 
   return (
@@ -108,6 +108,7 @@ export default async function EditIssuePage({ params }: PageProps) {
               initialData={formData}
               mode="edit"
               canMarkComplete={await isSessionAdmin()}
+              completeStale={issue.completeAt !== null && issue.completeStaleAt !== null}
               stickyActions
             />
           </div>

@@ -21,6 +21,23 @@ import { prisma } from "./prisma";
  */
 const STAMP_FIELDS = new Set(["completeAt", "completeStaleAt", "tocReviewedAt"]);
 
+/**
+ * 拿掉完備標記，給非 ADMIN 的讀取端用。
+ *
+ * 只在畫面上藏起來是不夠的：`/api/issues` 是公開的，回整列就等於誰都讀得到。
+ * 標記本身不是敏感資料，但「只有管理員看得見」若只擋得住 UI，那條規則就只是
+ * 說說而已。
+ */
+export function withoutCompleteMark<T extends object>(issue: T): T {
+  const rest = { ...issue } as T & {
+    completeAt?: unknown;
+    completeStaleAt?: unknown;
+  };
+  delete rest.completeAt;
+  delete rest.completeStaleAt;
+  return rest;
+}
+
 /** 這次寫入有沒有動到資料本身（`diffChanges()` 的結果）。 */
 export function touchesData(changes: Record<string, unknown>): boolean {
   return Object.keys(changes).some((field) => !STAMP_FIELDS.has(field));

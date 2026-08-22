@@ -11,6 +11,7 @@ import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-
 import { logEdit } from "@/lib/edit-log";
 import { isValidApiToken } from "@/lib/api-token";
 import { isSessionAdmin } from "@/lib/require-editor";
+import { withoutCompleteMark } from "@/lib/issue-complete";
 
 // GET /api/issues - 取得單期列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -40,7 +41,13 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     prisma.issue.count({ where }),
   ]);
 
-  return paginatedResponse(issues, total, page, limit);
+  const isAdmin = await isSessionAdmin();
+  return paginatedResponse(
+    isAdmin ? issues : issues.map(withoutCompleteMark),
+    total,
+    page,
+    limit
+  );
 }, "Fetch issues");
 
 // POST /api/issues - 新增單期
@@ -58,17 +65,20 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   const isHuman = !isValidApiToken(request.headers.get("authorization"));
+  const isAdmin = await isSessionAdmin();
   const issue = await prisma.issue.create({
     data: withCompleteAt(
       withTocReviewedAt(withIssueSlug(withPublishSort(validatedData)), {
         isHuman,
         current: null,
       }),
-      { isAdmin: await isSessionAdmin(), current: null }
+      { isAdmin, current: null }
     ),
   });
 
   await logEdit("Issue", issue.id, "CREATE");
 
-  return NextResponse.json(issue, { status: 201 });
+  return NextResponse.json(isAdmin ? issue : withoutCompleteMark(issue), {
+    status: 201,
+  });
 }, "Create issue");

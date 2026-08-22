@@ -43,6 +43,14 @@ interface IssueFormProps {
    */
   canMarkComplete?: boolean;
   /**
+   * The issue was marked complete and has been changed since.
+   *
+   * Its own prop rather than a third state on the checkbox: the box says
+   * "this record is complete", and while it is stale that claim does not
+   * hold. So the box reads empty and ticking it is what re-confirms.
+   */
+  completeStale?: boolean;
+  /**
    * Pin the save row to the foot of the form's own scrollport.
    *
    * Only right where the form is taller than the box that scrolls it -- the
@@ -97,6 +105,7 @@ export function IssueForm({
   initialData,
   mode,
   canMarkComplete = false,
+  completeStale = false,
   stickyActions = false,
 }: IssueFormProps) {
   const router = useRouter();
@@ -104,7 +113,10 @@ export function IssueForm({
   const [error, setError] = useState<string | null>(null);
 
   const initialTocReviewed = initialData?.tocReviewed ?? false;
-  const initialComplete = initialData?.complete ?? false;
+  // 「目前是完備」而不是「曾經標過」：已變更的期數勾選框是空的，重新勾選才是
+  // 重新確認。少了這一層，已變更的期數會帶著一個已經勾好的框進來，儲存時
+  // 「跟初始值相同」於是整個旗標被丟掉，管理員永遠清不掉那個狀態。
+  const initialComplete = (initialData?.complete ?? false) && !completeStale;
 
   const {
     register,
@@ -406,8 +418,9 @@ export function IssueForm({
                   <span>
                     <span className="font-medium">資料完備</span>
                     <span className="block text-xs text-muted-foreground">
-                      這一期該有的資料都有了，不必再回頭看。之後只要這一期或它的目錄被改動，
-                      標記會轉為「完備・已變更」，等著重新確認
+                      {completeStale
+                        ? "先前標為完備，之後這一期或它的目錄被改動過。確認過再勾一次；不勾就維持「完備・已變更」"
+                        : "這一期該有的資料都有了，不必再回頭看。之後只要這一期或它的目錄被改動，標記會轉為「完備・已變更」，等著重新確認"}
                     </span>
                   </span>
                 </label>

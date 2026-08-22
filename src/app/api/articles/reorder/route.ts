@@ -9,6 +9,20 @@ export const PUT = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
   const { issueId, articleIds } = articleReorderSchema.parse(body);
 
+  // 「依頁碼排序」不管目前是什麼順序都會送一次，所以先問清楚有沒有真的動到。
+  // 沒動到卻照寫，會留下一行說不出改了什麼的紀錄，也會讓完備標記無端失效。
+  const current = await prisma.article.findMany({
+    where: { issueId },
+    orderBy: { sortOrder: "asc" },
+    select: { id: true },
+  });
+  const unchanged =
+    current.length === articleIds.length &&
+    current.every((article, index) => article.id === articleIds[index]);
+  if (unchanged) {
+    return NextResponse.json({ success: true });
+  }
+
   await prisma.$transaction(
     articleIds.map((id, index) =>
       prisma.article.update({

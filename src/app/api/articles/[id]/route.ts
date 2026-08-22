@@ -159,7 +159,11 @@ export const PUT = withErrorHandler(async (
   }
 
   await logEdit("Article", id, "UPDATE", changes);
-  await markIssueChanged(article.issueId);
+  // 同一個 changes 決定要不要讓完備失效——按了儲存但什麼都沒改，紀錄不會留一行，
+  // 標記也不該掉。判斷的依據是寫入前後的資料列，不是請求送了哪些欄位。
+  if (Object.keys(changes).length > 0) {
+    await markIssueChanged(article.issueId);
+  }
 
   return NextResponse.json(article);
 }, "Update article");
