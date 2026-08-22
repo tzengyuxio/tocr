@@ -2,6 +2,32 @@
 
 建檔時的判斷準則。程式無法強制這些規則，但資料的一致性靠它們維持。畫面的規範另見 [ui-conventions.md](ui-conventions.md)。
 
+## 上游資料來源
+
+單期資料的正本是 nostalibrary 的 Google Sheet「懷舊圖書館 Nostalibrary」，
+spreadsheetId `1QN5sBTGJSAcPpTzpkLj3qchWmgg9bb6ht6yV22LYukI`。nostalibrary repo 裡的
+`content/magazines/` 與 `data/tables/` 都是它的子集，而且**沒有出版日期**，不適合當匯入來源。
+匯入走 [`scripts/import-issues.ts`](../scripts/import-issues.ts)。
+
+雜誌散在四個分頁，一本刊只會出現在其中一個。哪本在哪個分頁列在下面，省得每次重找：
+
+| 分頁 | 刊物（slug） |
+| --- | --- |
+| 雜誌1 | 精訊電腦（jxdn）、軟體世界雜誌（swm）、軟體之星（ssm）、電腦玩家雜誌（ace）、電腦遊戲世界（cgw）、新遊戲時代雜誌（sgm）、次世代遊戲情報（next）、Mania 遊戲玩瘋誌（mania）、遊戲設計大師（gd）、遊戲工場（gf）、舊遊戲時代（rgt） |
+| 雜誌2 | 華泰任天堂秘笈（htntd）、電視遊樂雜誌（tvgm）、電視遊樂報導（tvgr）、勝利小子（vvkids）、攻略快報（tvgsg）、星際遊樂雜誌（astro） |
+| 雜誌3 | 電擊PlayStation（dps-tw）、電擊SEGA SATURN（dss-tw）、電擊王（doh-tw）、電玩通（fmt-tw）、電玩通PLAYSTATION+（fmtps-tw） |
+| 雜誌4 | 電玩e世代（egen）、飛訊電玩周刊（fashion）、電玩百分百週刊（game100）、電玩族雜誌（gpeople）、電玩時代（gtimes）、電遊人（gwalker）、新世紀 HYPER PlayStation（hps-tw）、3DO／次世代總合情報誌（newgen）、Official Xbox Magazine（oxm）、電遊通訊（tvgameinfo）、勝利少年（vboy）、疾風快報（wolf） |
+
+匯入腳本以 `series` 欄挑列，而那一欄有兩個坑：
+
+- **改名過的刊是兩個值**，例如 `電擊王` 與 `電擊王,DengekiGAMES`、`電視遊樂雜誌` 與
+  `電視遊樂雜誌,GAMEfans`。兩段都是同一本刊，靠 `MagazineRule.seriesAliases` 收齊
+- **有些列的 `series` 是空的**，只有 `id` 前綴看得出屬於哪本（雜誌2 的 astro、雜誌3 的
+  fmtps-tw 整批如此）。要匯這幾本時 `series` 挑不到東西，得先回頭補 Sheet
+
+雜誌以外的分頁偶爾也藏著單期：《勝利小子》的 3 本增刊在「中文書」分頁（`categories: misc`），
+`weight` 與雜誌分頁共用同一條序列，所以夾在哪兩期之間看得出來。
+
 ## 日期
 
 ### 格式：EDTF
