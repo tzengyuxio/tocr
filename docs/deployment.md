@@ -70,8 +70,25 @@
 | `GOOGLE_AI_API_KEY` | Google AI API Key | * |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob Token | |
 | `API_TOKEN` | 批次腳本寫入用的 Bearer token | |
+| `RAWG_API_KEY` | RAWG API Key，自動抓遊戲封面用 | |
+| `NEXT_PUBLIC_GA_ID` | Google Analytics 4 測量 ID | |
 
 > *至少需要設定一個 AI API Key
+
+#### Google Analytics
+
+`NEXT_PUBLIC_GA_ID` 設了才會掛分析，**只設在 Production**：preview 與本機留空，
+否則 PR 的自我測試會混進正式數據。正式站用的是 `G-5K32DKKL1G`。
+
+它不是密鑰——`NEXT_PUBLIC_` 前綴的值會被打包進 client bundle，每個訪客都看得到。
+走環境變數是為了讓「哪個環境要送資料」由部署決定，不是寫死在程式裡。
+
+分析掛在 `src/app/(public)/layout.tsx`，所以 `/admin` 與 `/auth` 不計入：自己編目
+一整晚的點擊會蓋過真實訪客。**改了要 redeploy 才生效**（見[部署組成](#環境變數管理)）。
+
+```bash
+vercel env add NEXT_PUBLIC_GA_ID production
+```
 
 貢獻者自己的 per-user token 不是環境變數，存在資料庫裡（`api_tokens`，只有 sha256），
 在 `/admin/profile` 產生與撤銷，不必設定也不必 redeploy。
