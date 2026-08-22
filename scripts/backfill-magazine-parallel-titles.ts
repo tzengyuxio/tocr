@@ -78,10 +78,11 @@ const NAMES: Record<string, Names> = {
   "fmtps-tw": { source: "ファミ通PS2" },
   "hps-tw": { source: "HYPER PlayStation" },
   oxm: { source: "Official Xbox Magazine" },
-  // 直接翻譯自德間書店的《ファミリーコンピュータMagazine》。封面沒有英文，
-  // 所以它有 sourceTitle 而沒有 nameParallel——與另外兩本「確認無拉丁刊名」的
-  // 原創刊（精訊電腦、電玩百分百週刊）不同
-  htntd: { source: "ファミリーコンピュータMagazine" },
+  // 封面與內容都直接翻版自德間書店的《ファミリーコンピュータ Magazine》
+  //（未經授權，見 docs/data-conventions.md 的期號一節）。封面沒有英文，所以它有
+  // sourceTitle 而沒有 nameParallel——與另外兩本「確認無拉丁刊名」的原創刊
+  //（精訊電腦、電玩百分百週刊）不同
+  htntd: { source: "ファミリーコンピュータ Magazine" },
 };
 
 interface ApiMagazine {
