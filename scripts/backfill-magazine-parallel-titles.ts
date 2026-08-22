@@ -68,6 +68,10 @@ const NAMES: Record<string, Names> = {
   vboy: { parallel: "Victory Boy" },
   wolf: { parallel: "WOLF Weekly" },
   cityboy: { parallel: "CITY BOY", aliases: ["CITY BOY GAME MAGAZINE"] },
+  sggw: { parallel: "SG Game Weekly" },
+  // 封面用過 GAMEXPRESS 與 GAMEXPRESS MAGAZINE 兩種；前身《電玩双週刊》另有自己的
+  // 並列刊名 onlinegame biweekly，那屬於刊名時期，等該刊的期匯入後再建（見 BACKLOG）
+  gamexpress: { parallel: "GAMEXPRESS", aliases: ["GAMEXPRESS MAGAZINE"] },
 
   // -- 外刊的中文版 --------------------------------------------------------
   cgw: { source: "Computer Gaming World" },
