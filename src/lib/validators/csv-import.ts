@@ -3,11 +3,13 @@ import { isValidEdtf } from "../edtf";
 
 export const csvRowSchema = z.object({
   magazine_name: z.string().min(1, "雜誌名稱為必填"),
+  magazine_name_parallel: z.string().optional(),
+  // Two superseded names for the same column, kept for files people already
+  // made. magazine_name_en shipped in the downloadable template but the parser
+  // never read it -- an optional field that is simply absent, so the value
+  // vanished without an error; magazine_name_original replaced it, and this
+  // rename is the second one.
   magazine_name_original: z.string().optional(),
-  // The downloadable template shipped this column as magazine_name_en, which
-  // the parser never read -- an optional field that is simply absent, so the
-  // value vanished without an error. The template is fixed; this stays for the
-  // files people already made from it.
   magazine_name_en: z.string().optional(),
   publisher: z.string().optional(),
   issn: z.string().optional(),
@@ -43,7 +45,7 @@ export interface ParsedIssue {
 
 export interface ParsedMagazine {
   name: string;
-  nameOriginal?: string;
+  nameParallel?: string;
   publisher?: string;
   issn?: string;
   description?: string;
@@ -56,7 +58,7 @@ export const importRequestSchema = z.object({
   magazines: z.array(
     z.object({
       name: z.string().min(1),
-      nameOriginal: z.string().optional(),
+      nameParallel: z.string().optional(),
       publisher: z.string().optional(),
       issn: z.string().optional(),
       description: z.string().optional(),

@@ -9,7 +9,8 @@ import {
 
 const magazine: ExportMagazine = {
   name: "電腦玩家",
-  nameOriginal: null,
+  nameParallel: null,
+  sourceTitle: null,
   publisher: "第三波",
   issn: "1021-8033",
   description: null,

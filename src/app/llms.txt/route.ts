@@ -26,7 +26,7 @@ export async function GET() {
       select: {
         name: true,
         slug: true,
-        nameOriginal: true,
+        nameParallel: true,
         publisher: true,
         _count: { select: { issues: true } },
       },
@@ -37,9 +37,9 @@ export async function GET() {
   ]);
 
   const magazineLines = magazines.map((magazine) => {
-    const original = magazine.nameOriginal ? `（原名 ${magazine.nameOriginal}）` : "";
+    const parallel = magazine.nameParallel ? `（${magazine.nameParallel}）` : "";
     const publisher = magazine.publisher ? `${magazine.publisher}，` : "";
-    return `- [${magazine.name}${original}](${origin}/magazines/${magazine.slug})：${publisher}收錄 ${magazine._count.issues} 期`;
+    return `- [${magazine.name}${parallel}](${origin}/magazines/${magazine.slug})：${publisher}收錄 ${magazine._count.issues} 期`;
   });
 
   const body = `# TOCR — 遊戲雜誌目錄索引

@@ -217,9 +217,9 @@ export default async function MagazineDetailPage({
               </Link>
             )}
           </div>
-          {magazine.nameOriginal && (
+          {magazine.nameParallel && (
             <p className="mt-1 text-lg text-muted-foreground">
-              {magazine.nameOriginal}
+              {magazine.nameParallel}
             </p>
           )}
           {magazine.aliases && magazine.aliases.length > 0 && (

@@ -109,8 +109,31 @@ model Magazine {
   // an unreadable but working URL until an editor names it. The admin form
   // requires one (validators/magazine.ts), so that is the only lenient path.
   slug           String    @unique @default(cuid())
-  nameOriginal   String?   @map("name_original") // Original name (e.g. Japanese: ファミ通)
-  aliases        String[]  @default([]) // Other known names (English, historical, etc.)
+  // The parallel title: the other-language name the magazine prints alongside
+  // its own, on the same cover. Stores the form the magazine uses as its
+  // signboard, not the fullest form -- 電腦玩家 printed both ACE and Amazing
+  // Computer Entertainment and called itself ACE, so this holds "ACE" and the
+  // long form goes to `aliases`. Evidence is the cover masthead, a cover logo,
+  // the colophon, or the magazine's own domain (軟體世界 is swm.com.tw).
+  //
+  // Takes the founding-era value, like `publisher`: 電腦玩家 dropped ACE around
+  // issue 63 and picked up PC GAMER at 96, and this field is not a history.
+  nameParallel   String?   @map("name_parallel")
+  // The foreign magazine this one is the Chinese edition of. Empty means the
+  // magazine is not a translation.
+  //
+  // The test is whether the magazine takes the foreign title as its own
+  // identity, not whether it licenses articles: 電玩通 is ファミ通's Taiwan
+  // edition and fills this in, while 電腦玩家 licensed PC GAMER articles (and
+  // even printed "PC GAMER 國際中文版") without becoming that magazine, so it
+  // does not. See docs/plans/2026-08-23-magazine-name-fields-design.md.
+  sourceTitle    String?   @map("source_title")
+  // Other names the magazine is known by: nicknames (法米通, 電擊PS) and
+  // alternative spellings of the parallel title. A title change belongs to
+  // MagazineTitle, the parallel title to `nameParallel`, the source magazine
+  // to `sourceTitle` -- this field is what is left over, and it is what search
+  // falls back on.
+  aliases        String[]  @default([])
   publisher      String?
   // Not unique: a title change can carry the ISSN over, so two magazines
   // legitimately share one (電擊王 and 電玩通 both use 1561-8099).
@@ -153,11 +176,11 @@ model Magazine {
 
   @@index([issn])
   @@index([foundedSort])
-  // Trigram indexes for ILIKE search. `map` keeps the names the SQL migration
-  // created; idx_magazines_name_en_trgm predates the name_en -> name_original
-  // rename and Postgres carried the old index name over.
+  // Trigram indexes for ILIKE search. `map` keeps the name the SQL migration
+  // created for `name`; the second one was renamed with the column it indexes,
+  // having carried "name_en" through two renames without ever holding a value.
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_magazines_name_trgm")
-  @@index([nameOriginal(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_magazines_name_en_trgm")
+  @@index([nameParallel(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_magazines_name_parallel_trgm")
   @@map("magazines")
 }
 
@@ -244,6 +267,11 @@ model MagazineTitle {
   id         String @id @default(cuid())
   magazineId String @map("magazine_id")
   title      String
+  // 該時期的並列刊名。與 Magazine.nameParallel 的分工，同 title 與
+  // Magazine.name：那邊存創刊值，這邊存各時期值。只在並列刊名跟著改名一起換時
+  // 才填（電視遊樂雜誌 TV GAME MAGAZINE → GAME fans）；正題名沒變而並列刊名
+  // 自己在變的，不切段，沿革寫進 Magazine.description。
+  titleParallel String? @map("title_parallel")
   // 從這一期起改用此刊名。只存起點：一段的終點就是下一段起點的前一期（按
   // Issue.order 比較，startIssueId 只是指標），最後一段開放至今，結構上
   // 不可能出現縫隙或重疊。

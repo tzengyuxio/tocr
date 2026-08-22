@@ -18,7 +18,8 @@ describe("magazineCreateSchema", () => {
     const input = {
       name: "電玩雜誌",
       slug: "gm",
-      nameOriginal: "Game Magazine",
+      nameParallel: "Game Magazine",
+      sourceTitle: "ゲーム雑誌",
       publisher: "遊戲出版社",
       issn: "1234-5678",
       description: "遊戲資訊雜誌",
@@ -31,7 +32,8 @@ describe("magazineCreateSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.name).toBe("電玩雜誌");
-      expect(result.data.nameOriginal).toBe("Game Magazine");
+      expect(result.data.nameParallel).toBe("Game Magazine");
+      expect(result.data.sourceTitle).toBe("ゲーム雑誌");
       expect(result.data.publisher).toBe("遊戲出版社");
       expect(result.data.issn).toBe("1234-5678");
       expect(result.data.isActive).toBe(false);
@@ -61,7 +63,8 @@ describe("magazineCreateSchema", () => {
     const input = {
       name: "電玩雜誌",
       slug: "gm",
-      nameOriginal: null,
+      nameParallel: null,
+      sourceTitle: null,
       publisher: null,
       description: null,
     };

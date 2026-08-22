@@ -48,7 +48,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         const created = await tx.magazine.create({
           data: {
             name: mag.name,
-            nameOriginal: mag.nameOriginal,
+            nameParallel: mag.nameParallel,
             publisher: mag.publisher,
             issn: mag.issn,
             description: mag.description,

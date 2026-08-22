@@ -157,9 +157,9 @@ export default async function MagazinesPage({
                     )}
                   </div>
                   <CardTitle className="line-clamp-1 text-base">{unit.name}</CardTitle>
-                  {unit.nameOriginal && (
+                  {unit.nameParallel && (
                     <CardDescription className="line-clamp-1 text-xs">
-                      {unit.nameOriginal}
+                      {unit.nameParallel}
                     </CardDescription>
                   )}
                 </CardHeader>

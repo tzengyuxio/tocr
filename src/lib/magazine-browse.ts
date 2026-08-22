@@ -182,7 +182,7 @@ export interface MagazineDisplayUnit {
   key: string;
   href: string;
   name: string;
-  nameOriginal: string | null;
+  nameParallel: string | null;
   publisher: string | null;
   logoImage: string | null;
   categories: MagazineCategory[];
@@ -199,7 +199,7 @@ interface DisplayMagazine {
   id: string;
   slug: string;
   name: string;
-  nameOriginal: string | null;
+  nameParallel: string | null;
   publisher: string | null;
   logoImage: string | null;
   categories: MagazineCategory[];
@@ -231,7 +231,7 @@ export function magazineDisplayUnits(
   issues: { order: number; publishSort: Date | null }[]
 ): MagazineDisplayUnit[] {
   const base = {
-    nameOriginal: magazine.nameOriginal,
+    nameParallel: magazine.nameParallel,
     publisher: magazine.publisher,
     categories: magazine.categories,
   };

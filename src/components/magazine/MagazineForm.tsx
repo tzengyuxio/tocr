@@ -54,7 +54,8 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
     defaultValues: {
       name: initialData?.name || "",
       slug: initialData?.slug || "",
-      nameOriginal: initialData?.nameOriginal || "",
+      nameParallel: initialData?.nameParallel || "",
+      sourceTitle: initialData?.sourceTitle || "",
       aliases: initialData?.aliases || [],
       publisher: initialData?.publisher || "",
       issn: initialData?.issn || "",
@@ -151,14 +152,33 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               )}
             </div>
 
-            {/* 原文名稱 */}
+            {/* 並列刊名 */}
             <div className="space-y-2">
-              <Label htmlFor="nameOriginal">原文名稱</Label>
+              <Label htmlFor="nameParallel">並列刊名</Label>
               <Input
-                id="nameOriginal"
-                placeholder="例如：Famitsu"
-                {...register("nameOriginal")}
+                id="nameParallel"
+                placeholder="例如：ACE、TV GAME MAGAZINE"
+                {...register("nameParallel")}
               />
+              <p className="text-xs text-muted-foreground">
+                刊物自己印在封面上的另一語言刊名。填它當招牌用的那個形式，不是最完整的那個——
+                《電腦玩家》印過 Amazing Computer Entertainment 但自稱 ACE，這裡填
+                ACE，全名放別名
+              </p>
+            </div>
+
+            {/* 原刊刊名 */}
+            <div className="space-y-2">
+              <Label htmlFor="sourceTitle">原刊刊名</Label>
+              <Input
+                id="sourceTitle"
+                placeholder="例如：ファミ通"
+                {...register("sourceTitle")}
+              />
+              <p className="text-xs text-muted-foreground">
+                只在「本刊整體就是該外刊的中文版」時填。有文章授權不算——《電腦玩家》曾標示
+                「PC GAMER 國際中文版」，但它不是那本雜誌，這欄留空
+              </p>
             </div>
 
             {/* 出版社 */}
@@ -230,7 +250,8 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                       onChange={field.onChange}
                     />
                     <p className="text-xs text-muted-foreground">
-                      可用於搜尋的替代名稱，以逗號分隔
+                      俗稱、簡稱與並列刊名的其他寫法，以逗號分隔。改名後的刊名請用下方的
+                      刊名沿革，並列刊名與原刊各有專屬欄位
                     </p>
                   </div>
                 )}

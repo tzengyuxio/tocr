@@ -30,8 +30,11 @@ describe("blank optional text becomes null", () => {
   });
 
   it("normalises magazine, issue, article and tag fields too", () => {
-    expect(magazineUpdateSchema.parse({ nameOriginal: "", publisher: "" })).toMatchObject({
-      nameOriginal: null,
+    expect(
+      magazineUpdateSchema.parse({ nameParallel: "", sourceTitle: "", publisher: "" })
+    ).toMatchObject({
+      nameParallel: null,
+      sourceTitle: null,
       publisher: null,
     });
     expect(issueUpdateSchema.parse({ volumeNumber: "", notes: "" })).toMatchObject({

@@ -107,7 +107,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     ? {
         OR: [
           { name: { contains: query, mode: "insensitive" } },
-          { nameOriginal: { contains: query, mode: "insensitive" } },
+          { nameParallel: { contains: query, mode: "insensitive" } },
           { publisher: { contains: query, mode: "insensitive" } },
           { aliases: { has: query } },
           // 歷任刊名也能搜到，命中導向同一個刊系頁——舊刊名不是死路
@@ -399,9 +399,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   <CardTitle className="line-clamp-1 text-base">
                     {magazine.name}
                   </CardTitle>
-                  {magazine.nameOriginal && (
+                  {magazine.nameParallel && (
                     <CardDescription className="line-clamp-1 text-xs">
-                      {magazine.nameOriginal}
+                      {magazine.nameParallel}
                     </CardDescription>
                   )}
                 </CardHeader>

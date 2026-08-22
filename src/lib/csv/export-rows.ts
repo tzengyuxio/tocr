@@ -9,7 +9,8 @@ import { escapeCsvField } from "./escape";
  */
 export const CSV_HEADERS = [
   "magazine_name",
-  "magazine_name_original",
+  "magazine_name_parallel",
+  "magazine_source_title",
   "publisher",
   "issn",
   "description",
@@ -42,7 +43,8 @@ type Numeric = number | string | { toString(): string };
 
 export interface ExportMagazine {
   name: string;
-  nameOriginal: string | null;
+  nameParallel: string | null;
+  sourceTitle: string | null;
   publisher: string | null;
   issn: string | null;
   description: string | null;
@@ -102,7 +104,8 @@ export function rowsFor(
 ): string[] {
   const magFields = [
     magazine.name,
-    magazine.nameOriginal ?? "",
+    magazine.nameParallel ?? "",
+    magazine.sourceTitle ?? "",
     magazine.publisher ?? "",
     magazine.issn ?? "",
     magazine.description ?? "",
