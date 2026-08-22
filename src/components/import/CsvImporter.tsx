@@ -163,7 +163,7 @@ export function CsvImporter() {
                     <li><span className="font-medium">issue_number *</span>：期號，照封面登錄但數字就寫數字，如「42」「創刊號」「2024年8月號」</li>
                     <li><span className="font-medium">alt_numbers</span>：同一期封面／版權頁上並存的其他編號，以分號分隔，如「HK VOL 308;1月30日號」</li>
                     <li><span className="font-medium">issue_title</span>：本期標題或特輯名稱</li>
-                    <li><span className="font-medium">publish_date *</span>：出版日期，知道多少寫多少：<code>1999</code>、<code>1999-05</code>、<code>1999-05-20</code>；季別用 21 春、22 夏、23 秋、24 冬</li>
+                    <li><span className="font-medium">publish_date</span>：出版日期，知道多少寫多少：<code>1999</code>、<code>1999-05</code>、<code>1999-05-20</code>；季別用 21 春、22 夏、23 秋、24 冬。查不到就留空</li>
                     <li><span className="font-medium">page_count</span>：頁數</li>
                     <li><span className="font-medium">price</span>：售價</li>
                     <li><span className="font-medium">notes</span>：備註</li>

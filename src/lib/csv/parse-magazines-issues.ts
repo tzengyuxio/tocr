@@ -110,7 +110,7 @@ export function parseCsvFile(file: File): Promise<ParseResult> {
             ...(altNumbers.length > 0 && { altNumbers }),
             volumeNumber: emptyToUndefined(row.volume_number),
             title: emptyToUndefined(row.issue_title),
-            publishDate: row.publish_date.trim(),
+            publishDate: emptyToUndefined(row.publish_date),
           };
 
           const pageCountStr = emptyToUndefined(row.page_count);

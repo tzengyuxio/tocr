@@ -115,7 +115,7 @@ export default async function MagazineDetailPage({
     ? null
     : await prisma.issue.findFirst({
         where: { magazineId: id, coverImage: { not: null } },
-        orderBy: { publishSort: "asc" },
+        orderBy: { order: "asc" },
         select: { issueNumber: true, coverImage: true },
       });
 

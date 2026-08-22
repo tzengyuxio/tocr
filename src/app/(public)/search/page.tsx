@@ -145,7 +145,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     type === "article"
       ? await prisma.article.findMany({
           where,
-          orderBy: [{ issue: { publishSort: "desc" } }, { sortOrder: "asc" }],
+      // Nulls last: undated issues have no place on a timeline.
+          orderBy: [
+            { issue: { publishSort: { sort: "desc", nulls: "last" } } },
+            { sortOrder: "asc" },
+          ],
           skip,
           take: PAGE_SIZE,
           include: {

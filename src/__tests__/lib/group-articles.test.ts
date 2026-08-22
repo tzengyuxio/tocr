@@ -82,6 +82,25 @@ describe("groupArticles", () => {
     expect(result[0].issues[1].issue.issueNumber).toBe("第1期");
   });
 
+  // An issue with no stated date has no place on the timeline, so it goes to
+  // the end rather than to whichever end NaN happens to fall on.
+  it("sorts issues with no date last", () => {
+    const mag = { id: "mag-1", name: "Magazine A" };
+    const articles: ArticleData[] = [
+      makeArticle({
+        id: "art-1",
+        issue: { id: "iss-1", issueNumber: "第1期", publishDate: null, publishSort: null, magazine: mag },
+      }),
+      makeArticle({
+        id: "art-2",
+        issue: { id: "iss-2", issueNumber: "第2期", publishDate: "2023-06-01", publishSort: "2023-06-01", magazine: mag },
+      }),
+    ];
+
+    const issues = groupArticles(articles)[0].issues;
+    expect(issues.map((i) => i.issue.id)).toEqual(["iss-2", "iss-1"]);
+  });
+
   it("should sort magazines alphabetically by name", () => {
     const articles: ArticleData[] = [
       makeArticle({

@@ -16,7 +16,7 @@ export const GET = withErrorHandler(async (
     where: { id },
     include: {
       issues: {
-        orderBy: { publishSort: "desc" },
+        orderBy: { order: "desc" },
         take: 10,
       },
       _count: {

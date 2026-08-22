@@ -274,16 +274,15 @@ export function IssueForm({
 
             {/* 出版日期 */}
             <div className="space-y-2">
-              <Label htmlFor="publishDate">
-                出版日期 <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="publishDate">出版日期</Label>
               <Input
                 id="publishDate"
                 placeholder="1999-05-20、1999-05、1999、1999-22"
                 {...register("publishDate")}
               />
               <p className="text-xs text-muted-foreground">
-                知道多少寫多少：年、年-月、年-月-日；季別用 21 春、22 夏、23 秋、24 冬
+                知道多少寫多少：年、年-月、年-月-日；季別用 21 春、22 夏、23 秋、24 冬。
+                查不到就留空——本期在刊內的位置由排序決定，不必為了填滿欄位捏一個日期
               </p>
               {errors.publishDate && (
                 <p className="text-sm text-red-500">

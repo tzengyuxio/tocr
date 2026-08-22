@@ -81,7 +81,9 @@ export default async function TagDetailPage({ params }: PageProps) {
         orderBy: {
           article: {
             issue: {
-              publishSort: "desc",
+              // Nulls last: an issue with no stated date has no place on a
+              // timeline, and Postgres would otherwise sort them first here.
+              publishSort: { sort: "desc", nulls: "last" },
             },
           },
         },

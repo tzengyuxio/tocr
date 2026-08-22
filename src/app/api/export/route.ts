@@ -63,10 +63,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           for (;;) {
             const issues = await prisma.issue.findMany({
               where: { magazineId: magazine.id },
-              // The id tiebreak is what makes batching safe: publishSort alone
-              // leaves same-day issues in an arbitrary order, and an unstable
-              // order across queries drops or repeats rows at batch edges.
-              orderBy: [{ publishSort: "asc" }, { id: "asc" }],
+              // One magazine's run, so `order` is the ruler -- not every issue
+              // has a date. The id tiebreak is what makes batching safe:
+              // `order` alone leaves ties in an arbitrary order, and an
+              // unstable order across queries drops or repeats rows at batch
+              // edges.
+              orderBy: [{ order: "asc" }, { id: "asc" }],
               take: ISSUE_BATCH_SIZE,
               ...(cursor && { cursor: { id: cursor }, skip: 1 }),
               include: ARTICLE_INCLUDE,

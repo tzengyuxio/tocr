@@ -52,7 +52,7 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
         issue.altNumbers.join(";"),
         issue.volumeNumber ?? "",
         issue.title ?? "",
-        issue.publishDate,
+        issue.publishDate ?? "",
         issue.pageCount != null ? String(issue.pageCount) : "",
         issue.price != null ? String(issue.price) : "",
         issue.notes ?? "",

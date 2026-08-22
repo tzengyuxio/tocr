@@ -187,10 +187,16 @@ model Issue {
   title        String? // 本期特輯標題
   // EDTF (ISO 8601-2), same as Magazine: an issue is often dated only to the
   // month or the season. See docs/data-conventions.md.
-  publishDate  String   @map("publish_date")
-  // Start of the range publishDate covers. Derived on write; issues are
-  // ordered by this, never by the EDTF string.
-  publishSort  DateTime @map("publish_sort")
+  //
+  // Nullable, because plenty of issues from this era carry no date a reader
+  // can recover -- 華泰任天堂秘笈 prints neither a colophon date nor a cover
+  // month. Their place in the run is held by `order` instead, which is what
+  // a magazine's own issue list is sorted by.
+  publishDate  String?  @map("publish_date")
+  // Start of the range publishDate covers. Derived on write; never sorted on
+  // the EDTF string. Null exactly when publishDate is, so cross-magazine
+  // lists (search, tags, games) order on it with nulls last.
+  publishSort  DateTime? @map("publish_sort")
   coverImage   String?  @map("cover_image")
   tocImages    String[] @default([]) @map("toc_images") // 目錄頁掃描圖（可多張）
   // When a person confirmed the table of contents. OCR run through the API
@@ -199,6 +205,10 @@ model Issue {
   pageCount    Int?     @map("page_count")
   price        Decimal? @db.Decimal(10, 2)
   notes        String?  @db.Text
+  // Position within the magazine, and the ruler its issue list is sorted by.
+  // Dates cannot serve: not every issue has one, and issue numbers sort "10"
+  // before "9". Set from the source's own sequence on import; PUT
+  // /api/issues/reorder renumbers when an issue turns up in the middle.
   order        Int      @default(0)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")

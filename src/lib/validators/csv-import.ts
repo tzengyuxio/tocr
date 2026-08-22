@@ -21,7 +21,8 @@ export const csvRowSchema = z.object({
   // 比丟掉好——欄位本身還在 schema 裡。見 docs/data-conventions.md。
   volume_number: z.string().optional(),
   issue_title: z.string().optional(),
-  publish_date: z.string().min(1, "出版日期為必填"),
+  // 可留空：有些期數查不到出版日，位置由 order 決定（見 data-conventions.md）。
+  publish_date: z.string(),
   page_count: z.string().optional(),
   price: z.string().optional(),
   notes: z.string().optional(),
@@ -34,7 +35,7 @@ export interface ParsedIssue {
   altNumbers?: string[];
   volumeNumber?: string;
   title?: string;
-  publishDate: string;
+  publishDate?: string;
   pageCount?: number;
   price?: number;
   notes?: string;
@@ -67,7 +68,10 @@ export const importRequestSchema = z.object({
           altNumbers: z.array(z.string()).optional(),
           volumeNumber: z.string().optional(),
           title: z.string().optional(),
-          publishDate: z.string().min(1).refine(isValidEdtf, "publish_date 需為 EDTF（例如 1999、1999-05、1999-05-20、1994-22）"),
+          publishDate: z
+            .string()
+            .refine(isValidEdtf, "publish_date 需為 EDTF（例如 1999、1999-05、1999-05-20、1994-22）")
+            .optional(),
           pageCount: z.coerce.number().int().positive().optional(),
           price: z.coerce.number().positive().optional(),
           notes: z.string().optional(),

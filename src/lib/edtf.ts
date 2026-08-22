@@ -41,8 +41,15 @@ const SEASONS: Record<number, string> = {
   24: "冬季",
 };
 
-/** Render an EDTF value as Traditional Chinese, keeping its precision. */
-export function formatEdtf(value: string): string {
+/**
+ * Render an EDTF value as Traditional Chinese, keeping its precision.
+ *
+ * Absent reads as the empty string: an issue may state no date at all, and
+ * every caller wants either nothing or its own wording ("日期不詳"), never the
+ * word "null" on the page.
+ */
+export function formatEdtf(value: string | null | undefined): string {
+  if (!value) return "";
   if (!isValidEdtf(value)) return value;
 
   // Strip the qualifiers before matching shape, then note them separately.
