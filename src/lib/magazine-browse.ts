@@ -47,15 +47,19 @@ export const MAGAZINE_CATEGORY_CHIPS: Record<
 };
 
 export const MAGAZINE_FILTERS = [
-  { value: "all", label: "全部", where: {} },
+  // category 給展開成時期卡之後的 JS 端篩選與計數用（chips 的數字要跟頁首
+  // 「共 N 本」數同一種東西，也就是顯示單位，不能一邊數 Magazine 一邊數卡）。
+  { value: "all", label: "全部", category: null, where: {} },
   ...MAGAZINE_CATEGORY_VALUES.map((category) => ({
     value: category.toLowerCase().replace("_game", ""),
     label: MAGAZINE_CATEGORY_LABELS[category],
+    category,
     where: { categories: { has: category } },
   })),
 ] as const satisfies ReadonlyArray<{
   value: string;
   label: string;
+  category: MagazineCategory | null;
   where: Prisma.MagazineWhereInput;
 }>;
 
