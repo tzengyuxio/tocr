@@ -346,7 +346,13 @@ export default function GamesPage() {
       const res = await fetch("/api/games/search-cover", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: formData.name }),
+        // 三個名字都送過去，讓 route 依英文優先的順序試——RAWG 是英文資料庫，
+        // 只送中文譯名對這批遊戲幾乎必定落空。
+        body: JSON.stringify({
+          name: formData.name,
+          nameEn: formData.nameEn,
+          nameOriginal: formData.nameOriginal,
+        }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
