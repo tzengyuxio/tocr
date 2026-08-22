@@ -15,7 +15,7 @@ spreadsheetId `1QN5sBTGJSAcPpTzpkLj3qchWmgg9bb6ht6yV22LYukI`。nostalibrary repo
 | --- | --- |
 | 雜誌1 | 精訊電腦（jxdn）、軟體世界雜誌（swm）、軟體之星（ssm）、電腦玩家雜誌（ace）、電腦遊戲世界（cgw）、新遊戲時代雜誌（sgm）、次世代遊戲情報（next）、Mania 遊戲玩瘋誌（mania）、遊戲設計大師（gd）、遊戲工場（gf）、舊遊戲時代（rgt） |
 | 雜誌2 | 華泰任天堂秘笈（htntd）、電視遊樂雜誌（tvgm）、電視遊樂報導（tvgr）、勝利小子（vvkids）、攻略快報（tvgsg）、星際遊樂雜誌（astro） |
-| 雜誌3 | 電擊PlayStation（dps-tw）、電擊SEGA SATURN（dss-tw）、電擊王（doh-tw）、電玩通（fmt-tw）、電玩通PLAYSTATION+（fmtps-tw） |
+| 雜誌3 | 電擊PlayStation（dps-tw）、電擊SEGA SATURN（dss-tw）、電擊王（doh-tw）、電玩通（fmt-tw）、電玩通PS2（fmtps-tw，PlayStation 系刊系：PS2／PLAYSTATION +／PSP+PS3 三個刊名時期，Sheet 的 id 前綴 fmtps-tw、series 欄大多空白） |
 | 雜誌4 | 電玩e世代（egen）、飛訊電玩周刊（fashion）、電玩百分百週刊（game100）、電玩族雜誌（gpeople）、電玩時代（gtimes）、電遊人（gwalker）、新世紀 HYPER PlayStation（hps-tw）、3DO／次世代總合情報誌（newgen）、Official Xbox Magazine（oxm）、電遊通訊（tvgameinfo）、勝利少年（vboy）、疾風快報（wolf） |
 
 匯入腳本以 `series` 欄挑列，而那一欄有兩個坑：

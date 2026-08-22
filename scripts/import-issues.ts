@@ -55,10 +55,16 @@ interface MagazineRule {
   overrides?: Record<number, { pageCount?: number; note?: string }>;
   /** 同一本刊在 Sheet 裡的其他 series 值——改名之後那一段。 */
   seriesAliases?: string[];
+  /** series 欄整批空白的刊（見 data-conventions「上游資料來源」），改以 id 前綴挑列。 */
+  idPrefix?: string;
+  /** weight 欄空白時，從整列推 order。 */
+  orderFor?: (row: Row) => number | undefined;
+  /** 出版日真的無從推起的刊：留空匯入（publishDate 可空），而不是整期跳過。 */
+  allowMissingDate?: boolean;
   /** 標題不是「刊名＋期號」時（例如改名之後），自己取期號。 */
   issueNumberFor?: (row: Row) => string | undefined;
-  /** Sheet 沒填日期、但整列裡有線索時的推定。 */
-  publishDateFrom?: (row: Row) => { date: string; note: string } | undefined;
+  /** Sheet 沒填日期、或該欄記的不是出版日時的推定；回傳值優先於 Sheet 字面值。 */
+  publishDateFrom?: (row: Row) => { date: string; note?: string } | undefined;
   /** 同一期印的其他編號——見 docs/data-conventions.md。 */
   altNumbersFor?: (row: Row) => string[];
 }
@@ -68,6 +74,29 @@ const pad = (n: number) => String(n).padStart(2, "0");
 function addMonths(year: number, month: number, add: number) {
   const total = month - 1 + add;
   return { year: year + Math.floor(total / 12), month: (total % 12) + 1 };
+}
+
+/** 電玩通 PlayStation 系（fmtps-tw）的列，編號在 id 尾碼：fmtps-tw_no-103 → 103。 */
+function fmtpsNumber(row: Row): number {
+  return Number(row.id.match(/no-(\d+)$/)?.[1] ?? NaN);
+}
+
+/**
+ * 電玩通 PlayStation 系的出刊節奏（VOL.103 起；之前的 PS2 段推不動，見 RULES）。
+ *
+ *   VOL.103–115  月刊，每月 10 日，自 2007-05-10（改版發行日，確知）
+ *   VOL.116–129  月刊，每月 15 日，自 2008-06-15（改版發行日，確知）
+ *   VOL.130–132  季刊，仍為 15 日；推出的 VOL.132 = 2010-04-15 正好落在
+ *                文獻記載的休刊日上，月刊＋季刊兩段節奏互相印證
+ */
+function fmtpsPublishDate(n: number): string {
+  if (n <= 115) {
+    const { year, month } = addMonths(2007, 5, n - 103);
+    return `${year}-${pad(month)}-10`;
+  }
+  const step = n <= 129 ? n - 116 : 13 + (n - 129) * 3;
+  const { year, month } = addMonths(2008, 6, step);
+  return `${year}-${pad(month)}-15`;
 }
 
 /**
@@ -136,6 +165,49 @@ const RULES: Record<string, MagazineRule> = {
         : row.publish_date.trim() || undefined;
     },
     altNumbersFor: (row) => [...row.title.matchAll(/（(.*?)）/g)].map((m) => m[1]),
+  },
+  電玩通PS2: {
+    // 雜誌3 這批列的 series 欄大多空白（只有 VOL.103–115 填了
+    // 「電玩通PLAYSTATION+」），以 id 前綴挑列；weight 同樣大多空白，
+    // order 從 id 尾碼取。Sheet 目前只到 no-129，季刊的 VOL.130–132 還沒有列。
+    idPrefix: "fmtps-tw_no-",
+    orderFor: fmtpsNumber,
+    // 期號照封面印刷：PS2 段是「No.001」、改版後是「VOL.103」。no-102 與
+    // no-116–129 在 Sheet 沒有 title，一律從 id 推，不依賴 title 欄。
+    issueNumberFor: (row) => {
+      const n = fmtpsNumber(row);
+      return n <= 102 ? `No.${String(n).padStart(3, "0")}` : `VOL.${n}`;
+    },
+    // Sheet 的 publish_date 記的是封面月號不是發行日（VOL.103 封面 2007 年
+    // 6 月號、Sheet 填 2007-06-10，文獻記載實際發行 2007-05-10，正好差一個
+    // 月），所以整欄不能照抄，改用節奏推：
+    //   VOL.1–102   半月刊，只有創刊日一個錨點，102 期推不動——誠實留空
+    //   VOL.103 起  見 fmtpsPublishDate；103、116（改版發行日）與 132
+    //               （休刊日）為文獻確知，其餘標 ~
+    publishDateFrom: (row) => {
+      const n = fmtpsNumber(row);
+      if (n <= 102) return undefined;
+      const derived = fmtpsPublishDate(n);
+      // Sheet 那欄若有值，必須等於「推定發行月＋1」的封面月號，否則規則要重看。
+      const sheetDate = row.publish_date.trim();
+      if (sheetDate) {
+        const [y, m] = derived.split("-").map(Number);
+        const cover = addMonths(y, m, 1);
+        const expected = `${cover.year}-${pad(cover.month)}-10`;
+        if (sheetDate !== expected) {
+          throw new Error(`VOL.${n} sheet 是 ${sheetDate}，封面月號推定是 ${expected}——規則要重看`);
+        }
+      }
+      if (n === 103 || n === 116 || n === 132) return { date: derived };
+      return {
+        date: `${derived}~`,
+        note:
+          "出版日為推定：VOL.103 起月刊每月 10 日（自 2007-05-10 改版發行），" +
+          "VOL.116 起月刊每月 15 日（自 2008-06-15 改版發行）、VOL.130 起季刊。" +
+          "Sheet 的日期欄記的是封面月號。未經查證。",
+      };
+    },
+    allowMissingDate: true,
   },
   次世代遊戲情報: {
     derivePublishDate: nextGenPublishDate,
@@ -224,7 +296,11 @@ async function main() {
   const seriesValues = new Set([series, ...(rule.seriesAliases ?? [])]);
   const rows: Row[] = body
     .map((r) => Object.fromEntries(header.map((h, i) => [h, r[i] ?? ""])) as Row)
-    .filter((r) => seriesValues.has(r.series));
+    .filter(
+      (r) =>
+        seriesValues.has(r.series) ||
+        (rule.idPrefix !== undefined && r.id.startsWith(rule.idPrefix))
+    );
   if (rows.length === 0) throw new Error(`${sheetPath} 裡找不到 series「${series}」`);
 
   const magazines = await (await fetch(`${base}/api/magazines?limit=200`)).json();
@@ -248,7 +324,7 @@ async function main() {
   let skipped = 0;
 
   for (const row of rows) {
-    const order = Number(row.weight);
+    const order = rule.orderFor?.(row) ?? Number(row.weight);
     const { issueNumber, slug, key } = entryOf(row, series, rule);
 
     if (existing.has(key)) {
@@ -269,15 +345,15 @@ async function main() {
       publishDate = known ? derived : `${derived}~`;
       if (!known) derivedNote = rule.derivedNote;
     }
-    if (!publishDate && rule.publishDateFrom) {
+    if (rule.publishDateFrom) {
       const derived = rule.publishDateFrom(row);
       if (derived) {
         publishDate = derived.date;
         derivedNote = derived.note;
       }
     }
-    if (!publishDate) {
-      console.error(`  ! 第 ${order} 期沒有出版日期，而該欄必填——跳過`);
+    if (!publishDate && !rule.allowMissingDate) {
+      console.error(`  ! 第 ${order} 期沒有出版日期——跳過`);
       continue;
     }
 
@@ -288,7 +364,7 @@ async function main() {
       issueNumber,
       ...(slug ? { slug } : {}),
       ...(altNumbers.length ? { altNumbers } : {}),
-      publishDate,
+      ...(publishDate ? { publishDate } : {}),
       title: row.description?.trim() || undefined,
       price: row.price?.trim() || undefined,
       pageCount: override?.pageCount ?? (row.num_pages?.trim() || undefined),
@@ -298,7 +374,7 @@ async function main() {
 
     if (!apply) {
       console.log(
-        `  + ${issueNumber.padEnd(12)} ${publishDate.padEnd(12)} ${key.padEnd(12)} order=${order}`
+        `  + ${issueNumber.padEnd(12)} ${(publishDate || "(無日期)").padEnd(12)} ${key.padEnd(12)} order=${order}`
       );
       // 登記下來，否則 dry run 的封面統計會把「還沒建立」誤報成「沒有圖檔」。
       existing.set(key, { id: `(dry-run:${order})`, coverImage: null });
