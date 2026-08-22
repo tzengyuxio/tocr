@@ -88,6 +88,27 @@ async function loadTargets(
   linkTo: EditLogLinkTo
 ): Promise<[string, EditLogTarget][]> {
   switch (entityType) {
+    case "MagazineTitle": {
+      // 刊名時期沒有自己的頁面，指回它所屬的刊系。
+      const rows = await prisma.magazineTitle.findMany({
+        where: { id: { in: ids } },
+        select: {
+          id: true,
+          title: true,
+          magazine: { select: { id: true, slug: true } },
+        },
+      });
+      return rows.map((row) => [
+        row.id,
+        {
+          label: row.title,
+          href:
+            linkTo === "public"
+              ? `/magazines/${row.magazine.slug}`
+              : `/admin/magazines/${row.magazine.id}`,
+        },
+      ]);
+    }
     case "Magazine": {
       const rows = await prisma.magazine.findMany({
         where: { id: { in: ids } },

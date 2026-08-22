@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { MagazineForm } from "@/components/magazine/MagazineForm";
+import { MagazineTitleSection } from "@/components/magazine/MagazineTitleSection";
 import { IssueListClient } from "@/components/magazine/IssueListClient";
 import { isSessionAdmin } from "@/lib/require-editor";
 import { ArrowLeft } from "lucide-react";
@@ -16,6 +17,15 @@ export default async function EditMagazinePage({ params }: PageProps) {
   const magazine = await prisma.magazine.findUnique({
     where: { id },
     include: {
+      titles: {
+        select: {
+          id: true,
+          title: true,
+          startIssueId: true,
+          logoImage: true,
+          note: true,
+        },
+      },
       // Select rather than include: the full row carries a Decimal price,
       // which React cannot hand to a Client Component -- the same reason
       // /admin/ocr selects its columns.
@@ -71,8 +81,18 @@ export default async function EditMagazinePage({ params }: PageProps) {
         <h1 className="text-2xl font-bold">{magazine.name}</h1>
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1">
+        <div className="space-y-6 lg:col-span-1">
           <MagazineForm initialData={formData} mode="edit" />
+          <MagazineTitleSection
+            magazineId={magazine.id}
+            magazineName={magazine.name}
+            titles={magazine.titles}
+            issues={magazine.issues.map((issue) => ({
+              id: issue.id,
+              issueNumber: issue.issueNumber,
+              order: issue.order,
+            }))}
+          />
         </div>
         <IssueListClient
           magazineId={magazine.id}

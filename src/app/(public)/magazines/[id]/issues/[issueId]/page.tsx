@@ -20,6 +20,7 @@ import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { JsonLd } from "@/components/JsonLd";
 import { publicationIssueJsonLd } from "@/lib/structured-data";
+import { titleForIssue } from "@/lib/magazine-title";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
 
@@ -42,12 +43,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: true,
       publishDate: true,
       coverImage: true,
-      magazine: { select: { name: true } },
+      order: true,
+      magazine: {
+        select: {
+          name: true,
+          titles: {
+            select: { title: true, startIssue: { select: { order: true } } },
+          },
+        },
+      },
     },
   });
   if (!issue) return { title: "單期詳情" };
 
-  const name = `${issue.magazine.name} ${formatIssueNumber(issue.issueNumber)}`;
+  // 用這一期當時的刊名稱呼它，不是今天的通行名。
+  const magazineName = titleForIssue(
+    issue.magazine.titles,
+    issue.order,
+    issue.magazine.name
+  );
+  const name = `${magazineName} ${formatIssueNumber(issue.issueNumber)}`;
   // 貼出去的那一行要讓人知道是哪一期、什麼時候的，以及這期在講什麼。
   const description = [formatEdtf(issue.publishDate), issue.title]
     .filter(Boolean)
@@ -91,7 +106,13 @@ export default async function IssueDetailPage({ params }: PageProps) {
   const issue = await prisma.issue.findUnique({
     where: { id: issueId },
     include: {
-      magazine: true,
+      magazine: {
+        include: {
+          titles: {
+            select: { title: true, startIssue: { select: { order: true } } },
+          },
+        },
+      },
       articles: {
         orderBy: { sortOrder: "asc" },
         include: {
@@ -121,6 +142,13 @@ export default async function IssueDetailPage({ params }: PageProps) {
   // A one-line strip rather than a labelled row each: an issue often knows only
   // its date, and three rows of mostly-absent facts was what left the header
   // half empty.
+  // 這一期當時的刊名——標題與麵包屑都用它，1999 年的期不掛今天的名字。
+  const magazineName = titleForIssue(
+    issue.magazine.titles,
+    issue.order,
+    issue.magazine.name
+  );
+
   const meta = [
     formatEdtf(issue.publishDate),
     issue.pageCount ? `${issue.pageCount} 頁` : null,
@@ -137,7 +165,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
           issue
         )}
       />
-      <Breadcrumb items={[{ label: "雜誌", href: "/magazines" }, { label: issue.magazine.name, href: `/magazines/${issue.magazine.slug}` }, { label: formatIssueNumber(issue.issueNumber) }]} />
+      <Breadcrumb items={[{ label: "雜誌", href: "/magazines" }, { label: magazineName, href: `/magazines/${issue.magazine.slug}` }, { label: formatIssueNumber(issue.issueNumber) }]} />
 
       {/* Title block: the cover no longer sets the height, so nothing has to
           fill 256px of space beside it. */}
@@ -150,7 +178,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
               href={`/magazines/${issue.magazine.slug}`}
               className="hover:underline"
             >
-              {issue.magazine.name}
+              {magazineName}
             </Link>{" "}
             {formatIssueNumber(issue.issueNumber)}
           </h1>

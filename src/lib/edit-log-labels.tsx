@@ -51,6 +51,7 @@ export function entityLabel(type: string) {
   switch (type) {
     case "Magazine": return "雜誌";
     case "Issue": return "單期";
+    case "MagazineTitle": return "刊名時期";
     case "Article": return "文章";
     case "Tag": return "標籤";
     case "Game": return "遊戲";
