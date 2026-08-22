@@ -1,7 +1,20 @@
 import Link from "next/link";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { BookOpen, Gamepad2, Tags, Search, Home, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/MobileNav";
+
+/**
+ * 分析只掛在前台這一層，不放進 root layout。
+ *
+ * `/admin` 與 `/auth` 是另一個 layout 底下的事，把它排除掉是這條的重點——自己
+ * 編目一整晚的點擊會蓋過真實訪客，而後台的流量本來就沒有分析價值。
+ *
+ * 未設環境變數就整個不掛，所以本機與 preview 預設不送資料。measurement ID 不是
+ * 密鑰（它會出現在每個訪客的頁面原始碼裡），走環境變數是為了讓「哪個環境要不
+ * 要送」由部署決定，不是寫死在程式裡。Vercel 的環境變數改了要 redeploy 才生效。
+ */
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export default function PublicLayout({
   children,
@@ -76,6 +89,8 @@ export default function PublicLayout({
           </p>
         </div>
       </footer>
+
+      {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
     </div>
   );
 }

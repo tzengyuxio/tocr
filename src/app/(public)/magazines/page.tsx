@@ -18,23 +18,31 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
 import { MagazineBrowseBar } from "@/components/magazine/MagazineBrowseBar";
+import { MagazineList } from "@/components/magazine/MagazineList";
 import {
   MAGAZINE_FILTERS,
   magazineOrderBy,
   parseMagazineDirection,
   parseMagazineFilter,
   parseMagazineSort,
+  parseMagazineView,
 } from "@/lib/magazine-browse";
 
 export default async function MagazinesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string; sort?: string; dir?: string }>;
+  searchParams: Promise<{
+    filter?: string;
+    sort?: string;
+    dir?: string;
+    view?: string;
+  }>;
 }) {
   const params = await searchParams;
   const filter = parseMagazineFilter(params.filter);
   const sort = parseMagazineSort(params.sort);
   const direction = parseMagazineDirection(params.dir, sort);
+  const view = parseMagazineView(params.view);
 
   const [magazines, counts] = await Promise.all([
     prisma.magazine.findMany({
@@ -73,6 +81,7 @@ export default async function MagazinesPage({
           filter={filter}
           sort={sort}
           direction={direction}
+          view={view}
           counts={filterCounts}
         />
       </div>
@@ -87,6 +96,8 @@ export default async function MagazinesPage({
             {filter.value === "all" ? "資料建置中，敬請期待" : "試試其他分類"}
           </p>
         </div>
+      ) : view === "list" ? (
+        <MagazineList magazines={magazines} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {magazines.map((magazine) => (
