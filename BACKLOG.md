@@ -179,7 +179,7 @@
 
 ## 已完成
 
-- [x] **期刊改名之後，整段歷史都顯示新名** — 以 `MagazineTitle`（刊名時期，只存起始期）解決：單期頁用當期刊名、`/magazines` 一時期一卡、刊系頁分區段，後台有「刊名沿革」編輯區。判準入 data-conventions，設計見 docs/plans/2026-08-22-magazine-title-design.md。電玩通 PlayStation 系已於同日收整完畢（三本空殼 Magazine 併為 `fmtps-tw`、匯入 132 期、建三筆沿革，成為第一條用上這功能的刊系）；其餘刊的沿革見上方待辦（2026-08-22）
+- [x] **期刊改名之後，整段歷史都顯示新名** — 以 `MagazineTitle`（刊名時期，只存起始期）解決：單期頁用當期刊名、`/magazines` 一時期一卡、刊系頁分區段，後台有「刊名沿革」編輯區。判準入 data-conventions，設計見 docs/plans/2026-08-22-magazine-title-design.md。電玩通 PlayStation 系已於同日收整完畢（三本空殼 Magazine 併為 `fmtps-tw`、匯入 132 期、建三筆沿革，成為第一條用上這功能的刊系）；其餘刊的沿革見上方待辦。電腦遊戲世界與電擊王的沿革與時期刊頭同日建畢——刊頭裁切來源：「遊戲世界」取第 169 期封面（cgw_no-169.jpg），「DengekiGAMES」取 DengekiGAMES Vol.4 封面（doh-tw_no-029.jpg，Vol.11 左上被 FF12 促銷框疊住所以不用）（2026-08-22）
 - [x] **`/magazines` 提供列表式檢視切換**（2026-08-22 完成） — 卡片牆之外多一種列表呈現，右上角切換，狀態走網址 `?view=list`（`parseMagazineView`），與篩選、排序同一套機制，所以切完的畫面分享得出去。
 
   列表欄位是**讀者要的那組**（出版社、發行期間、分類、期數），不是照抄後台那份——後台有編輯、快速新增單期、建立日期，都是編輯才需要的。也因此沒有共用 `MagazineListClient`，否則會變成一個到處都是 `isAdmin` 判斷的元件。
