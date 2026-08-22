@@ -17,6 +17,7 @@ import {
   parseMagazineDirection,
   parseMagazineSort,
 } from "@/lib/magazine-browse";
+import { sortTitlePeriods } from "@/lib/magazine-title";
 
 export default async function MagazinesPage({
   searchParams,
@@ -33,8 +34,19 @@ export default async function MagazinesPage({
       _count: {
         select: { issues: true },
       },
+      titles: {
+        select: { title: true, startIssue: { select: { order: true } } },
+      },
     },
   });
+
+  // 歷任刊名列在通行名底下，管理清單才 ctrl-F 得到「遊戲世界」這種舊名。
+  const rows = magazines.map(({ titles, ...magazine }) => ({
+    ...magazine,
+    otherTitles: sortTitlePeriods(titles)
+      .map((t) => t.title)
+      .filter((title) => title !== magazine.name),
+  }));
 
   return (
     <div className="space-y-6">
@@ -81,7 +93,7 @@ export default async function MagazinesPage({
               </p>
             </div>
           ) : (
-            <MagazineListClient magazines={magazines} />
+            <MagazineListClient magazines={rows} />
           )}
         </CardContent>
       </Card>

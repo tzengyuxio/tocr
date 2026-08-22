@@ -1,6 +1,7 @@
 export const revalidate = 60;
 
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
@@ -129,16 +130,20 @@ export default async function MagazineDetailPage({
         })
       )
     : [];
-  const historyLine = historySegments
-    .map((segment) => {
-      const name = segment.period?.title ?? magazine.name;
-      const first = formatIssueNumber(segment.issues[0].issueNumber);
-      const last = formatIssueNumber(
-        segment.issues[segment.issues.length - 1].issueNumber
-      );
-      return `${name}（${first === last ? first : `${first}－${last}`}）`;
-    })
-    .join(" → ");
+  const historyParts = historySegments.map((segment) => {
+    const first = formatIssueNumber(segment.issues[0].issueNumber);
+    const last = formatIssueNumber(
+      segment.issues[segment.issues.length - 1].issueNumber
+    );
+    return {
+      // 錨點編號與下方區段、/magazines 的時期卡同一套；null 首段（titles
+      // 沒建齊）沒有對應區段可跳。
+      seq: segment.period ? sortedTitles.indexOf(segment.period) + 1 : 0,
+      label: `${segment.period?.title ?? magazine.name}（${
+        first === last ? first : `${first}－${last}`
+      }）`,
+    };
+  });
 
   // 期列表只在預設的刊期順序下分時期區段；改排序或方向後時期會交錯，退回平列表。
   const issueSegments =
@@ -222,9 +227,26 @@ export default async function MagazineDetailPage({
               {magazine.aliases.join(" / ")}
             </p>
           )}
-          {historyLine && (
+          {historyParts.length > 0 && (
             <p className="mt-0.5 text-sm text-muted-foreground">
-              刊名沿革：{historyLine}
+              刊名沿革：
+              {historyParts.map((part, index) => (
+                <Fragment key={part.seq}>
+                  {index > 0 && " → "}
+                  {/* 只在預設排序有區段可跳；其他排序下這個錨點不存在，
+                      點了不動，比整行不給連結好。 */}
+                  {part.seq > 0 ? (
+                    <a
+                      href={`#period-${part.seq}`}
+                      className="underline-offset-2 hover:underline"
+                    >
+                      {part.label}
+                    </a>
+                  ) : (
+                    part.label
+                  )}
+                </Fragment>
+              ))}
             </p>
           )}
           <div className="mt-4 space-y-2 text-sm">
@@ -326,7 +348,8 @@ export default async function MagazineDetailPage({
                   id={seq > 0 ? `period-${seq}` : undefined}
                   className="scroll-mt-20"
                 >
-                  <h3 className="mb-3 text-lg font-semibold">
+                  {/* 帶底色的橫條，讓時代的分界一眼掃得出來，不只是一行字。 */}
+                  <h3 className="mb-3 rounded-md bg-muted/70 px-3 py-2 text-lg font-semibold">
                     {segment.period?.title ?? magazine.name}
                     <span className="ml-2 text-sm font-normal text-muted-foreground">
                       {formatIssueNumber(segment.issues[0].issueNumber)}

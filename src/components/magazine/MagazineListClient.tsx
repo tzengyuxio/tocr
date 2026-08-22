@@ -27,6 +27,8 @@ interface MagazineItem {
   isActive: boolean;
   createdAt: string | Date;
   _count: { issues: number };
+  /** 歷任刊名（通行名以外），讓管理清單搜得到、捲得到舊名。 */
+  otherTitles: string[];
 }
 
 interface MagazineListClientProps {
@@ -89,6 +91,11 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                     {magazine.nameOriginal && (
                       <div className="text-sm text-muted-foreground">
                         {magazine.nameOriginal}
+                      </div>
+                    )}
+                    {magazine.otherTitles.length > 0 && (
+                      <div className="text-sm text-muted-foreground">
+                        {magazine.otherTitles.join(" / ")}
                       </div>
                     )}
                   </div>
