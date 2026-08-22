@@ -99,6 +99,21 @@ describe("POST /api/magazines", () => {
     expect(json.name).toBe("Game Walker");
   });
 
+  // 退役的代號是佔位：撿走了，指著舊代號的連結會安靜地轉到這本新刊。
+  it("returns 409 when the slug is another magazine's retired one", async () => {
+    prismaMock.magazineSlug.findUnique.mockResolvedValue({ magazineId: "m1" });
+
+    const res = await POST(
+      makeRequest("http://localhost:3000/api/magazines", {
+        method: "POST",
+        body: JSON.stringify({ name: "另一本", slug: "swm" }),
+      })
+    );
+
+    expect(res.status).toBe(409);
+    expect(prismaMock.magazine.create).not.toHaveBeenCalled();
+  });
+
   it("returns 400 for missing required fields", async () => {
     const res = await POST(
       makeRequest("http://localhost:3000/api/magazines", {

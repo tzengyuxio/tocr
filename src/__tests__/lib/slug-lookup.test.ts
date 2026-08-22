@@ -59,10 +59,37 @@ describe("resolveSlugParam", () => {
     expect(prismaMock.magazine.findUnique).toHaveBeenCalledTimes(1);
   });
 
+  // 改過網址代號之後，舊代號要轉到現行那條——回傳的是現行 slug，呼叫端既有的
+  // `param !== found.slug` 判斷就會發出轉址。
+  it("resolves a retired magazine slug to the current one", async () => {
+    prismaMock.magazine.findUnique.mockResolvedValueOnce(null);
+    prismaMock.magazineSlug.findUnique.mockResolvedValueOnce({
+      magazine: { id: "m1", slug: "swm" },
+    });
+
+    expect(await resolveSlugParam("magazine", "soft-world")).toEqual({
+      id: "m1",
+      slug: "swm",
+    });
+  });
+
+  // 現行代號優先於退役代號：兩者撞名時（`MagazineSlug.slug` 的 @unique 讓這在
+  // 資料層不可能，但查詢順序是同一道保險的另一半）不能轉到被退掉的那本。
+  it("prefers a current magazine slug over a retired one", async () => {
+    prismaMock.magazine.findUnique.mockResolvedValueOnce({ id: "m2", slug: "swm" });
+
+    expect(await resolveSlugParam("magazine", "swm")).toEqual({
+      id: "m2",
+      slug: "swm",
+    });
+    expect(prismaMock.magazineSlug.findUnique).not.toHaveBeenCalled();
+  });
+
   it("falls back to the cuid for a magazine", async () => {
     prismaMock.magazine.findUnique
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({ id: "m1", slug: "ace" });
+    prismaMock.magazineSlug.findUnique.mockResolvedValueOnce(null);
 
     expect(await resolveSlugParam("magazine", "m1")).toEqual({
       id: "m1",
