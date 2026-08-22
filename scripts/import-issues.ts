@@ -17,8 +17,8 @@
  *   gws sheets spreadsheets values get --params '{"spreadsheetId":"<id>","range":"雜誌1!A1:R5000"}' \
  *     | grep -v '^Using keyring' > /tmp/雜誌1.json
  *
- * spreadsheetId 見 docs/data-conventions.md。分頁與刊物的對應：雜誌1 是
- * swm/ace/cgw/sgm/mania/next/ssm/jxdn，雜誌2、雜誌3 各有自己那批。
+ * spreadsheetId、四個雜誌分頁各收哪些刊、以及 `series` 欄的兩個坑（改名的刊是兩
+ * 個值、有些列根本沒填）都記在 docs/data-conventions.md 的「上游資料來源」。
  *
  * ## 用法
  *
@@ -49,10 +49,18 @@ interface MagazineRule {
   knownDates?: Set<number>;
   /** 推定的依據，寫進 `notes`。 */
   derivedNote?: string;
-  /** 推導出來的 slug 不好看時，指定一個。 */
-  slugFor?: (issueNumber: string) => string | undefined;
+  /** 推導出來的 slug 不好看、或會與另一段編號序列相撞時，指定一個。 */
+  slugFor?: (issueNumber: string, row: Row) => string | undefined;
   /** Sheet 沒有、但已知的欄位。 */
   overrides?: Record<number, { pageCount?: number; note?: string }>;
+  /** 同一本刊在 Sheet 裡的其他 series 值——改名之後那一段。 */
+  seriesAliases?: string[];
+  /** 標題不是「刊名＋期號」時（例如改名之後），自己取期號。 */
+  issueNumberFor?: (row: Row) => string | undefined;
+  /** Sheet 沒填日期、但整列裡有線索時的推定。 */
+  publishDateFrom?: (row: Row) => { date: string; note: string } | undefined;
+  /** 同一期印的其他編號——見 docs/data-conventions.md。 */
+  altNumbersFor?: (row: Row) => string[];
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -91,6 +99,44 @@ const RULES: Record<string, MagazineRule> = {
       return m && CJK_NUMERALS[m[1]] ? `創刊${CJK_NUMERALS[m[1]]}號` : undefined;
     },
   },
+  遊戲設計大師: {
+    // Sheet 一期都沒有出版日，但 21 期的標題都寫了封面雙月號。取雙月號的第一
+    // 個月、EDTF 月精度並標 `~`：不知道是哪一天，就不要捏一個日出來。
+    publishDateFrom: (row) => {
+      const m = row.title.match(/(\d{4})\s*(\d{1,2})~(\d{1,2})月號/);
+      if (!m) return undefined;
+      return {
+        date: `${m[1]}-${pad(Number(m[2]))}~`,
+        note:
+          `出版日期不詳：Sheet 未載，此處取封面雙月號（${m[1]} 年 ` +
+          `${Number(m[2])}~${Number(m[3])} 月號）的第一個月，僅精確到月且標為約略。未經查證。`,
+      };
+    },
+  },
+  電擊王: {
+    // 24 期後改名 DengekiGAMES，先接 Vol.26 再重排從 Vol.2 —— 同一刊裡於是有
+    // 兩個語意不同的「Vol.2」。改名後那段的 slug 加 dg- 前綴分開，見
+    // docs/data-conventions.md。
+    seriesAliases: ["電擊王,DengekiGAMES"],
+    // `@@unique([magazineId, issueNumber])` 也擋著，所以期號本身也得分得出兩段
+    // 序列——封面上印的正是「DengekiGAMES Vol.2」。
+    issueNumberFor: (row) =>
+      isDengekiGames(row) ? `DengekiGAMES ${dengekiNumber(row)}` : undefined,
+    slugFor: (_issueNumber, row) =>
+      isDengekiGames(row) ? `dg-${probeSlug(dengekiNumber(row))}` : undefined,
+  },
+  電玩通: {
+    // 一期印了好幾套編號：總號（No.001）、日期發行號、期別。slug 用日期發行
+    // 號、其餘進 altNumbers —— 見 docs/data-conventions.md。合併號取第一個日期。
+    slugFor: (_issueNumber, row) => {
+      const m = row.title.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+      // 有四期的標題沒寫日期發行號；這份 Sheet 的 publish_date 記的正是它。
+      return m
+        ? `${m[1]}-${pad(Number(m[2]))}-${pad(Number(m[3]))}`
+        : row.publish_date.trim() || undefined;
+    },
+    altNumbersFor: (row) => [...row.title.matchAll(/（(.*?)）/g)].map((m) => m[1]),
+  },
   次世代遊戲情報: {
     derivePublishDate: nextGenPublishDate,
     // Sheet 有完整日期的 5 期，加上文獻直接寫出改為月刊的第 14 期。
@@ -101,6 +147,16 @@ const RULES: Record<string, MagazineRule> = {
     overrides: { 35: { pageCount: 432, note: "揮別 20 世紀特別號，加厚至 432 頁全彩。" } },
   },
 };
+
+/** 《電擊王》改名之後那一段，Sheet 的 series 是「電擊王,DengekiGAMES」。 */
+function isDengekiGames(row: Row): boolean {
+  return row.series.includes("DengekiGAMES");
+}
+
+/** 改名之後標題就從刊名 DengekiGAMES 起頭，不再是「電擊王」。 */
+function dengekiNumber(row: Row): string {
+  return issueNumberFrom(row.title, "DengekiGAMES");
+}
 
 function flag(name: string): string | undefined {
   const i = process.argv.indexOf(name);
@@ -123,6 +179,13 @@ function issueNumberFrom(title: string, series: string): string {
 /** 與 issueSlugify 同樣的判斷，用來比對站上已有哪幾期。 */
 function probeSlug(issueNumber: string): string {
   return issueNumber.replace(/^(no\.?|vol\.?)0*/i, "").trim() || issueNumber;
+}
+
+/** 一列在站上的身分：期號、指定的 slug，以及用來比對既有期數的鍵。 */
+function entryOf(row: Row, series: string, rule: MagazineRule) {
+  const issueNumber = rule.issueNumberFor?.(row) ?? issueNumberFrom(row.title, series);
+  const slug = rule.slugFor?.(issueNumber, row);
+  return { issueNumber, slug, key: slug ?? probeSlug(issueNumber) };
 }
 
 /** 封面內容與附件併進 notes——見 docs/data-conventions.md。 */
@@ -156,12 +219,13 @@ async function main() {
 
   const sheet = JSON.parse(readFileSync(sheetPath, "utf8"));
   const [header, ...body] = sheet.values as string[][];
+  const rule = RULES[series] ?? {};
+  // 改名過的刊在 Sheet 裡是兩個 series 值，但在站上是同一本。
+  const seriesValues = new Set([series, ...(rule.seriesAliases ?? [])]);
   const rows: Row[] = body
     .map((r) => Object.fromEntries(header.map((h, i) => [h, r[i] ?? ""])) as Row)
-    .filter((r) => r.series === series);
+    .filter((r) => seriesValues.has(r.series));
   if (rows.length === 0) throw new Error(`${sheetPath} 裡找不到 series「${series}」`);
-
-  const rule = RULES[series] ?? {};
 
   const magazines = await (await fetch(`${base}/api/magazines?limit=200`)).json();
   const magazine = (magazines.data ?? magazines).find((m: { name: string }) => m.name === series);
@@ -185,9 +249,7 @@ async function main() {
 
   for (const row of rows) {
     const order = Number(row.weight);
-    const issueNumber = issueNumberFrom(row.title, series);
-    const slug = rule.slugFor?.(issueNumber);
-    const key = slug ?? probeSlug(issueNumber);
+    const { issueNumber, slug, key } = entryOf(row, series, rule);
 
     if (existing.has(key)) {
       skipped++;
@@ -207,16 +269,25 @@ async function main() {
       publishDate = known ? derived : `${derived}~`;
       if (!known) derivedNote = rule.derivedNote;
     }
+    if (!publishDate && rule.publishDateFrom) {
+      const derived = rule.publishDateFrom(row);
+      if (derived) {
+        publishDate = derived.date;
+        derivedNote = derived.note;
+      }
+    }
     if (!publishDate) {
       console.error(`  ! 第 ${order} 期沒有出版日期，而該欄必填——跳過`);
       continue;
     }
 
     const override = rule.overrides?.[order];
+    const altNumbers = rule.altNumbersFor?.(row) ?? [];
     const payload = {
       magazineId: magazine.id,
       issueNumber,
       ...(slug ? { slug } : {}),
+      ...(altNumbers.length ? { altNumbers } : {}),
       publishDate,
       title: row.description?.trim() || undefined,
       price: row.price?.trim() || undefined,
@@ -226,7 +297,9 @@ async function main() {
     };
 
     if (!apply) {
-      console.log(`  + ${issueNumber.padEnd(12)} ${publishDate.padEnd(12)} order=${order}`);
+      console.log(
+        `  + ${issueNumber.padEnd(12)} ${publishDate.padEnd(12)} ${key.padEnd(12)} order=${order}`
+      );
       // 登記下來，否則 dry run 的封面統計會把「還沒建立」誤報成「沒有圖檔」。
       existing.set(key, { id: `(dry-run:${order})`, coverImage: null });
       created++;
@@ -274,8 +347,7 @@ async function uploadCovers({
       missing++;
       continue;
     }
-    const issueNumber = issueNumberFrom(row.title, series);
-    const issue = existing.get(rule.slugFor?.(issueNumber) ?? probeSlug(issueNumber));
+    const issue = existing.get(entryOf(row, series, rule).key);
     if (!issue) {
       missing++;
       continue;
