@@ -5,7 +5,7 @@
 | 路徑 | 說明 |
 |---|---|
 | `/` | 首頁：搜尋框、統計、最新單期 |
-| `/magazines` | 雜誌列表 |
+| `/magazines` | 雜誌列表。可切卡片／列表檢視（`?view=list`），另有篩選與排序參數 |
 | `/magazines/[slug]` | 雜誌詳情與單期列表。網址吃 ASCII slug（`/magazines/ace`），舊的 cuid 連結永久轉址 |
 | `/magazines/[slug]/issues/[issueSlug]` | 單期目錄。兩段都吃 slug；單期那段也收期號與舊 cuid，皆永久轉址 |
 | `/i/[code]` | 單期永久短碼，307 轉到當下的正規網址。`Issue.code` 是自動產生的 8 碼，正規網址的每一段都可能變，這條不會 |
@@ -15,6 +15,14 @@
 | `/tags/[slug]` | 該標籤的相關文章。網址吃 slug（可為中文），舊的 cuid 連結永久轉址 |
 | `/contributors` | 貢獻者 |
 | `/search` | 搜尋（`?type=article\|magazine\|game`） |
+
+## 給機器讀的路徑
+
+| 路徑 | 說明 |
+|---|---|
+| `/sitemap.xml` | 全站網址，資料庫動態產生，1 小時重算。短碼 `/i/[code]` 刻意不收——同一份內容不報兩個位址 |
+| `/robots.txt` | 擋 `/admin`、`/api`、`/auth`（都是必定拿不到內容的路徑）。**AI 爬蟲一律放行，那是決定不是預設值**，理由寫在 `src/app/robots.ts` 的註解 |
+| `/llms.txt` | 站台給模型看的導覽：這裡有什麼、怎麼定址、讀什麼、什麼算可信、收錄哪些雜誌。動態產生（刊物與期數每次匯入都在變），與 sitemap 同樣 1 小時重算 |
 
 ## 認證頁面
 
