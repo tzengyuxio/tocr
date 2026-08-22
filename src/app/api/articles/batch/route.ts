@@ -4,6 +4,7 @@ import { articleBatchCreateSchema } from "@/lib/validators/article";
 import { withErrorHandler } from "@/lib/api-utils";
 import { resolveGameIds, resolveTagIds } from "@/lib/resolve-relations";
 import { logEditBatch } from "@/lib/edit-log";
+import { markIssueChanged } from "@/lib/issue-complete";
 
 // POST /api/articles/batch - 批次建立文章（AI 辨識後使用）
 export const POST = withErrorHandler(async (request: NextRequest) => {
@@ -83,6 +84,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     "CREATE",
     { issueId: validatedData.issueId }
   );
+
+  await markIssueChanged(validatedData.issueId);
 
   // Recognition now lands before anyone has looked at it, so this route cannot
   // claim the contents were reviewed. 標記由單期編輯頁上的按鈕負責。

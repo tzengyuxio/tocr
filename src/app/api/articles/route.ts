@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { articleCreateSchema } from "@/lib/validators/article";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
+import { markIssueChanged } from "@/lib/issue-complete";
 
 // GET /api/articles - 取得文章列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -92,6 +93,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   });
 
   await logEdit("Article", article.id, "CREATE");
+  // 目錄是這一期資料的一部分，所以動到文章就動到了「完備」的前提。
+  await markIssueChanged(article.issueId);
 
   return NextResponse.json(article, { status: 201 });
 }, "Create article");

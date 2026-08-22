@@ -53,6 +53,9 @@ export const issueCreateSchema = z.object({
   // A flag rather than the stored timestamp: the caller states that a person
   // checked the table of contents, the server decides when that happened.
   tocReviewed: z.boolean().optional(),
+  // Same shape, different claim: 完備 says the record itself is finished. Only
+  // an ADMIN session may move it -- see withCompleteAt.
+  complete: z.boolean().optional(),
 });
 
 // .partial() makes fields optional but keeps their defaults, so a partial
@@ -122,6 +125,31 @@ export function withPublishSortIfPresent<T extends { publishDate?: string | null
   data: T
 ): T & { publishSort?: Date | null } {
   return data.publishDate !== undefined ? withPublishSort(data) : data;
+}
+
+/**
+ * Turn the caller's `complete` flag into the two stored timestamps.
+ *
+ * Only an ADMIN session may move it: the flag says "this record is finished",
+ * which is a judgement the site reserves for its administrators. Anyone else's
+ * flag is dropped rather than refused, so an editor saving an unrelated field
+ * on a form that never showed them the checkbox does not get an error.
+ *
+ * Marking it complete clears completeStaleAt: whatever the issue had been
+ * through before, it has just been looked at again.
+ */
+export function withCompleteAt<T extends { complete?: boolean }>(
+  data: T,
+  { isAdmin, current }: { isAdmin: boolean; current: Date | null }
+): Omit<T, "complete"> & { completeAt?: Date | null; completeStaleAt?: Date | null } {
+  const { complete, ...rest } = data;
+  if (complete === undefined || !isAdmin) {
+    return rest;
+  }
+  if (complete) {
+    return { ...rest, completeAt: new Date(), completeStaleAt: null };
+  }
+  return current ? { ...rest, completeAt: null, completeStaleAt: null } : rest;
 }
 
 /**

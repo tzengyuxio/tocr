@@ -27,6 +27,8 @@ import { Calendar } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { LinkPager } from "@/components/admin/LinkPager";
+import { CompleteBadge } from "@/components/magazine/CompleteBadge";
+import { isSessionAdmin } from "@/lib/require-editor";
 
 export const metadata: Metadata = {
   title: "單期複查 - Admin",
@@ -66,6 +68,8 @@ export default async function IssueReviewPage({
   const filter = FILTERS.find((f) => f.key === key) ?? FILTERS[0];
   const pageParam = Array.isArray(params.page) ? params.page[0] : params.page;
   const page = Math.max(1, Number(pageParam) || 1);
+  // 完備標記只給 ADMIN 看。
+  const isAdmin = await isSessionAdmin();
 
   const [issues, total, pendingCount] = await measure("admin/issues", () =>
     Promise.all([
@@ -186,6 +190,11 @@ export default async function IssueReviewPage({
                           {formatIssueNumber(issue.issueNumber)}
                         </span>
                       </Link>
+                      {isAdmin && (
+                        <span className="ml-2 align-middle">
+                          <CompleteBadge issue={issue} />
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {issue.publishDate ?? "-"}

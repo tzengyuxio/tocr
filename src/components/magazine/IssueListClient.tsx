@@ -51,6 +51,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { CompleteBadge } from "@/components/magazine/CompleteBadge";
 
 interface IssueItem {
   id: string;
@@ -59,21 +60,28 @@ interface IssueItem {
   publishDate: string | null;
   coverImage: string | null;
   order: number;
+  // Date over the RSC boundary, string once it has been through JSON.
+  completeAt: Date | string | null;
+  completeStaleAt: Date | string | null;
   _count: { articles: number };
 }
 
 interface IssueListClientProps {
   magazineId: string;
   issues: IssueItem[];
+  /** 完備標記只有 ADMIN 看得到，所以由頁面決定要不要畫。 */
+  showComplete?: boolean;
 }
 
 function SortableRow({
   issue,
   magazineId,
+  showComplete,
   onDelete,
 }: {
   issue: IssueItem;
   magazineId: string;
+  showComplete?: boolean;
   onDelete: (issue: IssueItem) => void;
 }) {
   const {
@@ -120,12 +128,15 @@ function SortableRow({
         )}
       </TableCell>
       <TableCell className="font-medium">
-        <Link
-          href={`/admin/magazines/${magazineId}/issues/${issue.id}`}
-          className="hover:underline"
-        >
-          {formatIssueNumber(issue.issueNumber)}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/magazines/${magazineId}/issues/${issue.id}`}
+            className="hover:underline"
+          >
+            {formatIssueNumber(issue.issueNumber)}
+          </Link>
+          {showComplete && <CompleteBadge issue={issue} />}
+        </div>
       </TableCell>
       {/* A feature title runs to a list of five games -- 電腦玩家 216 is 48
           characters -- and the cell has nothing to wrap on, so the column grows
@@ -175,6 +186,7 @@ function SortableRow({
 export function IssueListClient({
   magazineId,
   issues: initialIssues,
+  showComplete,
 }: IssueListClientProps) {
   const [issues, setIssues] = useState(initialIssues);
   const [deleteTarget, setDeleteTarget] = useState<IssueItem | null>(null);
@@ -292,6 +304,7 @@ export function IssueListClient({
                       key={issue.id}
                       issue={issue}
                       magazineId={magazineId}
+                      showComplete={showComplete}
                       onDelete={setDeleteTarget}
                     />
                   ))}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   issueCreateSchema,
+  withCompleteAt,
   withIssueSlug,
   withPublishSort,
   withTocReviewedAt,
@@ -9,6 +10,7 @@ import {
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
 import { logEdit } from "@/lib/edit-log";
 import { isValidApiToken } from "@/lib/api-token";
+import { isSessionAdmin } from "@/lib/require-editor";
 
 // GET /api/issues - 取得單期列表
 export const GET = withErrorHandler(async (request: NextRequest) => {
@@ -57,10 +59,13 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const isHuman = !isValidApiToken(request.headers.get("authorization"));
   const issue = await prisma.issue.create({
-    data: withTocReviewedAt(withIssueSlug(withPublishSort(validatedData)), {
-      isHuman,
-      current: null,
-    }),
+    data: withCompleteAt(
+      withTocReviewedAt(withIssueSlug(withPublishSort(validatedData)), {
+        isHuman,
+        current: null,
+      }),
+      { isAdmin: await isSessionAdmin(), current: null }
+    ),
   });
 
   await logEdit("Issue", issue.id, "CREATE");

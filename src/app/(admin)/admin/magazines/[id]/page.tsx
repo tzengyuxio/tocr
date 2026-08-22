@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { MagazineForm } from "@/components/magazine/MagazineForm";
 import { IssueListClient } from "@/components/magazine/IssueListClient";
+import { isSessionAdmin } from "@/lib/require-editor";
 import { ArrowLeft } from "lucide-react";
 
 interface PageProps {
@@ -27,6 +28,8 @@ export default async function EditMagazinePage({ params }: PageProps) {
           publishDate: true,
           coverImage: true,
           order: true,
+          completeAt: true,
+          completeStaleAt: true,
           _count: {
             select: { articles: true },
           },
@@ -71,7 +74,11 @@ export default async function EditMagazinePage({ params }: PageProps) {
         <div className="lg:col-span-1">
           <MagazineForm initialData={formData} mode="edit" />
         </div>
-        <IssueListClient magazineId={magazine.id} issues={magazine.issues} />
+        <IssueListClient
+          magazineId={magazine.id}
+          issues={magazine.issues}
+          showComplete={await isSessionAdmin()}
+        />
       </div>
     </div>
   );

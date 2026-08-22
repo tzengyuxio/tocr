@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { IssueForm } from "@/components/magazine/IssueForm";
+import { isSessionAdmin } from "@/lib/require-editor";
 import { ArticleListClient } from "@/components/article/ArticleListClient";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +70,7 @@ export default async function EditIssuePage({ params }: PageProps) {
     price: issue.price ? Number(issue.price) : null,
     notes: issue.notes,
     tocReviewed: issue.tocReviewedAt !== null,
+    complete: issue.completeAt !== null,
   };
 
   return (
@@ -105,6 +107,7 @@ export default async function EditIssuePage({ params }: PageProps) {
               code={issue.code}
               initialData={formData}
               mode="edit"
+              canMarkComplete={await isSessionAdmin()}
               stickyActions
             />
           </div>
