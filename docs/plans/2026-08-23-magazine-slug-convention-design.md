@@ -227,8 +227,8 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
   字典庫、能寫成程式；通用拼音沒有穩定實作，注音沒有 ASCII 表示
 - **ü 一律寫 u**：《攻略快報》若走規則 3 會是 `gonglue-kuaibao`，不是 `gonglve`
 - **一個中文詞 = 一段，段界照詞不照字**：`ruanti-zhixing`，不是 `ruan-ti-zhi-xing`
-- **固定的複合題材詞算一段**：TV GAME（`tvgame-guide`、`tvgame-report`、
-  `tvgame-magazine`、`tvgame-information`）
+- **固定的複合題材詞算一段，不拆連字號**：`tvgame-guide`、`tvgame-report`、
+  `tvgame-magazine`、`tvgame-information`，不是 `tv-game-guide`。理由見下節
 - **拉丁字母段原樣保留、不音譯**：`3do-qingbao`
 - **切詞與多音字是規則唯一需要人判斷的地方**，所以表單應該是「自動產生 + 可覆寫」，
   不是純自動。《電玩e世代》要把「e世代」切成一個詞（`dianwan-eshidai`），切成兩個詞會
@@ -241,6 +241,26 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 當它變成唯一的區別來源時就不該丟。** 結果是 `tvgame-magazine`。
 
 這不是特例，是同一條原則的另一面。
+
+### 為什麼是 `tvgame-` 不是 `tv-game-`
+
+連字號在這套規範裡不是排版，是**詞界**——它宣告兩邊各是一個可以獨立當區別詞的詞。
+`tv-game-magazine` 等於主張 TV 與 GAME 各自是一個詞，但它們不是：TV GAME 是當年的固定
+題材詞，拆開來哪一半都不指涉任何東西。
+
+三個理由，由強到弱：
+
+1. **形狀不變式**。段數上限是 2，`tv-game-information` 是三段、
+   `tv-game-super-guide` 是四段。改用 `tv-game-` 不是換個寫法，是得先放寬不變式或改丟詞
+2. **刊物自己就把它綁成一個 token**：《攻略快報》封面印 `TV.GAME SUPER GUIDE`、
+   《電視遊樂報導》印 `TV.GAME REPORT`——中間是句點不是空格。另兩本用空格
+   （TV GAME MAGAZINE、TV GAME INFORMATION），所以封面證據是二比二，但**沒有任何一本
+   把它拆成兩個對等的詞**
+3. **同一條規則已經在別處用了**：`3do-qingbao` 的 `3do`、`famitsu-ps2-tw` 的 `ps2`
+   都是不拆的複合 token
+
+代價是 `tvgame` 讀起來比 `tv-game` 稍緊。這是可接受的：slug 的職責是可推導與唯一，
+可讀性由頁面上的中文刊名負責（元規則 C）。
 
 ### 刊系會自己對齊
 
@@ -460,18 +480,25 @@ ASTRO 自稱，目前只知道封面全名。**
 | 刊名 | 封面 | 規則 | slug |
 | --- | --- | :-: | --- |
 | 城市少年 | CITY BOY／CITY BOY GAME MAGAZINE | 1 | `city-boy` |
-| 星際遊樂快報 | 無英文 | 3 | `xingji-kuaibao` |
+| 星際遊樂快報 | 無英文 | 3 + 刊系對齊 | `astro-kuaibao` |
 
 《城市少年》兩種寫法擇招牌形式 CITY BOY，全名進 `aliases`——與《軟體世界》同一個處理。
 `city-boy` 與《勝利少年》的 `victory-boy` 自然平行，因為兩本封面都把「少年」譯成 Boy。
 
 **《星際遊樂快報》暴露一個新問題**：它與《星際遊樂雜誌》是同一刊系，但一本有拉丁刊名、
-一本沒有，於是走不同規則、主體不共用（`astro-tvgames` vs `xingji-kuaibao`）。這是
-「刊系會自己對齊」的反例——刊物只在有拉丁刊名時才自動對齊。
+一本沒有。照規則各走各的會得到 `astro-tvgames` 與 `xingji-kuaibao`——主體不共用，看不出
+是一家。這是「刊系會自己對齊」的反例：刊物只在**都有**拉丁刊名時才自動對齊。
 
-補一條：**刊系內若主刊有拉丁招牌，兄弟刊沿用同一主體加自己的區別詞。** 若 ASTRO 確認是
-招牌，整組就是 `astro`／`astro-kuaibao`，形狀與 `famitsu-tw`／`famitsu-ps2-tw` 相同。
-混語源的一段（`astro` + 拼音）已有先例 `3do-qingbao`。
+所以補一條規則：**刊系內若任一本有拉丁招牌，兄弟刊沿用同一主體，再加自己的區別詞。**
+
+    ASTRO TV GAMES MAGAZINE → astro-tvgames   星際遊樂雜誌
+    （無拉丁刊名）           → astro-kuaibao   星際遊樂快報
+
+共用的 `astro-` 就是這組的招牌，和 `tvgame-` 那組、`famitsu-tw`／`famitsu-ps2-tw`
+同一個形狀。混語源的一段（拉丁主體 + 拼音區別詞）已有先例 `3do-qingbao`。
+
+這條規則的方向是**由有出處的那本帶頭**，不是取平均：沒有拉丁刊名的那本跟著走，而不是
+把有拉丁刊名的那本降級成拼音。
 
 ## 規則怎麼驗證
 
