@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Fragment } from "react";
+import { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,6 +11,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
+import type { CoverCandidate } from "@/app/api/games/search-cover/route";
 import {
   Card,
   CardContent,
@@ -127,6 +128,11 @@ export default function GamesPage() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isFetchingCover, setIsFetchingCover] = useState(false);
+  // RAWG 回來的候選；null 表示這次還沒抓過，空陣列表示抓了但沒有可用的。
+  const [coverCandidates, setCoverCandidates] = useState<
+    CoverCandidate[] | null
+  >(null);
+  const coverCandidatesRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [expandedGameId, setExpandedGameId] = useState<string | null>(null);
   const [expandedData, setExpandedData] = useState<{
@@ -238,6 +244,7 @@ export default function GamesPage() {
       coverImage: "",
     });
     setError(null);
+    setCoverCandidates(null);
     setIsDialogOpen(true);
   };
 
@@ -258,6 +265,7 @@ export default function GamesPage() {
       coverImage: game.coverImage || "",
     });
     setError(null);
+    setCoverCandidates(null);
     setIsDialogOpen(true);
   };
 
@@ -340,6 +348,17 @@ export default function GamesPage() {
     }));
   };
 
+  // 封面欄位在對話框的最下面，候選清單長在它下方——不捲過去的話，按完「從
+  // RAWG 抓取」畫面上什麼都沒發生（截圖驗證時就是這樣看到的）。
+  useEffect(() => {
+    if (coverCandidates?.length) {
+      coverCandidatesRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [coverCandidates]);
+
   const handleFetchCover = async () => {
     if (!formData.name.trim()) return;
     setIsFetchingCover(true);
@@ -361,11 +380,9 @@ export default function GamesPage() {
         setError(data?.error ? `抓取封面失敗：${data.error}` : "抓取封面失敗");
         return;
       }
-      if (data?.coverImage) {
-        setFormData((prev) => ({ ...prev, coverImage: data.coverImage }));
-      } else {
-        setError("RAWG 找不到此遊戲的封面");
-      }
+      // 不再替編輯選。RAWG 的模糊搜尋一定給得出東西——《A-6入侵者》問到的是
+      // Avernum 6——而程式分不出對錯，看得出來的是人。
+      setCoverCandidates(data?.candidates ?? []);
     } catch {
       setError("抓取封面失敗");
     } finally {
@@ -822,6 +839,69 @@ export default function GamesPage() {
                   從 RAWG 抓取
                 </Button>
               )}
+
+              {coverCandidates !== null &&
+                (coverCandidates.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    RAWG 沒有回傳任何帶封面的結果
+                  </p>
+                ) : (
+                  <div
+                    ref={coverCandidatesRef}
+                    className="space-y-2 rounded-lg border p-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        RAWG 是模糊比對，第一筆常常不是同一款。請自己認一下：
+                      </p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="-mr-2 shrink-0"
+                        onClick={() => setCoverCandidates(null)}
+                      >
+                        關閉
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {coverCandidates.map((candidate) => (
+                        <button
+                          key={candidate.coverImage}
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              coverImage: candidate.coverImage,
+                            }));
+                            setCoverCandidates(null);
+                          }}
+                          className="group space-y-1 text-left"
+                          title={candidate.rawgName}
+                        >
+                          {/* RAWG 的圖不在 next/image 的 remotePatterns 允許清單裡 */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={candidate.coverImage}
+                            alt={candidate.rawgName}
+                            className="aspect-video w-full rounded border object-cover transition-opacity group-hover:opacity-80"
+                          />
+                          <p className="line-clamp-2 text-xs leading-tight">
+                            {candidate.rawgName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {candidate.released ?? "年份不詳"}
+                            {/* 名字同鍵只是提示。這批老遊戲同名不同作的情況多，
+                                標記幫忙掃視，不代表它就是對的那一筆。 */}
+                            {candidate.exact && (
+                              <span className="ml-1 text-primary">名稱吻合</span>
+                            )}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
 

@@ -1,6 +1,59 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withErrorHandler } from "@/lib/api-utils";
 import { requireEditor } from "@/lib/require-editor";
+import { gameNameKeys, nameKey } from "@/lib/name-match";
+
+/** 一次拿幾筆給編輯挑。五筆放得下一列縮圖，也還沒到要捲動的長度。 */
+const CANDIDATE_COUNT = 5;
+
+export interface CoverCandidate {
+  rawgName: string;
+  coverImage: string;
+  /** 只取年份：同名重製版靠它分辨，月日對挑封面沒有幫助。 */
+  released: string | null;
+  /** 名字與這款遊戲的任一個名字同鍵——標出來，但**不代表自動選它**。 */
+  exact: boolean;
+}
+
+/**
+ * 把 RAWG 的一頁結果整理成候選清單。
+ *
+ * **沒有封面的直接丟掉**：這個功能就是來拿封面的，列一筆點下去沒有圖的候選
+ * 只是浪費一個位子。
+ *
+ * `exact` 用 `nameKey()` 判斷，與辨識、搜尋同一把尺（見 lib/name-match.ts）。
+ * 它是**提示不是決定**：RAWG 的第一筆常常是同名的別款遊戲，而「名字一樣」與
+ * 「是同一款」在這批老遊戲上經常不是一回事。所以標記歸標記，選哪一筆仍然是
+ * 編輯按下去的。
+ */
+export function toCandidates(
+  results: unknown,
+  game: { name?: unknown; nameEn?: unknown; nameOriginal?: unknown }
+): CoverCandidate[] {
+  if (!Array.isArray(results)) return [];
+
+  const keys = new Set(
+    gameNameKeys({
+      name: typeof game.name === "string" ? game.name : "",
+      nameEn: typeof game.nameEn === "string" ? game.nameEn : null,
+      nameOriginal:
+        typeof game.nameOriginal === "string" ? game.nameOriginal : null,
+    })
+  );
+
+  return results
+    .filter(
+      (row): row is { name: string; background_image: string; released?: unknown } =>
+        typeof row?.name === "string" && typeof row?.background_image === "string"
+    )
+    .map((row) => ({
+      rawgName: row.name,
+      coverImage: row.background_image,
+      released:
+        typeof row.released === "string" ? row.released.slice(0, 4) : null,
+      exact: keys.has(nameKey(row.name)),
+    }));
+}
 
 /**
  * 拿哪個名字去問 RAWG，依序試。
@@ -61,7 +114,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const params = new URLSearchParams({
       key: apiKey,
       search: query,
-      page_size: "1",
+      page_size: String(CANDIDATE_COUNT),
     });
 
     const res = await fetch(`https://api.rawg.io/api/games?${params}`);
@@ -76,15 +129,11 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     }
 
     const data = await res.json();
-    const game = data.results?.[0];
-    if (!game?.background_image) continue;
+    const candidates = toCandidates(data.results, { name, nameEn, nameOriginal });
+    if (candidates.length === 0) continue;
 
-    return NextResponse.json({
-      coverImage: game.background_image,
-      rawgName: game.name,
-      matchedQuery: query,
-    });
+    return NextResponse.json({ candidates, matchedQuery: query });
   }
 
-  return NextResponse.json({ coverImage: null, rawgName: null });
+  return NextResponse.json({ candidates: [], matchedQuery: null });
 }, "Search game cover");
