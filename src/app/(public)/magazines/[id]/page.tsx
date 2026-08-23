@@ -30,6 +30,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { periodicalJsonLd } from "@/lib/structured-data";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
+import { magazineSubtitle } from "@/lib/magazine-browse";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -217,9 +218,9 @@ export default async function MagazineDetailPage({
               </Link>
             )}
           </div>
-          {magazine.nameParallel && (
+          {magazineSubtitle(magazine.nameParallel, magazine.sourceTitle) && (
             <p className="mt-1 text-lg text-muted-foreground">
-              {magazine.nameParallel}
+              {magazineSubtitle(magazine.nameParallel, magazine.sourceTitle)}
             </p>
           )}
           {magazine.aliases && magazine.aliases.length > 0 && (

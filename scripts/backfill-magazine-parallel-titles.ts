@@ -5,9 +5,12 @@
  * `docs/plans/2026-08-23-magazine-name-fields-design.md`。原本這些名字散在
  * `aliases` 裡、或根本沒記，導致自印英文名看起來像編輯憑空意譯。
  *
- * **`nameParallel` 存招牌形式，不是最完整的形式。**《電腦玩家》印過 Amazing
- * Computer Entertainment 但自稱 ACE，這裡填 ACE、全名留在 `aliases`；《軟體世界》
- * 封面用過四種寫法，官網是 swm.com.tw，填 SWM。
+ * **`nameParallel` 存的是並列刊名本身，不是簡稱。** ACE、SGM、SWM 這些是刊物約定成俗
+ * 的自稱，嚴格說不是並列刊名——並列刊名是與正題名並排印在封面上的那個完整拉丁刊名。
+ * 簡稱進 `aliases`。
+ *
+ * slug 有自己的規範，取簡稱還是全名由人依那份規範判斷（見
+ * `docs/plans/2026-08-23-magazine-slug-convention-design.md`），不需要一個欄位來對應。
  *
  * **`sourceTitle` 只在「本刊整體即該外刊的中文版」時才填。**《電腦玩家》取得
  * PC GAMER 的文章授權、封面也標過「PC GAMER 國際中文版」，但它不是那本雜誌，
@@ -36,19 +39,18 @@ interface Names {
 
 const NAMES: Record<string, Names> = {
   // -- 自印並列刊名 --------------------------------------------------------
-  // 官網 swm.com.tw、封面小 logo 都是 SWM；封面全名用過四種寫法
+  // 封面全名用過四種寫法，取這一個；SWM 是自稱簡稱（封面小 logo、官網 swm.com.tw）
   swm: {
-    parallel: "SWM",
-    aliases: ["SOFT WORLD MONTHLY", "SOFT WORLD MAGAZINE", "COMPUTER SOFT WORLD MAGAZINE MONTHLY"],
+    parallel: "SOFT WORLD MAGAZINE",
+    aliases: ["SWM", "The Softworld", "SOFT WORLD MONTHLY", "COMPUTER SOFT WORLD MAGAZINE MONTHLY"],
   },
   ssm: { parallel: "SOFTSTAR MAGAZINE" },
   // ACE 是刊物自用的代稱；PC GAMER 是中途取得文章授權後才加的封面標示，不是原刊
   ace: {
-    parallel: "ACE",
-    aliases: ["PC GAMER 國際中文版"],
+    parallel: "Amazing Computer Entertainment",
+    aliases: ["ACE", "PC GAMER", "PC GAMER 國際中文版"],
   },
-  // SGM 與 ACE 同：刊物自己就用這個縮寫
-  sgm: { parallel: "SGM" },
+  sgm: { parallel: "Style Game Magazine", aliases: ["SGM"] },
   // 初期是美國 Next Generation 的國際中文版，所以封面上的拉丁刊名是母刊的標識，
   // 不是這本刊自己取的並列刊名——與電擊系、電腦遊戲世界同樣走 sourceTitle
   next: { source: "Next Generation", aliases: ["NEXT GENERATION"] },
@@ -62,8 +64,7 @@ const NAMES: Record<string, Names> = {
   // ——不是母刊的刊名，所以 slug 走 nameParallel 而不是 sourceTitle
   vvkids: { parallel: "V. V. KIDS", source: "Vジャンプ" },
   tvgsg: { parallel: "TV.GAME SUPER GUIDE" },
-  // 封面全名是 ASTRO TV GAMES MAGAZINE，招牌是 ASTRO
-  astro: { parallel: "ASTRO", aliases: ["ASTRO TV GAMES MAGAZINE"] },
+  astro: { parallel: "ASTRO TV GAMES MAGAZINE", aliases: ["ASTRO"] },
   egen: { parallel: "e-Generation Weekly" },
   fashion: { parallel: "FASHION GAME" },
   gpeople: { parallel: "Games People" },
@@ -140,9 +141,13 @@ async function main() {
       payload.sourceTitle = wanted.source;
     }
     // 聯集而不是取代：後台補的別名要活過重跑，這也讓腳本冪等。
-    const current = magazine.aliases ?? [];
+    // 但並列刊名本身不留在 aliases——同一個字串出現在兩個欄位，詳情頁會顯示兩次。
+    const parallel = (payload.nameParallel ?? magazine.nameParallel) as string | null;
+    const current = (magazine.aliases ?? []).filter((a) => a !== parallel);
     const missing = (wanted.aliases ?? []).filter((a) => !current.includes(a));
-    if (missing.length) payload.aliases = [...current, ...missing];
+    if (missing.length || current.length !== (magazine.aliases ?? []).length) {
+      payload.aliases = [...current, ...missing];
+    }
 
     if (Object.keys(payload).length === 0) continue;
 

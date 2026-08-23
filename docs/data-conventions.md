@@ -103,15 +103,16 @@ spreadsheetId `1QN5sBTGJSAcPpTzpkLj3qchWmgg9bb6ht6yV22LYukI`。nostalibrary repo
 剩下的進 `aliases`——俗稱、簡稱、並列刊名的其他寫法，以及不值得切段的短命題名
 （見「刊名沿革」）。那是搜尋的 fallback。
 
-### 並列刊名存招牌形式，不是最完整的形式
+### 自稱的簡稱不是並列刊名
 
-判準是「刊物拿哪個形式當識別」。《電腦玩家》封面印過 Amazing Computer Entertainment，
-但它自稱 ACE，`nameParallel` 就填 `ACE`，全名進 `aliases`。《軟體世界》封面用過
-The Softworld、SOFT WORLD MONTHLY、SOFT WORLD MAGAZINE、
-COMPUTER SOFT WORLD MAGAZINE MONTHLY 四種，官網是 swm.com.tw，填 `SWM`。
+ACE、SGM、SWM、ASTRO 是刊物約定成俗的自稱，刊物自己也在用，但**嚴格說不是並列刊名**
+——並列刊名是與正題名並排印在封面上的那個完整拉丁刊名。簡稱進 `aliases`。
 
-「最完整」是個壞判準：COMPUTER SOFT WORLD MAGAZINE MONTHLY 最完整，但沒有人用它稱呼
-這本雜誌。
+《軟體世界》封面用過 The Softworld、SOFT WORLD MONTHLY、SOFT WORLD MAGAZINE、
+COMPUTER SOFT WORLD MAGAZINE MONTHLY 四種寫法，`nameParallel` 取
+`SOFT WORLD MAGAZINE`，其餘連同簡稱 SWM 一起進 `aliases`。
+
+**slug 取簡稱還是取全名，是 slug 規範的事，不影響這一欄怎麼填。**
 
 **出處的證據不限於封面刊頭**：封面上的小 logo、官方網域、版權頁、社論自稱都算，網域
 這種證據往往比封面更明確——它是刊物自己選的識別。反過來說，**「看起來像編輯自己取的」
