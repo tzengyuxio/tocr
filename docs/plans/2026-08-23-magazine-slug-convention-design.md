@@ -93,7 +93,7 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 地方負責。
 
 這條放寬買到一件具體的事：**規則可以合法地丟詞**。只要「丟哪個詞」本身是確定的，
-`華泰任天堂秘笈 → huatai-miji` 就是合格的 slug，不必因為「反推不出任天堂」而排斥它。
+`次世代遊戲情報 → cishidai-qingbao` 就是合格的 slug，不必因為「反推不出遊戲」而排斥它。
 下面規則 3 的「首詞 + 末詞」正是靠這條才成立。
 
 ## 參差不齊從哪裡來
@@ -127,7 +127,9 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 
 無論走哪條產生規則，輸出都必須滿足：
 
-- **1–2 段**（hyphen 分隔；`-tw` 後綴不計入段數）
+- **拉丁刊名 1–3 段、中文拼音 1–2 段**（hyphen 分隔；`-tw` 後綴不計入段數）。
+  這個不對稱是刻意的：**拉丁刊名是刊物自己寫下的字，照錄比丟詞更有出處；拼音是我們做的
+  轉寫，丟詞是為了控制長度**。有出處的東西盡量別動，我們自己造的才需要節制
 - **每段都要有出處**：必須是刊名裡的一個詞（不論中英日語源），或是**刊物、主機自印的
   品牌縮寫**（ACE、OXM、CGW、PS、SS、PS2、3DO）。**編輯不得自造縮寫**：
   `Game Developer` 可以取用它的任一個詞，但不能縮成 `gd` 或 `game-dev`，那兩個縮法是
@@ -138,8 +140,8 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
   ——禁止數字開頭會為單一刊物製造例外，不划算
 - **保留字黑名單**：`new`、`edit`、`search`、`admin`、`api`、`i`、`all`、`index`。
   目前沒有這道檢查，而現行的 `next` 已經很接近踩線——`/magazines/[slug]` 是 dynamic
-  route，哪天加一個 `/magazines/new` 就撞了。規則 1 把它算成 `next-generation`
-  （NEXT GENERATION 的完整兩詞），順帶解掉這個風險
+  route，哪天加一個 `/magazines/new` 就撞了。這本刊最後走規則 2 算成 `next-tw`，
+  `-tw` 後綴順帶解掉了「太通用」的疑慮
 
 「每段都要有出處」這條是這份規範的核心。它一次否決了現況裡 29 個自造值，而且不必訴諸
 「好不好看」這種無法驗證的判準——**任何一段都應該指得出它印在哪裡**。
@@ -150,7 +152,7 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 ### 產生規則（先命中先用）
 
 **規則 1 — 刊物自印的並列刊名（`nameParallel`）。**
-去掉體裁尾綴，取首詞 + 末詞。
+去掉體裁尾綴，**照錄剩下的所有詞**（上限 3 段）。
 
 `nameParallel` 存的是**刊物拿來當招牌的那個形式**，不是最完整的形式：刊物自己以縮寫代稱
 時（電腦玩家的 ACE、新遊戲時代的 SGM），欄位裡存的就是縮寫，全名進 `aliases`。
@@ -161,6 +163,8 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
     SWM（封面小 logo，官網 swm.com.tw）→ swm
     SOFTSTAR MAGAZINE → softstar
     WOLF Weekly → wolf
+    RETRO GAME TIME → retro-game-time
+    TV.GAME SUPER GUIDE → tvgame-super-guide
     Victory Boy → victory-boy
     e-Generation Weekly → e-generation
     ASTRO TV GAMES MAGAZINE → astro-tvgames
@@ -169,18 +173,14 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
     Games People → games-people
     GAME WALKER → game-walker
     GAME TIMES → game-times
-    NEXT GENERATION → next-generation
     TV GAME INFORMATION → tvgame-information
     TV.GAME REPORT → tvgame-report
     TV GAME MAGAZINE → tvgame-magazine
     FASHION GAME → fashion-game
     V KIDS → v-kids
-    RETRO GAME TIME → retro-time
-    TV.Game Super Guide → tvgame-guide
-    Amazing Computer Entertainment（封面即 ACE）→ ace
 
-**不再縮短。** `Game Developer` 不寫成 `game-dev`，儘管後者短 6 個字元也照樣認得出來
-——`dev` 這個縮法是我們發明的，刊物封面上沒有。一旦允許「合理的縮短」，規則就退回
+**不再縮短，也不丟詞。** `Game Developer` 不寫成 `game-dev`、`TV GAME INFORMATION` 不寫成
+`tvgame-info`，儘管兩者都短得多也照樣認得出來——那些縮法是我們發明的，刊物封面上沒有。一旦允許「合理的縮短」，規則就退回
 「編輯自由心證」，而那正是 `gd`、`gpeople` 的來歷。
 
 **「首詞 + 末詞」對中英文都成立，但成立的理由相反。** 中文刊名是〔題材通用詞〕+
@@ -197,6 +197,8 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
     電擊SEGA SATURN（SS）→ dengeki-ss-tw
     電擊王（電撃王）→ dengeki-oh-tw
     電腦遊戲世界（Computer Gaming World）→ cgw-tw
+    次世代遊戲情報（Next Generation 國際中文版）→ next-tw
+    華泰任天堂秘笈（ファミリーコンピュータMagazine，通稱ファミマガ）→ famimaga-tw
 
 **主機縮寫取當年並稱的那一組。** SEGA SATURN 寫 `ss` 而不是 `saturn`，因為 SS 與 PS 是
 同世代玩家並著講的一對，取 `saturn` 會讓同一個刊系裡出現兩種造詞法。結果是電擊系三本
@@ -210,14 +212,15 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 **規則 3 — 其餘，走創刊名的漢語拼音。**
 去掉體裁尾綴後切詞，**取首詞 + 末詞**，中間詞丟棄。
 
-    電視遊樂｜雜誌      → dianshi-youle
-    華泰｜任天堂｜秘笈   → huatai-miji
-    次世代｜遊戲｜情報   → cishidai-qingbao
-    遊戲｜設計｜大師     → youxi-dashi
-    勝利｜少年         → shengli-shaonian
+    精訊｜電腦              → jingxun-diannao
+    電玩｜百分百｜週刊        → dianwan-baifenbai
+    3DO｜次世代｜總合｜情報誌  → 3do-qingbao
 
 「首詞 + 末詞」不是為了好看才選的。它同時做到三件事：確定性（不需判斷丟哪個）、
-把段數釘死在 1–2（形狀不變式自動成立）、而且保住區別力。三條產生規則共用這一步。
+把段數釘死在 1–2（形狀不變式自動成立）、而且保住區別力。
+
+**與規則 1 的不對稱是刻意的**：拉丁刊名照錄所有詞（上限 3 段），拼音只取首末兩詞。
+拉丁刊名是刊物自己寫下的字，照錄比丟詞更有出處；拼音是我們做的轉寫，丟詞是為了控制長度。
 
 ### 羅馬化細則
 
@@ -227,7 +230,9 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
   字典庫、能寫成程式；通用拼音沒有穩定實作，注音沒有 ASCII 表示
 - **ü 一律寫 u**：《攻略快報》若走規則 3 會是 `gonglue-kuaibao`，不是 `gonglve`
 - **一個中文詞 = 一段，段界照詞不照字**：`ruanti-zhixing`，不是 `ruan-ti-zhi-xing`
-- **固定的複合題材詞算一段，不拆連字號**：`tvgame-guide`、`tvgame-report`、
+- **中文詞之間一律用連字號分隔**，不寫成 `jingxundiannao`。除了詞界的一致性，拼音的
+  音節邊界本身有歧義（西安 = Xi'an），連字號替代了規範裡不允許的隔音撇號
+- **固定的複合題材詞算一段，不拆連字號**：`tvgame-super-guide`、`tvgame-report`、
   `tvgame-magazine`、`tvgame-information`，不是 `tv-game-guide`。理由見下節
 - **拉丁字母段原樣保留、不音譯**：`3do-qingbao`
 - **切詞與多音字是規則唯一需要人判斷的地方**，所以表單應該是「自動產生 + 可覆寫」，
@@ -273,7 +278,7 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 
     TV GAME MAGAZINE  → tvgame-magazine
     TV.GAME REPORT    → tvgame-report
-    TV.Game Super Guide   → tvgame-guide
+    TV.GAME SUPER GUIDE   → tvgame-super-guide
     TV GAME INFORMATION   → tvgame-information
 
 **不是我們去對齊，是刊物本來就對齊，規則只要別把它拆掉。** 這比人為設計的對齊規則可靠，
@@ -287,8 +292,9 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 
 ### 可丟棄的體裁尾綴（封閉清單）
 
-雜誌、月刊、週刊、半月刊、雙週刊、旬刊，以及英文的 Magazine、Weekly、Monthly、
-Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界》SOFT WORLD MONTHLY 同理）。
+雜誌、月刊、週刊、半月刊、雙週刊、旬刊，以及英文的 Magazine、Weekly、Biweekly、
+Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界》SOFT WORLD MONTHLY、
+《電玩双週刊》onlinegame biweekly 同理）。
 
 **不在清單內**：報導、快報、通訊、情報、秘笈、總合情報誌。這些在本語料裡帶區別力。
 
@@ -304,16 +310,16 @@ Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界》SOFT WO
 | 電腦玩家雜誌 | `ace` | 1 | `ace` | 3 | 3 |
 | 電腦遊戲世界 | `cgw` | 2 | `cgw-tw` | 3 | 6 |
 | 新遊戲時代雜誌 | `sgm` | 1 | `sgm` | 3 | 3 |
-| 次世代遊戲情報 | `next` | 1 | `next-generation` | 4 | 15 |
+| 次世代遊戲情報 | `next` | 2 | `next-tw` | 4 | 7 |
 | 遊戲設計大師 | `gd` | 1 | `game-developer` | 2 | 14 |
 | 遊戲工場 | `gf` | 1 | `game-factory` | 2 | 12 |
 | Mania 遊戲玩瘋誌 | `mania` | 1 | `mania` | 5 | 5 |
-| 舊遊戲時代 | `rgt` | 1 | `retro-time` | 3 | 10 |
-| 華泰任天堂秘笈 | `htntd` | 3 | `huatai-miji` | 5 | 11 |
+| 舊遊戲時代 | `rgt` | 1 | `retro-game-time` | 3 | 15 |
+| 華泰任天堂秘笈 | `htntd` | 2 | `famimaga-tw` | 5 | 11 |
 | 電視遊樂雜誌 | `tvgm` | 1 | `tvgame-magazine` | 4 | 15 |
 | 電視遊樂報導 | `tvgr` | 1 | `tvgame-report` | 4 | 13 |
 | 勝利小子 | `vvkids` | 1 | `v-kids` | 6 | 6 |
-| 攻略快報 | `tvgsg` | 1 | `tvgame-guide` | 5 | 12 |
+| 攻略快報 | `tvgsg` | 1 | `tvgame-super-guide` | 5 | 18 |
 | 星際遊樂雜誌 | `astro` | 1 | `astro-tvgames` | 5 | 13 |
 | 電擊PlayStation | `dps-tw` | 2 | `dengeki-ps-tw` | 6 | 13 |
 | 電擊SEGA SATURN | `dss-tw` | 2 | `dengeki-ss-tw` | 6 | 13 |
@@ -333,23 +339,35 @@ Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界》SOFT WO
 | 勝利少年 | `vboy` | 1 | `victory-boy` | 4 | 11 |
 | 疾風快報 | `wolf` | 1 | `wolf` | 4 | 4 |
 
-規則命中分布：規則 1 二十二本、規則 2 八本、規則 3 四本。
+規則命中分布：規則 1 二十一本、規則 2 十本、規則 3 三本。
 
-**規則 3 是 fallback，不是主力。** 開始寫這份文件時規則 1 只認出六本，逐批查封面之後是
-十七本——`rgt`、`gd`、`gf`、`gpeople`、`gwalker`、`next`、`vvkids`、`gtimes`、
-`tvgameinfo`、`tvgm`、`tvgr`、`fashion`、`ssm`、`wolf`、`vboy`、`egen`、`astro` 陸續改判。
-
-查過封面的二十本裡，只有三本確認沒有拉丁刊名：《精訊電腦》、《電玩百分百週刊》、
-《華泰任天堂秘笈》。**規則 3 最終只服務四本（含一本待查），佔全部的 12%。**
-一開始它被設計成主力，實際上是少數。
-
-規則 3 原本被設計成主力，現在看來它更像是**查不到封面時的保底**。
 與現行值相同的五本：`swm`、`ace`、`sgm`、`mania`、`wolf`——都是刊物自己就在用的招牌。
 
-`wolf` 特別值得記一筆：它原本被我歸進「意象式取名」，看起來最像編輯憑感覺取的，結果封面
+`wolf` 特別值得記一筆：它原本被歸進「意象式取名」，看起來最像編輯憑感覺取的，結果封面
 印的就是 WOLF Weekly。**「看起來像自造」完全不能拿來判斷有沒有出處，只能去查。**
 
 **34 本零撞名**，且不需要任何人工消歧後綴。
+
+### 語料之後才建檔的刊物
+
+這幾本不在上面 34 本的統計裡（有些還沒建檔），列在這裡因為它們是規則在**新刊物**上的
+實測——規則要解決的本來就是「新增刊物時不用發明」：
+
+| 刊名 | 現行 slug | 規則 | 新 slug | 依據 |
+| --- | --- | :-: | --- | --- |
+| 城市少年 | `cityboy` | 1 | `city-boy` | 封面 CITY BOY／CITY BOY GAME MAGAZINE |
+| 電玩宅速配 | `gamexpress` | 1 | `gamexpress` | 封面 GAMEXPRESS／GAMEXPRESS MAGAZINE |
+| SG遊戲週刊 | `sggw` | 1 | `sg-game` | 封面 SG Game Weekly（丟體裁尾綴 Weekly） |
+| 星際遊樂快報 | `astronews` | 3 + 刊系對齊 | `astro-kuaibao` | 無拉丁刊名，跟隨《星際遊樂雜誌》的 `astro-` |
+| 電玩双週刊 | （未建檔） | 1 | `onlinegame` | 第 69 期封面 onlinegame biweekly（丟 biweekly） |
+
+**《電玩双週刊》那一列會連帶改掉《電玩宅速配》。** 兩者是同一筆 `Magazine` 的兩個刊名時期
+（見 BACKLOG），而元規則 B 說 slug 錨定**創刊名**——創刊名是《電玩双週刊》，所以整筆的 slug
+是 `onlinegame`，`gamexpress` 降級成後段時期的名字。
+
+這個結果與《電腦玩家》維持 `ace`（而不是後期的 PC GAMER）是同一條規則，但這裡的代價明顯
+較大：`onlinegame` 是個很通用的詞，識別力遠不如 `gamexpress`。**待決**——要嘛接受規則的
+輸出，要嘛承認「創刊名錨定」在並列刊名過於通用時需要例外。
 
 ## 統計
 
@@ -358,17 +376,17 @@ Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界》SOFT WO
 
 | | 現行 | B 三段混合 | E 全拼音 | **本案** |
 | --- | --: | --: | --: | --: |
-| 平均長度 | 4.9 | 13.0 | 15.9 | **10.6** |
+| 平均長度 | 4.9 | 13.0 | 15.9 | **10.7** |
 | 中位數 | 5 | 14 | 15 | **12** |
-| 標準差 | 1.8 | 4.5 | 3.5 | **4.0** |
+| 標準差 | 1.8 | 4.5 | 3.5 | **4.2** |
 | 最短 | 2（`gd`） | 3（`ace`） | 10（`dianwan-zu`） | **3（`swm`／`ace`／`sgm`）** |
-| 最長 | 10（`tvgameinfo`） | 23（`huatai-rentiantang-miji`） | 26（`xinshiji-hyper-playstation`） | **18（`tvgame-information`）** |
+| 最長 | 10（`tvgameinfo`） | 23（`huatai-rentiantang-miji`） | 26（`xinshiji-hyper-playstation`） | **18（`tvgame-super-guide`）** |
 | 全距 | 8 | 20 | 16 | **15** |
-| 段數 | 1 | 1–3 | 2–3 | **1–2** |
+| 段數 | 1 | 1–3 | 2–3 | **1–3** |
 | 編輯自造、無出處的值 | 25 | 0 | 0 | **0** |
 | 撞名 | 0 | 0 | 0 | **0** |
 
-本案在離散度（sd 4.0）、最長值（18）、段數（1–2）三項都是最好的，同時保住了
+本案在離散度（sd 4.2）與最長值（18）上都優於另外兩個新方案，同時保住了
 `famitsu-tw`、`dengeki-ps-tw`、`ace` 這些有識別力的值。
 
 三個新方案的自造值都是 0——這是「由規則生成」的定義使然，不是本案的功勞。這一列的意義
@@ -396,32 +414,33 @@ Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界》SOFT WO
 
 ## 已知代價與未決
 
-- **長度**。2.5 倍是規則的固有成本
-- **`ace`(3) 與 `tvgame-information`(18) 仍差 15 個字元**，離散度（sd 4.0）也因為那批短招牌而回升到僅次於 B 案。這個落差無法在保留「刊物自印
-  品牌」規則的前提下收斂，但它是**有解釋的**——短的那些正是刊物自己就有拉丁品牌的那些
+- **長度**。2.2 倍是規則的固有成本
+- **`swm`(3) 與 `tvgame-super-guide`(18) 仍差 15 個字元**，離散度（sd 4.2）也因為那批短
+  招牌而回升到僅次於 B 案。這個落差無法在保留「刊物自印品牌」規則的前提下收斂，但它是
+  **有解釋的**——短的那些正是刊物自己就有拉丁品牌的那些
 - **切詞與多音字**沒有全自動解，規則交給人工覆寫，代價是規則不是純機械的
 - **`game-developer`(14) 明顯長於 `game-dev`(8)**，而 `game-dev` 一樣認得出來。放棄縮短
   是為了守住「每段都有出處」；這條線一鬆，規則就沒有邊界了
 - **`game-developer`、`game-factory`、`games-people` 三本都以 `game(s)` 起頭**，看起來像
   同一個系列。這是它們封面本來就長那樣，不是規則造成的
-- **`retro-time`**（RETRO GAME TIME）是首末詞規則讀起來最不順的一個：讀者記得的組合是
-  「Retro Game」，規則卻取到「Retro…Time」。這是為了不替特定語源開特例所付的代價；
-  真的礙眼就人工覆寫成 `retro-game`，並在 fixture 裡標為例外
+- **`onlinegame`（電玩双週刊／電玩宅速配）識別力偏低**。它是規則的正確輸出（創刊名的
+  並列刊名去掉 biweekly），但 `gamexpress` 明顯好記得多。這是「錨定創刊名」第一次撞上
+  「創刊期的名字比後期的差」，見對照表後的說明
 - **`tvgame-report` 取自中期封面，不是創刊號封面**，與元規則 B（錨定創刊名）有張力。
   這裡採用它，是因為創刊期查不到任何英文名，而中期的 TV.GAME REPORT 與同刊系其他三本
   一致；若日後查到創刊號封面另有寫法，以創刊號為準
 - **`2026-08-22-magazine-title-design.md` 記載《電視遊樂報導》有「電視遊樂情報」時期**，
   但查無實據，該文件的刊名時期表應一併複查
-- **六本沒查過封面刊頭**。已改判的十四本都是查了封面才從規則 3 移到規則 1
+- **三本走規則 3，其中兩本已查證確實沒有拉丁刊名**（精訊電腦、電玩百分百週刊），
+  只有 3DO 誌還沒查。已改判的十四本都是查了封面才從規則 3 移出
   （`jiu-shidai` → `retro-time`、`youxi-dashi` → `game-developer`、
   `youxi-gongchang` → `game-factory`、`dianwan-zu` → `games-people`、
-  `dianyou-ren` → `game-walker`、`cishidai-qingbao` → `next-generation`、
+  `dianyou-ren` → `game-walker`、`cishidai-qingbao` → `next-tw`、
   `shengli-xiaozi` → `v-kids`、`dianwan-shidai` → `game-times`、
   `dianyou-tongxun` → `tvgame-information`、`dianshiyoule` → `tvgame-magazine`、
   `dianshiyoule-baodao` → `tvgame-report`、`feixun-dianwan` → `fashion-game`、
-  `ruanti-zhixing` → `softstar`、`jifeng-kuaibao` → `wolf`）。這件事的規模比預期大：**封面盤點才是這份規範真正的
-  工作量**，規則本身只是骨架。《勝利少年》現行值 `vboy` 疑似同一情況（VICTORY BOY？），
-  待查
+  `ruanti-zhixing` → `softstar`、`jifeng-kuaibao` → `wolf`、`huatai-miji` → `famimaga-tw`）。
+  這件事的規模比預期大：**封面盤點才是這份規範真正的工作量**，規則本身只是骨架。
 - **規則 2 取通稱而非全名**（`dengeki-ps-tw` 而非 `dengeki-playstation-tw`）沒有硬判準，
   依 `aliases` 裡記載的通稱為準
 - **`3do-qingbao`** 的首詞是拉丁品牌、末詞是拼音，是語料裡唯一的混合段組合
@@ -446,20 +465,16 @@ Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界》SOFT WO
 
 ## 待查清單
 
-規則 3 剩四本，其中三本**已查證確實沒有拉丁刊名**——《精訊電腦》、《電玩百分百週刊》、
-《華泰任天堂秘笈》。只剩一本未查：
+規則 3 只剩三本，其中兩本**已查證確實沒有拉丁刊名**——《精訊電腦》、《電玩百分百週刊》。
+只剩一本未查：
 
 | 刊名 | 現行 | 暫定值 | 要查什麼 |
 | --- | --- | --- | --- |
 | 3DO／次世代總合情報誌 | `newgen` | `3do-qingbao` | 封面是否為 NEW GENERATION；目前缺實體資料 |
 
-另有兩批未逐字查證：
-
-- **規則 2 那八本的原刊名寫法**。`dengeki-oh-tw`（電撃王）、`dengeki-ss-tw`（SEGA SATURN
-  取 SS）、`hyper-ps-tw` 都是依通稱推的，需對照原刊實物
-- **《華泰任天堂秘笈》的原刊**。封面沒有英文，但它首期即第 5 期、沿用日本原刊期號
-  （`docs/data-conventions.md`），所以仍可能該走規則 2。這是它與另外兩本「確認無拉丁刊名」
-  的差別：那兩本是原創刊，這本不是
+另有一批未逐字查證：**規則 2 那十本的原刊名寫法**。`dengeki-oh-tw`（電撃王）、
+`dengeki-ss-tw`（SEGA SATURN 取 SS）、`hyper-ps-tw`、`famimaga-tw`（ファミマガ）、
+`next-tw` 都是依通稱推的，需對照原刊實物確認。
 
 ### 兩個尚未定案的值
 
@@ -472,33 +487,8 @@ ASTRO 自稱，目前只知道封面全名。**
 一本印縮寫 V KIDS，所以規則各取所印。這不算問題——兩本分屬不同出版社（尖端與勝利少年
 雜誌社），本來就不是刊系，不需要共用主體。
 
-## 規則在新刊物上的第一次實測
-
-《星際遊樂快報》與《城市少年》不在這 34 本的語料裡（尚未建檔），正好是規則的第一次
-盲測——它要解決的本來就是「新增刊物時不用發明」：
-
-| 刊名 | 封面 | 規則 | slug |
-| --- | --- | :-: | --- |
-| 城市少年 | CITY BOY／CITY BOY GAME MAGAZINE | 1 | `city-boy` |
-| 星際遊樂快報 | 無英文 | 3 + 刊系對齊 | `astro-kuaibao` |
-
-《城市少年》兩種寫法擇招牌形式 CITY BOY，全名進 `aliases`——與《軟體世界》同一個處理。
-`city-boy` 與《勝利少年》的 `victory-boy` 自然平行，因為兩本封面都把「少年」譯成 Boy。
-
-**《星際遊樂快報》暴露一個新問題**：它與《星際遊樂雜誌》是同一刊系，但一本有拉丁刊名、
-一本沒有。照規則各走各的會得到 `astro-tvgames` 與 `xingji-kuaibao`——主體不共用，看不出
-是一家。這是「刊系會自己對齊」的反例：刊物只在**都有**拉丁刊名時才自動對齊。
-
-所以補一條規則：**刊系內若任一本有拉丁招牌，兄弟刊沿用同一主體，再加自己的區別詞。**
-
-    ASTRO TV GAMES MAGAZINE → astro-tvgames   星際遊樂雜誌
-    （無拉丁刊名）           → astro-kuaibao   星際遊樂快報
-
-共用的 `astro-` 就是這組的招牌，和 `tvgame-` 那組、`famitsu-tw`／`famitsu-ps2-tw`
-同一個形狀。混語源的一段（拉丁主體 + 拼音區別詞）已有先例 `3do-qingbao`。
-
-這條規則的方向是**由有出處的那本帶頭**，不是取平均：沒有拉丁刊名的那本跟著走，而不是
-把有拉丁刊名的那本降級成拼音。
+**`onlinegame`（電玩双週刊／電玩宅速配）。** 見對照表後的說明：規則的輸出與識別力在這裡
+第一次衝突。
 
 ## 規則怎麼驗證
 
