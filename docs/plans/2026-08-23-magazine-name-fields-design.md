@@ -74,7 +74,7 @@ Date: 2026-08-23
 | `MagazineTitle.titleParallel` | 該時期的並列刊名 | `String?` |
 
 `nameOriginal` 撤掉——它想表達的兩件事分別由 `nameParallel` 與 `sourceTitle` 承接，而它
-自己 30 本全空，沒有資料要遷移。
+自己 30 本裡只有 1 筆有值、那筆在新語意下本來就屬於 `nameParallel`，所以是改名不是刪除。
 
 ### 幾個決定的理由
 
@@ -125,29 +125,50 @@ COMPUTER SOFT WORLD MAGAZINE MONTHLY——招牌形式（SWM）進 `nameParallel
 
 | 欄位 | slug 規則 |
 | --- | --- |
-| `sourceTitle` 有值 | 規則 2：原刊識別 + `-tw` |
-| `nameParallel` 有值 | 規則 1：並列刊名去體裁尾綴，取首詞 + 末詞 |
+| `nameParallel` 有值 | 規則 1：並列刊名去體裁尾綴，照錄剩下的詞 |
+| 否則 `sourceTitle` 有值 | 規則 2：原刊識別 + `-tw` |
 | 皆無 | 規則 3：`name` 的漢語拼音（保底） |
 
-順序是 `sourceTitle` 先於 `nameParallel`：翻譯刊也可能自印並列刊名，但它的識別應該跟著
-原刊走。
+**順序是 `nameParallel` 先於 `sourceTitle`。這一版是修正過的**——原本寫成反過來，理由是
+「翻譯刊也可能自印並列刊名，但它的識別應該跟著原刊走」。那句話錯了，《勝利小子》就是反例。
+
+它是集英社《Vジャンプ》的台灣中文版，但封底印的並列刊名是 **V. V. KIDS**，母刊叫
+**V Jump**。**V. V. KIDS 不是 V Jump**——它只借了那個 V，名字是台灣版自己取的。所以它有
+`sourceTitle`（那是事實），slug 卻該走 `nameParallel`。
+
+翻轉之後，十本授權版的答案一個都沒變，因為它們的 `nameParallel` **本來就是空的**：
+
+| 台灣版封面的拉丁字 | 母刊 | 是不是同一個 |
+| --- | --- | --- |
+| 電撃PlayStation | 電撃PlayStation | 是 → `nameParallel` 空 |
+| ファミ通 | ファミ通 | 是 → 空 |
+| NEXT | Next Generation | 母刊的 wordmark → 空 |
+| （無英文） | ファミコンMagazine | — → 空 |
+| **V. V. KIDS** | **Vジャンプ** | **否 → 有值** |
+
+所以錄入時真正要問的不是「它是不是翻譯刊」，而是**「封面上這個拉丁字，是母刊的標識，
+還是這本刊自己取的？」**——那有證據可查（跟母刊刊名比對）。判斷落在錄入時，規則本身
+保持純函數，與「招牌形式 vs 最完整形式」是同一個位置。
 
 ### 現有資料怎麼歸位
 
 | 刊 | `nameParallel` | `sourceTitle` | `aliases` 保留 |
 | --- | --- | --- | --- |
+| 勝利小子 | V. V. KIDS | Vジャンプ | — |
 | 軟體世界雜誌 | SWM | — | The Softworld、SOFT WORLD MONTHLY、SOFT WORLD MAGAZINE、COMPUTER SOFT WORLD MAGAZINE MONTHLY |
 | 電腦玩家雜誌 | ACE | — | Amazing Computer Entertainment、PC GAMER、PC GAMER 國際中文版 |
 | 新遊戲時代雜誌 | SGM | — | Style Game Magazine |
-| 攻略快報 | TV.Game Super Guide | — | — |
+| 攻略快報 | TV.GAME SUPER GUIDE | — | — |
 | 電腦遊戲世界 | — | Computer Gaming World | —（「遊戲世界」轉入 `MagazineTitle`） |
 | 電玩通 | — | ファミ通 | 法米通 |
 | 電擊PlayStation | — | 電撃PlayStation | 電擊PS |
-| 華泰任天堂秘笈 | — | （日本原刊，待查） | —（「任天堂程式解法大公開」轉入 `MagazineTitle`） |
+| 華泰任天堂秘笈 | — | ファミリーコンピュータ Magazine | —（「任天堂程式解法大公開」轉入 `MagazineTitle`） |
+| 次世代遊戲情報 | — | Next Generation | NEXT GENERATION |
 
 加上 slug 規範過程中查封面新得到的：TV GAME MAGAZINE、TV.GAME REPORT、TV GAME
 INFORMATION、GAME TIMES、GAME WALKER、GAME FACTORY、Games People、Game Developer、
-NEXT GENERATION、V KIDS、RETRO GAME TIME、FASHION GAME。
+RETRO GAME TIME、FASHION GAME、SOFTSTAR MAGAZINE、WOLF Weekly、ASTRO、
+e-Generation Weekly、Victory Boy、CITY BOY、GAMEXPRESS、SG Game Weekly。
 
 ## 壓力測試：電腦玩家
 

@@ -49,16 +49,21 @@ const NAMES: Record<string, Names> = {
   },
   // SGM 與 ACE 同：刊物自己就用這個縮寫
   sgm: { parallel: "SGM" },
-  next: { parallel: "NEXT GENERATION" },
+  // 初期是美國 Next Generation 的國際中文版，所以封面上的拉丁刊名是母刊的標識，
+  // 不是這本刊自己取的並列刊名——與電擊系、電腦遊戲世界同樣走 sourceTitle
+  next: { source: "Next Generation", aliases: ["NEXT GENERATION"] },
   gd: { parallel: "Game Developer" },
   gf: { parallel: "GAME FACTORY" },
   rgt: { parallel: "RETRO GAME TIME" },
   tvgm: { parallel: "TV GAME MAGAZINE" },
   // 取自中期封面：創刊期查不到英文名，見設計文件的未決事項
   tvgr: { parallel: "TV.GAME REPORT" },
-  vvkids: { parallel: "V KIDS" },
+  // 集英社《Vジャンプ》的台灣中文版，但並列刊名 V. V. KIDS 是台灣版自己取的
+  // ——不是母刊的刊名，所以 slug 走 nameParallel 而不是 sourceTitle
+  vvkids: { parallel: "V. V. KIDS", source: "Vジャンプ" },
   tvgsg: { parallel: "TV.GAME SUPER GUIDE" },
-  astro: { parallel: "ASTRO TV GAMES MAGAZINE" },
+  // 封面全名是 ASTRO TV GAMES MAGAZINE，招牌是 ASTRO
+  astro: { parallel: "ASTRO", aliases: ["ASTRO TV GAMES MAGAZINE"] },
   egen: { parallel: "e-Generation Weekly" },
   fashion: { parallel: "FASHION GAME" },
   gpeople: { parallel: "Games People" },
@@ -122,6 +127,14 @@ async function main() {
     const payload: Record<string, unknown> = {};
     if (wanted.parallel && magazine.nameParallel !== wanted.parallel) {
       payload.nameParallel = wanted.parallel;
+    }
+    // 授權版封面上的拉丁字通常是母刊的標識，該進 sourceTitle 而不是並列刊名——
+    // 先前的《次世代遊戲情報》與《電玩通PS2》都填錯在這裡。
+    //
+    // 但**不是每本授權版都如此**：《勝利小子》的 V. V. KIDS 是台灣版自己取的名字，
+    // 母刊叫 Vジャンプ。所以只清空「本表沒給並列刊名」的那些，有給的照填。
+    if (!wanted.parallel && wanted.source && magazine.nameParallel) {
+      payload.nameParallel = null;
     }
     if (wanted.source && magazine.sourceTitle !== wanted.source) {
       payload.sourceTitle = wanted.source;
