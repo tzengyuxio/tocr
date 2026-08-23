@@ -183,7 +183,15 @@ describe("magazineSubtitle", () => {
   // 兩者都有的只有《勝利小子》。並列刊名在前：副標的位置讀者會讀成「這本刊的另一個
   // 名字」，把另一本雜誌放在最前面會誤導。
   it("puts the magazine's own name before the one it translates", () => {
-    expect(magazineSubtitle("V. V. KIDS", "Vジャンプ")).toBe("V. V. KIDS《Vジャンプ》");
+    expect(magazineSubtitle("V. V. KIDS", "Vジャンプ")).toBe(
+      "V. V. KIDS · 《Vジャンプ》"
+    );
+  });
+
+  // 只有一邊時不該留下孤懸的分隔符。
+  it("leaves no separator when only one side is present", () => {
+    expect(magazineSubtitle("GAME WALKER", null)).toBe("GAME WALKER");
+    expect(magazineSubtitle(null, "電撃王")).toBe("《電撃王》");
   });
 
   it("is empty when there is neither", () => {

@@ -255,7 +255,7 @@ function previousPeriodTitle(
 /**
  * 主標題底下那行灰字。
  *
- * **並列刊名在前，原刊名跟在後面用書名號包起來**：`V. V. KIDS《Vジャンプ》`。
+ * **並列刊名在前，原刊名跟在後面用書名號包起來**：`V. V. KIDS · 《Vジャンプ》`。
  *
  * 順序是這樣定的——並列刊名是**這本刊自己的**另一個名字，與正題名平起平坐；原刊名是
  * **另一本雜誌**，ファミ通 不是《電玩通》的名字。副標的位置讀者會理解成「這本刊的另一個
@@ -266,13 +266,17 @@ function previousPeriodTitle(
  *
  * 兩者都有的目前只有《勝利小子》一本（V. V. KIDS 與 Vジャンプ），所以「兩個都顯示」的
  * 版面成本幾乎是零，不必二選一。
+ *
+ * **不用顏色區分。** 顏色需要圖例才看得懂，而書名號自帶意義；而且這是為 1/36 的情況在
+ * 一行次級文字裡再開一層階層，單色列印與色覺障礙下還會整個消失。真正跨全清單的區別是
+ * 「這一列有沒有書名號」，那個已經分得出來。
  */
 export function magazineSubtitle(
   nameParallel: string | null,
   sourceTitle: string | null
 ): string {
-  // 不補空格：《》是全形標點，本身就帶side bearing，再加空格會空一大塊。
-  return [nameParallel, sourceTitle && `《${sourceTitle}》`].filter(Boolean).join("");
+  // 兩者都在時用 · 分隔，否則拉丁字母會直接撞上全形括號。專案裡既有的分隔符就是它。
+  return [nameParallel, sourceTitle && `《${sourceTitle}》`].filter(Boolean).join(" · ");
 }
 
 export function magazineDisplayUnits(
