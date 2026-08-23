@@ -19,8 +19,8 @@ placeholder 寫 `fmt-tw`），validator 只檢查 `^[a-z0-9-]+$`
 
 | 風格 | 例子 |
 | --- | --- |
-| 刊物自印的拉丁名／品牌，原樣採用 | `swm`、`ace`、`sgm`、`mania`、`oxm`、`cgw`、`next`、`fashion`、`wolf` |
-| 自印拉丁名的**自造縮寫** | `tvgsg`、`ssm`、`rgt`、`vboy`、`egen`、`astro`、`gd`、`gf`、`gpeople`、`gwalker`、`vvkids`、`gtimes`、`tvgameinfo`、`tvgm`、`tvgr` |
+| 刊物自印的拉丁名／品牌，原樣採用 | `swm`、`ace`、`sgm`、`mania`、`oxm`、`cgw`、`next`、`fashion`、`wolf`、`astro` |
+| 自印拉丁名的**自造縮寫** | `tvgsg`、`ssm`、`rgt`、`vboy`、`egen`、`gd`、`gf`、`gpeople`、`gwalker`、`vvkids`、`gtimes`、`tvgameinfo`、`tvgm`、`tvgr` |
 | 日刊縮寫 + `-tw` | `fmt-tw`、`dps-tw`、`dss-tw`、`doh-tw`、`hps-tw`、`fmtps-tw` |
 | 中文刊名的縮寫或意譯 | `jxdn`、`htntd`、`game100` |
 | 意象式取名 | `newgen`（待查） |
@@ -31,7 +31,8 @@ placeholder 寫 `fmt-tw`），validator 只檢查 `^[a-z0-9-]+$`
 `tvgsg` = TV.Game Super Guide；《舊遊戲時代》封面刊頭印的是
 RETRO GAME TIME。逐本查封面之後，自印英文名的數量遠超過 `aliases` 記載的：《遊戲設計大師》
 Game Developer、《遊戲工場》GAME FACTORY、《電玩族》Games People、《電遊人》GAME WALKER、
-《次世代遊戲情報》NEXT GENERATION、《勝利小子》V KIDS、《電玩時代》GAME TIMES、
+《次世代遊戲情報》NEXT（母刊 Next Generation 的 wordmark）、《勝利小子》V. V. KIDS、
+《電玩時代》GAME TIMES、
 《電遊通訊》TV GAME INFORMATION、《電視遊樂雜誌》TV GAME MAGAZINE、
 《電視遊樂報導》TV.GAME REPORT、《飛訊電玩周刊》FASHION GAME、《軟體之星》SOFTSTAR MAGAZINE、
 《疾風快報》WOLF Weekly、《勝利少年》Victory Boy、《電玩e世代》e-Generation Weekly、
@@ -101,9 +102,9 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 直覺上會覺得現況這份清單很亂，但**亂的不是長度**。現行 34 個 slug 的長度標準差只有
 1.8、全距 8，在四個方案裡最集中。
 
-真正的分界是**有沒有出處**。現行 34 個裡，整個值都能指回刊物印過的東西的有 9 個
-（`swm`、`ace`、`sgm`、`mania`、`oxm`、`cgw`、`next`、`fashion`、`wolf`）；其餘 25 個都
-經過編輯加工——`tvgsg`、`ssm`、`vboy`、`egen`、`astro`、`gd`、`gf`、`gpeople`、`gwalker`、`vvkids`、`rgt`、`gtimes`、
+真正的分界是**有沒有出處**。現行 34 個裡，整個值都能指回刊物印過的東西的有 10 個
+（`swm`、`ace`、`sgm`、`mania`、`oxm`、`cgw`、`next`、`fashion`、`wolf`、`astro`）；
+其餘 24 個都經過編輯加工——`tvgsg`、`ssm`、`vboy`、`egen`、`gd`、`gf`、`gpeople`、`gwalker`、`vvkids`、`rgt`、`gtimes`、
 `tvgameinfo`、`tvgm`、`tvgr` 把自印拉丁名縮掉，`jxdn`、`htntd` 把中文名縮掉，只剩 `newgen` 尚未查證。
 **同一本刊換一個編輯就會得到不同的值**，這才是亂的來源。
 
@@ -167,7 +168,7 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
     TV.GAME SUPER GUIDE → tvgame-super-guide
     Victory Boy → victory-boy
     e-Generation Weekly → e-generation
-    ASTRO TV GAMES MAGAZINE → astro-tvgames
+    ASTRO（全名 ASTRO TV GAMES MAGAZINE）→ astro
     Game Developer → game-developer
     GAME FACTORY → game-factory
     Games People → games-people
@@ -177,7 +178,7 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
     TV.GAME REPORT → tvgame-report
     TV GAME MAGAZINE → tvgame-magazine
     FASHION GAME → fashion-game
-    V KIDS → v-kids
+    V. V. KIDS → vv-kids
 
 **不再縮短，也不丟詞。** `Game Developer` 不寫成 `game-dev`、`TV GAME INFORMATION` 不寫成
 `tvgame-info`，儘管兩者都短得多也照樣認得出來——那些縮法是我們發明的，刊物封面上沒有。一旦允許「合理的縮短」，規則就退回
@@ -188,8 +189,12 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 〔題材通用詞〕——Retro｜Game Time、Soft｜World、Style｜Game——區別力在首詞。同一條
 規則兩端都取，所以不必為語源分岔。
 
-**規則 2 — 外刊的授權版、翻譯版或國際版。**
-原刊的通用羅馬字識別 + `-tw`。取通稱而非全名，因為通稱才是讀者認得的那個
+**規則 2 — 外刊的授權版、翻譯版或國際版，且它沒有自印的並列刊名。**
+原刊的通用羅馬字識別 + `-tw`。
+
+「沒有自印的並列刊名」這個前提是必要的：《勝利小子》是《Vジャンプ》的台灣中文版，但它
+自己取了 V. V. KIDS 這個名字，母刊並沒有這樣叫過——那本刊走規則 1 得到 `vv-kids`，
+不是 `vjump-tw`。判斷的依據是 `nameParallel` 有沒有值。取通稱而非全名，因為通稱才是讀者認得的那個
 （`aliases` 裡記的就是「電擊PS」）。
 
     電玩通（ファミ通）→ famitsu-tw
@@ -390,14 +395,14 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 | 最長 | 10（`tvgameinfo`） | 23（`huatai-rentiantang-miji`） | 26（`xinshiji-hyper-playstation`） | **18（`tvgame-super-guide`）** |
 | 全距 | 8 | 20 | 16 | **15** |
 | 段數 | 1 | 1–3 | 2–3 | **1–3** |
-| 編輯自造、無出處的值 | 25 | 0 | 0 | **0** |
+| 編輯自造、無出處的值 | 24 | 0 | 0 | **0** |
 | 撞名 | 0 | 0 | 0 | **0** |
 
 本案在離散度（sd 4.3）與最長值（18）上都優於另外兩個新方案，同時保住了
 `famitsu-tw`、`dengeki-ps-tw`、`ace` 這些有識別力的值。
 
 三個新方案的自造值都是 0——這是「由規則生成」的定義使然，不是本案的功勞。這一列的意義
-在於量出現行的 25，也就是待解決的問題有多大。
+在於量出現行的 24，也就是待解決的問題有多大。
 
 平均長度是現行的 2.4 倍。這是換取「可推導」必付的代價，不是可以調參數解決的。
 
@@ -442,7 +447,7 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
   （`jiu-shidai` → `retro-time`、`youxi-dashi` → `game-developer`、
   `youxi-gongchang` → `game-factory`、`dianwan-zu` → `games-people`、
   `dianyou-ren` → `game-walker`、`cishidai-qingbao` → `next-tw`、
-  `shengli-xiaozi` → `v-kids`、`dianwan-shidai` → `game-times`、
+  `shengli-xiaozi` → `vv-kids`、`dianwan-shidai` → `game-times`、
   `dianyou-tongxun` → `tvgame-information`、`dianshiyoule` → `tvgame-magazine`、
   `dianshiyoule-baodao` → `tvgame-report`、`feixun-dianwan` → `fashion-game`、
   `ruanti-zhixing` → `softstar`、`jifeng-kuaibao` → `wolf`、`huatai-miji` → `famimaga-tw`）。
@@ -463,11 +468,14 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 
 | 欄位 | slug 規則 |
 | --- | --- |
-| `sourceTitle` 有值（本刊翻譯自哪本外刊） | 規則 2 |
 | `nameParallel` 有值（刊物自印的並列刊名） | 規則 1 |
+| 否則 `sourceTitle` 有值（本刊翻譯自哪本外刊） | 規則 2 |
 | 皆無 | 規則 3（拼音保底） |
 
 **slug 規則的優先序恰好就是欄位的判定順序**，這也是那個切分正確的旁證。
+
+注意這張表的順序**與規則的編號相反**：規則 1 先命中。編號是照設計時的敘述順序編的，
+判定順序才是執行順序——《勝利小子》是逼出這個修正的案例，說明見名稱欄位文件。
 
 ## 待查清單
 
@@ -484,8 +492,8 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 
 ### 一個尚未定案的值
 
-**`victory-boy`（勝利少年）與 `v-kids`（勝利小子）不對齊。** 一本封面印全名 Victory Boy、
-一本印縮寫 V KIDS，所以規則各取所印。這不算問題——兩本分屬不同出版社（尖端與勝利少年
+**`victory-boy`（勝利少年）與 `vv-kids`（勝利小子）不對齊。** 一本封面印全名 Victory Boy、
+一本印縮寫 V. V. KIDS，所以規則各取所印。這不算問題——兩本分屬不同出版社（尖端與勝利少年
 雜誌社），本來就不是刊系，不需要共用主體。
 
 **`onlinegame`（電玩双週刊／電玩宅速配）。** 見對照表後的說明：規則的輸出與識別力在這裡
