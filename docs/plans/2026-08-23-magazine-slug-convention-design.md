@@ -155,9 +155,13 @@ PlayStation、SEGA SATURN、PS2、3DO、HYPER、e世代、百分百。規則必�
 **規則 1 — 刊物自印的並列刊名（`nameParallel`）。**
 去掉體裁尾綴，**照錄剩下的所有詞**（上限 3 段）。
 
-`nameParallel` 存的是**刊物拿來當招牌的那個形式**，不是最完整的形式：刊物自己以縮寫代稱
-時（電腦玩家的 ACE、新遊戲時代的 SGM），欄位裡存的就是縮寫，全名進 `aliases`。
-**判斷在錄入資料時完成，規則本身不做選擇**——這樣規則 1 仍然是純函數，符合元規則 A。
+**刊物若有約定成俗的自稱簡稱，取簡稱**：電腦玩家的 ACE、新遊戲時代的 SGM、軟體世界的
+SWM、星際遊樂的 ASTRO。那些簡稱住在 `aliases`，不在 `nameParallel`——它們嚴格說不是並列
+刊名，而是刊物自己在用的短形式。
+
+**這一步是人做的判斷，不是程式算的。** slug 每本刊只決定一次，取簡稱還是全名由人依這份
+規範判斷，fixture 記下結果。先前為了讓規則能純機械地讀一個欄位，我把簡稱塞進
+`nameParallel`，那是讓資料模型遷就 slug——見名稱欄位文件的修正。
 
     ACE（全名 Amazing Computer Entertainment）→ ace
     SGM（全名 Style Game Magazine）→ sgm

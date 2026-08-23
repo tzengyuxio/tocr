@@ -156,7 +156,14 @@ export default async function MagazinesPage({
                       <BookOpen className="h-10 w-10 text-muted-foreground/30" />
                     )}
                   </div>
-                  <CardTitle className="line-clamp-1 text-base">{unit.name}</CardTitle>
+                  <CardTitle className="line-clamp-1 text-base">
+                    {unit.name}
+                    {unit.previousTitle && (
+                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                        （原 {unit.previousTitle}）
+                      </span>
+                    )}
+                  </CardTitle>
                   {unit.nameParallel && (
                     <CardDescription className="line-clamp-1 text-xs">
                       {unit.nameParallel}

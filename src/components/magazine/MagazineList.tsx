@@ -50,7 +50,14 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
           )}
 
           <div className="min-w-0 flex-1">
-            <div className="truncate font-medium">{unit.name}</div>
+            <div className="truncate font-medium">
+              {unit.name}
+              {unit.previousTitle && (
+                <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                  （原 {unit.previousTitle}）
+                </span>
+              )}
+            </div>
             {unit.nameParallel && (
               <div className="truncate text-sm text-muted-foreground">
                 {unit.nameParallel}

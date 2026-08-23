@@ -10,6 +10,7 @@ import {
   parseMagazineFilter,
   DEFAULT_MAGAZINE_VIEW,
   parseMagazineView,
+  magazineDisplayUnits,
 } from "@/lib/magazine-browse";
 
 describe("MAGAZINE_FILTERS", () => {
@@ -106,5 +107,60 @@ describe("the admin-only sort", () => {
     const sort = parseMagazineSort("created", ADMIN_MAGAZINE_SORTS);
     expect(parseMagazineDirection(undefined, sort)).toBe("desc");
     expect(magazineOrderBy(sort, "desc")).toEqual([{ createdAt: "desc" }]);
+  });
+});
+
+// 改名後的時期卡要看得出它屬於哪一本刊。取**前一段**而不是刊系名：三個時期的刊物
+// 顯示刊系名會讓三張卡片寫一樣的東西，看不出順序。
+describe("magazineDisplayUnits 的沿革標記", () => {
+  const magazine = {
+    id: "m1",
+    slug: "cgw",
+    name: "電腦遊戲世界",
+    nameParallel: null,
+    publisher: null,
+    logoImage: null,
+    categories: [],
+    foundedDate: null,
+    endedDate: null,
+    foundedSort: null,
+    isActive: false,
+    titles: [
+      { id: "t1", title: "電腦遊戲世界", startIssue: { order: 1 }, logoImage: null },
+      { id: "t2", title: "遊戲世界", startIssue: { order: 3 }, logoImage: null },
+      { id: "t3", title: "遊戲世界 2", startIssue: { order: 5 }, logoImage: null },
+    ],
+    _count: { issues: 6 },
+  };
+  const issues = [1, 2, 3, 4, 5, 6].map((order) => ({ order, publishSort: null }));
+
+  it("names the previous period, not the lineage", () => {
+    const units = magazineDisplayUnits(magazine, issues);
+
+    expect(units.map((u) => u.previousTitle)).toEqual([
+      null,
+      "電腦遊戲世界",
+      "遊戲世界",
+    ]);
+  });
+
+  // 沿革只建了後段時，首段靠 Magazine.name 代打——那一段連自己叫什麼都是推的，
+  // 拿它當「原」名會讓標記出現在自己底下。
+  it("stays quiet when the lineage is only half built", () => {
+    const halfBuilt = {
+      ...magazine,
+      titles: [{ id: "t2", title: "遊戲世界", startIssue: { order: 3 }, logoImage: null }],
+    };
+
+    const units = magazineDisplayUnits(halfBuilt, issues);
+
+    expect(units.every((u) => u.previousTitle === null)).toBe(true);
+  });
+
+  it("leaves it empty for a magazine that never changed its name", () => {
+    const units = magazineDisplayUnits({ ...magazine, titles: [] }, issues);
+
+    expect(units).toHaveLength(1);
+    expect(units[0].previousTitle).toBeNull();
   });
 });

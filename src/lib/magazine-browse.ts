@@ -183,6 +183,14 @@ export interface MagazineDisplayUnit {
   href: string;
   name: string;
   nameParallel: string | null;
+  /**
+   * 前一個刊名時期的名字，顯示成「原 電腦遊戲世界」。只有改名後的時期有值——首段
+   * 沒有「原」可講，沒有沿革的雜誌也沒有。
+   *
+   * 取前一段而不是刊系名：《電玩通PS2》有三個時期，顯示前一段看得出順序，顯示刊系名
+   * 則三張卡片會寫一樣的東西。
+   */
+  previousTitle: string | null;
   publisher: string | null;
   logoImage: string | null;
   categories: MagazineCategory[];
@@ -226,6 +234,22 @@ function spanLabel(start: string, end: string, openSuffix: string): string {
   return end ? `${start} – ${end}` : `${start}${openSuffix}`;
 }
 
+/**
+ * 前一個刊名時期的名字，沒有或不該顯示時回 null。
+ *
+ * `anchorSeq` 是 1 起算的沿革次序；0 表示 titles 沒建齊時由 `Magazine.name` 代打的
+ * 首段，那一段本身就是推的，不能當「原」名用。
+ */
+function previousPeriodTitle(
+  sorted: TitlePeriod[],
+  anchorSeq: number,
+  currentTitle: string | undefined
+): string | null {
+  if (anchorSeq <= 1) return null;
+  const previous = sorted[anchorSeq - 2]?.title ?? null;
+  return previous === currentTitle ? null : previous;
+}
+
 export function magazineDisplayUnits(
   magazine: DisplayMagazine,
   issues: { order: number; publishSort: Date | null }[]
@@ -243,6 +267,7 @@ export function magazineDisplayUnits(
         key: magazine.id,
         href: `/magazines/${magazine.slug}`,
         name: magazine.name,
+        previousTitle: null,
         logoImage: magazine.logoImage,
         span: spanLabel(
           formatEdtf(magazine.foundedDate),
@@ -289,6 +314,12 @@ export function magazineDisplayUnits(
           ? `/magazines/${magazine.slug}#period-${anchorSeq}`
           : `/magazines/${magazine.slug}`,
       name: segment.period?.title ?? magazine.name,
+      // 首段沒有前一段；anchorSeq 是 1 起算的沿革次序，0 表示 titles 沒建齊時、
+      // 由 Magazine.name 代打的 null 首段——那一段連自己叫什麼都是推的，更不該講「原」。
+      //
+      // 與本段同名時也不顯示：沿革建歪（例如只建了後段、首段靠 name 代打）會讓兩張卡
+      // 同名，那時「原 電玩宅速配」出現在《電玩宅速配》自己底下，比不顯示更糟。
+      previousTitle: previousPeriodTitle(sorted, anchorSeq, segment.period?.title),
       logoImage: segment.period?.logoImage ?? magazine.logoImage,
       span: spanLabel(start, end, isFirst ? "創刊" : "起"),
       issueCount: segment.issues.length,

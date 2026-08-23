@@ -94,25 +94,31 @@ COMPUTER SOFT WORLD MAGAZINE MONTHLY——招牌形式（SWM）進 `nameParallel
 這本刊也說明**「最完整的形式」是個壞判準**：COMPUTER SOFT WORLD MAGAZINE MONTHLY 最完整，
 但沒有人用它稱呼這本雜誌。
 
-**存的是招牌形式，不是最完整的形式。**
-《電腦玩家》的 Amazing Computer Entertainment 與《新遊戲時代》的 Style Game Magazine，
-刊物自己都是以縮寫 ACE、SGM 當代稱在用。這種情況 `nameParallel` 存 **ACE**、**SGM**，
-全名進 `aliases`。
+**自稱的簡稱不是並列刊名。**
+ACE、SGM、SWM 是刊物約定成俗的自稱，刊物自己也在用，但**嚴格說不是並列刊名**——並列刊名
+是與正題名並排印在封面上的那個完整拉丁刊名。所以 `nameParallel` 存
+Amazing Computer Entertainment、Style Game Magazine、SOFT WORLD MAGAZINE，簡稱進
+`aliases`（yuxio 2026-08-23）。
 
-判準是「刊物拿哪個形式當識別」，不是「哪個形式最完整」。**出處的證據不限於封面刊頭**：
-封面上的小 logo、官方網域（《軟體世界》是 swm.com.tw）、版權頁、社論自稱都算，
-而且網域這種證據往往比封面更明確——它是刊物自己選的識別。這樣做有個具體好處：**slug 規則 1
-因此可以是純機械的**——直接讀 `nameParallel` 去體裁尾綴取首末詞，不必再判斷「這本刊是不是
-以縮寫為招牌」。判斷前移到錄入，規則保持純函數。
+**這一版是修正過的。** 先前把簡稱存進 `nameParallel`，理由是「slug 規則 1 因此可以純機械
+地讀一個欄位」。那是讓欄位遷就 slug——同一類錯誤在這個資料模型上已經出現過三次：
+`nameOriginal`（並列刊名 vs 原刊）、`slug`（網址 vs 上游 key），這是第三次。
 
-**官方縮寫不是另一種關係。** ACE 之於 Amazing Computer Entertainment 是同一個並列刊名的
-長短兩種形式，不需要 `nameAbbr` 這種欄位。讀者俗稱（法米通、電擊PS）才是另一回事，
-那些留在 `aliases`。
+**slug 不需要一個欄位來對應。** 它有自己的規範，取簡稱還是取全名由人依那份規範判斷一次，
+fixture 就是那個判斷的紀錄。追求「規則是純函數」讓我硬把兩個用途壓進一個欄位；實際上
+slug 每本刊只決定一次，不必程式化產生。
+
+**出處的證據不限於封面刊頭**：封面上的小 logo、官方網域（《軟體世界》是 swm.com.tw）、
+版權頁、社論自稱都算，而且網域這種證據往往比封面更明確——它是刊物自己選的識別。
 
 **為什麼 `MagazineTitle` 也要 `titleParallel`。**
 並列刊名會跟著改名一起換（電視遊樂雜誌的 TV GAME MAGAZINE 後來變成 GAME fans）。
 `Magazine` 存創刊值、`MagazineTitle` 存各時期值，這個分工在 `title` 上已經成立，
 `titleParallel` 只是照抄，不引入新結構。
+
+**為什麼不做 `nameAbbr`。**
+ACE 之於 Amazing Computer Entertainment 是同一個並列刊名的長短兩種形式，`aliases` 就是
+它的家。唯一想開這個欄位的理由是餵 slug，而 slug 不需要欄位。
 
 **為什麼不做一張 `MagazineName` 表。**
 `(magazineId, name, type, isPrimary)` 看起來更通用，但 `MagazineTitle` 已經負責時間軸，
