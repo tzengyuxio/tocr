@@ -318,9 +318,9 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 | 華泰任天堂秘笈 | `htntd` | 2 | `famimaga-tw` | 5 | 11 |
 | 電視遊樂雜誌 | `tvgm` | 1 | `tvgame-magazine` | 4 | 15 |
 | 電視遊樂報導 | `tvgr` | 1 | `tvgame-report` | 4 | 13 |
-| 勝利小子 | `vvkids` | 1 | `v-kids` | 6 | 6 |
+| 勝利小子 | `vvkids` | 1 | `vv-kids` | 6 | 7 |
 | 攻略快報 | `tvgsg` | 1 | `tvgame-super-guide` | 5 | 18 |
-| 星際遊樂雜誌 | `astro` | 1 | `astro-tvgames` | 5 | 13 |
+| 星際遊樂雜誌 | `astro` | 1 | `astro` | 5 | 5 |
 | 電擊PlayStation | `dps-tw` | 2 | `dengeki-ps-tw` | 6 | 13 |
 | 電擊SEGA SATURN | `dss-tw` | 2 | `dengeki-ss-tw` | 6 | 13 |
 | 電擊王 | `doh-tw` | 2 | `dengeki-oh-tw` | 6 | 13 |
@@ -341,7 +341,8 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 
 規則命中分布：規則 1 二十一本、規則 2 十本、規則 3 三本。
 
-與現行值相同的五本：`swm`、`ace`、`sgm`、`mania`、`wolf`——都是刊物自己就在用的招牌。
+與現行值相同的六本：`swm`、`ace`、`sgm`、`mania`、`astro`、`wolf`——都是刊物自己就在用
+的招牌。
 
 `wolf` 特別值得記一筆：它原本被歸進「意象式取名」，看起來最像編輯憑感覺取的，結果封面
 印的就是 WOLF Weekly。**「看起來像自造」完全不能拿來判斷有沒有出處，只能去查。**
@@ -356,18 +357,24 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 | 刊名 | 現行 slug | 規則 | 新 slug | 依據 |
 | --- | --- | :-: | --- | --- |
 | 城市少年 | `cityboy` | 1 | `city-boy` | 封面 CITY BOY／CITY BOY GAME MAGAZINE |
-| 電玩宅速配 | `gamexpress` | 1 | `gamexpress` | 封面 GAMEXPRESS／GAMEXPRESS MAGAZINE |
 | SG遊戲週刊 | `sggw` | 1 | `sg-game` | 封面 SG Game Weekly（丟體裁尾綴 Weekly） |
-| 星際遊樂快報 | `astronews` | 3 + 刊系對齊 | `astro-kuaibao` | 無拉丁刊名，跟隨《星際遊樂雜誌》的 `astro-` |
-| 電玩双週刊 | （未建檔） | 1 | `onlinegame` | 第 69 期封面 onlinegame biweekly（丟 biweekly） |
+| 星際遊樂快報 | `astronews` | 3 + 刊系對齊 | `astro-kuaibao` | 無拉丁刊名，跟隨《星際遊樂雜誌》的 `astro` |
+| 電玩双週刊／電玩宅速配 | `gamexpress` | 1 + 例外 | `gamexpress` | 見下 |
 
-**《電玩双週刊》那一列會連帶改掉《電玩宅速配》。** 兩者是同一筆 `Magazine` 的兩個刊名時期
-（見 BACKLOG），而元規則 B 說 slug 錨定**創刊名**——創刊名是《電玩双週刊》，所以整筆的 slug
-是 `onlinegame`，`gamexpress` 降級成後段時期的名字。
+### 一個明文的例外：`gamexpress`
 
-這個結果與《電腦玩家》維持 `ace`（而不是後期的 PC GAMER）是同一條規則，但這裡的代價明顯
-較大：`onlinegame` 是個很通用的詞，識別力遠不如 `gamexpress`。**待決**——要嘛接受規則的
-輸出，要嘛承認「創刊名錨定」在並列刊名過於通用時需要例外。
+《電玩双週刊》與《電玩宅速配》是同一筆 `Magazine` 的兩個刊名時期（見 BACKLOG），而元規則 B
+說 slug 錨定**創刊名**——照規則整筆該是 `onlinegame`（創刊名的並列刊名 onlinegame biweekly
+去掉體裁尾綴），`gamexpress` 降級成後段時期的名字。
+
+**這裡取例外，用 `gamexpress`**（yuxio 2026-08-23）。理由不是規則錯了：創刊時無法預知日後
+會不會改名，錨定創刊名仍是對的預設。但這本刊改名已經過了很長一段時間，而創刊期的並列刊名
+`onlinegame` 是個過於通用的詞，識別力遠不如 `gamexpress`。
+
+例外要**明文寫進 fixture 並標記**。判準與《電腦玩家》維持 `ace`（而非後期的 PC GAMER）
+一併記著：同樣是「創刊期 vs 後期」，`ace` 照規則走是因為創刊期的名字本身就有識別力，
+這本反過來。**判準是創刊期的值有沒有識別力，不是哪一段時期比較長**——後者會讓每本長壽刊
+都變成例外。
 
 ## 統計
 
@@ -376,9 +383,9 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 
 | | 現行 | B 三段混合 | E 全拼音 | **本案** |
 | --- | --: | --: | --: | --: |
-| 平均長度 | 4.9 | 13.0 | 15.9 | **10.7** |
-| 中位數 | 5 | 14 | 15 | **12** |
-| 標準差 | 1.8 | 4.5 | 3.5 | **4.2** |
+| 平均長度 | 4.9 | 13.0 | 15.9 | **10.5** |
+| 中位數 | 5 | 14 | 15 | **11** |
+| 標準差 | 1.8 | 4.5 | 3.5 | **4.3** |
 | 最短 | 2（`gd`） | 3（`ace`） | 10（`dianwan-zu`） | **3（`swm`／`ace`／`sgm`）** |
 | 最長 | 10（`tvgameinfo`） | 23（`huatai-rentiantang-miji`） | 26（`xinshiji-hyper-playstation`） | **18（`tvgame-super-guide`）** |
 | 全距 | 8 | 20 | 16 | **15** |
@@ -386,7 +393,7 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 | 編輯自造、無出處的值 | 25 | 0 | 0 | **0** |
 | 撞名 | 0 | 0 | 0 | **0** |
 
-本案在離散度（sd 4.2）與最長值（18）上都優於另外兩個新方案，同時保住了
+本案在離散度（sd 4.3）與最長值（18）上都優於另外兩個新方案，同時保住了
 `famitsu-tw`、`dengeki-ps-tw`、`ace` 這些有識別力的值。
 
 三個新方案的自造值都是 0——這是「由規則生成」的定義使然，不是本案的功勞。這一列的意義
@@ -415,7 +422,7 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 ## 已知代價與未決
 
 - **長度**。2.2 倍是規則的固有成本
-- **`swm`(3) 與 `tvgame-super-guide`(18) 仍差 15 個字元**，離散度（sd 4.2）也因為那批短
+- **`swm`(3) 與 `tvgame-super-guide`(18) 仍差 15 個字元**，離散度（sd 4.3）也因為那批短
   招牌而回升到僅次於 B 案。這個落差無法在保留「刊物自印品牌」規則的前提下收斂，但它是
   **有解釋的**——短的那些正是刊物自己就有拉丁品牌的那些
 - **切詞與多音字**沒有全自動解，規則交給人工覆寫，代價是規則不是純機械的
@@ -423,9 +430,8 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
   是為了守住「每段都有出處」；這條線一鬆，規則就沒有邊界了
 - **`game-developer`、`game-factory`、`games-people` 三本都以 `game(s)` 起頭**，看起來像
   同一個系列。這是它們封面本來就長那樣，不是規則造成的
-- **`onlinegame`（電玩双週刊／電玩宅速配）識別力偏低**。它是規則的正確輸出（創刊名的
-  並列刊名去掉 biweekly），但 `gamexpress` 明顯好記得多。這是「錨定創刊名」第一次撞上
-  「創刊期的名字比後期的差」，見對照表後的說明
+- **`gamexpress` 是規範裡唯一的明文例外**，規則的輸出是 `onlinegame`。這是「錨定創刊名」
+  第一次撞上「創刊期的名字沒有識別力」，判準與處理見對照表後的說明
 - **`tvgame-report` 取自中期封面，不是創刊號封面**，與元規則 B（錨定創刊名）有張力。
   這裡採用它，是因為創刊期查不到任何英文名，而中期的 TV.GAME REPORT 與同刊系其他三本
   一致；若日後查到創刊號封面另有寫法，以創刊號為準
@@ -476,12 +482,7 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 `dengeki-ss-tw`（SEGA SATURN 取 SS）、`hyper-ps-tw`、`famimaga-tw`（ファミマガ）、
 `next-tw` 都是依通稱推的，需對照原刊實物確認。
 
-### 兩個尚未定案的值
-
-**`astro-tvgames`（星際遊樂雜誌）。** 封面全名是 ASTRO TV GAMES MAGAZINE，丟體裁尾綴
-MAGAZINE 後首末詞取到 ASTRO 與 TV GAMES。但若 ASTRO 是刊物自用的招牌（像 ACE、SGM、SWM
-那樣），`nameParallel` 該存 ASTRO，slug 就是 `astro`——與現行值相同。**取決於刊物是否以
-ASTRO 自稱，目前只知道封面全名。**
+### 一個尚未定案的值
 
 **`victory-boy`（勝利少年）與 `v-kids`（勝利小子）不對齊。** 一本封面印全名 Victory Boy、
 一本印縮寫 V KIDS，所以規則各取所印。這不算問題——兩本分屬不同出版社（尖端與勝利少年
