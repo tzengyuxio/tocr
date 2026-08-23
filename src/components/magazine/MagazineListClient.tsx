@@ -16,11 +16,13 @@ import { Badge } from "@/components/ui/badge";
 import { Edit, BookOpen, Plus } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { QuickCreateIssueDialog } from "./QuickCreateIssueDialog";
+import { magazineSubtitle } from "@/lib/magazine-browse";
 
 interface MagazineItem {
   id: string;
   name: string;
   nameParallel: string | null;
+  sourceTitle: string | null;
   publisher: string | null;
   issn: string | null;
   logoImage: string | null;
@@ -88,9 +90,9 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                     >
                       {magazine.name}
                     </Link>
-                    {magazine.nameParallel && (
+                    {magazineSubtitle(magazine.nameParallel, magazine.sourceTitle) && (
                       <div className="text-sm text-muted-foreground">
-                        {magazine.nameParallel}
+                        {magazineSubtitle(magazine.nameParallel, magazine.sourceTitle)}
                       </div>
                     )}
                     {magazine.otherTitles.length > 0 && (

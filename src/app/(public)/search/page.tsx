@@ -36,6 +36,7 @@ import {
 } from "@/lib/article-categories";
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { magazineSubtitle } from "@/lib/magazine-browse";
 
 const PAGE_SIZE = 20;
 
@@ -399,9 +400,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   <CardTitle className="line-clamp-1 text-base">
                     {magazine.name}
                   </CardTitle>
-                  {magazine.nameParallel && (
+                  {magazineSubtitle(magazine.nameParallel, magazine.sourceTitle) && (
                     <CardDescription className="line-clamp-1 text-xs">
-                      {magazine.nameParallel}
+                      {magazineSubtitle(magazine.nameParallel, magazine.sourceTitle)}
                     </CardDescription>
                   )}
                 </CardHeader>

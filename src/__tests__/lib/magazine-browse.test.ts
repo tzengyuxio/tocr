@@ -11,6 +11,7 @@ import {
   DEFAULT_MAGAZINE_VIEW,
   parseMagazineView,
   magazineDisplayUnits,
+  magazineSubtitle,
 } from "@/lib/magazine-browse";
 
 describe("MAGAZINE_FILTERS", () => {
@@ -118,6 +119,7 @@ describe("magazineDisplayUnits 的沿革標記", () => {
     slug: "cgw",
     name: "電腦遊戲世界",
     nameParallel: null,
+    sourceTitle: null,
     publisher: null,
     logoImage: null,
     categories: [],
@@ -162,5 +164,29 @@ describe("magazineDisplayUnits 的沿革標記", () => {
 
     expect(units).toHaveLength(1);
     expect(units[0].previousTitle).toBeNull();
+  });
+});
+
+// 副標的兩種來源語意不同：並列刊名是這本刊自己的另一個名字，原刊名是另一本雜誌。
+// 書名號是區分的記號——不必附圖例，中文語境裡它就是「這是一本刊物」。
+describe("magazineSubtitle", () => {
+  it("shows the parallel title bare", () => {
+    expect(magazineSubtitle("Amazing Computer Entertainment", null)).toBe(
+      "Amazing Computer Entertainment"
+    );
+  });
+
+  it("wraps a source magazine in book brackets", () => {
+    expect(magazineSubtitle(null, "ファミ通")).toBe("《ファミ通》");
+  });
+
+  // 兩者都有的只有《勝利小子》。並列刊名在前：副標的位置讀者會讀成「這本刊的另一個
+  // 名字」，把另一本雜誌放在最前面會誤導。
+  it("puts the magazine's own name before the one it translates", () => {
+    expect(magazineSubtitle("V. V. KIDS", "Vジャンプ")).toBe("V. V. KIDS《Vジャンプ》");
+  });
+
+  it("is empty when there is neither", () => {
+    expect(magazineSubtitle(null, null)).toBe("");
   });
 });

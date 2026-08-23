@@ -182,7 +182,8 @@ export interface MagazineDisplayUnit {
   key: string;
   href: string;
   name: string;
-  nameParallel: string | null;
+  /** 已組好的副標，見 magazineSubtitle()。空字串表示沒有副標。 */
+  subtitle: string;
   /**
    * 前一個刊名時期的名字，顯示成「原 電腦遊戲世界」。只有改名後的時期有值——首段
    * 沒有「原」可講，沒有沿革的雜誌也沒有。
@@ -208,6 +209,7 @@ interface DisplayMagazine {
   slug: string;
   name: string;
   nameParallel: string | null;
+  sourceTitle: string | null;
   publisher: string | null;
   logoImage: string | null;
   categories: MagazineCategory[];
@@ -250,12 +252,35 @@ function previousPeriodTitle(
   return previous === currentTitle ? null : previous;
 }
 
+/**
+ * 主標題底下那行灰字。
+ *
+ * **並列刊名在前，原刊名跟在後面用書名號包起來**：`V. V. KIDS《Vジャンプ》`。
+ *
+ * 順序是這樣定的——並列刊名是**這本刊自己的**另一個名字，與正題名平起平坐；原刊名是
+ * **另一本雜誌**，ファミ通 不是《電玩通》的名字。副標的位置讀者會理解成「這本刊的另一個
+ * 名字」，原刊名放在最前面會誤導。
+ *
+ * 書名號是用來分辨的記號，不必附圖例：中文語境裡它就是「這是一本刊物」，沒括號的則是這
+ * 本刊自己的副題。多看幾本自然分得出來。
+ *
+ * 兩者都有的目前只有《勝利小子》一本（V. V. KIDS 與 Vジャンプ），所以「兩個都顯示」的
+ * 版面成本幾乎是零，不必二選一。
+ */
+export function magazineSubtitle(
+  nameParallel: string | null,
+  sourceTitle: string | null
+): string {
+  // 不補空格：《》是全形標點，本身就帶side bearing，再加空格會空一大塊。
+  return [nameParallel, sourceTitle && `《${sourceTitle}》`].filter(Boolean).join("");
+}
+
 export function magazineDisplayUnits(
   magazine: DisplayMagazine,
   issues: { order: number; publishSort: Date | null }[]
 ): MagazineDisplayUnit[] {
   const base = {
-    nameParallel: magazine.nameParallel,
+    subtitle: magazineSubtitle(magazine.nameParallel, magazine.sourceTitle),
     publisher: magazine.publisher,
     categories: magazine.categories,
   };

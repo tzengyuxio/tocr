@@ -58,9 +58,9 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
                 </span>
               )}
             </div>
-            {unit.nameParallel && (
+            {unit.subtitle && (
               <div className="truncate text-sm text-muted-foreground">
-                {unit.nameParallel}
+                {unit.subtitle}
               </div>
             )}
           </div>
