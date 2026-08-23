@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { RETIRED_SLUG_MESSAGE, isRetiredByAnother } from "@/lib/magazine-slug";
 import { prisma } from "@/lib/prisma";
 import { magazineCreateSchema, withFoundedSort } from "@/lib/validators/magazine";
 import { withErrorHandler, paginatedResponse, parsePagination } from "@/lib/api-utils";
@@ -48,6 +49,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const body = await request.json();
   const validatedData = magazineCreateSchema.parse(body);
+
+  // 新刊不能撿走別本刊退役的代號：`Magazine.slug` 的 @unique 看不到那張表，
+  // 撿走了會讓舊連結安靜地轉到這本新刊。
+  if (await isRetiredByAnother(prisma, validatedData.slug)) {
+    return NextResponse.json({ error: RETIRED_SLUG_MESSAGE }, { status: 409 });
+  }
 
   const magazine = await prisma.magazine.create({
     data: withFoundedSort(validatedData),

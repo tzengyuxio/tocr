@@ -6,6 +6,11 @@ import { logEdit } from "@/lib/edit-log";
 import { diffChanges } from "@/lib/edit-log-diff";
 import { withoutCompleteMark } from "@/lib/issue-complete";
 import { isSessionAdmin } from "@/lib/require-editor";
+import {
+  RETIRED_SLUG_MESSAGE,
+  isRetiredByAnother,
+  recordSlugChange,
+} from "@/lib/magazine-slug";
 
 // GET /api/magazines/[id] - 取得單一期刊
 export const GET = withErrorHandler(async (
@@ -55,9 +60,22 @@ export const PUT = withErrorHandler(async (
 
   const before = await prisma.magazine.findUnique({ where: { id } });
 
-  const magazine = await prisma.magazine.update({
-    where: { id },
-    data: withFoundedSort(validatedData),
+  // 換代號要留下轉址。舊代號散在外面的連結（含這本刊每一期的網址）全靠它。
+  const oldSlug = before?.slug;
+  const newSlug = validatedData.slug;
+  const slugChanged = newSlug !== undefined && oldSlug !== undefined && newSlug !== oldSlug;
+
+  if (slugChanged && (await isRetiredByAnother(prisma, newSlug, id))) {
+    return NextResponse.json({ error: RETIRED_SLUG_MESSAGE }, { status: 409 });
+  }
+
+  const magazine = await prisma.$transaction(async (tx) => {
+    const updated = await tx.magazine.update({
+      where: { id },
+      data: withFoundedSort(validatedData),
+    });
+    if (slugChanged) await recordSlugChange(tx, id, oldSlug, newSlug);
+    return updated;
   });
 
   await logEdit("Magazine", id, "UPDATE", diffChanges(before, magazine));

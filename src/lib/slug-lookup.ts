@@ -2,8 +2,9 @@ import { prisma } from "./prisma";
 
 /**
  * Public URLs carry the slug, but the cuid ones are already out there, so the
- * param may be either. The caller redirects when what it was given is not the
- * current slug.
+ * param may be either -- and for magazines it may also be a slug that has since
+ * been retired. The caller redirects when what it was given is not the current
+ * slug.
  *
  * Slug wins over id: a renamed slug then simply stops matching and the old
  * one falls through to the id lookup rather than resolving to the wrong row.
@@ -25,6 +26,20 @@ export async function resolveSlugParam(
         ? await prisma.tag.findUnique({ where: { slug }, select })
         : await prisma.magazine.findUnique({ where: { slug }, select });
   if (bySlug) return bySlug;
+
+  // 退役的雜誌代號。排在 cuid 之前但在現行代號之後：現行的永遠優先，否則一個被
+  // 別本刊拿去當現行代號的舊名字會轉錯——`MagazineSlug.slug` 的 @unique 就是為了
+  // 讓那件事不可能發生，這裡的順序是同一道保險的另一半。
+  //
+  // 回傳的是**現行**代號，所以呼叫端既有的 `param !== found.slug` 判斷就會轉址，
+  // 頁面不必知道這條路徑存在。
+  if (model === "magazine") {
+    const retired = await prisma.magazineSlug.findUnique({
+      where: { slug },
+      select: { magazine: { select: { id: true, slug: true } } },
+    });
+    if (retired) return retired.magazine;
+  }
 
   return model === "game"
     ? prisma.game.findUnique({ where: { id: slug }, select })

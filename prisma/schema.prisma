@@ -171,8 +171,9 @@ model Magazine {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  issues Issue[]
-  titles MagazineTitle[]
+  issues    Issue[]
+  titles    MagazineTitle[]
+  oldSlugs  MagazineSlug[]
 
   @@index([issn])
   @@index([foundedSort])
@@ -182,6 +183,30 @@ model Magazine {
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_magazines_name_trgm")
   @@index([nameParallel(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_magazines_name_parallel_trgm")
   @@map("magazines")
+}
+
+/// 退役的雜誌 slug。改了網址代號之後，舊網址靠這張表轉到現行的那條。
+///
+/// **它同時是佔位**，不只是歷史紀錄：`slug` 上的 @unique 讓退役的代號不能被另一本
+/// 雜誌撿走——否則舊連結會安靜地轉到錯的雜誌，比 404 還糟。寫入新 slug 前要同時查
+/// `Magazine.slug` 與這裡，兩張表合起來才是「用過的代號」的全集。
+///
+/// 只有雜誌有這張表。單期不需要：`Issue.code` 短碼已經是「連結不能壞」的解方，而
+/// 雜誌沒有等價物，偏偏雜誌 slug 又是每一條單期網址的前綴——改一次會連帶弄壞整本
+/// 刊的所有網址。
+///
+/// onDelete: Cascade：雜誌都刪了，它的舊代號沒有轉址目標，留著只會佔住名字。
+model MagazineSlug {
+  id         String   @id @default(cuid())
+  magazineId String   @map("magazine_id")
+  slug       String   @unique
+  /// 這個代號是什麼時候被退掉的。
+  retiredAt  DateTime @default(now()) @map("retired_at")
+
+  magazine Magazine @relation(fields: [magazineId], references: [id], onDelete: Cascade)
+
+  @@index([magazineId])
+  @@map("magazine_slugs")
 }
 
 model Issue {

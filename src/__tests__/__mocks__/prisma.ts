@@ -25,6 +25,7 @@ type TransactionCallback = (tx: PrismaMock) => Promise<unknown>;
 
 interface PrismaMock {
   magazine: MockModel;
+  magazineSlug: MockModel;
   issue: MockModel;
   article: MockModel;
   tag: MockModel;
@@ -58,6 +59,7 @@ const createMockModel = (): MockModel => ({
 
 export const prismaMock: PrismaMock = {
   magazine: createMockModel(),
+  magazineSlug: createMockModel(),
   issue: createMockModel(),
   article: createMockModel(),
   tag: createMockModel(),
