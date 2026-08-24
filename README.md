@@ -4,7 +4,7 @@
 
 ## 現況
 
-已建檔 30 本期刊，其中 3 本的單期資料完整匯入（549 期）。
+已建檔 37 本雜誌，其中 15 本有單期資料，共 1246 期。
 
 文章目錄尚未開始正式匯入：資料模型與複查流程還在收斂，等確認之後才會在正式站上傳目錄頁進行辨識。目前的 OCR 與複查都在開發環境驗證。
 
@@ -91,6 +91,15 @@ pnpm test
 | [本地開發](docs/local-development.md) | 開發環境細節 |
 
 待辦事項記在 [BACKLOG.md](BACKLOG.md)，確定要做的會開成 GitHub issue。
+
+## 資料
+
+`data/` 放的是建檔時拿來比對的外部資料，不是站台執行時會讀的東西。
+
+| 檔案 | 內容 |
+|---|---|
+| [`data/magazines.json`](data/magazines.json) | 雜誌基本資料，上游是 nostalibrary 的 `content/magazines/` |
+| [`data/collectors-note.txt`](data/collectors-note.txt) | 一位收藏家的「全期數已收齊」清單，21 本刊的創刊、休刊、期名與本數。用來比對站上還缺哪些刊——它記的是**收齊的**，不是收藏的全部 |
 
 ## 授權
 
