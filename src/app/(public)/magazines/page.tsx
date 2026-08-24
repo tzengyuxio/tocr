@@ -57,6 +57,8 @@ export default async function MagazinesPage({
         select: {
           id: true,
           title: true,
+          titleParallel: true,
+          titleSource: true,
           logoImage: true,
           startIssue: { select: { order: true } },
         },

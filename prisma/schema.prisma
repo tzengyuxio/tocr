@@ -297,6 +297,11 @@ model MagazineTitle {
   // 才填（電視遊樂雜誌 TV GAME MAGAZINE → GAME fans）；正題名沒變而並列刊名
   // 自己在變的，不切段，沿革寫進 Magazine.description。
   titleParallel String? @map("title_parallel")
+  // 該時期對應的原刊刊名。與 Magazine.sourceTitle 的分工同上：那邊存創刊值，
+  // 這邊存各時期值。翻譯刊跟著原刊改名時才填（電玩通PS2 的三個時期各自對應
+  // ファミ通PS2／ファミ通PS+／ファミ通PSP+PS3）；null 表示原刊沒換，沿用
+  // Magazine.sourceTitle。
+  titleSource String? @map("title_source")
   // 從這一期起改用此刊名。只存起點：一段的終點就是下一段起點的前一期（按
   // Issue.order 比較，startIssueId 只是指標），最後一段開放至今，結構上
   // 不可能出現縫隙或重疊。

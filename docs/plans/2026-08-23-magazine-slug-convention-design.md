@@ -494,6 +494,16 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 `dengeki-ss-tw`（SEGA SATURN 取 SS）、`hyper-ps-tw`、`famimaga-tw`（ファミマガ）、
 `next-tw` 都是依通稱推的，需對照原刊實物確認。
 
+### `famimaga-tw` 的推導依據後來被移除
+
+2026-08-25 把《華泰任天堂秘笈》的 `sourceTitle` 清空了：那一欄的語意是「本刊整體即該外刊的
+中文版」，而這本是**未經授權的翻譯**——期號沿用日本原刊（本刊首期即第 5 期）。
+關係改記進 `description`。
+
+**slug 維持 `famimaga-tw`，不重算成拼音。** 元規則 A 說 slug 生成函數只吃這本刊自己的名字、
+每本刊只決定一次；它不是一個會跟著欄位變動重新計算的衍生值。若日後查明這本刊確實不該掛在
+ファミマガ 底下，那時再談改名與轉址，而不是因為一次欄位清理就動一條網址。
+
 ### 一個尚未定案的值
 
 **`victory-boy`（勝利少年）與 `vv-kids`（勝利小子）不對齊。** 一本封面印全名 Victory Boy、
