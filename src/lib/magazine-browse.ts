@@ -217,7 +217,12 @@ interface DisplayMagazine {
   endedDate: string | null;
   foundedSort: Date | null;
   isActive: boolean;
-  titles: (TitlePeriod & { id: string; logoImage: string | null })[];
+  titles: (TitlePeriod & {
+    id: string;
+    logoImage: string | null;
+    titleParallel: string | null;
+    titleSource: string | null;
+  })[];
   _count: { issues: number };
 }
 
@@ -255,14 +260,19 @@ function previousPeriodTitle(
 /**
  * 主標題底下那行灰字。
  *
- * **並列刊名在前，原刊名跟在後面用書名號包起來**：`V. V. KIDS · 《Vジャンプ》`。
+ * **並列刊名在前，原刊名跟在後面用書名號包起來並註明「中文版」**：
+ * `V. V. KIDS · 《Vジャンプ》中文版`。
  *
  * 順序是這樣定的——並列刊名是**這本刊自己的**另一個名字，與正題名平起平坐；原刊名是
  * **另一本雜誌**，ファミ通 不是《電玩通》的名字。副標的位置讀者會理解成「這本刊的另一個
  * 名字」，原刊名放在最前面會誤導。
  *
- * 書名號是用來分辨的記號，不必附圖例：中文語境裡它就是「這是一本刊物」，沒括號的則是這
- * 本刊自己的副題。多看幾本自然分得出來。
+ * 書名號說的是「這是一本刊物」，但只靠它讀者得先學會這套慣例；**「中文版」三個字把
+ * `sourceTitle` 的欄位語意直接寫出來**——那一欄的定義本來就是「本刊整體即該外刊的中文版」
+ * （見 docs/data-conventions.md），所以這不是畫面上多加的主張，是把不變式講白。
+ *
+ * 沒有它最容易踩的誤讀是《電腦遊戲世界》：副標只有 `《Computer Gaming World》` 時，最自然
+ * 的解讀是「這本刊的英文名」，而那正是並列刊名的位置——兩種關係擠在同一行、只靠標點分辨。
  *
  * 兩者都有的目前只有《勝利小子》一本（V. V. KIDS 與 Vジャンプ），所以「兩個都顯示」的
  * 版面成本幾乎是零，不必二選一。
@@ -276,7 +286,9 @@ export function magazineSubtitle(
   sourceTitle: string | null
 ): string {
   // 兩者都在時用 · 分隔，否則拉丁字母會直接撞上全形括號。專案裡既有的分隔符就是它。
-  return [nameParallel, sourceTitle && `《${sourceTitle}》`].filter(Boolean).join(" · ");
+  return [nameParallel, sourceTitle && `《${sourceTitle}》中文版`]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 export function magazineDisplayUnits(
@@ -284,7 +296,6 @@ export function magazineDisplayUnits(
   issues: { order: number; publishSort: Date | null }[]
 ): MagazineDisplayUnit[] {
   const base = {
-    subtitle: magazineSubtitle(magazine.nameParallel, magazine.sourceTitle),
     publisher: magazine.publisher,
     categories: magazine.categories,
   };
@@ -293,6 +304,7 @@ export function magazineDisplayUnits(
     return [
       {
         ...base,
+        subtitle: magazineSubtitle(magazine.nameParallel, magazine.sourceTitle),
         key: magazine.id,
         href: `/magazines/${magazine.slug}`,
         name: magazine.name,
@@ -337,6 +349,13 @@ export function magazineDisplayUnits(
 
     return {
       ...base,
+      // 翻譯刊跟著原刊改名時，各時期對應的原刊不同（電玩通PS2 的三段分別對應
+      // ファミ通PS2／ファミ通PS+／ファミ通PSP+PS3）。時期沒填就沿用刊系的值
+      // ——沒填的語意是「這一段沒換」，不是「這一段沒有」。
+      subtitle: magazineSubtitle(
+        segment.period?.titleParallel ?? magazine.nameParallel,
+        segment.period?.titleSource ?? magazine.sourceTitle
+      ),
       key: segment.period ? segment.period.id : magazine.id,
       href:
         anchorSeq > 1

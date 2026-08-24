@@ -22,6 +22,7 @@ export default async function EditMagazinePage({ params }: PageProps) {
           id: true,
           title: true,
           titleParallel: true,
+          titleSource: true,
           startIssueId: true,
           logoImage: true,
           note: true,

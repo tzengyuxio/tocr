@@ -7,6 +7,8 @@ export const magazineTitleCreateSchema = z.object({
   title: z.string().min(1, "刊名為必填"),
   // 該時期的並列刊名。只在它跟著改名一起換時才有值，見 schema 的欄位註解
   titleParallel: optionalText,
+  // 該時期對應的原刊刊名。同上，只在原刊也跟著改名時才有值
+  titleSource: optionalText,
   startIssueId: z.string().min(1, "起始期為必填"),
   logoImage: optionalText,
   note: optionalText,
