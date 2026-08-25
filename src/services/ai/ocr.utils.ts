@@ -43,9 +43,22 @@ export function parseOcrResponse(
   // The repair is a second attempt, never the first: a response that parses as
   // it stands must not be rewritten on the way in.
   let lastError: unknown;
-  for (const candidate of [jsonStr, repairUnquotedValues(jsonStr)]) {
+  for (const [attempt, candidate] of [
+    jsonStr,
+    repairUnquotedValues(jsonStr),
+  ].entries()) {
     try {
       const parsed = JSON.parse(candidate);
+      // Says out loud when the fallback was what saved the response. The
+      // dropped opening quote is suspected to come from presence_penalty 1.5,
+      // inherited from the qwen3.6 base by every derived model; the qwen-ocr
+      // backend sets it to 0. If this line stops appearing, the repair above
+      // has become dead code and can go.
+      if (attempt > 0) {
+        console.warn(
+          "parseOcrResponse: JSON only parsed after repairUnquotedValues()"
+        );
+      }
       return {
         articles: normalizeArticles(parsed.articles || []),
         metadata: parsed.metadata || {},

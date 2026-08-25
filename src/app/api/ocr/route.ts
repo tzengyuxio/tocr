@@ -11,8 +11,12 @@ import {
 } from "@/lib/image-policy";
 
 // Vision OCR on a full table-of-contents page routinely exceeds the platform
-// default timeout; 60s is the Vercel Hobby ceiling.
-export const maxDuration = 60;
+// default timeout. 60 was not the Hobby ceiling as this previously assumed --
+// Hobby allows 300s with fluid compute -- and that assumption was what turned
+// a slow request into "辨識失敗（HTTP 504）": inference itself takes ~23s on
+// the self-hosted backend, but that box holds one model at a time, so a swap
+// adds ~25s (16s unload + 9s load) and lands the request near 48s.
+export const maxDuration = 180;
 
 // Best-effort only: the counters live in memory, so on Vercel each function
 // instance counts on its own and the real ceiling is higher than this. It
