@@ -48,10 +48,10 @@ describe("parseMagazineFilter", () => {
 
 describe("parseMagazineView", () => {
   it("reads a known value", () => {
-    expect(parseMagazineView("list")).toBe("list");
+    expect(parseMagazineView("grid")).toBe("grid");
   });
 
-  it("falls back to the card view rather than throwing on a hand-edited URL", () => {
+  it("falls back to the default view rather than throwing on a hand-edited URL", () => {
     expect(parseMagazineView("carousel")).toBe(DEFAULT_MAGAZINE_VIEW);
     expect(parseMagazineView(undefined)).toBe(DEFAULT_MAGAZINE_VIEW);
   });
