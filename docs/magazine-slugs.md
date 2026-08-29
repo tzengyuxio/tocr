@@ -38,6 +38,29 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 判定「封面上這個拉丁字是母刊的標識，還是這本刊自己取的」決定走 `1.PARA` 還是 `2.SOURCE`。
 《勝利小子》是反例：它是《Vジャンプ》的中文版，但 V. V. KIDS 是台灣版自取的名字。
 
+## 刊名時期與 slug 的錨定
+
+**改過名的刊，刊名時期一律建齊，不看那個時期有幾期。** MagazineTitle 是事實記錄不是
+選擇——第 5 期封面印「任天堂程式解法大公開」，不建就等於宣稱那期叫別的名字。設界線
+（幾期以下不建）會逼出兩個沒有好答案的問題：界線畫在哪、以及跨過界線後以哪個名字為主。
+建齊則一個都不用回答。
+
+建齊之後**要把該刊名從 `aliases` 移除**：同一個事實不存兩份，而且 aliases 的語意是俗稱
+與其他寫法，不是先後刊名。搜尋不會因此變差，`/api/magazines` 的查詢條件已經涵蓋 `titles`。
+
+**slug 是另一回事。** 它只能有一個值，所以極短的創刊期不該搶走它。預設錨定創刊名，
+遇到創刊期極短、或創刊名算不出合規值時改錨定主要時期，**理由寫進備註，不訂「幾期以下」
+的數字門檻**——門檻畫在 3 期還是 5 期都是任意的，而 slug 一本刊只由人決定一次，需要的
+不是可機械執行的界線，是每個決定都寫得出理由。
+
+現有的三個讓步：
+
+| 刊 | slug 錨定 | 理由 |
+| --- | --- | --- |
+| `huatai-miji` | 第 7–28 期（22/24 期） | 創刊名的規則輸出 `rentiantang-dagongkai` 21 字元，破形狀不變式 |
+| `tvgame-magazine` | 第 2 期起（298/300 期） | 創刊期只有試刊號與創刊號兩期 |
+| `tvgame-report` | 中期封面 | 創刊期查不到英文名 |
+
 ## 一覽表
 
 同一刊系的不同刊名時期各佔一列，`magazine slug` 欄相同。長度計 title slug。
@@ -50,7 +73,7 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 星際遊樂雜誌 | `astro` | `astro` | 1.PARA | 5 | `astro` | 自印簡稱 |
 | 星際遊樂快報 | `astro-kuaibao` | `astro-kuaibao` | 3.PINYIN | 13 | — | 首段沿用姊妹刊 astro，依據待補 |
 | 電腦遊戲世界 | `cgw-tw` | `cgw-tw` | 2.SOURCE | 6 | `cgw` | Computer Gaming World 國際中文版 |
-| 遊戲世界  | — | `cgw-tw` | — | — | — | 第 163 期起的刊名，尚無掃描檔 |
+| 遊戲世界 | — | `cgw-tw` | — | — | — | 第 163 期起的刊名，尚無掃描檔 |
 | 城市少年 | `city-boy` | `city-boy` | 1.PARA | 8 | — |  |
 | 金手指補給站 | `code-supply-depot` | `code-supply-depot` | 1.PARA | 17 | — | TOUGH CODE SUPPLY DEPOT 四段取三，捨 TOUGH |
 | 電擊王 | `dengeki-oh-tw` | `dengeki-oh-tw` | 2.SOURCE | 13 | `doh-tw` |  |
@@ -58,23 +81,24 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 電擊SEGA SATURN | `dengeki-ss-tw` | `dengeki-ss-tw` | 2.SOURCE | 13 | `dss-tw` | 主機縮寫取當年與 PS 並稱的 SS |
 | 電玩百分百週刊 | `dianwan-baifenbai` | `dianwan-baifenbai` | 3.PINYIN | 17 | `game100` | 已查證無拉丁刊名 |
 | 電玩e世代 | `e-generation` | `e-generation` | 1.PARA | 12 | `egen` |  |
-| 華泰任天堂秘笈 | `famimaga-tw` | `famimaga-tw` | 2.SOURCE | 11 | `htntd` | 母刊通稱ファミマガ |
 | 電玩通PS2 | `famitsu-ps2-tw` | `famitsu-ps2-tw` | 2.SOURCE | 14 | `fmtps-tw` |  |
-| 電玩通PLAYSTATION+  | — | `famitsu-ps2-tw` | — | — | — | VOL.103 起的刊名，尚無掃描檔 |
-| FAMITSU PSP+PS3 TAIWAN  | — | `famitsu-ps2-tw` | — | — | — | VOL.116 起的刊名，尚無掃描檔 |
+| 電玩通PLAYSTATION+ | — | `famitsu-ps2-tw` | — | — | — | VOL.103 起的刊名，尚無掃描檔 |
+| FAMITSU PSP+PS3 TAIWAN | — | `famitsu-ps2-tw` | — | — | — | VOL.116 起的刊名，尚無掃描檔 |
 | 電玩通 | `famitsu-tw` | `famitsu-tw` | 2.SOURCE | 10 | `fmt-tw` |  |
 | 飛訊電玩周刊 | `fashion-game` | `fashion-game` | 1.PARA | 12 | `fashion` |  |
 | 遊戲設計大師 | `game-developer` | `game-developer` | 1.PARA | 14 | `gd` | 未縮成 game-dev，守住每段有出處 |
 | 遊戲工場 | `game-factory` | `game-factory` | 1.PARA | 12 | `gf` |  |
-| Game天堂! | `game-paradise` | `game-paradise` | 1.PARA | 13 | — | 並列刊名為台灣版自取，非母刊標識 |
+| Game天堂! | `game-paradise` | `game-paradise` | 1.PARA | 13 | — | ファミマガ 的授權中文版，但並列刊名為台灣版自取，故不走 2.SOURCE |
 | 電玩時代 | `game-times` | `game-times` | 1.PARA | 10 | `gtimes` |  |
 | 電遊人 | `game-walker` | `game-walker` | 1.PARA | 11 | `gwalker` |  |
 | GameQ | `gameq` | `gameq` | 1.PARA | 5 | — | 刊名本身即拉丁字，非並列刊名 |
 | 電玩族雜誌 | `games-people` | `games-people` | 1.PARA | 12 | `gpeople` |  |
-| 電玩双週刊  | — | `gamexpress` | — | — | — | 創刊名；規則的輸出是 onlinegame |
+| 電玩双週刊 | — | `gamexpress` | — | — | — | 創刊名；規則的輸出是 onlinegame |
 | 電玩宅速配 | `gamexpress` | `gamexpress` | 4.EXCEPT | 10 | `gamexpress` | 明文例外之一：創刊名無識別力，改錨定後期名 |
-| 電玩向前走 | `goal-goal` | `goal-goal` | 1.PARA | 9 | — | 試刊名《電玩GOGO》入 aliases，不切段 |
+| 電玩向前走 | `goal-goal` | `goal-goal` | 1.PARA | 9 | — | 試刊名《電玩GOGO》仍在 aliases，待改建為刊名時期 |
 | 攻略月刊 | `gonglue-yuekan` | `gonglue-yuekan` | 4.EXCEPT | 14 | — | 明文例外之二：丟掉「月刊」後只剩 gonglue，無識別力 |
+| 任天堂程式解法大公開 | `rentiantang-jiefa` | `huatai-miji` | 3.PINYIN | 17 | — | 創刊名，第 5–6 期；首末詞輸出 rentiantang-dagongkai 破 20 字元上限，末詞改取「解法」 |
+| 華泰任天堂秘笈 | `huatai-miji` | `huatai-miji` | 3.PINYIN | 11 | `htntd` | 第 7–28 期，slug 錨定此期；未授權翻印ファミマガ，不掛 -tw |
 | 新世紀 HYPER PlayStation | `hyper-ps-tw` | `hyper-ps-tw` | 2.SOURCE | 11 | `hps-tw` |  |
 | 精訊電腦 | `jingxun-diannao` | `jingxun-diannao` | 3.PINYIN | 15 | `jxdn` | 已查證無拉丁刊名 |
 | Mania 遊戲玩瘋誌 | `mania` | `mania` | 1.PARA | 5 | `mania` | 刊名本身即拉丁字 |
@@ -86,18 +110,17 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 軟體之星 | `softstar` | `softstar` | 1.PARA | 8 | `ssm` |  |
 | 軟體世界雜誌 | `swm` | `swm` | 1.PARA | 3 | `swm` | 自印簡稱 |
 | 電遊通訊 | `tvgame-information` | `tvgame-information` | 1.PARA | 18 | `tvgameinfo` |  |
-| 電視遊樂雜誌 | `tvgame-magazine` | `tvgame-magazine` | 1.PARA | 15 | `tvgm` | 試刊期《電視遊樂快訊》入 aliases，不切段 |
-| GAME fans  | — | `tvgame-magazine` | — | — | — | 第 293 期起的刊名，尚無掃描檔 |
-| 電視遊樂情報  | — | `tvgame-report` | — | — | — | 第 1–18 期的刊名；查無實據，待複查 |
+| 電視遊樂快訊 | `dianshi-kuaixun` | `tvgame-magazine` | 3.PINYIN | 15 | — | 創刊名，僅試刊號與創刊號；封面是否有拉丁刊名未查證 |
+| 電視遊樂雜誌 | `tvgame-magazine` | `tvgame-magazine` | 1.PARA | 15 | `tvgm` | 第 2 期起，slug 錨定此期 |
+| GAME fans | — | `tvgame-magazine` | — | — | — | 新刊 1 號起改用新編號，尚無掃描檔 |
+| 電視遊樂情報 | — | `tvgame-report` | — | — | — | 第 1–18 期的刊名；查無實據，待複查 |
 | 電視遊樂報導 | `tvgame-report` | `tvgame-report` | 1.PARA | 13 | `tvgr` | 取自中期封面；創刊期查不到英文名 |
-| Super Gamer流行電玩週刊  | — | `tvgame-report` | — | — | — | 新舊期數並行時期，尚無掃描檔 |
+| Super Gamer流行電玩週刊 | — | `tvgame-report` | — | — | — | 新舊期數並行時期，尚無掃描檔 |
 | 攻略快報（尖端） | `tvgame-super-guide` | `tvgame-super-guide` | 1.PARA | 18 | `tvgsg` | 與疾風系的《攻略快報》同名不同刊 |
 | 勝利少年 | `victory-boy` | `victory-boy` | 1.PARA | 11 | `vboy` |  |
 | 勝利小子 | `vv-kids` | `vv-kids` | 1.PARA | 7 | `vvkids` | V. V. KIDS 是台灣版自取，故非 vjump-tw |
 | 疾風快報 | `wolf` | `wolf` | 1.PARA | 4 | `wolf` | 封面印 WOLF Weekly |
-| 攻略快報（疾風） | `game-weekly` | `wolf` | 1.PARA | 11 | — | 改名而來，同 ISSN 1028-6180；已建為 `wolf` 的刊名時期 |
+| 攻略快報（疾風） | `game-weekly` | `wolf` | 1.PARA | 11 | — | 改名而來，同 ISSN 1028-6180；已建為 wolf 的刊名時期 |
 | 3DO／次世代總合情報誌 | `3do-qingbao` | `3do-qingbao` | 3.PINYIN | 11 | `newgen` | 混合段：3do 為拉丁品牌原樣保留；尚未建檔 |
-## 未建檔
 
-`3do-qingbao`（3DO／次世代總合情報誌）dev 與 prod 都還沒有這本刊，
-且缺實體資料——封面是否印有 NEW GENERATION 待驗證。其餘 42 本都已在正式站。
+## 未建檔
