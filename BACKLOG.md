@@ -11,7 +11,7 @@
 
 - [ ] **nostalibrary 還有約 100 張封面可以補上站** — 2026-08-26 盤點過了，先不補；2026-09-09 回頭看要不要動，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
 
-- [ ] **其餘改名刊的沿革資料** — 已建三條，還缺電腦遊戲世界、電擊王、電視遊樂報導，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）
+- [ ] **其餘改名刊的沿革資料** — 只剩電視遊樂報導，而它要等期數匯入，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）
 
 - [ ] **疾風快報／攻略快報的期數與封面待補** — 這條刊系 2026-08-30 才開張，站上只有 4 期：
   疾風快報 No.211（2002-03-16）、No.212（2002-03-23）、攻略快報試刊號（2002-04-13）與

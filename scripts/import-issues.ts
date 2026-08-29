@@ -61,6 +61,11 @@ interface MagazineRule {
   orderFor?: (row: Row) => number | undefined;
   /** 出版日真的無從推起的刊：留空匯入（publishDate 可空），而不是整期跳過。 */
   allowMissingDate?: boolean;
+  /**
+   * Sheet 的 `id` 欄空白時，從整列推出上游的圖檔 id（封面檔名與 blob 路徑都靠它）。
+   * 只推得出來才給——推錯會把封面掛到別期去，寧可維持「沒有圖檔」。
+   */
+  coverIdFor?: (row: Row) => string | undefined;
   /** 標題不是「刊名＋期號」時（例如改名之後），自己取期號。 */
   issueNumberFor?: (row: Row) => string | undefined;
   /** Sheet 沒填日期、或該欄記的不是出版日時的推定；回傳值優先於 Sheet 字面值。 */
@@ -172,6 +177,9 @@ const RULES: Record<string, MagazineRule> = {
       isDengekiGames(row) ? `DengekiGAMES ${dengekiNumber(row)}` : undefined,
     slugFor: (_issueNumber, row) =>
       isDengekiGames(row) ? `dg-${probeSlug(dengekiNumber(row))}` : undefined,
+    // 39 期只有 22 期查得到出版日，其餘留空——與姊妹刊《電擊PlayStation》同樣的
+    // 情形。2026-08-22 第一次匯入時 publishDate 還必填，那 17 期整期被跳過。
+    allowMissingDate: true,
   },
   電玩通: {
     // 一期印了好幾套編號：總號（No.001）、日期發行號、期別。slug 用日期發行
@@ -269,6 +277,14 @@ const RULES: Record<string, MagazineRule> = {
   舊遊戲時代: {
     // Sheet 這一批只有標題與 weight，連 id 都還沒編。
     allowMissingDate: true,
+    // 上游的 30 個檔案是 retrogt_no-001～no-030，與 weight 一一對應。正解是回頭補
+    // Sheet 的 id 欄，這條只是讓封面先掛得上；Sheet 補了之後 row.id 就會蓋過它。
+    coverIdFor: (row) => {
+      const n = Number(row.weight);
+      return Number.isInteger(n) && n >= 1 && n <= 30
+        ? `retrogt_no-${String(n).padStart(3, "0")}`
+        : undefined;
+    },
   },
   飛訊電玩周刊: {
     // 88 列標題留白，而且有一列把 No.46 的標題誤植成 No.42，會跟真正的 No.42 撞
@@ -547,8 +563,9 @@ async function uploadCovers({
   for (const row of rows) {
     // covers_m 已經是處理過的 medium 變體，不需要再壓縮——所以不走
     // /api/upload，那條路會再跑一次 optimizeImage 並改成亂數檔名。
-    const file = `${coversDir}/${row.id}_cover_m.jpg`;
-    if (!existsSync(file)) {
+    const coverId = row.id?.trim() || rule.coverIdFor?.(row);
+    const file = `${coversDir}/${coverId}_cover_m.jpg`;
+    if (!coverId || !existsSync(file)) {
       missing++;
       continue;
     }
@@ -566,7 +583,7 @@ async function uploadCovers({
       continue;
     }
 
-    const blob = await put(`issues/covers/${row.id}.jpg`, readFileSync(file), {
+    const blob = await put(`issues/covers/${coverId}.jpg`, readFileSync(file), {
       access: "public",
       contentType: "image/jpeg",
       addRandomSuffix: false,
@@ -577,7 +594,7 @@ async function uploadCovers({
       headers,
       body: JSON.stringify({ coverImage: blob.url }),
     });
-    if (!res.ok) throw new Error(`${row.id} 封面掛載失敗：${res.status} ${await res.text()}`);
+    if (!res.ok) throw new Error(`${coverId} 封面掛載失敗：${res.status} ${await res.text()}`);
     uploaded++;
   }
 
