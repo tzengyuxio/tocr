@@ -144,12 +144,24 @@ function nextGenPublishDate(n: number): string {
 
 const CJK_NUMERALS: Record<string, string> = { 一: "1", 二: "2", 三: "3", 四: "4", 五: "5" };
 
+/** EDTF 的季節碼（見 lib/edtf.ts）。 */
+const SEASONS: Record<string, string> = { 春: "21", 夏: "22", 秋: "23", 冬: "24" };
+
 const RULES: Record<string, MagazineRule> = {
   "Mania 遊戲玩瘋誌": {
     // 創刊〔一〕號 推導出來是 `創刊-一-號`。專名的寫法見 data-conventions.md。
     slugFor: (issueNumber) => {
       const m = issueNumber.match(/^創刊〔(.)〕號$/);
       return m && CJK_NUMERALS[m[1]] ? `創刊${CJK_NUMERALS[m[1]]}號` : undefined;
+    },
+  },
+  遊戲工場: {
+    // Sheet 的 publish_date 記的是「1994 夏」這種年＋季，EDTF 的季節碼照實表達
+    // 得出來，不必退成年精度、也不必捏一個月份。只有年份的那幾期字面值就是
+    // 合法 EDTF，交給 Sheet。
+    publishDateFrom: (row) => {
+      const m = row.publish_date.trim().match(/^(\d{4})\s*([春夏秋冬])$/);
+      return m ? { date: `${m[1]}-${SEASONS[m[2]]}` } : undefined;
     },
   },
   遊戲設計大師: {
@@ -404,13 +416,23 @@ function entryOf(row: Row, series: string, rule: MagazineRule) {
 
 /** 封面內容與附件併進 notes——見 docs/data-conventions.md。 */
 function notesFrom(row: Row, extra: (string | undefined)[]): string | undefined {
+  const price = row.price?.trim();
   const parts = [
     row.cover?.trim() && `封面：${row.cover.trim()}`,
     row.attachments?.trim() && `附件：${row.attachments.trim()}`,
+    // 「贈閱」這種不是價錢的字進不了 Decimal 欄位，但它講的是這期怎麼流通的，
+    // 丟掉可惜——留在 notes 裡。
+    price && !numericPrice(price) && `定價欄記「${price}」`,
     ...extra,
     row.notes?.trim(),
   ].filter(Boolean);
   return parts.length ? parts.join("\n") : undefined;
+}
+
+/** Sheet 的 price 欄未必是數字（《遊戲工場》整批寫「贈閱」）。 */
+function numericPrice(price: string): string | undefined {
+  const cleaned = price.replace(/[,\s]|^NT\$?/gi, "");
+  return /^\d+(\.\d+)?$/.test(cleaned) ? cleaned : undefined;
 }
 
 async function main() {
@@ -511,7 +533,7 @@ async function main() {
       ...(altNumbers.length ? { altNumbers } : {}),
       ...(publishDate ? { publishDate } : {}),
       title: row.description?.trim() || undefined,
-      price: row.price?.trim() || undefined,
+      price: row.price?.trim() ? numericPrice(row.price.trim()) : undefined,
       pageCount: override?.pageCount ?? (row.num_pages?.trim() || undefined),
       notes: notesFrom(row, [override?.note, derivedNote]),
       order,
