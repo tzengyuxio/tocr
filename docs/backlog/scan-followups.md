@@ -15,6 +15,8 @@ created: 2026-08-30
   正式站只有「新刊1～5號」5 期
 - **《電玩向前走》的試刊名《電玩GOGO》還在 `aliases`**：按 2026-08-30 定的判準（改名一律
   建刊名時期、不看期數多寡）應該改建成 `MagazineTitle`，並從 aliases 移除
+- **合併號封面實際印的連接符號**：站上《軟體世界》記 `70+71`、《軟體之星》記 `15+16`，
+  兩本都沒有實體可查。上游 Sheet 寫的是 `&`，但那是它自己的寫法。有實體時看一眼封面
 - **三張刊頭來源檔查不到期別**：`public/magazines/mastheads/` 的 `sg-game_logo.jpg`、
   `famitsu-ps2-tw_logo.jpg`、`dengeki-oh-tw_logo.jpg`，檔名照 `gamexpress_logo.png` 的
   無期號形式，知道是哪期再補

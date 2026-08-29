@@ -57,11 +57,6 @@ interface MagazineRule {
   seriesAliases?: string[];
   /** series 欄整批空白的刊（見 data-conventions「上游資料來源」），改以 id 前綴挑列。 */
   idPrefix?: string;
-  /**
-   * 掛在同一個 series 底下、但不是這本刊期別的列。挑列是 series 或 id 前綴的
-   * 聯集，擋不掉這種；判斷留給規則自己寫，理由要寫在規則的註解裡。
-   */
-  skipRow?: (row: Row) => boolean;
   /** weight 欄空白時，從整列推 order。 */
   orderFor?: (row: Row) => number | undefined;
   /** 出版日真的無從推起的刊：留空匯入（publishDate 可空），而不是整期跳過。 */
@@ -152,6 +147,13 @@ const CJK_NUMERALS: Record<string, string> = { 一: "1", 二: "2", 三: "3", 四
 /** EDTF 的季節碼（見 lib/edtf.ts）。 */
 const SEASONS: Record<string, string> = { 春: "21", 夏: "22", 秋: "23", 冬: "24" };
 
+/** 《軟體之星》後期的產品目錄與情報誌：封面編號與正刊撞號，期號帶識別前綴。 */
+const SOFTSTAR_CATALOGUE: Record<string, string> = {
+  "ssm_at-1999-02": "產品目錄 No.2",
+  "ssm_at-1999-07": "產品目錄 No.3",
+  "ssm_at-2001-08": "遊戲情報誌 2001 Summer",
+};
+
 const RULES: Record<string, MagazineRule> = {
   "Mania 遊戲玩瘋誌": {
     // 創刊〔一〕號 推導出來是 `創刊-一-號`。專名的寫法見 data-conventions.md。
@@ -161,20 +163,30 @@ const RULES: Record<string, MagazineRule> = {
     },
   },
   軟體之星: {
-    // ssm_at-* 那三列是大宇的產品目錄（1999-02、1999-07）與遊戲情報誌
-    // （2001-08），不是《軟體之星》的期別：標題自己就寫著，weight 也另起一段
-    // （102/103/107），期號欄根本推不出東西來。要收的話是另一本刊的事。
-    skipRow: (row) => row.id.startsWith("ssm_at-"),
-    // 合併號印作「No.15&16」，而 `&` 不在 slug 的字元集裡：伺服器的 issueSlugify
-    // 產生 no-15-16，probeSlug 只脫 No. 前綴、算出 15&16——兩邊對不上，封面就
-    // 找不到那一期。明確指定成伺服器會產生的形狀。
-    slugFor: (issueNumber) =>
-      issueNumber.includes("&")
-        ? issueNumber.toLowerCase().replace(/^no\./, "no-").replace("&", "-")
-        : undefined,
-    // 36 期裡兩期查不到出版日（試刊號與 No.20）。這本是大宇的免費贈閱刊物，
-    // 與《遊戲工場》同一類，定價欄的「贈閱」進 notes。
+    // 大宇的免費贈閱刊物，與《遊戲工場》同一類，定價欄的「贈閱」進 notes。
+    // 36 期裡兩期查不到出版日（試刊號與 No.20）。
     allowMissingDate: true,
+    // 期號取純數字：該刊前十期就是這個形狀，`formatIssueNumber()` 也只對純數字
+    // 補「第 N 期」。合併號用 `+` 接，與《軟體世界》的 `70+71` 一致——Sheet 寫的
+    // 是 `No.15&16`，那是上游的寫法，封面實際印什麼還沒有實體可查。
+    //
+    // ssm_at-* 那三期是大宇的產品目錄與遊戲情報誌，封面標題字仍是 SOFTSTAR／
+    // 軟體之星，所以同屬這本刊；但編號另起一段（No.2、No.3 與正刊撞號）。
+    // 比照《電擊王》改名後那段：期號帶識別前綴，slug 另走一套。
+    issueNumberFor: (row) => {
+      const catalogue = SOFTSTAR_CATALOGUE[row.id];
+      if (catalogue) return catalogue;
+      const m = row.title.match(/No\.(\d+)(?:&(\d+))?/);
+      return m ? (m[2] ? `${m[1]}+${m[2]}` : m[1]) : undefined;
+    },
+    // 合併號 `15+16` → `15-16`，見 data-conventions 的「網址代號與期號是兩回事」。
+    // 產品目錄那三期用發行年月：編號本身就是撞號的來源，年月不會撞且印在封面上。
+    slugFor: (issueNumber, row) =>
+      row.id.startsWith("ssm_at-")
+        ? row.id.replace("ssm_at-", "")
+        : issueNumber.includes("+")
+          ? issueNumber.replace("+", "-")
+          : undefined,
   },
   遊戲工場: {
     // Sheet 的 publish_date 記的是「1994 夏」這種年＋季，EDTF 的季節碼照實表達
@@ -486,7 +498,6 @@ async function main() {
         seriesValues.has(r.series) ||
         (rule.idPrefix !== undefined && r.id.startsWith(rule.idPrefix))
     )
-    .filter((r) => !rule.skipRow?.(r))
     // Sheet 用全空的列佔住還沒查到的那幾期（《勝利少年》有 9 列）。那是位置，
     // 不是資料，建成期數只會多出一批查不到任何東西的空殼。
     .filter((r) => r.id.trim() || r.title.trim());
