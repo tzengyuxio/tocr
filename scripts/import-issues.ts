@@ -57,6 +57,11 @@ interface MagazineRule {
   seriesAliases?: string[];
   /** series 欄整批空白的刊（見 data-conventions「上游資料來源」），改以 id 前綴挑列。 */
   idPrefix?: string;
+  /**
+   * 掛在同一個 series 底下、但不是這本刊期別的列。挑列是 series 或 id 前綴的
+   * 聯集，擋不掉這種；判斷留給規則自己寫，理由要寫在規則的註解裡。
+   */
+  skipRow?: (row: Row) => boolean;
   /** weight 欄空白時，從整列推 order。 */
   orderFor?: (row: Row) => number | undefined;
   /** 出版日真的無從推起的刊：留空匯入（publishDate 可空），而不是整期跳過。 */
@@ -154,6 +159,22 @@ const RULES: Record<string, MagazineRule> = {
       const m = issueNumber.match(/^創刊〔(.)〕號$/);
       return m && CJK_NUMERALS[m[1]] ? `創刊${CJK_NUMERALS[m[1]]}號` : undefined;
     },
+  },
+  軟體之星: {
+    // ssm_at-* 那三列是大宇的產品目錄（1999-02、1999-07）與遊戲情報誌
+    // （2001-08），不是《軟體之星》的期別：標題自己就寫著，weight 也另起一段
+    // （102/103/107），期號欄根本推不出東西來。要收的話是另一本刊的事。
+    skipRow: (row) => row.id.startsWith("ssm_at-"),
+    // 合併號印作「No.15&16」，而 `&` 不在 slug 的字元集裡：伺服器的 issueSlugify
+    // 產生 no-15-16，probeSlug 只脫 No. 前綴、算出 15&16——兩邊對不上，封面就
+    // 找不到那一期。明確指定成伺服器會產生的形狀。
+    slugFor: (issueNumber) =>
+      issueNumber.includes("&")
+        ? issueNumber.toLowerCase().replace(/^no\./, "no-").replace("&", "-")
+        : undefined,
+    // 36 期裡兩期查不到出版日（試刊號與 No.20）。這本是大宇的免費贈閱刊物，
+    // 與《遊戲工場》同一類，定價欄的「贈閱」進 notes。
+    allowMissingDate: true,
   },
   遊戲工場: {
     // Sheet 的 publish_date 記的是「1994 夏」這種年＋季，EDTF 的季節碼照實表達
@@ -465,6 +486,7 @@ async function main() {
         seriesValues.has(r.series) ||
         (rule.idPrefix !== undefined && r.id.startsWith(rule.idPrefix))
     )
+    .filter((r) => !rule.skipRow?.(r))
     // Sheet 用全空的列佔住還沒查到的那幾期（《勝利少年》有 9 列）。那是位置，
     // 不是資料，建成期數只會多出一批查不到任何東西的空殼。
     .filter((r) => r.id.trim() || r.title.trim());
