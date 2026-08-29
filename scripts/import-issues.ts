@@ -81,6 +81,25 @@ function fmtpsNumber(row: Row): number {
   return Number(row.id.match(/no-(\d+)$/)?.[1] ?? NaN);
 }
 
+/** id 尾碼的編號：gtimes_no-011 → 11、game100_proto-002 → 2。 */
+function idNumber(row: Row): number {
+  return Number(row.id.match(/-(\d+)$/)?.[1] ?? NaN);
+}
+
+/** `weight` 欄整批空白的刊：試刊號排在正刊之前，其餘照 id 尾碼接下去。 */
+function orderAfterProtos(protoCount: number) {
+  return (row: Row) => {
+    const n = idNumber(row);
+    if (Number.isNaN(n)) return undefined;
+    return row.id.includes("_proto-") ? n : protoCount + n;
+  };
+}
+
+/** 標題留白的列（Sheet 只登了 id 與 weight）才需要從 id 補期號。 */
+function whenTitleBlank(fn: (n: number) => string) {
+  return (row: Row) => (row.title.trim() ? undefined : fn(idNumber(row)));
+}
+
 /**
  * 電玩通 PlayStation 系的出刊節奏（VOL.103 起；之前的 PS2 段推不動，見 RULES）。
  *
@@ -218,6 +237,113 @@ const RULES: Record<string, MagazineRule> = {
       "每月 25 日出刊（封面月號為次月）。未經查證。",
     overrides: { 35: { pageCount: 432, note: "揮別 20 世紀特別號，加厚至 432 頁全彩。" } },
   },
+  電玩時代: {
+    // 整批沒有 weight，order 照 id 尾碼推：3 期試刊在前，正刊接在後面。
+    orderFor: orderAfterProtos(3),
+  },
+  勝利少年: {
+    // Sheet 只有創刊號與 VOL.10 兩列有內容，中間 9 列是全空的佔位列（讀入時濾掉）。
+    orderFor: orderAfterProtos(0),
+  },
+  電玩百分百週刊: { orderFor: orderAfterProtos(0) },
+  電遊通訊: { orderFor: orderAfterProtos(0) },
+  電玩族雜誌: {
+    // 前 4 期 Sheet 只登了 id 與 weight，標題留白。
+    issueNumberFor: whenTitleBlank((n) => `No.${n}`),
+    allowMissingDate: true,
+  },
+  "Official Xbox Magazine": {
+    // 24 期裡 16 期標題留白，同樣照 id 尾碼補期號。
+    issueNumberFor: whenTitleBlank((n) => `No.${n}`),
+    allowMissingDate: true,
+  },
+  "電擊SEGA SATURN": {
+    // 試刊 2、3 號標題留白。
+    issueNumberFor: whenTitleBlank((n) => `試刊${n}號`),
+    allowMissingDate: true,
+  },
+  電擊PlayStation: {
+    // 74 期只有 22 期查得到出版日，其餘留空——見 data-conventions 的取值優先序。
+    allowMissingDate: true,
+  },
+  舊遊戲時代: {
+    // Sheet 這一批只有標題與 weight，連 id 都還沒編。
+    allowMissingDate: true,
+  },
+  飛訊電玩周刊: {
+    // 88 列標題留白，而且有一列把 No.46 的標題誤植成 No.42，會跟真正的 No.42 撞
+    // `@@unique([magazineId, issueNumber])`。所以期號一律照 id 推，不看標題。
+    issueNumberFor: (row) => {
+      const m = row.id.match(/^fashion_(proto|no)-(\d+)(?:-(\d+))?$/);
+      if (!m) return undefined;
+      const n = Number(m[2]);
+      if (m[1] === "proto") return `試刊${n}號`;
+      if (n === 1) return "創刊1號";
+      return m[3] ? `No.${n}.${Number(m[3])}` : `No.${n}`;
+    },
+    // 合併號推出來的 slug 會帶小數點（`38.39`），改成 `38-39`。
+    slugFor: (issueNumber) => {
+      const m = issueNumber.match(/^No\.(\d+)\.(\d+)$/);
+      return m ? `${m[1]}-${m[2]}` : undefined;
+    },
+    allowMissingDate: true,
+  },
+  "新世紀 HYPER PlayStation": {
+    // 期號逐年重編（1999、2000、2001 各有一組 VOL.x），年份因此是期號的一部分；
+    // 只留 VOL.x 的話同一刊裡會冒出三個 VOL.11。
+    issueNumberFor: (row) => {
+      const m = row.title.match(/(\d{4})\s+(\S+)$/);
+      return m ? `${m[1]} ${m[2]}` : undefined;
+    },
+    slugFor: (issueNumber) => {
+      const m = issueNumber.match(/^(\d{4})\s+(.+)$/);
+      return m ? `${m[1]}-${probeSlug(m[2]).replace(/[/+]/g, "-")}` : undefined;
+    },
+  },
+  華泰任天堂秘笈: {
+    // 首期即第 5 期（見 data-conventions 的「期號」）。前兩期封面印的是另一個
+    // 題名，照標題取會把題名當成期號，所以期號一律照 id 推。
+    issueNumberFor: (row) => String(idNumber(row)),
+    overrides: {
+      5: { note: "封面題名：任天堂程式解法大公開 5" },
+      6: { note: "封面題名：任天堂程式解法大公開 6" },
+    },
+    // 24 期一期都查不到出版日期，誠實留空。
+    allowMissingDate: true,
+  },
+  電視遊樂雜誌: {
+    seriesAliases: ["電視遊樂雜誌,GAMEfans"],
+    // 這本刊的題名換過兩次（電視遊樂快訊 → 電視遊樂雜誌 → GAMEfans），標題
+    // 開頭因此不一定是 series 的值。
+    issueNumberFor: (row) => {
+      for (const prefix of ["電視遊樂快訊", "電視遊樂雜誌", "GAMEfans"]) {
+        if (row.title.startsWith(prefix)) {
+          return row.title.slice(prefix.length).trim().split(/\s+/)[0];
+        }
+      }
+      return undefined;
+    },
+    allowMissingDate: true,
+  },
+  電視遊樂報導: {
+    seriesAliases: ["電視遊樂報導,SuperGamer", "電視遊樂報導,電視遊樂雜誌"],
+    // 改名 SuperGamer 之後期號重編，同一刊於是有兩組序列。照《電擊王》的做法：
+    // 期號保留封面印的全稱、slug 加 `sg-` 前綴分開，原本的報導期號進 altNumbers。
+    // 另有一期是與《電視遊樂雜誌》合刊的新春合併號，掛在報導底下並註明。
+    issueNumberFor: (row) => {
+      if (row.id.startsWith("tvgr_tvgm_comb-")) return "1998新春合併號";
+      const m = row.title.match(/^SuperGamer\s+(\S+)/);
+      return m ? `SuperGamer ${m[1]}` : undefined;
+    },
+    slugFor: (issueNumber, row) => {
+      if (row.id.startsWith("tvgr_tvgm_comb-")) return "comb-1998-new-year";
+      const m = issueNumber.match(/^SuperGamer\s+(\S+)$/);
+      return m ? `sg-${probeSlug(m[1])}` : undefined;
+    },
+    altNumbersFor: (row) => [...row.title.matchAll(/[（(](.*?)[)）]/g)].map((m) => m[1]),
+    overrides: { 400: { note: "《電視遊樂報導》與《電視遊樂雜誌》合刊的新春合併號。" } },
+    allowMissingDate: true,
+  },
 };
 
 /** 《電擊王》改名之後那一段，Sheet 的 series 是「電擊王,DengekiGAMES」。 */
@@ -300,7 +426,10 @@ async function main() {
       (r) =>
         seriesValues.has(r.series) ||
         (rule.idPrefix !== undefined && r.id.startsWith(rule.idPrefix))
-    );
+    )
+    // Sheet 用全空的列佔住還沒查到的那幾期（《勝利少年》有 9 列）。那是位置，
+    // 不是資料，建成期數只會多出一批查不到任何東西的空殼。
+    .filter((r) => r.id.trim() || r.title.trim());
   if (rows.length === 0) throw new Error(`${sheetPath} 裡找不到 series「${series}」`);
 
   const magazines = await (await fetch(`${base}/api/magazines?limit=200`)).json();

@@ -358,6 +358,32 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 
 **34 本零撞名**，且不需要任何人工消歧後綴。
 
+### 後續新增（2026-08-29）
+
+掃描封面時新出現的刊，依同一套規則產生。這幾本 dev 與 prod 都還沒建檔。
+
+| 刊名 | 規則 | slug | 依據 |
+| --- | :-: | --- | --- |
+| GameQ | 1 | `gameq` | 封面主標即拉丁字，刊物自己的招牌 |
+| Game 天堂! | 1 | `game-paradise` | 並列刊名 GAME PARADISE MAGAZINE，丟棄體裁尾綴 MAGAZINE |
+| 金手指補給站 | 1 | `code-supply-depot` | 封面中文標題內嵌的 TOUGH CODE SUPPLY DEPOT |
+| 攻略月刊（電腦玩家） | 3 | `gonglue-yuekan` | 無拉丁刊名，落到拼音；**刻意保留體裁尾綴，見下** |
+
+**`code-supply-depot` 捨棄了 TOUGH。** 原字串四段，超過拉丁 ≤3 段的上限。
+CODE 對應「金手指」、SUPPLY DEPOT 對應「補給站」，都在中文刊名裡有對位；
+TOUGH 沒有對應的中文段，是四段裡最像裝飾的一段，所以由它出局。
+
+**`gonglue-yuekan` 是規範的第二個明文例外**（第一個是 `gamexpress`）。
+「月刊」在可丟棄的體裁尾綴清單內，照規則跑出來的是 `gonglue`，但單一個「攻略」
+在本語料裡沒有識別力——`tvgame-super-guide`（攻略快報／尖端）與攻略快報（疾風）
+都以攻略起頭。保留體裁尾綴是為了換取區別力。
+
+**《攻略快報》（疾風快報改名而來，非尖端那本）暫不定 slug。** 拉丁刊名 GAME WEEKLY
+是從 WOLF WEEKLY 改來的，但期號從 212 掉回試刊號重編。它究竟是 `wolf` 的
+`MagazineTitle` 改名、還是另一本 Magazine，決定了要不要開新 slug，建檔時再定。
+掃描檔在檔名層已先用 `game-weekly`（見 `~/Pictures/covers/NAMING.md`），
+那一層與本規範獨立，不預設答案。
+
 ### 語料之後才建檔的刊物
 
 這幾本不在上面 34 本的統計裡（有些還沒建檔），列在這裡因為它們是規則在**新刊物**上的
@@ -370,7 +396,7 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 | 星際遊樂快報 | `astronews` | 3 + 刊系對齊 | `astro-kuaibao` | 無拉丁刊名，跟隨《星際遊樂雜誌》的 `astro` |
 | 電玩双週刊／電玩宅速配 | `gamexpress` | 1 + 例外 | `gamexpress` | 見下 |
 
-### 一個明文的例外：`gamexpress`
+### 第一個明文的例外：`gamexpress`
 
 《電玩双週刊》與《電玩宅速配》是同一筆 `Magazine` 的兩個刊名時期（見 BACKLOG），而元規則 B
 說 slug 錨定**創刊名**——照規則整筆該是 `onlinegame`（創刊名的並列刊名 onlinegame biweekly
@@ -439,7 +465,8 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
   是為了守住「每段都有出處」；這條線一鬆，規則就沒有邊界了
 - **`game-developer`、`game-factory`、`games-people` 三本都以 `game(s)` 起頭**，看起來像
   同一個系列。這是它們封面本來就長那樣，不是規則造成的
-- **`gamexpress` 是規範裡唯一的明文例外**，規則的輸出是 `onlinegame`。這是「錨定創刊名」
+- **`gamexpress` 是規範的第一個明文例外**（第二個是 2026-08-29 的 `gonglue-yuekan`），
+  規則的輸出是 `onlinegame`。這是「錨定創刊名」
   第一次撞上「創刊期的名字沒有識別力」，判準與處理見對照表後的說明
 - **`tvgame-report` 取自中期封面，不是創刊號封面**，與元規則 B（錨定創刊名）有張力。
   這裡採用它，是因為創刊期查不到任何英文名，而中期的 TV.GAME REPORT 與同刊系其他三本
@@ -503,6 +530,22 @@ Monthly、Quarterly（《疾風快報》WOLF Weekly → `wolf`，《軟體世界
 **slug 維持 `famimaga-tw`，不重算成拼音。** 元規則 A 說 slug 生成函數只吃這本刊自己的名字、
 每本刊只決定一次；它不是一個會跟著欄位變動重新計算的衍生值。若日後查明這本刊確實不該掛在
 ファミマガ 底下，那時再談改名與轉址，而不是因為一次欄位清理就動一條網址。
+
+### `famimaga-tw` 改為 `huatai-miji`（2026-08-29）
+
+上一節說「若日後查明這本刊確實不該掛在 ファミマガ 底下，那時再談改名與轉址」。那個日後到了，
+但觸發的不是欄位清理：**《Game天堂!》是 ファミマガ 的授權中文版**，兩本刊撞在同一個母刊識別上，
+而 `-tw` 的語意是「slug 主體借用了外國刊物的識別」——把它留給未授權翻印的那本，等於用網址
+宣告它是台灣版，真正的台灣版反而叫 `game-paradise`。
+
+新值走規則 3：華泰｜任天堂｜秘笈 → `huatai-miji`。舊值已退役，`/magazines/famimaga-tw` 回 308。
+
+**`huatai` 取自第 7–28 期的刊名，不是創刊名。** 創刊名是「任天堂程式解法大公開」（第 5–6 期），
+它的規則輸出 `rentiantang-dagongkai` 有 21 字元，破形狀不變式，規則在這裡算不出可用的值。
+錨定主要時期的判準見 `docs/magazine-slugs.md`。
+
+《Game天堂!》維持 `game-paradise`：它雖然是授權版，但 GAME PARADISE MAGAZINE 是台灣版自取的
+名字，不是母刊標識，與《勝利小子》同型（規則 1 而非規則 2）。
 
 ### 一個尚未定案的值
 

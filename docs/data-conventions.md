@@ -25,6 +25,21 @@ spreadsheetId `1QN5sBTGJSAcPpTzpkLj3qchWmgg9bb6ht6yV22LYukI`。nostalibrary repo
 - **有些列的 `series` 是空的**，只有 `id` 前綴看得出屬於哪本（雜誌2 的 astro、雜誌3 的
   fmtps-tw 整批如此）。要匯這幾本時 `series` 挑不到東西，得先回頭補 Sheet
 
+列本身也不是每一格都填了，2026-08-25 匯完剩下的 15 本之後，已知的缺法有這幾種：
+
+- **標題留白，只有 id 與 weight**（Official Xbox Magazine 16/24、飛訊電玩周刊 88/149、
+  電玩族雜誌 4/10）。期號改從 id 尾碼補，見 `MagazineRule.issueNumberFor`
+- **整批沒有 `weight`**（電玩時代、勝利少年、電遊通訊、電玩百分百週刊）。`order` 同樣從
+  id 尾碼推，試刊號排在正刊之前
+- **連 id 都還沒編**（舊遊戲時代 30 列、電視遊樂報導 252 列）。那只影響封面——封面圖是
+  以 id 命名的，沒有 id 就沒有圖
+- **整列全空**，用來佔住還沒查到的那幾期（勝利少年 9 列）。那是位置不是資料，腳本會濾掉
+- **標題會誤植**：飛訊電玩周刊 `fashion_no-046` 的標題寫成「No.42」，與真正的 No.42 撞
+  `@@unique([magazineId, issueNumber])`。**id 比標題可信**，這種刊的期號一律照 id 推
+- **題名換過的刊，標題開頭不是 `series` 的值**：電視遊樂雜誌的前兩期印《電視遊樂快訊》、
+  末五期印《GAMEfans》，電視遊樂報導末期印《SuperGamer》。`issueNumberFrom` 只會剝
+  `series` 那一種寫法，其餘要自己列
+
 雜誌以外的分頁偶爾也藏著單期：《勝利小子》的 3 本增刊在「中文書」分頁（`categories: misc`），
 `weight` 與雜誌分頁共用同一條序列，所以夾在哪兩期之間看得出來。
 

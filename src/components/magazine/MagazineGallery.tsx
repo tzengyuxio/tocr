@@ -5,12 +5,9 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import type { GalleryImage } from "@/lib/magazine-gallery";
 
-export interface GalleryImage {
-  url: string;
-  /** Says what this one is when it is not the masthead: 藏書照, 創刊號 封面. */
-  note?: string;
-}
+export type { GalleryImage };
 
 /**
  * The magazine's pictures, in the column beside its details.
@@ -20,17 +17,21 @@ export interface GalleryImage {
  * the shelf photographs underneath the details grew the page by a band of
  * mostly-empty space. Here they cost nothing -- the frame is already that size.
  *
- * The first picture is the masthead (or, for a magazine that has none, its
- * earliest issue's cover); the rest are photographs of the physical copies.
+ * The pictures are the mastheads in period order (or, for a magazine that has
+ * none, its earliest issue's cover), then photographs of the physical copies.
+ * What goes in and in what order is buildMagazineGallery's job, not this one's.
  */
 export function MagazineGallery({
   images,
   name,
+  initialIndex = 0,
 }: {
   images: GalleryImage[];
   name: string;
+  /** 改過名的刊有多張刊頭，進頁時停在代表圖而不是最早的那個時期。 */
+  initialIndex?: number;
 }) {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
 
   if (images.length === 0) return null;

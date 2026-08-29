@@ -12,8 +12,8 @@ import { IssueCard } from "@/components/IssueCard";
 import { IssueBrowseBar } from "@/components/magazine/IssueBrowseBar";
 import {
   MagazineGallery,
-  type GalleryImage,
 } from "@/components/magazine/MagazineGallery";
+import { buildMagazineGallery } from "@/lib/magazine-gallery";
 import {
   ISSUE_FILTERS,
   issueOrderBy,
@@ -89,6 +89,7 @@ export default async function MagazineDetailPage({
         select: {
           id: true,
           title: true,
+          logoImage: true,
           startIssue: { select: { order: true } },
         },
       },
@@ -159,25 +160,31 @@ export default async function MagazineDetailPage({
   //
   // Borrowed, not copied: the picture keeps living on the issue. Uploading a
   // second copy up here is how the same photograph came to be stored twice.
-  const standIn = magazine.logoImage
-    ? null
-    : await prisma.issue.findFirst({
-        where: { magazineId: id, coverImage: { not: null } },
-        orderBy: { order: "asc" },
-        select: { issueNumber: true, coverImage: true },
-      });
+  const standIn =
+    magazine.logoImage || magazine.titles.some((t) => t.logoImage)
+      ? null
+      : await prisma.issue.findFirst({
+          where: { magazineId: id, coverImage: { not: null } },
+          orderBy: { order: "asc" },
+          select: { issueNumber: true, coverImage: true },
+        });
 
   // The masthead leads and the shelf photographs follow it in the same frame.
   // They used to hang under the details, which grew the page by a band of
   // mostly-empty space: a masthead is wide and short, so the column beside the
   // details is short, and the photographs added height that bought nothing.
-  const gallery: GalleryImage[] = [
-    ...(magazine.logoImage ? [{ url: magazine.logoImage }] : []),
-    ...(standIn?.coverImage
-      ? [{ url: standIn.coverImage, note: `${formatIssueNumber(standIn.issueNumber)} 封面` }]
-      : []),
-    ...magazine.photos.map((url) => ({ url, note: "藏書照" })),
-  ];
+  const gallery = buildMagazineGallery({
+    name: magazine.name,
+    logoImage: magazine.logoImage,
+    photos: magazine.photos,
+    titles: magazine.titles,
+    standIn: standIn?.coverImage
+      ? {
+          url: standIn.coverImage,
+          note: `${formatIssueNumber(standIn.issueNumber)} 封面`,
+        }
+      : null,
+  });
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -198,9 +205,13 @@ export default async function MagazineDetailPage({
       {/* 期刊資訊。刊頭與詳細資料左右並列，兩欄等高——刊頭原本是頂上一條 96px
           的橫幅，那個高度撐不起這頁唯一的一張圖。 */}
       <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-stretch md:gap-8">
-        {gallery.length > 0 && (
+        {gallery.images.length > 0 && (
           <>
-            <MagazineGallery images={gallery} name={magazine.name} />
+            <MagazineGallery
+              images={gallery.images}
+              initialIndex={gallery.initialIndex}
+              name={magazine.name}
+            />
             {/* A rule between the two columns, horizontal once they stack. */}
             <hr className="border-t md:h-auto md:border-l md:border-t-0" />
           </>

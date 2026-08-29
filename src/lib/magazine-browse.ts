@@ -77,11 +77,10 @@ export function parseMagazineFilter(value: string | undefined): MagazineFilter {
 }
 
 /**
- * 兩種呈現方式。卡片是預設：這一頁是「有哪些雜誌」的索引，讀者多半在認標準字，
- * 而標準字要夠大才認得出來。
- *
- * 列表是給另一種讀法用的——把出版社、期數、發行期間排成欄，一眼掃得完 34 本，
+ * 兩種呈現方式。列表是預設：把出版社、期數、發行期間排成欄，一眼掃得完整個書架，
  * 也比得出誰辦得久。後台的雜誌管理一直是這個形狀，前台只是把同一種讀法給讀者。
+ *
+ * 卡片是另一種讀法——標準字夠大才認得出來，適合已經在找某一本的讀者。
  *
  * 狀態放網址而不是 localStorage，與篩選、排序同一套：切換後的畫面分享得出去，
  * 而且整條列不需要 hydrate。
@@ -90,7 +89,7 @@ export const MAGAZINE_VIEWS = ["grid", "list"] as const;
 
 export type MagazineView = (typeof MAGAZINE_VIEWS)[number];
 
-export const DEFAULT_MAGAZINE_VIEW: MagazineView = "grid";
+export const DEFAULT_MAGAZINE_VIEW: MagazineView = "list";
 
 /** 手改網址帶進未知值時讀成預設，與 parseMagazineFilter 同一個態度。 */
 export function parseMagazineView(value: string | undefined): MagazineView {
