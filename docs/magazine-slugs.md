@@ -26,10 +26,17 @@ enum 的數字就是判定順序：**1 → 2 → 3**，命中即停；4 是規�
 | --- | --- | --- | --- |
 | `1.PARA` | 封面上的拉丁刊名：並列刊名（`Magazine.nameParallel`）、刊物自印的簡稱招牌，或刊名本身即拉丁字 | 照錄所有詞，上限 3 段 | `game-factory`、`swm` |
 | `2.SOURCE` | 原刊（`Magazine.sourceTitle`），本刊整體是它的中文版 | 取母刊通稱 + 強制 `-tw` | `famitsu-tw`、`dengeki-ps-tw` |
-| `3.PINYIN` | 前兩者皆無 | 創刊名去體裁尾綴後切詞，**取首詞 + 末詞** | `jingxun-diannao` |
+| `3.PINYIN` | 前兩者皆無 | 創刊名去體裁尾綴後切詞，**取首詞 + 末詞** | `jingxun-diannao`、`tvgame-kuaixun` |
 | `4.EXCEPT` | 規則的輸出沒有識別力 | 明文記錄，逐案判斷 | `gamexpress`、`gonglue-yuekan` |
 
 **形狀不變式**：拉丁 ≤3 段、拼音 ≤2 段、總長 3–20 字元、每段都要有出處、不可為純數字。
+
+**固定的複合題材詞算一段，且優先於拼音。** `tvgame` 是這批雜誌共用的題材詞——四本分屬
+不同出版社的刊都在用（`tvgame-magazine`、`tvgame-report`、`tvgame-information`、
+`tvgame-super-guide`），它不是任何一本的專屬識別。所以走 3.PINYIN 的刊，遇到「電視遊樂」
+這種詞時取 `tvgame` 而不是 `dianshi`：`tvgame-kuaixun`，不是 `dianshi-kuaixun`。
+後者把「遊樂」丟掉了，讀起來像「電視快訊」。
+與 `3do-qingbao` 同型——一段拉丁、一段拼音的混合段是允許的。
 
 **可丟棄的體裁尾綴（封閉清單）**：雜誌、月刊、週刊、半月刊、雙週刊、旬刊，
 Magazine、Weekly、Biweekly、Monthly、Quarterly。
@@ -110,8 +117,8 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 軟體之星 | `softstar` | `softstar` | 1.PARA | 8 | `ssm` |  |
 | 軟體世界雜誌 | `swm` | `swm` | 1.PARA | 3 | `swm` | 自印簡稱 |
 | 電遊通訊 | `tvgame-information` | `tvgame-information` | 1.PARA | 18 | `tvgameinfo` |  |
-| 電視遊樂快訊 | `dianshi-kuaixun` | `tvgame-magazine` | 3.PINYIN | 15 | — | 創刊名，僅試刊號與創刊號；封面是否有拉丁刊名未查證 |
-| 電視遊樂雜誌 | `tvgame-magazine` | `tvgame-magazine` | 1.PARA | 15 | `tvgm` | 第 2 期起，slug 錨定此期 |
+| 電視遊樂快訊 | `tvgame-kuaixun` | `tvgame-magazine` | 3.PINYIN | 14 | — | 創刊名，僅試刊號與創刊號；封面無並列刊名，首段用固定題材詞 `tvgame` 而非 `dianshi` |
+| 電視遊樂雜誌 | `tvgame-magazine` | `tvgame-magazine` | 1.PARA | 15 | `tvgm` | 第 2 期起，slug 錨定此期；並列刊名取自後期封面，初期封面無 |
 | GAME fans | — | `tvgame-magazine` | — | — | — | 新刊 1 號起改用新編號，尚無掃描檔 |
 | 電視遊樂情報 | — | `tvgame-report` | — | — | — | 第 1–18 期的刊名；查無實據，待複查 |
 | 電視遊樂報導 | `tvgame-report` | `tvgame-report` | 1.PARA | 13 | `tvgr` | 取自中期封面；創刊期查不到英文名 |
