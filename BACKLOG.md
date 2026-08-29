@@ -9,7 +9,7 @@
 筆記長在裡面會讓每次讀它的成本跟著漲（2026-08-30 拆分，當時 602 行）。
 做完的打勾後移到 [docs/backlog/done.md](docs/backlog/done.md)。
 
-- [ ] **nostalibrary 還有約 100 張封面可以補上站** — 2026-08-26 盤點過了，先不補；2026-09-09 回頭看要不要動，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
+- [ ] **nostalibrary 還有約 50 張封面可以補上站** — 已補 47 張，剩的卡在《軟體之星》收不收；2026-09-09 回頭看，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
 
 - [ ] **其餘改名刊的沿革資料** — 只剩電視遊樂報導，而它要等期數匯入，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）
 
