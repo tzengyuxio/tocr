@@ -119,7 +119,7 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 電遊通訊 | `tvgame-information` | `tvgame-information` | 1.PARA | 18 | `tvgameinfo` |  |
 | 電視遊樂快訊 | `tvgame-kuaixun` | `tvgame-magazine` | 3.PINYIN | 14 | — | 創刊名，僅試刊號與創刊號；封面無並列刊名，首段用固定題材詞 `tvgame` 而非 `dianshi` |
 | 電視遊樂雜誌 | `tvgame-magazine` | `tvgame-magazine` | 1.PARA | 15 | `tvgm` | 第 2 期起，slug 錨定此期；並列刊名取自後期封面，初期封面無 |
-| GAME fans | — | `tvgame-magazine` | — | — | — | 新刊 1 號起改用新編號，尚無掃描檔 |
+| GAME fans | `game-fans` | `tvgame-magazine` | 1.PARA | 9 | — | 新刊 1 號起改用新編號 |
 | 電視遊樂情報 | — | `tvgame-report` | — | — | — | 第 1–18 期的刊名；查無實據，待複查 |
 | 電視遊樂報導 | `tvgame-report` | `tvgame-report` | 1.PARA | 13 | `tvgr` | 取自中期封面；創刊期查不到英文名 |
 | Super Gamer流行電玩週刊 | — | `tvgame-report` | — | — | — | 新舊期數並行時期，尚無掃描檔 |
