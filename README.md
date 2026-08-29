@@ -4,7 +4,7 @@
 
 ## 現況
 
-已建檔 37 本雜誌，其中 15 本有單期資料，共 1246 期。
+已建檔 42 本雜誌，其中 32 本有單期資料，共 2271 期。
 
 文章目錄尚未開始正式匯入：資料模型與複查流程還在收斂，等確認之後才會在正式站上傳目錄頁進行辨識。目前的 OCR 與複查都在開發環境驗證。
 
@@ -90,7 +90,9 @@ pnpm test
 | [Docker 部署](docs/docker-deployment.md) | 自架伺服器 |
 | [本地開發](docs/local-development.md) | 開發環境細節 |
 
-待辦事項記在 [BACKLOG.md](BACKLOG.md)，確定要做的會開成 GitHub issue。
+待辦事項記在 [BACKLOG.md](BACKLOG.md)，一項一行；需要考證或要寫設計的移到
+[`docs/backlog/`](docs/backlog/)，做完的封存進 [`docs/backlog/done.md`](docs/backlog/done.md)。
+確定要做的會開成 GitHub issue。
 
 ## 資料
 

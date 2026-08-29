@@ -61,6 +61,11 @@ interface MagazineRule {
   orderFor?: (row: Row) => number | undefined;
   /** 出版日真的無從推起的刊：留空匯入（publishDate 可空），而不是整期跳過。 */
   allowMissingDate?: boolean;
+  /**
+   * Sheet 的 `id` 欄空白時，從整列推出上游的圖檔 id（封面檔名與 blob 路徑都靠它）。
+   * 只推得出來才給——推錯會把封面掛到別期去，寧可維持「沒有圖檔」。
+   */
+  coverIdFor?: (row: Row) => string | undefined;
   /** 標題不是「刊名＋期號」時（例如改名之後），自己取期號。 */
   issueNumberFor?: (row: Row) => string | undefined;
   /** Sheet 沒填日期、或該欄記的不是出版日時的推定；回傳值優先於 Sheet 字面值。 */
@@ -139,12 +144,57 @@ function nextGenPublishDate(n: number): string {
 
 const CJK_NUMERALS: Record<string, string> = { 一: "1", 二: "2", 三: "3", 四: "4", 五: "5" };
 
+/** EDTF 的季節碼（見 lib/edtf.ts）。 */
+const SEASONS: Record<string, string> = { 春: "21", 夏: "22", 秋: "23", 冬: "24" };
+
+/** 《軟體之星》後期的產品目錄與情報誌：封面編號與正刊撞號，期號帶識別前綴。 */
+const SOFTSTAR_CATALOGUE: Record<string, string> = {
+  "ssm_at-1999-02": "產品目錄 No.2",
+  "ssm_at-1999-07": "產品目錄 No.3",
+  "ssm_at-2001-08": "遊戲情報誌 2001 Summer",
+};
+
 const RULES: Record<string, MagazineRule> = {
   "Mania 遊戲玩瘋誌": {
     // 創刊〔一〕號 推導出來是 `創刊-一-號`。專名的寫法見 data-conventions.md。
     slugFor: (issueNumber) => {
       const m = issueNumber.match(/^創刊〔(.)〕號$/);
       return m && CJK_NUMERALS[m[1]] ? `創刊${CJK_NUMERALS[m[1]]}號` : undefined;
+    },
+  },
+  軟體之星: {
+    // 大宇的免費贈閱刊物，與《遊戲工場》同一類，定價欄的「贈閱」進 notes。
+    // 36 期裡兩期查不到出版日（試刊號與 No.20）。
+    allowMissingDate: true,
+    // 期號取純數字：該刊前十期就是這個形狀，`formatIssueNumber()` 也只對純數字
+    // 補「第 N 期」。合併號用 `+` 接，與《軟體世界》的 `70+71` 一致——Sheet 寫的
+    // 是 `No.15&16`，那是上游的寫法，封面實際印什麼還沒有實體可查。
+    //
+    // ssm_at-* 那三期是大宇的產品目錄與遊戲情報誌，封面標題字仍是 SOFTSTAR／
+    // 軟體之星，所以同屬這本刊；但編號另起一段（No.2、No.3 與正刊撞號）。
+    // 比照《電擊王》改名後那段：期號帶識別前綴，slug 另走一套。
+    issueNumberFor: (row) => {
+      const catalogue = SOFTSTAR_CATALOGUE[row.id];
+      if (catalogue) return catalogue;
+      const m = row.title.match(/No\.(\d+)(?:&(\d+))?/);
+      return m ? (m[2] ? `${m[1]}+${m[2]}` : m[1]) : undefined;
+    },
+    // 合併號 `15+16` → `15-16`，見 data-conventions 的「網址代號與期號是兩回事」。
+    // 產品目錄那三期用發行年月：編號本身就是撞號的來源，年月不會撞且印在封面上。
+    slugFor: (issueNumber, row) =>
+      row.id.startsWith("ssm_at-")
+        ? row.id.replace("ssm_at-", "")
+        : issueNumber.includes("+")
+          ? issueNumber.replace("+", "-")
+          : undefined,
+  },
+  遊戲工場: {
+    // Sheet 的 publish_date 記的是「1994 夏」這種年＋季，EDTF 的季節碼照實表達
+    // 得出來，不必退成年精度、也不必捏一個月份。只有年份的那幾期字面值就是
+    // 合法 EDTF，交給 Sheet。
+    publishDateFrom: (row) => {
+      const m = row.publish_date.trim().match(/^(\d{4})\s*([春夏秋冬])$/);
+      return m ? { date: `${m[1]}-${SEASONS[m[2]]}` } : undefined;
     },
   },
   遊戲設計大師: {
@@ -172,6 +222,9 @@ const RULES: Record<string, MagazineRule> = {
       isDengekiGames(row) ? `DengekiGAMES ${dengekiNumber(row)}` : undefined,
     slugFor: (_issueNumber, row) =>
       isDengekiGames(row) ? `dg-${probeSlug(dengekiNumber(row))}` : undefined,
+    // 39 期只有 22 期查得到出版日，其餘留空——與姊妹刊《電擊PlayStation》同樣的
+    // 情形。2026-08-22 第一次匯入時 publishDate 還必填，那 17 期整期被跳過。
+    allowMissingDate: true,
   },
   電玩通: {
     // 一期印了好幾套編號：總號（No.001）、日期發行號、期別。slug 用日期發行
@@ -269,6 +322,14 @@ const RULES: Record<string, MagazineRule> = {
   舊遊戲時代: {
     // Sheet 這一批只有標題與 weight，連 id 都還沒編。
     allowMissingDate: true,
+    // 上游的 30 個檔案是 retrogt_no-001～no-030，與 weight 一一對應。正解是回頭補
+    // Sheet 的 id 欄，這條只是讓封面先掛得上；Sheet 補了之後 row.id 就會蓋過它。
+    coverIdFor: (row) => {
+      const n = Number(row.weight);
+      return Number.isInteger(n) && n >= 1 && n <= 30
+        ? `retrogt_no-${String(n).padStart(3, "0")}`
+        : undefined;
+    },
   },
   飛訊電玩周刊: {
     // 88 列標題留白，而且有一列把 No.46 的標題誤植成 No.42，會跟真正的 No.42 撞
@@ -388,13 +449,23 @@ function entryOf(row: Row, series: string, rule: MagazineRule) {
 
 /** 封面內容與附件併進 notes——見 docs/data-conventions.md。 */
 function notesFrom(row: Row, extra: (string | undefined)[]): string | undefined {
+  const price = row.price?.trim();
   const parts = [
     row.cover?.trim() && `封面：${row.cover.trim()}`,
     row.attachments?.trim() && `附件：${row.attachments.trim()}`,
+    // 「贈閱」這種不是價錢的字進不了 Decimal 欄位，但它講的是這期怎麼流通的，
+    // 丟掉可惜——留在 notes 裡。
+    price && !numericPrice(price) && `定價欄記「${price}」`,
     ...extra,
     row.notes?.trim(),
   ].filter(Boolean);
   return parts.length ? parts.join("\n") : undefined;
+}
+
+/** Sheet 的 price 欄未必是數字（《遊戲工場》整批寫「贈閱」）。 */
+function numericPrice(price: string): string | undefined {
+  const cleaned = price.replace(/[,\s]|^NT\$?/gi, "");
+  return /^\d+(\.\d+)?$/.test(cleaned) ? cleaned : undefined;
 }
 
 async function main() {
@@ -495,7 +566,7 @@ async function main() {
       ...(altNumbers.length ? { altNumbers } : {}),
       ...(publishDate ? { publishDate } : {}),
       title: row.description?.trim() || undefined,
-      price: row.price?.trim() || undefined,
+      price: row.price?.trim() ? numericPrice(row.price.trim()) : undefined,
       pageCount: override?.pageCount ?? (row.num_pages?.trim() || undefined),
       notes: notesFrom(row, [override?.note, derivedNote]),
       order,
@@ -547,8 +618,9 @@ async function uploadCovers({
   for (const row of rows) {
     // covers_m 已經是處理過的 medium 變體，不需要再壓縮——所以不走
     // /api/upload，那條路會再跑一次 optimizeImage 並改成亂數檔名。
-    const file = `${coversDir}/${row.id}_cover_m.jpg`;
-    if (!existsSync(file)) {
+    const coverId = row.id?.trim() || rule.coverIdFor?.(row);
+    const file = `${coversDir}/${coverId}_cover_m.jpg`;
+    if (!coverId || !existsSync(file)) {
       missing++;
       continue;
     }
@@ -566,7 +638,7 @@ async function uploadCovers({
       continue;
     }
 
-    const blob = await put(`issues/covers/${row.id}.jpg`, readFileSync(file), {
+    const blob = await put(`issues/covers/${coverId}.jpg`, readFileSync(file), {
       access: "public",
       contentType: "image/jpeg",
       addRandomSuffix: false,
@@ -577,7 +649,7 @@ async function uploadCovers({
       headers,
       body: JSON.stringify({ coverImage: blob.url }),
     });
-    if (!res.ok) throw new Error(`${row.id} 封面掛載失敗：${res.status} ${await res.text()}`);
+    if (!res.ok) throw new Error(`${coverId} 封面掛載失敗：${res.status} ${await res.text()}`);
     uploaded++;
   }
 
