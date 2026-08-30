@@ -224,7 +224,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               <Label htmlFor="endedDate">停刊日期</Label>
               <Input
                 id="endedDate"
-                placeholder="2006-22"
+                placeholder="例如：1970-12"
                 {...register("endedDate")}
               />
               {errors.endedDate && (
