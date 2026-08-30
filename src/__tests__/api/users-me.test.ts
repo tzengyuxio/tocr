@@ -79,6 +79,22 @@ describe("PATCH /api/users/me", () => {
     expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
+  // The lookup is read-then-write, so it cannot stop two people submitting the
+  // same name at once. users_name_lower_key can, and the route has to turn that
+  // into the same 409 rather than a 500.
+  it("refuses a name that was taken between the lookup and the write", async () => {
+    const clash = Object.assign(new Error("Unique constraint failed"), {
+      code: "P2002",
+    });
+    prismaMock.user.update.mockRejectedValue(clash);
+
+    const response = await PATCH(requestWith({ name: "cloudy chen" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.error).toBe("這個顯示名稱已經有人使用了");
+  });
+
   // lower() on both sides rather than ILIKE, which would read % and _ in the
   // submitted name as wildcards and claim a free name was taken.
   it("compares names case-insensitively without pattern matching", async () => {

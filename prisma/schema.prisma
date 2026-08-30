@@ -15,6 +15,14 @@ datasource db {
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
+  // The public display name: it labels every edit and every row of the
+  // contributor leaderboard, so no two people may hold the same one.
+  //
+  // That uniqueness lives in a hand-written index rather than here --
+  // `users_name_lower_key`, created in 20260830000000_users_name_unique_ci.
+  // It is unique on lower(name) and partial (WHERE name IS NOT NULL), and
+  // Prisma's schema can express neither, so `prisma migrate dev` will offer to
+  // drop it every time. Decline; there is nothing to sync back into the schema.
   name          String?
   image         String?
   emailVerified DateTime?
