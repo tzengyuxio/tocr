@@ -1,0 +1,16 @@
+-- The display name is public -- it labels every edit and every row of the
+-- contributor leaderboard -- so two people cannot hold the same one. The check
+-- in PATCH /api/users/me is read-then-write, which two simultaneous requests
+-- pass together; only the database can actually hold the line.
+--
+-- Partial and functional, so Prisma's schema cannot express it and this stays
+-- hand-written SQL. See the comment on User.name in schema.prisma.
+--
+-- lower(name), matching the query in the route: the leaderboard would show
+-- "Alice" and "alice" as two indistinguishable rows.
+--
+-- WHERE name IS NOT NULL, because a null name is "has not picked one yet",
+-- and every user who has not picked one is a distinct person. Postgres treats
+-- nulls as distinct in a unique index anyway; the predicate keeps them out of
+-- the index entirely.
+CREATE UNIQUE INDEX "users_name_lower_key" ON "users" (lower("name")) WHERE "name" IS NOT NULL;

@@ -14,8 +14,9 @@ import {
  *
  * It began as the pre-streaming implementation, kept verbatim to prove the
  * rewrite changed not one byte. The format has deliberately changed twice
- * since -- a short row was fixed, and 2026-08-20 added the backup columns --
- * so the baseline is now maintained alongside rowsFor rather than frozen.
+ * since -- a short row was fixed, 2026-08-20 added the backup columns, and
+ * 2026-08-30 added the rest of the admin-only ones -- so the baseline is now
+ * maintained alongside rowsFor rather than frozen.
  *
  * When the CSV format is deliberately changed, this test is expected to fail --
  * update the baseline below in the same commit, deliberately.
@@ -30,20 +31,26 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
   for (const mag of magazines) {
     const magFields: string[] = [
       mag.name,
+      mag.slug,
       mag.nameParallel ?? "",
       mag.sourceTitle ?? "",
+      mag.aliases.join(";"),
       mag.publisher ?? "",
       mag.issn ?? "",
       mag.description ?? "",
+      mag.categories.join(";"),
       mag.foundedDate ?? "",
+      mag.endedDate ?? "",
       mag.isActive ? "true" : "false",
+      mag.logoImage ?? "",
+      mag.photos.join(";"),
     ];
 
     if (mag.issues.length === 0) {
-      // 7 magazine fields + 17 blanks against a 24-column header. The
+      // 14 magazine fields + 24 blanks against a 38-column header. The
       // original emitted a short row here, which a strict parser rejects or
       // misaligns; see the column-count assertions in export-rows.test.ts.
-      rows.push([...magFields, ...Array(17).fill("")]);
+      rows.push([...magFields, ...Array(24).fill("")]);
       continue;
     }
 
@@ -52,10 +59,17 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
         issue.issueNumber,
         issue.altNumbers.join(";"),
         issue.volumeNumber ?? "",
+        issue.slug,
+        issue.code,
         issue.title ?? "",
         issue.publishDate ?? "",
         issue.pageCount != null ? String(issue.pageCount) : "",
         issue.price != null ? String(issue.price) : "",
+        issue.coverImage ?? "",
+        issue.tocImages.join(";"),
+        issue.tocReviewedAt ? issue.tocReviewedAt.toISOString() : "",
+        issue.completeAt ? issue.completeAt.toISOString() : "",
+        String(issue.order),
         issue.notes ?? "",
       ];
 
@@ -120,10 +134,17 @@ function issue(n: number, articleCount: number): ExportIssue {
     issueNumber: String(n),
     altNumbers: n % 5 === 0 ? [`HK VOL ${n}`, `${n} 月號`] : [],
     volumeNumber: n % 3 === 0 ? `Vol.${n}` : null,
+    slug: `no-${n}`,
+    code: `code${n}`,
     title: n % 4 === 0 ? "特輯" : null,
     publishDate: `1999-${String((n % 12) + 1).padStart(2, "0")}`,
     pageCount: n % 5 === 0 ? null : 200 + n,
     price: n % 2 === 0 ? { toString: () => "180.00" } : null,
+    coverImage: n % 3 === 0 ? null : `https://blob.test/cover-${n}.webp`,
+    tocImages: n % 4 === 0 ? [] : [`https://blob.test/toc-${n}-1.webp`],
+    tocReviewedAt: n % 5 === 0 ? new Date("2026-08-20T04:05:06.000Z") : null,
+    completeAt: n % 7 === 0 ? new Date("2026-08-22T01:02:03.000Z") : null,
+    order: n * 10,
     notes: n % 6 === 0 ? "附贈海報，含逗號" : null,
     articles: Array.from({ length: articleCount }, (_, i) => ({
       title: `文章 ${n}-${i}`,
@@ -142,36 +163,54 @@ function issue(n: number, articleCount: number): ExportIssue {
 const FIXTURE: Magazine[] = [
   {
     name: "電腦玩家",
+    slug: "acer-pc-gamer",
     nameParallel: null,
     sourceTitle: null,
+    aliases: ["Amazing Computer Entertainment", "ACE"],
     publisher: "第三波",
     issn: "1021-8033",
     description: "含,逗號的描述",
+    categories: ["PC"],
     foundedDate: "1991-08",
+    endedDate: "2006-01",
     isActive: false,
+    logoImage: "https://blob.test/logo-acer.webp",
+    photos: ["https://blob.test/shelf-1.webp", "https://blob.test/shelf-2.webp"],
     issues: Array.from({ length: 23 }, (_, i) => issue(i + 1, (i % 4) + 1)),
   },
   {
     // A magazine with no issues at all.
     name: "軟體世界",
+    slug: "software-world",
     nameParallel: "Software World",
     sourceTitle: null,
+    aliases: [],
     publisher: null,
     issn: null,
     description: null,
+    categories: [],
     foundedDate: null,
+    endedDate: null,
     isActive: true,
+    logoImage: null,
+    photos: [],
     issues: [],
   },
   {
     name: "新遊戲時代",
+    slug: "new-game-era",
     nameParallel: null,
     sourceTitle: null,
+    aliases: [],
     publisher: null,
     issn: null,
     description: null,
+    categories: ["CONSOLE", "PC"],
     foundedDate: "1998",
+    endedDate: null,
     isActive: true,
+    logoImage: null,
+    photos: [],
     // Includes an issue with no articles.
     issues: [issue(100, 2), issue(101, 0), issue(102, 3)],
   },

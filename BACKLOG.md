@@ -20,9 +20,13 @@
   - **第 1–210 期整段沒建**。建了之後才能把「疾風快報」那一段刊名時期補上（現在只建了
     「攻略快報」一筆，前面的期靠 fallback `magazine.name` 顯示，剛好正確但語意不準）
   - **攻略快報試刊 No.2（推測 2002-04-20）沒有實體**，所以那兩期的期號欄用發行日不用編號
-  - **12 組封面已掃好但還沒掛上站**：`~/Pictures/covers/raw/`，c1/c4 各一張，600dpi
-    （GameQ 4 期、金手指補給站 3 期、疾風快報 2 期、攻略快報 2 期、Game天堂! 1 期，
-    另有 Mania G Vol.30 單張封面）（2026-08-30）
+  - **已掃好但還沒掛上站的封面**（2026-08-30 當時 12 組，之後又多）：`~/Pictures/covers/raw/`，
+    c1/c4 各一張，600dpi（GameQ 4 期、金手指補給站 3 期、疾風快報 2 期、攻略快報 2 期、
+    Game天堂! 1 期，另有 Mania G Vol.30 單張封面）
+
+    **卡在 Vercel 的 Blob Advanced Operations 額度**，不是卡在資料或工具：2026-08-30 已用
+    1.6K/2K，而那是 30 天滾動窗口。最早的 2026-08-11 有 202 次操作，等它滾出窗口再補比較安全
+    ——上傳一次封面不只一次 operation，接近上限時整批上傳有撞頂的風險（2026-08-30）
 
 - [ ] **這批掃描留下的待查證** — 五筆只能查不能推的，手邊有實體時順手看一眼就能結案，見 [docs/backlog/scan-followups.md](docs/backlog/scan-followups.md)（2026-08-30）
 
@@ -59,12 +63,6 @@
   **2026-08-25 已照這個決定建好**：掛在《電視遊樂報導》底下，slug `comb-1998-new-year`、期號 `1998新春合併號`、`order` 400（沿用 Sheet 的 `weight`，所以排在該刊最後而不是插在 1998 春節的位置——它沒有出版日期，插不進去）。`notes` 註明是與《電視遊樂雜誌》合刊。《電視遊樂雜誌》那邊因此少一期。
 
   留著這條是為了記錄判準：**再出現第二、三個案例就該重新評估**（2026-08-17）
-
-- [ ] **顯示名稱的重名檢查擋不住同時送出** — `PATCH /api/users/me` 是先查再寫，而 `users.name` 沒有唯一索引（`schema.prisma` 就是 `name String?`）。兩個人同時挑同一個名字，兩邊都查到「沒人用」，於是都寫進去——正好變成這個檢查想避免的「排行榜上兩列分不出誰是誰」。
-
-  真正的保證要靠資料庫：對 `lower(name)` 建 partial unique index（`WHERE name IS NOT NULL`），查詢就只負責決定錯誤訊息。Prisma schema 表達不了函式索引，要在 migration 裡寫原生 SQL。
-
-  **目前不急**：正式站 3 個使用者、改名是自助操作，實際碰撞機率極低。等使用者變多、或哪天真的看到重複名字再做（2026-08-16，code review 指出）
 
 - [ ] [#33] **辨識信心度可能是無效訊號** — `confidence` 是模型自評。原本 UI 依它上色（≥90% 綠、≥70% 黃），但電腦玩家 105 期那 61 筆**全部都是 1.0**，等於永遠綠燈——比沒有訊號更糟，因為它讀起來像「已檢查、沒問題」。色彩編碼先前拿掉、數值保留，**2026-08-16 起連數值也不再顯示**——顯示它的複查編輯器隨整合刪除了，而 `articles` 沒有這個欄位，值只留在 `ocr_records`。所以現在的決定變成：要嘛就這樣算了，要嘛換成比較實在的訊號（頁碼不連續、標題過短、缺頁碼）並存進文章。另注意 `ocr.utils.ts` 在模型沒回這欄時補 `0.8`，所以 80% 不代表模型沒把握（2026-08-12，2026-08-13 更新）
 
@@ -107,7 +105,7 @@
 
   下次全庫回填或匯入新期刊時，若 `backfill-slugs.ts` 又報出 `-2` 後綴，就是新的候選——後綴本身就是偵測器（2026-08-17）
 
-- [ ] **CSV 匯入匯出跟不上資料模型了** — 逐欄比對 schema 的結果，缺漏分三類，見 [docs/backlog/csv-import-export.md](docs/backlog/csv-import-export.md)（2026-08-20）
+- [ ] **CSV 匯入匯出跟不上資料模型了** — 三類缺漏**都補完了**（第三類 2026-08-30），剩「匯入永遠只新增不更新」與匯入端的 slug 這兩個決定，另有文章全文與排序兩欄待決，見 [docs/backlog/csv-import-export.md](docs/backlog/csv-import-export.md)（2026-08-20）
 
 - [ ] **加分享按鈕** — 目前要分享一頁只能複製網址列。想到才記，細節都還沒定（2026-08-16）：
 
@@ -123,9 +121,7 @@
 
   **2026-08-18 實際炸過一次**：三個 PR 的 migration 疊在上面，其中一條來自後來被 force-push 抹掉的 commit（它 drop 了 `magazines.logo_image`）。分支歷史沒了，資料庫的改動卻留著，下一次部署就撞上「欄位已存在」而失敗。**重寫已經部署過的分支，資料庫不會跟著回捲**——這是那次的教訓。當下的處置是把 preview branch 從 production 重新重置（Neon 的 reset from parent），正式站全程未受影響。
 
-  兩個方向：**每個 PR 一條 Neon branch**（Vercel–Neon 整合支援，要碰部署設定與環境變數），或**preview 不跑 migrate**（build script 改一行，但 preview 就測不到 migration，而且會回到 2026-08-17 之前那個「新增欄位必掛」的老問題，見 [deployment.md](docs/deployment.md)）。
-
-  **不急**：重置一次就恢復，而且知道原因就不會慌。等 PR 開始並行得更頻繁再處理（2026-08-18）
+  **2026-08-30 定案：每個 PR 一條 Neon branch**（另一個方向是 preview 不跑 migrate，等於回到 2026-08-17 之前「新增欄位必掛」的老問題）。裝的是 Vercel Marketplace **Connectable Accounts** 那一區的 Neon-Managed Integration，`package.json` 的 build 不用改。**步驟、Free 方案的額度（同時開著的 PR 最多 7 個）與三個會弄壞它的動作都寫進 [deployment.md](docs/deployment.md) 了，剩下的是在 dashboard 按**——那幾步碰的是正式部署設定，第一步移掉 Preview 的 `DATABASE_URL` 之後、整合裝好之前 preview 會沒有資料庫可連，要連著做完（2026-08-18，2026-08-30 定案）
 
 - [ ] **nostalibrary 把電玩通 PS 系列三本併成一筆，要拆開對齊** — 上游三本共用一個 slug，這裡是三筆獨立的期刊，見 [docs/backlog/famitsu-ps-series-split.md](docs/backlog/famitsu-ps-series-split.md)（2026-08-20）
 

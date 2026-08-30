@@ -69,11 +69,34 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
     select: { name: true },
   });
 
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: { name },
-    select: { id: true, name: true, email: true, image: true, role: true },
-  });
+  let user;
+  try {
+    user = await prisma.user.update({
+      where: { id: userId },
+      data: { name },
+      select: { id: true, name: true, email: true, image: true, role: true },
+    });
+  } catch (error) {
+    // The lookup above is read-then-write: two people submitting the same name
+    // at the same moment both see it free and both write it. What actually
+    // holds the line is users_name_lower_key (migration
+    // 20260830000000_users_name_unique_ci); the query only exists to word the
+    // error, since a bare P2002 says nothing about which name to change.
+    //
+    // Any P2002 raised here is that index -- this update writes `name` and
+    // nothing else, so the unique on `email` cannot be the one that fired.
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as { code: string }).code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "這個顯示名稱已經有人使用了" },
+        { status: 409 }
+      );
+    }
+    throw error;
+  }
 
   await logEdit("User", userId, "UPDATE", diffChanges(before, { name: user.name }));
 

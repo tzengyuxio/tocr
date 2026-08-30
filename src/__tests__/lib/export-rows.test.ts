@@ -9,13 +9,19 @@ import {
 
 const magazine: ExportMagazine = {
   name: "電腦玩家",
+  slug: "acer-pc-gamer",
   nameParallel: null,
   sourceTitle: null,
+  aliases: [],
   publisher: "第三波",
   issn: "1021-8033",
   description: null,
+  categories: [],
   foundedDate: "1991-08",
+  endedDate: null,
   isActive: false,
+  logoImage: null,
+  photos: [],
 };
 
 function article(overrides: Partial<ExportArticle> = {}): ExportArticle {
@@ -38,10 +44,17 @@ function issue(overrides: Partial<ExportIssue> = {}): ExportIssue {
     issueNumber: "105",
     altNumbers: [],
     volumeNumber: null,
+    slug: "105",
+    code: "a1b2c3d4",
     title: null,
     publishDate: "1999-05",
     pageCount: 200,
     price: null,
+    coverImage: null,
+    tocImages: [],
+    tocReviewedAt: null,
+    completeAt: null,
+    order: 105,
     notes: null,
     articles: [article()],
     ...overrides,
@@ -145,6 +158,58 @@ describe("rowsFor", () => {
     expect(field(line, "alt_numbers")).toBe("HK VOL 308;1月30日號");
     expect(field(line, "volume_number")).toBe("第六卷第九號");
     expect(field(line, "founded_date")).toBe("1991-08");
+  });
+
+  // Without these the file restores data but not a usable site: the URLs all
+  // become cuids, the images are gone and the issue order is lost. issue_code
+  // is the sharper case -- /i/<code> links that are already out there only
+  // resolve if the same code comes back.
+  it("carries the admin-only fields a restore needs", () => {
+    const [line] = rowsFor(
+      { ...magazine, aliases: ["ACE"], categories: ["PC"], endedDate: "2006-01", logoImage: "logo.webp", photos: ["a.webp", "b.webp"] },
+      [
+        issue({
+          slug: "1999-05",
+          code: "a1b2c3d4",
+          coverImage: "cover.webp",
+          tocImages: ["toc1.webp", "toc2.webp"],
+          tocReviewedAt: new Date("2026-08-20T04:05:06.000Z"),
+          completeAt: new Date("2026-08-22T01:02:03.000Z"),
+          order: 42,
+        }),
+      ]
+    );
+
+    expect(field(line, "magazine_slug")).toBe("acer-pc-gamer");
+    expect(field(line, "aliases")).toBe("ACE");
+    expect(field(line, "categories")).toBe("PC");
+    expect(field(line, "ended_date")).toBe("2006-01");
+    expect(field(line, "logo_image")).toBe("logo.webp");
+    expect(field(line, "photos")).toBe("a.webp;b.webp");
+    expect(field(line, "issue_slug")).toBe("1999-05");
+    expect(field(line, "issue_code")).toBe("a1b2c3d4");
+    expect(field(line, "cover_image")).toBe("cover.webp");
+    expect(field(line, "toc_images")).toBe("toc1.webp;toc2.webp");
+    expect(field(line, "toc_reviewed_at")).toBe("2026-08-20T04:05:06.000Z");
+    expect(field(line, "complete_at")).toBe("2026-08-22T01:02:03.000Z");
+    expect(field(line, "issue_order")).toBe("42");
+  });
+
+  // order is 0 for an issue nobody has placed yet, and an empty cell would read
+  // as "no position" when it is a real one.
+  it("writes issue_order 0 rather than an empty cell", () => {
+    const [line] = rowsFor(magazine, [issue({ order: 0 })]);
+
+    expect(field(line, "issue_order")).toBe("0");
+  });
+
+  it("leaves an unreviewed, incomplete issue's timestamps empty", () => {
+    const [line] = rowsFor(magazine, [
+      issue({ tocReviewedAt: null, completeAt: null }),
+    ]);
+
+    expect(field(line, "toc_reviewed_at")).toBe("");
+    expect(field(line, "complete_at")).toBe("");
   });
 
   it("stringifies a Decimal-like price", () => {

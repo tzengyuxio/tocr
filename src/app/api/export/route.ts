@@ -28,16 +28,25 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const magazines = await prisma.magazine.findMany({
     where: magazineId ? { id: magazineId } : {},
     orderBy: { name: "asc" },
+    // Everything the backup needs to restore a working site, which is more
+    // than the admin form shows -- see the comment on CSV_HEADERS. `id` is for
+    // the issue query below, not for the file.
     select: {
       id: true,
       name: true,
+      slug: true,
       nameParallel: true,
       sourceTitle: true,
+      aliases: true,
       publisher: true,
       issn: true,
       description: true,
+      categories: true,
       foundedDate: true,
+      endedDate: true,
       isActive: true,
+      logoImage: true,
+      photos: true,
     },
   });
 
