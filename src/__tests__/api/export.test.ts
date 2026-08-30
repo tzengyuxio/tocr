@@ -24,14 +24,24 @@ async function drain(response: Response) {
   return text.split("\r\n").filter(Boolean);
 }
 
+// The shape the route's own select asks for, so a column added to one and not
+// the other shows up here rather than as a truncated download.
 const magazine = {
   id: "mag-1",
   name: "電腦玩家",
+  slug: "acer-pc-gamer",
   nameParallel: null,
   sourceTitle: null,
+  aliases: [],
   publisher: "第三波",
   issn: null,
+  description: null,
+  categories: [],
+  foundedDate: null,
+  endedDate: null,
   isActive: true,
+  logoImage: null,
+  photos: [],
 };
 
 describe("GET /api/export", () => {
