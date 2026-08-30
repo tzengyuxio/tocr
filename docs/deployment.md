@@ -240,7 +240,7 @@ All migrations have been successfully applied.
 
 | 限制 | 數值 | 對這個作法的意義 |
 |---|---|---|
-| Branch | 10 條／專案 | 現有 3 條（`production`、`preview`、`backup-before-magazine-title-20260822`），所以**同時開著的 PR 最多 7 個**。滿了是「建不出新 branch」，不會刪到資料 |
+| Branch | 10 條／專案 | 現有 2 條（`production`、`backup-before-magazine-title-20260822`——共用的那條 `preview` 已於 2026-08-30 刪除），所以**同時開著的 PR 最多 8 個**。滿了是「建不出新 branch」，不會刪到資料 |
 | Compute | 100 CU-hours／專案／月 | 每條 branch 各有自己的 compute（閒置 5 分鐘自動 suspend，free 方案關不掉）。2026-08 用掉約 36 CU-hours |
 | 儲存 | 0.5 GB／專案 | child branch 只算差異量，全庫目前約 42 MB，不是瓶頸 |
 
