@@ -188,7 +188,7 @@ Neon 專案下有兩條 branch，Vercel 的環境變數分別指過去：
 
 **preview branch 的資料會隨 PR 累積漂移**（各 PR 共用一條），需要時可以從 `production` 重新分一條。
 
-### 每個 PR 一條 Neon branch（2026-08-30 決定，設定待套用）
+### 每個 PR 一條 Neon branch（2026-08-30 套用完成）
 
 共用一條的代價不只是資料漂移，是 **migration 疊在同一個資料庫上而誰也不擁有那個狀態**。2026-08-18 實際炸過一次：三個 PR 的 migration 疊著，其中一條來自後來被 force-push 抹掉的 commit（它 drop 了 `magazines.logo_image`），分支歷史沒了、資料庫的改動卻留著，下一次部署就撞上「欄位已存在」而失敗。**重寫已經部署過的分支，資料庫不會跟著回捲**——那次的教訓。當下是把 preview 從 production 重新 reset 才恢復，正式站全程未受影響。
 
@@ -196,14 +196,26 @@ Neon 專案下有兩條 branch，Vercel 的環境變數分別指過去：
 
 **安裝步驟**（在 dashboard 操作，本機只做第 1 步）：
 
-1. 先移掉 Vercel 上 Preview 範圍的兩個資料庫變數，否則整合會回 `Failed to set environment variables`：
+1. 先移掉 Vercel 上**四個**資料庫變數——Preview 與 **Production 兩個範圍都要**：
 
    ```bash
+   npx vercel env pull .env.production.local --environment=production   # 先備份
    npx vercel env rm DATABASE_URL preview
    npx vercel env rm DATABASE_URL_UNPOOLED preview
+   npx vercel env rm DATABASE_URL production
+   npx vercel env rm DATABASE_URL_UNPOOLED production
    ```
 
-   移掉之後、整合裝好之前，preview 部署會沒有資料庫可連——這兩步要連著做。
+   **Production 那兩個也要讓出來**，否則第 5 步按 Connect 會失敗：
+
+   ```
+   Failed to set env vars in please make sure that all required env vars are set;
+   env_vars:"[PGHOST PGUSER PGDATABASE PGPASSWORD DATABASE_URL]"
+   ```
+
+   原因是原本那兩個變數的 type 是 **Sensitive**，而 Vercel 的 Sensitive 變數整合覆寫不了。整合設定畫面上的 `Default branch` 下拉是選 Neon 的 default branch（`production`）、不可更改，它不是環境映射——所以沒有「只裝 Preview 不碰 Production」這個選項。
+
+   刪掉不會中斷正在服務的正式站（Vercel 的環境變數是部署時注入的，要下次 redeploy 才生效），但**在 Connect 成功之前別去 redeploy production**。備份檔留著，整合裝不起來時用它把值加回去。
 2. Neon Console → **Integrations** → Vercel → **Add** → Install from Vercel Marketplace → 選 **Link Existing Neon Account**
 3. 選 Vercel 專案 `tzengyuxios-projects/tocr`、Neon 專案 `tocr`（`fancy-surf-69564717`）與資料庫、role
 4. 勾 **Automatically delete obsolete Neon branches**；**不要**勾 `Create a branch for your development environment`——本機開發用的是 podman 起的 `tocr-db-dev`，不需要 `vercel-dev` 這條 branch 佔額度
@@ -211,7 +223,18 @@ Neon 專案下有兩條 branch，Vercel 的環境變數分別指過去：
 
 **build command 不用改**：`package.json` 的 `build` 已經在 `VERCEL_ENV=preview` 時跑 `prisma migrate deploy`，而且優先走 `DATABASE_URL_UNPOOLED`——整合注入的正是這兩個變數名。
 
-**驗證**：開一個 PR，Neon Console 的 Branches 應出現 `preview/<分支名>`，該次 deployment 的 build log 應看到 migration 對那條新 branch 跑。
+**整合實際寫回來的只有 `DATABASE_URL` 與 `DATABASE_URL_UNPOOLED`**（Production 範圍，type 變成 Non-sensitive），錯誤訊息裡列的 `PGHOST`/`PGUSER`/`PGDATABASE`/`PGPASSWORD` 那組不會出現——這個專案也沒有用到它們，Prisma 只讀前兩個。Preview 範圍則是空的：per-PR 的連線字串是每次部署動態注入，不以固定變數存在，`vercel env ls` 看不到。
+
+**驗證**：開一個 PR，Neon Console 的 Branches 應出現 `preview/<分支名>`，該次 deployment 的 build log 應看到 migration 對那條新 branch 跑。2026-08-30 的實測（PR #133，帶一條 `CREATE UNIQUE INDEX`）：
+
+```
+Datasource "db": PostgreSQL database "neondb", schema "public" at "ep-flat-truth-azemkhna.c-3.ap-southeast-1.aws.neon.tech"
+32 migrations found in prisma/migrations
+Applying migration `20260830000000_users_name_unique_ci`
+All migrations have been successfully applied.
+```
+
+端點是新 branch 自己的，不是共用的那條 `preview`。
 
 **Free 方案的額度**（會先撞到的是第一項）：
 
