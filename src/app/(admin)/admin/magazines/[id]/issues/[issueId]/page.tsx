@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { IssueForm } from "@/components/magazine/IssueForm";
 import { PhotoSection } from "@/components/PhotoSection";
+import { LinkSection } from "@/components/LinkSection";
 import { isSessionAdmin } from "@/lib/require-editor";
 import { ArticleListClient } from "@/components/article/ArticleListClient";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,10 @@ export default async function EditIssuePage({ params }: PageProps) {
     include: {
       magazine: {
         select: { id: true, name: true },
+      },
+      links: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
       },
       photos: {
         orderBy: { order: "asc" },
@@ -176,6 +181,12 @@ export default async function EditIssuePage({ params }: PageProps) {
             owner={{ issueId: issue.id }}
             photos={issue.photos}
             description="這一期的額外圖片：另一版封面、封底，或網路上看到的、網拍截下來的圖。封面與目錄頁掃描請走左邊的表單"
+          />
+
+          <LinkSection
+            owner={{ issueId: issue.id }}
+            links={issue.links}
+            description="站外關於這一期的資訊：Internet Archive 的全本掃描、上游的單期條目"
           />
 
           {/* 文章列表 */}

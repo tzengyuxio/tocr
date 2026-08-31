@@ -41,6 +41,7 @@ interface PrismaMock {
   articleGame: MockModel;
   ocrRecord: MockModel;
   photo: MockModel;
+  externalLink: MockModel;
   exportLog: MockModel;
   user: MockModel;
   editLog: MockModel;
@@ -76,6 +77,7 @@ export const prismaMock: PrismaMock = {
   articleGame: createMockModel(),
   ocrRecord: createMockModel(),
   photo: createMockModel(),
+  externalLink: createMockModel(),
   exportLog: createMockModel(),
   user: createMockModel(),
   editLog: createMockModel(),

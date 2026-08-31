@@ -7,6 +7,7 @@ import { resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { isVerifiedIssue } from "@/lib/issue-complete";
+import { ExternalLinkList } from "@/components/ExternalLinkList";
 import { formatEdtf } from "@/lib/edtf";
 import { Badge } from "@/components/ui/badge";
 import { IssueCard } from "@/components/IssueCard";
@@ -94,6 +95,10 @@ export default async function MagazineDetailPage({
           logoImage: true,
           startIssue: { select: { order: true } },
         },
+      },
+      links: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
       },
       // 未公開的圖濾在這裡，不是濾在畫面上：濾在畫面上等於把還沒確認來路的
       // 網址一起送到瀏覽器。
@@ -332,6 +337,7 @@ export default async function MagazineDetailPage({
               )}
             </p>
           )}
+          <ExternalLinkList links={magazine.links} className="mt-4" />
         </div>
       </div>
 

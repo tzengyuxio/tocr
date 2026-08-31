@@ -18,6 +18,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { IssueImages } from "@/components/issue/IssueImages";
 import { VerifiedMark } from "@/components/magazine/VerifiedMark";
+import { ExternalLinkList } from "@/components/ExternalLinkList";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { JsonLd } from "@/components/JsonLd";
@@ -134,6 +135,10 @@ export default async function IssueDetailPage({ params }: PageProps) {
           },
         },
       },
+      links: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
+      },
       // 未公開的濾在查詢層，同 /magazines/[id]。
       photos: {
         where: { isPublic: true },
@@ -236,6 +241,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
               photos={issue.photos}
               issueNumber={issue.issueNumber}
             />
+            <ExternalLinkList links={issue.links} />
             {issue.notes && (
               <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="mb-1 text-xs font-medium text-muted-foreground">
