@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
+import { VerifiedMark } from "@/components/magazine/VerifiedMark";
 
 interface IssueCardProps {
   issue: {
@@ -13,6 +14,8 @@ interface IssueCardProps {
     issueNumber: string;
     title?: string | null;
     publishDate: string | null;
+    /** 資料核對過了。三態收成兩態的地方見 lib/issue-complete.ts。 */
+    isVerified?: boolean;
     _count: { articles: number };
   };
   magazineSlug: string;
@@ -53,9 +56,14 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
               {magazineName}
             </p>
           )}
-          <p className="font-medium text-sm line-clamp-1">
-            {formatIssueNumber(issue.issueNumber)}
-          </p>
+          {/* 標記跟期號同一行：底下那行只有 182px 寬，日期與篇數已經用滿，
+              第三個元素會把日期折成兩行。期號短，讓得出這個位置。 */}
+          <div className="flex items-center gap-1.5">
+            <p className="min-w-0 flex-1 truncate font-medium text-sm">
+              {formatIssueNumber(issue.issueNumber)}
+            </p>
+            <VerifiedMark verified={issue.isVerified ?? false} />
+          </div>
           {issue.title && (
             <p className="text-xs text-muted-foreground line-clamp-1">
               {issue.title}

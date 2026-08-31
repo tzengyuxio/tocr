@@ -6,6 +6,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { isVerifiedIssue } from "@/lib/issue-complete";
 import { formatEdtf } from "@/lib/edtf";
 import { Badge } from "@/components/ui/badge";
 import { IssueCard } from "@/components/IssueCard";
@@ -111,7 +112,7 @@ export default async function MagazineDetailPage({
   // The issues are fetched separately now that the filter narrows them: the
   // counts have to cover the whole magazine even when the list does not, so
   // they cannot come from the rows that came back.
-  const [issues, ...filterCounts] = await Promise.all([
+  const [rawIssues, ...filterCounts] = await Promise.all([
     prisma.issue.findMany({
       where: { magazineId: id, ...filter.where },
       orderBy: issueOrderBy(sort, direction),
@@ -121,6 +122,12 @@ export default async function MagazineDetailPage({
       prisma.issue.count({ where: { magazineId: id, ...option.where } })
     ),
   ]);
+
+  // 「已校訂」是公開頁認得的兩態之一；後台那三態留在 CompleteBadge。
+  const issues = rawIssues.map((issue) => ({
+    ...issue,
+    isVerified: isVerifiedIssue(issue),
+  }));
 
   const counts = Object.fromEntries(
     ISSUE_FILTERS.map((option, index) => [option.value, filterCounts[index]])

@@ -18,6 +18,7 @@ import {
   Search,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { isVerifiedIssue } from "@/lib/issue-complete";
 
 // Two rows of eight on a wide screen.
 const LATEST_ISSUE_COUNT = 16;
@@ -74,7 +75,11 @@ export default async function HomePage() {
           where: { articles: { none: {} }, coverImage: { not: null } },
         })
       : [];
-  const latestIssues = [...withArticles, ...filler];
+  // 同一張卡片在首頁與刊系頁該說一樣的話，所以這裡也算得出「已校訂」。
+  const latestIssues = [...withArticles, ...filler].map((issue) => ({
+    ...issue,
+    isVerified: isVerifiedIssue(issue),
+  }));
 
   return (
     <div className="animate-fade-in-up">

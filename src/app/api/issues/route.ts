@@ -42,12 +42,10 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   ]);
 
   const isAdmin = await isSessionAdmin();
-  return paginatedResponse(
-    isAdmin ? issues : issues.map(withoutCompleteMark),
-    total,
-    page,
-    limit
-  );
+  // 兩個分支的列形狀不同（管理員拿到時間戳，其餘人拿到 isVerified 布林），
+  // 所以型別參數要放寬——推斷會咬住第一個分支。
+  const rows: object[] = isAdmin ? issues : issues.map(withoutCompleteMark);
+  return paginatedResponse(rows, total, page, limit);
 }, "Fetch issues");
 
 // POST /api/issues - 新增單期
