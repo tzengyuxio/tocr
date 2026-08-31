@@ -173,7 +173,9 @@ export function PhotoSection({ owner, photos, description }: PhotoSectionProps) 
         {photos.length > 0 && (
           <ul className="space-y-3">
             {photos.map((photo, index) => (
-              <li key={photo.id} className="flex gap-3 rounded-md border p-3">
+              // @container：這個區塊在雜誌頁住在窄欄、在單期頁住在寬欄，
+              // 斷點要看盒子不是看視窗——照 MagazineForm 的做法。
+              <li key={photo.id} className="@container flex gap-3 rounded-md border p-3">
                 <Image
                   src={photo.url}
                   alt={photo.caption ?? "額外圖片"}
@@ -190,7 +192,7 @@ export function PhotoSection({ owner, photos, description }: PhotoSectionProps) 
                     placeholder="說明。看不出期號的圖，推測寫在這裡"
                     rows={2}
                   />
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid gap-2 @md:grid-cols-2">
                     <Input
                       value={value(photo, "sourceName")}
                       onChange={(e) => edit(photo.id, "sourceName", e.target.value)}
