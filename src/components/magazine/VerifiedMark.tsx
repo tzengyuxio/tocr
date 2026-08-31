@@ -16,8 +16,9 @@ export function VerifiedMark({ verified }: { verified: boolean }) {
 
   return (
     <Badge
-      variant="outline"
-      className="px-1.5 py-0 text-[10px] font-normal tracking-wider text-muted-foreground"
+      // 方角紅底：站上其他 chip（分類、標籤、狀態）都是圓角淡色，這個一眼就
+      // 分得出不是同一類東西——它講的是資料狀態，不是這一期屬於哪一群。
+      className="rounded-none border-transparent bg-red-600 px-1.5 py-0 text-[10px] font-normal tracking-wider text-white"
       title="這一期的資料經管理員核對過"
     >
       已校訂
