@@ -171,6 +171,15 @@ https://your-domain.com/api/auth/callback/google
 
 migration 走 `DATABASE_URL_UNPOOLED`（Neon 的 pooler 不適合跑 DDL），沒設的話會退回 `DATABASE_URL`。
 
+⚠️ **破壞性 migration 會弄壞還在服務的舊版。** 順序是「先改資料庫 → 再 build → 最後才把新版切上線」，
+所以從 migration 跑完到新版上線的那幾分鐘，**線上跑的是舊程式配新 schema**。刪欄位、改欄位型別、
+加 NOT NULL 都會在這段空窗炸掉——2026-08-31 的 `20260831000000_add_photos` 最後一行
+`DROP COLUMN magazines.photos`，就讓舊版的 `/admin/magazines/[id]`（用 `include` 撈整列，SQL 裡還有
+那一欄）回 server-side exception，新版切上線後自己好。
+
+**要避開就拆兩次部署（expand → contract）**：先上一版「不再讀那個欄位」的程式，等它上線，下一個 PR 才
+刪欄位。純新增欄位、加索引不受影響——舊程式不知道新欄位存在，不會去讀它。
+
 ### preview 有自己的資料庫（2026-08-17 起）
 
 Neon 專案下有兩條 branch，Vercel 的環境變數分別指過去：
