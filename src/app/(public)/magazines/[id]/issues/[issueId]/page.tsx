@@ -194,8 +194,10 @@ export default async function IssueDetailPage({ params }: PageProps) {
               {magazineName}
             </Link>{" "}
             {formatIssueNumber(issue.issueNumber)}
+            {/* 放進 h1 而不是擺在它旁邊：印的大小是 em，擺在外面繼承到的是
+                外層的 16px，在 30px 的標題旁永遠不成比例。 */}
+            <VerifiedMark verified={isVerifiedIssue(issue)} className="ml-2" />
           </h1>
-          <VerifiedMark verified={isVerifiedIssue(issue)} />
           {canEdit && (
             <Link
               href={`/admin/magazines/${id}/issues/${issueId}`}
