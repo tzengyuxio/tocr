@@ -13,7 +13,8 @@ import { escapeCsvField } from "./escape";
  * 網址只認它，還原後換一個就等於把所有分享過的連結弄壞。
  *
  * 衍生欄位不收（publish_sort、founded_sort、時間戳、id）——它們寫入時算得出來。
- * 刊名時期（MagazineTitle）、退役 slug（MagazineSlug）與額外圖片（Photo）也不收：
+ * 刊名時期（MagazineTitle）、退役 slug（MagazineSlug）、額外圖片（Photo）與站外
+ * 連結（ExternalLink）也不收：
  * CSV 是雜誌／單期／文章三層的扁平格式，一本刊有幾筆刊名時期、幾張圖，跟它有幾期
  * 沒有關係，塞不進同一行。
  *

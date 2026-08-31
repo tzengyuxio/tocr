@@ -185,6 +185,7 @@ model Magazine {
   titles    MagazineTitle[]
   oldSlugs  MagazineSlug[]
   photos    Photo[]
+  links     ExternalLink[]
 
   @@index([issn])
   @@index([foundedSort])
@@ -285,6 +286,7 @@ model Issue {
   magazine Magazine  @relation(fields: [magazineId], references: [id], onDelete: Cascade)
   articles Article[]
   photos   Photo[]
+  links    ExternalLink[]
   titlePeriodStart MagazineTitle?
 
   @@unique([magazineId, issueNumber])
@@ -381,6 +383,50 @@ model Photo {
   @@index([magazineId, order])
   @@index([issueId, order])
   @@map("photos")
+}
+
+/// 這條連結指向哪個站。站點決定畫面上顯示的名字，編輯因此不必每次打字，
+/// 同一個站也不會被寫成五種寫法。
+///
+/// nostalibrary 的連結照樣存不推導：magazine slug 目前與上游共用，但那組值
+/// 隨時可能被上游重整，推導出來的網址會安靜地失效。
+enum ExternalSite {
+  INTERNET_ARCHIVE
+  NOSTALIBRARY
+  NCL // 國家圖書館
+  WIKIPEDIA
+  OTHER
+}
+
+/**
+ * 站外的雜誌資訊：全本掃描、上游條目、書目紀錄、百科條目。
+ *
+ * 不分「延伸」與「出處」——實際上兩種都有，而站點幾乎就決定了它是哪一種，
+ * 多存一個維度只會讓每筆連結多一次判斷。畫面上一起列成「站外資訊」。
+ *
+ * 掛雜誌或掛單期，二擇一，與 Photo 同形（external_links_one_owner 把關）。
+ * 沒有 isPublic：連結不是還沒確認來路的圖，要藏就直接刪。
+ */
+model ExternalLink {
+  id         String  @id @default(cuid())
+  magazineId String? @map("magazine_id")
+  issueId    String? @map("issue_id")
+
+  site ExternalSite
+  url  String
+  /// 只有 site 為 OTHER 時要填；其餘由站點決定顯示名稱。
+  label String?
+  order Int     @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  magazine Magazine? @relation(fields: [magazineId], references: [id], onDelete: Cascade)
+  issue    Issue?    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([magazineId, order])
+  @@index([issueId, order])
+  @@map("external_links")
 }
 
 model Article {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { MagazineForm } from "@/components/magazine/MagazineForm";
 import { PhotoSection } from "@/components/PhotoSection";
+import { LinkSection } from "@/components/LinkSection";
 import { MagazineTitleSection } from "@/components/magazine/MagazineTitleSection";
 import { IssueListClient } from "@/components/magazine/IssueListClient";
 import { isSessionAdmin } from "@/lib/require-editor";
@@ -28,6 +29,10 @@ export default async function EditMagazinePage({ params }: PageProps) {
           logoImage: true,
           note: true,
         },
+      },
+      links: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
       },
       // 後台兩種都列——未公開的在這裡才看得到、才改得動。
       photos: {
@@ -104,6 +109,11 @@ export default async function EditMagazinePage({ params }: PageProps) {
             owner={{ magazineId: magazine.id }}
             photos={magazine.photos}
             description="網路上看到的、網拍截下來的圖，以及實體收藏照（書背、書櫃、整疊）。單期自己的封面請放在該期底下。看不出是哪一期的圖放這裡，推測寫在說明欄"
+          />
+          <LinkSection
+            owner={{ magazineId: magazine.id }}
+            links={magazine.links}
+            description="站外關於這本刊的資訊：全本掃描、上游條目、書目紀錄。某一期專屬的連結請掛在該期底下"
           />
           <MagazineTitleSection
             magazineId={magazine.id}
