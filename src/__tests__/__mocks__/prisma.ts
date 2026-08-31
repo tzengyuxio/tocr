@@ -22,6 +22,13 @@ interface MockModel {
 // `$transaction` hands the callback the mock itself, so inferring the type
 // would be circular. Declaring it explicitly breaks the cycle.
 type TransactionCallback = (tx: PrismaMock) => Promise<unknown>;
+type TransactionArg = TransactionCallback | Promise<unknown>[];
+
+// The real client takes either an interactive callback or an array of queries
+// to run together; a mock that only understood the callback made the array
+// form throw instead of resolving.
+const runTransaction = (arg: TransactionArg) =>
+  Array.isArray(arg) ? Promise.all(arg) : arg(prismaMock);
 
 interface PrismaMock {
   magazine: MockModel;
@@ -33,6 +40,7 @@ interface PrismaMock {
   articleTag: MockModel;
   articleGame: MockModel;
   ocrRecord: MockModel;
+  photo: MockModel;
   exportLog: MockModel;
   user: MockModel;
   editLog: MockModel;
@@ -67,11 +75,12 @@ export const prismaMock: PrismaMock = {
   articleTag: createMockModel(),
   articleGame: createMockModel(),
   ocrRecord: createMockModel(),
+  photo: createMockModel(),
   exportLog: createMockModel(),
   user: createMockModel(),
   editLog: createMockModel(),
   apiToken: createMockModel(),
-  $transaction: jest.fn((fn: TransactionCallback) => fn(prismaMock)),
+  $transaction: jest.fn(runTransaction),
   // Tagged-template call, so tests assert on the interpolated values rather
   // than on a query object.
   $queryRaw: jest.fn(),
@@ -106,8 +115,6 @@ export function resetPrismaMock() {
     }
   });
   prismaMock.$transaction.mockReset();
-  prismaMock.$transaction.mockImplementation((fn: TransactionCallback) =>
-    fn(prismaMock)
-  );
+  prismaMock.$transaction.mockImplementation(runTransaction);
   prismaMock.$queryRaw.mockReset().mockResolvedValue([]);
 }

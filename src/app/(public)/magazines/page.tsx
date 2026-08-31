@@ -178,7 +178,9 @@ export default async function MagazinesPage({
                       {unit.publisher || "未知出版社"}
                     </span>
                     <Badge variant={unit.isActive ? "default" : "secondary"} className="text-xs">
-                      {unit.issueCount} 期
+                      {unit.knownIssueCount
+                        ? `${unit.issueCount} / ${unit.knownIssueCount} 期`
+                        : `${unit.issueCount} 期`}
                     </Badge>
                   </div>
                 </CardContent>

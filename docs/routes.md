@@ -112,6 +112,9 @@
 |---|---|---|
 | POST | `/api/ocr` | 執行辨識，單次上限 10 張圖 |
 | GET | `/api/ocr` | 可用的 Provider 列表 |
+| POST | `/api/photos` | 新增額外圖片（掛雜誌或掛單期，二擇一） |
+| PATCH · DELETE | `/api/photos/[id]` | 改說明／來源／公開與否、刪除 |
+| PUT | `/api/photos/reorder` | 同一個掛點底下的排序 |
 | POST | `/api/upload` | 圖片上傳（自動縮圖轉檔，見 [features.md](features.md#檔案儲存)） |
 | POST | `/api/import/magazines-issues` | CSV 批次匯入 |
 | GET | `/api/export` | 匯出 CSV（串流，需登入） |

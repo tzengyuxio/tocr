@@ -101,9 +101,22 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
             ))}
           </div>
 
-          {/* tabular-nums 讓期數的位數對齊，一整欄才掃得出誰收得多。 */}
-          <div className="w-16 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
-            {unit.issueCount} 期
+          {/* tabular-nums 讓期數的位數對齊，一整欄才掃得出誰收得多。
+              查到總期數的刊寫成「12 / 24」——左邊是站上收錄的，右邊是這本刊
+              已知出過幾期；沒查到的照舊只有一個數字。 */}
+          <div
+            className="w-24 shrink-0 text-right text-sm tabular-nums text-muted-foreground"
+            title={
+              unit.knownIssueCount
+                ? `站上收錄 ${unit.issueCount} 期，已知共 ${unit.knownIssueCount} 期${
+                    unit.knownIssueCountSource ? `（${unit.knownIssueCountSource}）` : ""
+                  }`
+                : undefined
+            }
+          >
+            {unit.knownIssueCount
+              ? `${unit.issueCount} / ${unit.knownIssueCount} 期`
+              : `${unit.issueCount} 期`}
           </div>
         </Link>
       ))}

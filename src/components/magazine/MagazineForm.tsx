@@ -21,7 +21,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { MultiImageUpload } from "@/components/ui/multi-image-upload";
 import {
   magazineCreateSchema,
   type MagazineCreateInput,
@@ -59,9 +58,10 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
       aliases: initialData?.aliases || [],
       publisher: initialData?.publisher || "",
       issn: initialData?.issn || "",
+      knownIssueCount: initialData?.knownIssueCount ?? undefined,
+      knownIssueCountSource: initialData?.knownIssueCountSource || "",
       description: initialData?.description || "",
       logoImage: initialData?.logoImage || "",
-      photos: initialData?.photos || [],
       categories: initialData?.categories || [],
       foundedDate: initialData?.foundedDate || "",
       endedDate: initialData?.endedDate || "",
@@ -201,6 +201,40 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
               />
             </div>
 
+            {/* 已知總期數 */}
+            <div className="space-y-2">
+              <Label htmlFor="knownIssueCount">已知總期數</Label>
+              <Input
+                id="knownIssueCount"
+                type="number"
+                min={1}
+                placeholder="例如：24"
+                {...register("knownIssueCount")}
+              />
+              <p className="text-xs text-muted-foreground">
+                查到這本刊總共出過幾期就填，查不到或仍在發行就留空。列表會顯示成
+                「收錄數 / 這個數」
+              </p>
+              {errors.knownIssueCount && (
+                <p className="text-sm text-destructive">
+                  {errors.knownIssueCount.message}
+                </p>
+              )}
+            </div>
+
+            {/* 已知總期數的出處 */}
+            <div className="space-y-2">
+              <Label htmlFor="knownIssueCountSource">已知總期數來源</Label>
+              <Input
+                id="knownIssueCountSource"
+                placeholder="例如：國圖臺灣期刊論文索引"
+                {...register("knownIssueCountSource")}
+              />
+              <p className="text-xs text-muted-foreground">
+                這個數字哪來的。可留空，填了會顯示在刊系頁
+              </p>
+            </div>
+
             {/* 創刊日期 */}
             <div className="space-y-2">
               <Label htmlFor="foundedDate">創刊日期</Label>
@@ -312,23 +346,6 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                     onChange={field.onChange}
                     folder="magazines"
                     description="封面上的刊名字樣，一本一張。改版過的刊選最認得出來的那一版"
-                  />
-                )}
-              />
-            </div>
-
-            {/* 藏書照 */}
-            <div className="space-y-2 @md:col-span-2">
-              <Controller
-                name="photos"
-                control={control}
-                render={({ field }) => (
-                  <MultiImageUpload
-                    label="藏書照"
-                    value={field.value || []}
-                    onChange={field.onChange}
-                    folder="magazines"
-                    description="實體收藏的照片（書背、書櫃、整疊）。單期的封面請放在該期底下，不要放這裡"
                   />
                 )}
               />

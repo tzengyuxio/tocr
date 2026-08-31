@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { MagazineForm } from "@/components/magazine/MagazineForm";
+import { PhotoSection } from "@/components/PhotoSection";
 import { MagazineTitleSection } from "@/components/magazine/MagazineTitleSection";
 import { IssueListClient } from "@/components/magazine/IssueListClient";
 import { isSessionAdmin } from "@/lib/require-editor";
@@ -26,6 +27,18 @@ export default async function EditMagazinePage({ params }: PageProps) {
           startIssueId: true,
           logoImage: true,
           note: true,
+        },
+      },
+      // 後台兩種都列——未公開的在這裡才看得到、才改得動。
+      photos: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          url: true,
+          caption: true,
+          sourceName: true,
+          sourceUrl: true,
+          isPublic: true,
         },
       },
       // Select rather than include: the full row carries a Decimal price,
@@ -63,9 +76,10 @@ export default async function EditMagazinePage({ params }: PageProps) {
     aliases: magazine.aliases,
     publisher: magazine.publisher,
     issn: magazine.issn,
+    knownIssueCount: magazine.knownIssueCount,
+    knownIssueCountSource: magazine.knownIssueCountSource,
     description: magazine.description,
     logoImage: magazine.logoImage,
-    photos: magazine.photos,
     categories: magazine.categories,
     foundedDate: magazine.foundedDate,
     endedDate: magazine.endedDate,
@@ -86,6 +100,11 @@ export default async function EditMagazinePage({ params }: PageProps) {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-1">
           <MagazineForm initialData={formData} mode="edit" />
+          <PhotoSection
+            owner={{ magazineId: magazine.id }}
+            photos={magazine.photos}
+            description="網路上看到的、網拍截下來的圖，以及實體收藏照（書背、書櫃、整疊）。單期自己的封面請放在該期底下。看不出是哪一期的圖放這裡，推測寫在說明欄"
+          />
           <MagazineTitleSection
             magazineId={magazine.id}
             magazineName={magazine.name}

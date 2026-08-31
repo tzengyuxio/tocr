@@ -5,6 +5,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { decodeParam, resolveIssueParam, resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { isVerifiedIssue } from "@/lib/issue-complete";
 import {
   Card,
   CardContent,
@@ -16,6 +17,7 @@ import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { IssueImages } from "@/components/issue/IssueImages";
+import { VerifiedMark } from "@/components/magazine/VerifiedMark";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { JsonLd } from "@/components/JsonLd";
@@ -132,6 +134,12 @@ export default async function IssueDetailPage({ params }: PageProps) {
           },
         },
       },
+      // 未公開的濾在查詢層，同 /magazines/[id]。
+      photos: {
+        where: { isPublic: true },
+        orderBy: { order: "asc" },
+        select: { url: true, caption: true, sourceName: true, sourceUrl: true },
+      },
     },
   });
 
@@ -182,6 +190,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
             </Link>{" "}
             {formatIssueNumber(issue.issueNumber)}
           </h1>
+          <VerifiedMark verified={isVerifiedIssue(issue)} />
           {canEdit && (
             <Link
               href={`/admin/magazines/${id}/issues/${issueId}`}
@@ -224,6 +233,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
             <IssueImages
               coverImage={issue.coverImage}
               tocImages={issue.tocImages}
+              photos={issue.photos}
               issueNumber={issue.issueNumber}
             />
             {issue.notes && (

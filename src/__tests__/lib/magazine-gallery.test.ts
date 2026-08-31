@@ -1,4 +1,4 @@
-import { buildMagazineGallery } from "@/lib/magazine-gallery";
+import { buildMagazineGallery, type GalleryPhoto } from "@/lib/magazine-gallery";
 
 // 電視遊樂雜誌：試刊號起《電視遊樂快訊》，第 2 期起本名，新刊 1 號起《GAME fans》。
 // 代表圖掛在 magazine.logoImage，本名那個時期自己的 logoImage 是空的。
@@ -12,6 +12,11 @@ const tvgm = {
     { title: "電視遊樂雜誌", logoImage: null, startIssue: { order: 3 } },
   ],
 };
+
+/** 一張額外圖片，只填測試在意的那幾欄。 */
+function photo(overrides: Partial<GalleryPhoto> & { url: string }): GalleryPhoto {
+  return { caption: null, sourceName: null, sourceUrl: null, ...overrides };
+}
 
 describe("buildMagazineGallery", () => {
   it("orders the mastheads by period and stands the代表圖 in for the period it names", () => {
@@ -85,11 +90,46 @@ describe("buildMagazineGallery", () => {
     ).toEqual(["電視遊樂快訊 刊頭", "GAME fans 刊頭"]);
   });
 
-  it("puts the shelf photographs last", () => {
-    const { images } = buildMagazineGallery({ ...tvgm, photos: ["https://blob/shelf.webp"] });
+  // 沒有說明也沒有來源的圖維持 Magazine.photos 那一欄原本的顯示。
+  it("puts the shelf photographs last, still labelled 藏書照", () => {
+    const { images } = buildMagazineGallery({
+      ...tvgm,
+      photos: [photo({ url: "https://blob/shelf.webp" })],
+    });
     expect(images[images.length - 1]).toEqual({
       url: "https://blob/shelf.webp",
       note: "藏書照",
+    });
+  });
+
+  it("carries a photograph's own caption and source", () => {
+    const { images } = buildMagazineGallery({
+      ...tvgm,
+      photos: [
+        photo({
+          url: "https://blob/auction.webp",
+          caption: "推測是 NO.213，封面右上角的日期只看得出 2002",
+          sourceName: "露天拍賣",
+          sourceUrl: "https://example.test/item",
+        }),
+      ],
+    });
+    expect(images[images.length - 1]).toEqual({
+      url: "https://blob/auction.webp",
+      note: "推測是 NO.213，封面右上角的日期只看得出 2002",
+      source: { name: "露天拍賣", url: "https://example.test/item" },
+    });
+  });
+
+  // 沒有說明時來源自己當說明，而不是退回「藏書照」——那句話對外部來源的圖是錯的。
+  it("lets the source stand in for a missing caption", () => {
+    const { images } = buildMagazineGallery({
+      ...tvgm,
+      photos: [photo({ url: "https://blob/forum.webp", sourceName: "巴哈姆特哈啦板" })],
+    });
+    expect(images[images.length - 1]).toEqual({
+      url: "https://blob/forum.webp",
+      source: { name: "巴哈姆特哈啦板", url: null },
     });
   });
 });

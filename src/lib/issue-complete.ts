@@ -21,21 +21,37 @@ import { prisma } from "./prisma";
  */
 const STAMP_FIELDS = new Set(["completeAt", "completeStaleAt", "tocReviewedAt"]);
 
+/** 核對過而且之後沒被動過——公開頁「已校訂」認的就是這一態。 */
+export function isVerifiedIssue(issue: {
+  completeAt: Date | string | null;
+  completeStaleAt: Date | string | null;
+}): boolean {
+  return Boolean(issue.completeAt) && !issue.completeStaleAt;
+}
+
 /**
- * 拿掉完備標記，給非 ADMIN 的讀取端用。
+ * 兩個時間戳換成一個布林，給非 ADMIN 的讀取端用。
  *
- * 只在畫面上藏起來是不夠的：`/api/issues` 是公開的，回整列就等於誰都讀得到。
- * 標記本身不是敏感資料，但「只有管理員看得見」若只擋得住 UI，那條規則就只是
- * 說說而已。
+ * 讀者看得到「這一期核對過了」（公開頁標成「已校訂」），但看不到什麼時候標的、
+ * 什麼時候失效的——那是編輯流程的細節，沒有理由外流。三態也在這裡收成兩態：
+ * 「完備・已變更」是內部待辦，對讀者而言它跟沒標過一樣。
+ *
+ * 只在畫面上藏是不夠的：`/api/issues` 是公開的，回整列就等於誰都讀得到。
  */
-export function withoutCompleteMark<T extends object>(issue: T): T {
+export function withoutCompleteMark<T extends object>(
+  issue: T
+): Omit<T, "completeAt" | "completeStaleAt"> & { isVerified: boolean } {
   const rest = { ...issue } as T & {
-    completeAt?: unknown;
-    completeStaleAt?: unknown;
+    completeAt?: Date | string | null;
+    completeStaleAt?: Date | string | null;
   };
+  const isVerified = isVerifiedIssue({
+    completeAt: rest.completeAt ?? null,
+    completeStaleAt: rest.completeStaleAt ?? null,
+  });
   delete rest.completeAt;
   delete rest.completeStaleAt;
-  return rest;
+  return { ...(rest as Omit<T, "completeAt" | "completeStaleAt">), isVerified };
 }
 
 /** 這次寫入有沒有動到資料本身（`diffChanges()` 的結果）。 */

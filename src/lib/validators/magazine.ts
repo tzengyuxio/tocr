@@ -30,10 +30,14 @@ export const magazineCreateSchema = z.object({
   aliases: z.array(z.string()).default([]),
   publisher: optionalText,
   issn: optionalText,
+  // 已知總期數。正整數，可空——查不到就留空，不是 0：0 的意思是「一期都沒出過」。
+  knownIssueCount: z.preprocess(
+    blankToNull,
+    z.coerce.number().int().positive("已知總期數要是正整數").nullable().optional()
+  ),
+  knownIssueCountSource: optionalText,
   description: optionalText,
   logoImage: optionalText,
-  // 藏書照，純網址。刊頭是識別、這些是收藏的證據，見 docs/data-conventions.md
-  photos: z.array(z.string()).default([]),
   // 報導哪一類遊戲。一本可以跨多類，見 prisma/schema.prisma 的 MagazineCategory
   categories: z.array(z.enum(MAGAZINE_CATEGORY_VALUES)).default([]),
   foundedDate: optionalEdtf,
@@ -46,7 +50,6 @@ export const magazineCreateSchema = z.object({
 // aliases back to empty. Drop the defaults for updates.
 export const magazineUpdateSchema = magazineCreateSchema.partial().extend({
   aliases: z.array(z.string()).optional(),
-  photos: z.array(z.string()).optional(),
   categories: z.array(z.enum(MAGAZINE_CATEGORY_VALUES)).optional(),
   isActive: z.boolean().optional(),
 });

@@ -586,7 +586,7 @@ npx tsx --env-file=.env.local scripts/find-orphan-blobs.ts
 
 ⚠️ **資料庫與 store 必須是同一個環境**。`.env.local` 的 `BLOB_READ_WRITE_TOKEN` 指向正式站的 store，而 `DATABASE_URL` 指向本機的 dev 庫——那樣算出來的「孤兒」其實是正式站正在用的圖。所以 `DATABASE_URL` 指著 localhost 時腳本預設拒跑，只想看它跑不跑得動再加 `--allow-local-db`。
 
-比對涵蓋每一個存得下網址的欄位：`magazines.logo_image`／`photos`、`issues.cover_image`／`toc_images`、`games.cover_image`、`ocr_records.image_url`、`users.image`。**新增存網址的欄位時要一起加進去**，漏掉一欄就會把還在用的圖報成孤兒。
+比對涵蓋每一個存得下網址的欄位：`magazines.logo_image`、`photos.url`（額外圖片，2026-08-31 起自成一張表）、`issues.cover_image`／`toc_images`、`games.cover_image`、`ocr_records.image_url`、`users.image`。**新增存網址的欄位時要一起加進去**，漏掉一欄就會把還在用的圖報成孤兒。
 
 ### 手動備份
 

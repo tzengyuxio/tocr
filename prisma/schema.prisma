@@ -146,6 +146,15 @@ model Magazine {
   // Not unique: a title change can carry the ISSN over, so two magazines
   // legitimately share one (電擊王 and 電玩通 both use 1561-8099).
   issn           String?
+  // 這本刊總共出過幾期，**已知**而不是應有——查到多少記多少，查不到就留空，
+  // 站上的收錄數仍然是 issues 自己數得出來的。仍在發行的刊沒有這個數字。
+  //
+  // 掛在刊系而不是刊名時期：改名刊的分段總數往往查不到，而讀者問的是「這本
+  // 總共出了幾期」。列表上改過名的刊一時期一列，那幾列因此只顯示收錄數。
+  knownIssueCount Int?    @map("known_issue_count")
+  // 上面那個數字哪來的（「國圖臺灣期刊論文索引」、某篇藏家整理文）。可空：
+  // 填寫負擔為零，查到出處時才有地方放——不必塞進 description 靠人讀。
+  knownIssueCountSource String? @map("known_issue_count_source")
   description    String?   @db.Text
   // The masthead, as one representative image: the thing a reader recognises
   // the magazine by. A long-running title redrew its standard type more than
@@ -153,13 +162,6 @@ model Magazine {
   // whichever one identifies it best rather than the site holding all of them.
   // Recording that evolution is a separate job with no home yet; see BACKLOG.
   logoImage      String?   @map("logo_image")
-  // Photographs of the physical copies: spines on a shelf, a stack, a bookcase.
-  // Evidence that the run exists, not part of the magazine's design, and not
-  // an identifier -- the list page shows the masthead, never these.
-  //
-  // A single issue's cover belongs to neither field. Copying one up here is how
-  // the production data ended up storing the same photograph twice.
-  photos         String[]  @default([])
   // What kinds of games the magazine covered. A list rather than one value:
   // a long-running title crosses over -- 電玩通 moved from consoles into online
   // games, 電腦玩家 covered both by its final years -- and a single column would
@@ -182,6 +184,7 @@ model Magazine {
   issues    Issue[]
   titles    MagazineTitle[]
   oldSlugs  MagazineSlug[]
+  photos    Photo[]
 
   @@index([issn])
   @@index([foundedSort])
@@ -281,6 +284,7 @@ model Issue {
   // Relations
   magazine Magazine  @relation(fields: [magazineId], references: [id], onDelete: Cascade)
   articles Article[]
+  photos   Photo[]
   titlePeriodStart MagazineTitle?
 
   @@unique([magazineId, issueNumber])
@@ -333,6 +337,51 @@ model MagazineTitle {
 }
 
 // ==================== 文章/目錄 ====================
+
+/**
+ * 額外圖片：來源不是本站的圖，加上原本存在 `Magazine.photos` 的藏書照。
+ *
+ * 站上其他的圖各有固定用途（刊頭、封面、目錄頁掃描），而且都沒有記出處的地方。
+ * 這張表收的是另一類——網路上看到人分享的、網拍商品頁截下來的——它們要記得住
+ * 出處，也要分得出哪些還沒確認來路、不該公開。設計見
+ * docs/plans/2026-08-31-photos-design.md。
+ *
+ * 掛雜誌或掛單期，二擇一。指向「尚未建檔的期」的圖不給自由文字指向欄位：圖上
+ * 讀得出期號的就先建一筆只有期號的期再掛上去，讀不出來的掛雜誌、推測寫進
+ * caption。自由指向欄位查不了也排不了，見 docs/backlog/masthead-evolution.md。
+ */
+model Photo {
+  id         String @id @default(cuid())
+  // 二擇一，由 photos_one_owner 約束把關；Prisma 表達不了 XOR，所以那條
+  // CHECK 手寫在 migration 20260831000000_add_photos 裡。
+  magazineId String? @map("magazine_id")
+  issueId    String? @map("issue_id")
+
+  url        String
+  // 可空：Magazine.photos 遷進來的那批本來就沒有說明。也是「看不出期號的圖」
+  // 寫推測的地方。
+  caption    String? @db.Text
+  // 出處。純文字，因為網拍站名、論壇文章標題、分享者代號沒有共同結構。
+  // 兩欄都空時公開頁就不標來源。授權不記。
+  sourceName String? @map("source_name")
+  sourceUrl  String? @map("source_url")
+  // 讀者看不看得到。新上傳的多半來路還沒確認，預設藏起來；公開頁靠這欄過濾，
+  // 而且濾在查詢層——濾在畫面層等於把未公開的網址一起送到瀏覽器。
+  isPublic   Boolean @default(false) @map("is_public")
+  order      Int     @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // 雜誌或單期刪了，圖沒有歸屬。Blob 上的檔不跟著刪，與 coverImage 一致——
+  // 那種孤兒由 scripts/find-orphan-blobs.ts 收。
+  magazine Magazine? @relation(fields: [magazineId], references: [id], onDelete: Cascade)
+  issue    Issue?    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([magazineId, order])
+  @@index([issueId, order])
+  @@map("photos")
+}
 
 model Article {
   id        String   @id @default(cuid())
