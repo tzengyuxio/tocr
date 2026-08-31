@@ -58,11 +58,14 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
           )}
           {/* 標記跟期號同一行：底下那行只有 182px 寬，日期與篇數已經用滿，
               第三個元素會把日期折成兩行。期號短，讓得出這個位置。 */}
-          <div className="flex items-center gap-1.5">
-            <p className="min-w-0 flex-1 truncate font-medium text-sm">
+          {/* text-sm 掛在這一層而不只在 <p> 上：印的大小是 em，掛在 <p> 裡面的話
+              它繼承到的是外層 16px，會比旁邊的期號還大一號。 */}
+          <div className="flex items-center gap-1.5 text-sm">
+            <p className="min-w-0 flex-1 truncate font-medium">
               {formatIssueNumber(issue.issueNumber)}
             </p>
-            <VerifiedMark verified={issue.isVerified ?? false} />
+            {/* 卡片的字本來就小（14px），照標題那個比例會縮到看不出形狀。 */}
+            <VerifiedMark verified={issue.isVerified ?? false} sizeEm={0.9} />
           </div>
           {issue.title && (
             <p className="text-xs text-muted-foreground line-clamp-1">
