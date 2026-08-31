@@ -93,13 +93,21 @@ export function MagazineGallery({
           )}
         </div>
 
-        {(current.note || many) && (
+        {(current.note || current.source || many) && (
           /* The arrows repeat here, beside the counter, because the pair over
              the image only appears once the pointer is near it -- and on a
              touch screen not at all. This row is the one that is always
              visible, so it carries the controls that have to be found. */
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span className="min-w-0 truncate">{current.note}</span>
+            <span className="min-w-0 truncate">
+              {current.note}
+              {current.source && (
+                <>
+                  {current.note && "　"}
+                  來源：<SourceName source={current.source} />
+                </>
+              )}
+            </span>
             {many && (
               <span className="flex shrink-0 items-center gap-1">
                 <CaptionArrow
@@ -150,7 +158,7 @@ export function MagazineGallery({
               alt={alt}
               className="max-h-[94vh] w-auto max-w-[94vw] object-contain"
             />
-            {(many || current.note) && (
+            {(many || current.note || current.source) && (
               <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full bg-black/60 px-4 py-2 text-white">
                 {many && (
                   <Button
@@ -166,8 +174,10 @@ export function MagazineGallery({
                 )}
                 <span className="max-w-[60vw] truncate text-sm">
                   {current.note}
+                  {current.source &&
+                    `${current.note ? "　" : ""}來源：${current.source.name}`}
                   {many &&
-                    `${current.note ? "　" : ""}${index + 1} / ${images.length}`}
+                    `${current.note || current.source ? "　" : ""}${index + 1} / ${images.length}`}
                 </span>
                 {many && (
                   <Button
@@ -187,6 +197,22 @@ export function MagazineGallery({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/* 出處。有網址就是連結，只有名字就是純文字——兩者皆無的圖是本站藏品，
+   buildMagazineGallery 根本不會給 source。 */
+function SourceName({ source }: { source: { name: string; url: string | null } }) {
+  if (!source.url) return <>{source.name}</>;
+  return (
+    <a
+      href={source.url}
+      target="_blank"
+      rel="nofollow noopener"
+      className="underline underline-offset-2 hover:text-foreground"
+    >
+      {source.name}
+    </a>
   );
 }
 

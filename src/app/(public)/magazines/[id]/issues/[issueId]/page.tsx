@@ -132,6 +132,12 @@ export default async function IssueDetailPage({ params }: PageProps) {
           },
         },
       },
+      // 未公開的濾在查詢層，同 /magazines/[id]。
+      photos: {
+        where: { isPublic: true },
+        orderBy: { order: "asc" },
+        select: { url: true, caption: true, sourceName: true, sourceUrl: true },
+      },
     },
   });
 
@@ -224,6 +230,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
             <IssueImages
               coverImage={issue.coverImage}
               tocImages={issue.tocImages}
+              photos={issue.photos}
               issueNumber={issue.issueNumber}
             />
             {issue.notes && (

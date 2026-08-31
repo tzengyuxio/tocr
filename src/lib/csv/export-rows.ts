@@ -13,8 +13,14 @@ import { escapeCsvField } from "./escape";
  * 網址只認它，還原後換一個就等於把所有分享過的連結弄壞。
  *
  * 衍生欄位不收（publish_sort、founded_sort、時間戳、id）——它們寫入時算得出來。
- * 刊名時期（MagazineTitle）與退役 slug（MagazineSlug）也不收：CSV 是雜誌／單期／
- * 文章三層的扁平格式，一本刊有幾筆刊名時期跟它有幾期沒有關係，塞不進同一行。
+ * 刊名時期（MagazineTitle）、退役 slug（MagazineSlug）與額外圖片（Photo）也不收：
+ * CSV 是雜誌／單期／文章三層的扁平格式，一本刊有幾筆刊名時期、幾張圖，跟它有幾期
+ * 沒有關係，塞不進同一行。
+ *
+ * Photo 是**待決不是想清楚了不收**：它接手了原本的 magazines.photos，而那一欄的
+ * 網址本來備份得到，所以這是一筆保真度的淨損失。等關聯資料的匯出成形（刊名時期
+ * 也還在等同一件事）一起解，不為圖片單獨長出第二種匯出格式。
+ * 見 docs/plans/2026-08-31-photos-design.md。
  * 兩者由 src/__tests__/lib/export-schema-coverage.test.ts 明列，schema 一加欄位
  * 那支測試就會要求在這裡補上或寫進豁免清單。
  */
@@ -32,7 +38,6 @@ export const CSV_HEADERS = [
   "ended_date",
   "is_active",
   "logo_image",
-  "photos",
   "issue_number",
   "alt_numbers",
   "volume_number",
@@ -59,7 +64,7 @@ export const CSV_HEADERS = [
   "games",
 ];
 
-const MAGAZINE_FIELD_COUNT = 14;
+const MAGAZINE_FIELD_COUNT = 13;
 const ISSUE_FIELD_COUNT = 15;
 const ARTICLE_FIELD_COUNT = 9;
 
@@ -80,7 +85,6 @@ export interface ExportMagazine {
   endedDate: string | null;
   isActive: boolean;
   logoImage: string | null;
-  photos: string[];
 }
 
 export interface ExportArticle {
@@ -167,7 +171,6 @@ export function rowsFor(
     magazine.endedDate ?? "",
     magazine.isActive ? "true" : "false",
     magazine.logoImage ?? "",
-    list(magazine.photos),
   ];
 
   if (issues.length === 0) {

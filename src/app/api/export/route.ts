@@ -46,7 +46,6 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       endedDate: true,
       isActive: true,
       logoImage: true,
-      photos: true,
     },
   });
 

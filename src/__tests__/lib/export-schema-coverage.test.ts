@@ -29,7 +29,6 @@ const EXPORTED: Record<string, Record<string, string>> = {
     endedDate: "ended_date",
     isActive: "is_active",
     logoImage: "logo_image",
-    photos: "photos",
   },
   Issue: {
     issueNumber: "issue_number",

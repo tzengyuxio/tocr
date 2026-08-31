@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { IssueForm } from "@/components/magazine/IssueForm";
+import { PhotoSection } from "@/components/PhotoSection";
 import { isSessionAdmin } from "@/lib/require-editor";
 import { ArticleListClient } from "@/components/article/ArticleListClient";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,17 @@ export default async function EditIssuePage({ params }: PageProps) {
     include: {
       magazine: {
         select: { id: true, name: true },
+      },
+      photos: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          url: true,
+          caption: true,
+          sourceName: true,
+          sourceUrl: true,
+          isPublic: true,
+        },
       },
       articles: {
         orderBy: { sortOrder: "asc" },
@@ -159,6 +171,12 @@ export default async function EditIssuePage({ params }: PageProps) {
               )}
             </CardContent>
           </Card>
+
+          <PhotoSection
+            owner={{ issueId: issue.id }}
+            photos={issue.photos}
+            description="這一期的額外圖片：另一版封面、封底，或網路上看到的、網拍截下來的圖。封面與目錄頁掃描請走左邊的表單"
+          />
 
           {/* 文章列表 */}
           <ArticleListClient

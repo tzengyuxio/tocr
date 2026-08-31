@@ -43,11 +43,10 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
       mag.endedDate ?? "",
       mag.isActive ? "true" : "false",
       mag.logoImage ?? "",
-      mag.photos.join(";"),
     ];
 
     if (mag.issues.length === 0) {
-      // 14 magazine fields + 24 blanks against a 38-column header. The
+      // 13 magazine fields + 24 blanks against a 37-column header. The
       // original emitted a short row here, which a strict parser rejects or
       // misaligns; see the column-count assertions in export-rows.test.ts.
       rows.push([...magFields, ...Array(24).fill("")]);
@@ -175,7 +174,6 @@ const FIXTURE: Magazine[] = [
     endedDate: "2006-01",
     isActive: false,
     logoImage: "https://blob.test/logo-acer.webp",
-    photos: ["https://blob.test/shelf-1.webp", "https://blob.test/shelf-2.webp"],
     issues: Array.from({ length: 23 }, (_, i) => issue(i + 1, (i % 4) + 1)),
   },
   {
@@ -193,7 +191,6 @@ const FIXTURE: Magazine[] = [
     endedDate: null,
     isActive: true,
     logoImage: null,
-    photos: [],
     issues: [],
   },
   {
@@ -210,7 +207,6 @@ const FIXTURE: Magazine[] = [
     endedDate: null,
     isActive: true,
     logoImage: null,
-    photos: [],
     // Includes an issue with no articles.
     issues: [issue(100, 2), issue(101, 0), issue(102, 3)],
   },

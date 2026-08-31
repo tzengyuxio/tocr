@@ -12,6 +12,7 @@ export type EditAction = "CREATE" | "UPDATE" | "DELETE";
 export type EntityType =
   | "Magazine"
   | "MagazineTitle"
+  | "Photo"
   | "Issue"
   | "Article"
   | "Tag"

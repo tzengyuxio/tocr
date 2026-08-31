@@ -124,7 +124,7 @@ ALTER TABLE magazines DROP COLUMN photos;
 **新元件 `PhotoManager`，不動 `MultiImageUpload`。** 後者只認 `string[]`，而
 `IssueForm` 的目錄頁掃描圖也在用它；把四個欄位塞進去會讓目錄頁白背包袱。上傳流程
 複用（`downscaleImage` → `/api/upload`，folder 用 `photos`），差別是上傳完建一筆
-`Photo`，底下跟著 caption、來源名、來源網址、公開開關，加上拖曳排序。
+`Photo`，底下跟著 caption、來源名、來源網址、公開開關，加上上／下移一格的排序（實作時改的：一個掛點通常只有幾張，拖曳的機械成本換不到什麼）。
 
 **存檔走獨立的 `/api/photos` CRUD，不併進表單送出。** `Photo` 掛得到兩種對象，走
 表單就要在 `MagazineForm` 和 `IssueForm` 各寫一份陣列 diff。權限沿用

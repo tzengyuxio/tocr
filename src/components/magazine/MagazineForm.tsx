@@ -21,7 +21,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { MultiImageUpload } from "@/components/ui/multi-image-upload";
 import {
   magazineCreateSchema,
   type MagazineCreateInput,
@@ -61,7 +60,6 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
       issn: initialData?.issn || "",
       description: initialData?.description || "",
       logoImage: initialData?.logoImage || "",
-      photos: initialData?.photos || [],
       categories: initialData?.categories || [],
       foundedDate: initialData?.foundedDate || "",
       endedDate: initialData?.endedDate || "",
@@ -312,23 +310,6 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                     onChange={field.onChange}
                     folder="magazines"
                     description="封面上的刊名字樣，一本一張。改版過的刊選最認得出來的那一版"
-                  />
-                )}
-              />
-            </div>
-
-            {/* 藏書照 */}
-            <div className="space-y-2 @md:col-span-2">
-              <Controller
-                name="photos"
-                control={control}
-                render={({ field }) => (
-                  <MultiImageUpload
-                    label="藏書照"
-                    value={field.value || []}
-                    onChange={field.onChange}
-                    folder="magazines"
-                    description="實體收藏的照片（書背、書櫃、整疊）。單期的封面請放在該期底下，不要放這裡"
                   />
                 )}
               />

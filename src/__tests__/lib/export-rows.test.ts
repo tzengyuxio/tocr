@@ -21,7 +21,6 @@ const magazine: ExportMagazine = {
   endedDate: null,
   isActive: false,
   logoImage: null,
-  photos: [],
 };
 
 function article(overrides: Partial<ExportArticle> = {}): ExportArticle {
@@ -166,7 +165,7 @@ describe("rowsFor", () => {
   // resolve if the same code comes back.
   it("carries the admin-only fields a restore needs", () => {
     const [line] = rowsFor(
-      { ...magazine, aliases: ["ACE"], categories: ["PC"], endedDate: "2006-01", logoImage: "logo.webp", photos: ["a.webp", "b.webp"] },
+      { ...magazine, aliases: ["ACE"], categories: ["PC"], endedDate: "2006-01", logoImage: "logo.webp" },
       [
         issue({
           slug: "1999-05",
@@ -185,7 +184,6 @@ describe("rowsFor", () => {
     expect(field(line, "categories")).toBe("PC");
     expect(field(line, "ended_date")).toBe("2006-01");
     expect(field(line, "logo_image")).toBe("logo.webp");
-    expect(field(line, "photos")).toBe("a.webp;b.webp");
     expect(field(line, "issue_slug")).toBe("1999-05");
     expect(field(line, "issue_code")).toBe("a1b2c3d4");
     expect(field(line, "cover_image")).toBe("cover.webp");

@@ -94,6 +94,13 @@ export default async function MagazineDetailPage({
           startIssue: { select: { order: true } },
         },
       },
+      // 未公開的圖濾在這裡，不是濾在畫面上：濾在畫面上等於把還沒確認來路的
+      // 網址一起送到瀏覽器。
+      photos: {
+        where: { isPublic: true },
+        orderBy: { order: "asc" },
+        select: { url: true, caption: true, sourceName: true, sourceUrl: true },
+      },
     },
   });
 

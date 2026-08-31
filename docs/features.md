@@ -95,9 +95,9 @@ ISSN 刻意不設唯一性、日期採 EDTF 等建檔準則見 [data-conventions
 
 **匯出是備份，匯入是批次建檔的入口，兩者刻意不對稱**：匯出的欄位只會比匯入多，也不保證匯出的檔餵得回匯入。所以卷號（`volume_number`）在匯出裡留著——它還在 schema、還有值，備份漏掉就不是備份——但範本與匯入頁的欄位說明不再提供它，因為後台表單也已經不顯示（見 [data-conventions.md](data-conventions.md#卷號沒有在表單上)）。
 
-**備份要還原得回一個能用的站**，所以匯出也收整批只出現在後台的欄位（2026-08-30）：雜誌的 `magazine_slug`、`aliases`、`categories`、`ended_date`、`logo_image`、`photos`，單期的 `issue_slug`、`issue_code`、`cover_image`、`toc_images`、`toc_reviewed_at`、`complete_at`、`issue_order`。少了它們，還原得回一堆資料卻還原不回站——網址全變成 cuid、圖全不見、期數排序全跑掉。`issue_code` 尤其：已經分享出去的 `/i/<code>` 網址只認它。
+**備份要還原得回一個能用的站**，所以匯出也收整批只出現在後台的欄位（2026-08-30）：雜誌的 `magazine_slug`、`aliases`、`categories`、`ended_date`、`logo_image`，單期的 `issue_slug`、`issue_code`、`cover_image`、`toc_images`、`toc_reviewed_at`、`complete_at`、`issue_order`。少了它們，還原得回一堆資料卻還原不回站——網址全變成 cuid、圖全不見、期數排序全跑掉。`issue_code` 尤其：已經分享出去的 `/i/<code>` 網址只認它。
 
-衍生欄位不收（`publish_sort`、`founded_sort`、時間戳、id），刊名時期與退役 slug 也不收——CSV 是雜誌／單期／文章三層的扁平格式，一本刊有幾筆刊名時期跟它有幾期無關，塞不進同一行。**這份分類由 `src/__tests__/lib/export-schema-coverage.test.ts` 釘住**：schema 一加欄位，那支測試就會要求歸類成「收」「衍生不收」或「還沒決定」，因為備份漏欄不會有症狀，要到還原那天才發現。
+衍生欄位不收（`publish_sort`、`founded_sort`、時間戳、id），刊名時期與退役 slug 也不收——CSV 是雜誌／單期／文章三層的扁平格式，一本刊有幾筆刊名時期跟它有幾期無關，塞不進同一行。額外圖片（`Photo`）同理不收，但它歸的是「還沒決定」：它接手了原本的 `photos` 欄，而那一欄的網址本來備份得到，所以這是一筆保真度的淨損失，等關聯資料的匯出成形一起解（2026-08-31，見 [docs/plans/2026-08-31-photos-design.md](plans/2026-08-31-photos-design.md)）。**這份分類由 `src/__tests__/lib/export-schema-coverage.test.ts` 釘住**：schema 一加欄位，那支測試就會要求歸類成「收」「衍生不收」或「還沒決定」，因為備份漏欄不會有症狀，要到還原那天才發現。
 
 需要登入才能下載。回應是串流的，單期以 50 筆為一批讀取，資料量成長不會撐爆記憶體。
 
