@@ -200,7 +200,7 @@ export function MagazineGallery({
   );
 }
 
-/* 出處。有網址就是連結，只有名字就是純文字——兩者皆無的圖是本站藏品，
+/* 出處。有網址就是連結，只有名字就是純文字——沒填來源的圖不標，
    buildMagazineGallery 根本不會給 source。 */
 function SourceName({ source }: { source: { name: string; url: string | null } }) {
   if (!source.url) return <>{source.name}</>;

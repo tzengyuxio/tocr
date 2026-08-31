@@ -4,7 +4,7 @@ import { sortTitlePeriods } from "./magazine-title";
 export interface GalleryImage {
   url: string;
   note?: string;
-  /** 圖不是本站藏品時的出處。刊頭與封面沒有這個。 */
+  /** 圖的出處，沒填就是 undefined。刊頭與封面沒有這個。 */
   source?: { name: string; url: string | null };
 }
 
@@ -78,8 +78,8 @@ export function buildMagazineGallery(input: MagazineGalleryInput): {
     : input.standIn
       ? [input.standIn]
       : [];
-  // 說明優先，沒有說明就讓來源自己當說明；兩個都沒有的是本站藏品，維持原本
-  // 那句「藏書照」——Magazine.photos 遷成 Photo 之後，那批就是走這條。
+  // 說明優先，沒有說明就讓來源自己當說明；兩個都沒有的維持原本那句
+  // 「藏書照」——Magazine.photos 遷成 Photo 之後，那批就是走這條。
   images.push(
     ...input.photos.map((photo) => ({
       url: photo.url,

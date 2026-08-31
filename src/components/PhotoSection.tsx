@@ -197,7 +197,7 @@ export function PhotoSection({ owner, photos, description }: PhotoSectionProps) 
                       value={value(photo, "sourceName")}
                       onChange={(e) => edit(photo.id, "sourceName", e.target.value)}
                       onBlur={() => commit(photo, "sourceName")}
-                      placeholder="來源，如露天拍賣、巴哈姆特哈啦板"
+                      placeholder="圖片來源，如露天拍賣、巴哈姆特哈啦板"
                     />
                     <Input
                       value={value(photo, "sourceUrl")}
@@ -207,7 +207,7 @@ export function PhotoSection({ owner, photos, description }: PhotoSectionProps) 
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    來源留空＝本站藏品，公開頁就不標來源。
+                    來源留空時，公開頁就不標圖片來源。
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col gap-1">

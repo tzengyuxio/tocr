@@ -137,8 +137,8 @@ export function IssueImages({
                   </button>
                   <div className="min-w-0 text-xs text-muted-foreground">
                     {photo.caption && <p>{photo.caption}</p>}
-                    {/* 來源兩欄皆空的是本站藏品，什麼都不標——那正是它與外部
-                        來源在畫面上的分野。 */}
+                    {/* 沒填來源就什麼都不標——標得出出處的圖與標不出的，
+                        在畫面上因此分得開。 */}
                     {photo.sourceName && (
                       <p>
                         來源：

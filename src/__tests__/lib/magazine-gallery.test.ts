@@ -90,7 +90,7 @@ describe("buildMagazineGallery", () => {
     ).toEqual(["電視遊樂快訊 刊頭", "GAME fans 刊頭"]);
   });
 
-  // 沒有說明也沒有來源的圖就是本站藏品，維持 Magazine.photos 那一欄的顯示。
+  // 沒有說明也沒有來源的圖維持 Magazine.photos 那一欄原本的顯示。
   it("puts the shelf photographs last, still labelled 藏書照", () => {
     const { images } = buildMagazineGallery({
       ...tvgm,
