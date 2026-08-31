@@ -31,6 +31,7 @@ import { periodicalJsonLd } from "@/lib/structured-data";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
 import { magazineSubtitle } from "@/lib/magazine-browse";
+import { splitLinks } from "@/lib/linkify";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -297,7 +298,25 @@ export default async function MagazineDetailPage({
             </p>
           </div>
           {magazine.description && (
-            <p className="mt-4 text-muted-foreground">{magazine.description}</p>
+            // whitespace-pre-line 讓分段顯示得出來（同 Issue.notes 的寫法），
+            // splitLinks 讓寫在描述裡的出處點得開——考證來源常常是一條網址。
+            <p className="mt-4 whitespace-pre-line text-muted-foreground">
+              {splitLinks(magazine.description).map((segment, i) =>
+                segment.type === "link" ? (
+                  <a
+                    key={i}
+                    href={segment.value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    {segment.value}
+                  </a>
+                ) : (
+                  segment.value
+                )
+              )}
+            </p>
           )}
         </div>
       </div>
