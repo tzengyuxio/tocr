@@ -37,6 +37,8 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
       mag.aliases.join(";"),
       mag.publisher ?? "",
       mag.issn ?? "",
+      mag.knownIssueCount?.toString() ?? "",
+      mag.knownIssueCountSource ?? "",
       mag.description ?? "",
       mag.categories.join(";"),
       mag.foundedDate ?? "",
@@ -46,7 +48,7 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
     ];
 
     if (mag.issues.length === 0) {
-      // 13 magazine fields + 24 blanks against a 37-column header. The
+      // 15 magazine fields + 24 blanks against a 39-column header. The
       // original emitted a short row here, which a strict parser rejects or
       // misaligns; see the column-count assertions in export-rows.test.ts.
       rows.push([...magFields, ...Array(24).fill("")]);
@@ -168,6 +170,8 @@ const FIXTURE: Magazine[] = [
     aliases: ["Amazing Computer Entertainment", "ACE"],
     publisher: "第三波",
     issn: "1021-8033",
+    knownIssueCount: 187,
+    knownIssueCountSource: "國圖臺灣期刊論文索引",
     description: "含,逗號的描述",
     categories: ["PC"],
     foundedDate: "1991-08",
@@ -185,6 +189,8 @@ const FIXTURE: Magazine[] = [
     aliases: [],
     publisher: null,
     issn: null,
+    knownIssueCount: null,
+    knownIssueCountSource: null,
     description: null,
     categories: [],
     foundedDate: null,
@@ -201,6 +207,8 @@ const FIXTURE: Magazine[] = [
     aliases: [],
     publisher: null,
     issn: null,
+    knownIssueCount: null,
+    knownIssueCountSource: null,
     description: null,
     categories: ["CONSOLE", "PC"],
     foundedDate: "1998",

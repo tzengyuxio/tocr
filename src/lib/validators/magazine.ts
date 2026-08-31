@@ -30,6 +30,12 @@ export const magazineCreateSchema = z.object({
   aliases: z.array(z.string()).default([]),
   publisher: optionalText,
   issn: optionalText,
+  // 已知總期數。正整數，可空——查不到就留空，不是 0：0 的意思是「一期都沒出過」。
+  knownIssueCount: z.preprocess(
+    blankToNull,
+    z.coerce.number().int().positive("已知總期數要是正整數").nullable().optional()
+  ),
+  knownIssueCountSource: optionalText,
   description: optionalText,
   logoImage: optionalText,
   // 報導哪一類遊戲。一本可以跨多類，見 prisma/schema.prisma 的 MagazineCategory

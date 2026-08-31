@@ -23,6 +23,8 @@ const EXPORTED: Record<string, Record<string, string>> = {
     aliases: "aliases",
     publisher: "publisher",
     issn: "issn",
+    knownIssueCount: "known_issue_count",
+    knownIssueCountSource: "known_issue_count_source",
     description: "description",
     categories: "categories",
     foundedDate: "founded_date",

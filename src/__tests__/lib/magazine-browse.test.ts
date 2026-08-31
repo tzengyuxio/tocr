@@ -126,6 +126,8 @@ describe("magazineDisplayUnits 的沿革標記", () => {
     foundedDate: null,
     endedDate: null,
     foundedSort: null,
+    knownIssueCount: null,
+    knownIssueCountSource: null,
     isActive: false,
     titles: [
       { id: "t1", title: "電腦遊戲世界", startIssue: { order: 1 }, logoImage: null, titleParallel: null, titleSource: null },
@@ -159,6 +161,29 @@ describe("magazineDisplayUnits 的沿革標記", () => {
     const units = magazineDisplayUnits(halfBuilt, issues);
 
     expect(units.every((u) => u.previousTitle === null)).toBe(true);
+  });
+
+  // 已知總期數掛在刊系上，而改過名的刊一時期一列——把同一個數字重複三次，
+  // 讀者只會以為每一段都出了那麼多期。
+  it("keeps the known total off the period rows", () => {
+    const units = magazineDisplayUnits(
+      { ...magazine, knownIssueCount: 24, knownIssueCountSource: "國圖" },
+      issues
+    );
+
+    expect(units).toHaveLength(3);
+    expect(units.every((u) => u.knownIssueCount === null)).toBe(true);
+  });
+
+  it("carries the known total for a magazine that never changed its name", () => {
+    const units = magazineDisplayUnits(
+      { ...magazine, titles: [], knownIssueCount: 24, knownIssueCountSource: "國圖" },
+      issues
+    );
+
+    expect(units[0].knownIssueCount).toBe(24);
+    expect(units[0].knownIssueCountSource).toBe("國圖");
+    expect(units[0].issueCount).toBe(6);
   });
 
   it("leaves it empty for a magazine that never changed its name", () => {
@@ -218,6 +243,8 @@ describe("magazineDisplayUnits 的逐時期副標", () => {
     foundedDate: null,
     endedDate: null,
     foundedSort: null,
+    knownIssueCount: null,
+    knownIssueCountSource: null,
     isActive: false,
     titles: [
       {

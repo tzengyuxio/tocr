@@ -146,6 +146,15 @@ model Magazine {
   // Not unique: a title change can carry the ISSN over, so two magazines
   // legitimately share one (電擊王 and 電玩通 both use 1561-8099).
   issn           String?
+  // 這本刊總共出過幾期，**已知**而不是應有——查到多少記多少，查不到就留空，
+  // 站上的收錄數仍然是 issues 自己數得出來的。仍在發行的刊沒有這個數字。
+  //
+  // 掛在刊系而不是刊名時期：改名刊的分段總數往往查不到，而讀者問的是「這本
+  // 總共出了幾期」。列表上改過名的刊一時期一列，那幾列因此只顯示收錄數。
+  knownIssueCount Int?    @map("known_issue_count")
+  // 上面那個數字哪來的（「國圖臺灣期刊論文索引」、某篇藏家整理文）。可空：
+  // 填寫負擔為零，查到出處時才有地方放——不必塞進 description 靠人讀。
+  knownIssueCountSource String? @map("known_issue_count_source")
   description    String?   @db.Text
   // The masthead, as one representative image: the thing a reader recognises
   // the magazine by. A long-running title redrew its standard type more than

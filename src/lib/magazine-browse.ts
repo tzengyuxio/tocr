@@ -197,6 +197,15 @@ export interface MagazineDisplayUnit {
   /** 已格式化的發行期間，如「1999 年 8 月 – 2000 年 3 月」；不明則空字串。 */
   span: string;
   issueCount: number;
+  /**
+   * 這本刊已知總共出過幾期（`Magazine.knownIssueCount`），沒查到就是 null。
+   *
+   * **只有沒改過名的刊帶得到值**：總數掛在刊系上，而改過名的刊一時期一列，
+   * 把同一個數字重複三次講不出任何東西。
+   */
+  knownIssueCount: number | null;
+  /** 已知總期數的出處，可空。列表把它掛在 title 上。 */
+  knownIssueCountSource: string | null;
   /** 期數徽章的樣式用：非末段的時期一律視為已結束。 */
   isActive: boolean;
   /** 創刊日排序鍵；時期卡用該段第一期的 publishSort。null 排最後。 */
@@ -215,6 +224,8 @@ interface DisplayMagazine {
   foundedDate: string | null;
   endedDate: string | null;
   foundedSort: Date | null;
+  knownIssueCount: number | null;
+  knownIssueCountSource: string | null;
   isActive: boolean;
   titles: (TitlePeriod & {
     id: string;
@@ -315,6 +326,8 @@ export function magazineDisplayUnits(
           "創刊"
         ),
         issueCount: magazine._count.issues,
+        knownIssueCount: magazine.knownIssueCount,
+        knownIssueCountSource: magazine.knownIssueCountSource,
         isActive: magazine.isActive,
         sortDate: magazine.foundedSort,
       },
@@ -370,6 +383,9 @@ export function magazineDisplayUnits(
       logoImage: segment.period?.logoImage ?? magazine.logoImage,
       span: spanLabel(start, end, isFirst ? "創刊" : "起"),
       issueCount: segment.issues.length,
+      // 時期列不帶已知總數：那是整條刊系的數字，見 MagazineDisplayUnit 的註解。
+      knownIssueCount: null,
+      knownIssueCountSource: null,
       isActive: magazine.isActive && isLast,
       sortDate: isFirst ? (magazine.foundedSort ?? first) : first,
     };

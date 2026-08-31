@@ -40,6 +40,8 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       aliases: true,
       publisher: true,
       issn: true,
+      knownIssueCount: true,
+      knownIssueCountSource: true,
       description: true,
       categories: true,
       foundedDate: true,

@@ -15,6 +15,8 @@ const magazine: ExportMagazine = {
   aliases: [],
   publisher: "第三波",
   issn: "1021-8033",
+  knownIssueCount: null,
+  knownIssueCountSource: null,
   description: null,
   categories: [],
   foundedDate: "1991-08",

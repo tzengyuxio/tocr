@@ -32,6 +32,8 @@ export const CSV_HEADERS = [
   "aliases",
   "publisher",
   "issn",
+  "known_issue_count",
+  "known_issue_count_source",
   "description",
   "categories",
   "founded_date",
@@ -64,7 +66,7 @@ export const CSV_HEADERS = [
   "games",
 ];
 
-const MAGAZINE_FIELD_COUNT = 13;
+const MAGAZINE_FIELD_COUNT = 15;
 const ISSUE_FIELD_COUNT = 15;
 const ARTICLE_FIELD_COUNT = 9;
 
@@ -79,6 +81,8 @@ export interface ExportMagazine {
   aliases: string[];
   publisher: string | null;
   issn: string | null;
+  knownIssueCount: number | null;
+  knownIssueCountSource: string | null;
   description: string | null;
   categories: string[];
   foundedDate: string | null;
@@ -165,6 +169,8 @@ export function rowsFor(
     list(magazine.aliases),
     magazine.publisher ?? "",
     magazine.issn ?? "",
+    magazine.knownIssueCount?.toString() ?? "",
+    magazine.knownIssueCountSource ?? "",
     magazine.description ?? "",
     list(magazine.categories),
     magazine.foundedDate ?? "",
