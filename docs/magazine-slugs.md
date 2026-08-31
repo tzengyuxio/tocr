@@ -38,6 +38,10 @@ enum 的數字就是判定順序：**1 → 2 → 3**，命中即停；4 是規�
 後者把「遊樂」丟掉了，讀起來像「電視快訊」。
 與 `3do-qingbao` 同型——一段拉丁、一段拼音的混合段是允許的。
 
+`software` 是第二個這樣的詞（2026-08-31）。語料裡三本刊帶「軟體」，而既有兩本都自印拉丁形
+——《軟體之星》`softstar`、《軟體世界雜誌》`swm`——所以走 3.PINYIN 的《立東軟體》取
+`lidong-software`，不是 `lidong-ruanti`。
+
 **可丟棄的體裁尾綴（封閉清單）**：雜誌、月刊、週刊、半月刊、雙週刊、旬刊，
 Magazine、Weekly、Biweekly、Monthly、Quarterly。
 **不在清單內**：報導、快報、通訊、情報、秘笈、總合情報誌——這些在本語料裡帶區別力。
@@ -107,6 +111,7 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 任天堂程式解法大公開 | `rentiantang-jiefa` | `huatai-miji` | 3.PINYIN | 17 | — | 創刊名，第 5–6 期；首末詞輸出 rentiantang-dagongkai 破 20 字元上限，末詞改取「解法」 |
 | 華泰任天堂秘笈 | `huatai-miji` | `huatai-miji` | 3.PINYIN | 11 | `htntd` | 第 7–28 期，slug 錨定此期；未授權翻印ファミマガ，不掛 -tw |
 | 新世紀 HYPER PlayStation | `hyper-ps-tw` | `hyper-ps-tw` | 2.SOURCE | 11 | `hps-tw` |  |
+| 立東軟體 | `lidong-software` | `lidong-software` | 3.PINYIN | 15 | — | 封面無拉丁刊名；末段用固定題材詞 `software` 而非 `ruanti`，同語料的《軟體之星》`softstar`、《軟體世界雜誌》`swm` 都自印拉丁形，發行公司亦自稱 Crazy Software。不取 crazy-software：那是公司名不是刊名 |
 | 精訊電腦 | `jingxun-diannao` | `jingxun-diannao` | 3.PINYIN | 15 | `jxdn` | 已查證無拉丁刊名 |
 | Mania 遊戲玩瘋誌 | `mania` | `mania` | 1.PARA | 5 | `mania` | 刊名本身即拉丁字 |
 | 次世代遊戲情報 | `next-tw` | `next-tw` | 2.SOURCE | 7 | `next` | 原刊名寫法依通稱推定，未對實物 |
