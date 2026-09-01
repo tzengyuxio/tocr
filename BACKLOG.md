@@ -9,6 +9,8 @@
 筆記長在裡面會讓每次讀它的成本跟著漲（2026-08-30 拆分，當時 602 行）。
 做完的打勾後移到 [docs/backlog/done.md](docs/backlog/done.md)。
 
+- [ ] **掃好的封面對不到站上的期次，要先補 25 期** — 電玩e世代 24 期＋電腦玩家特刊 1 期；資料與腳本都備妥，只差一個能寫入的 token，見 [docs/backlog/covers-missing-issues.md](docs/backlog/covers-missing-issues.md)（2026-09-02）
+
 - [ ] **nostalibrary 還有約 15 張封面可以補上站** — 已補 73 張，剩零星幾本與 3 張待決的產品目錄；2026-09-09 回頭看，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
 
 - [ ] **其餘改名刊的沿革資料** — 只剩電視遊樂報導，而它要等期數匯入，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）

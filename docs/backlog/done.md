@@ -2,6 +2,14 @@
 
 從 `BACKLOG.md` 封存出來的項目，依完成時間由新到舊。這裡只作紀錄，不再更新。
 
+- [x] **`/api/issues` 的分頁會重複與漏列**（2026-09-02 補 tie-breaker） — `orderBy: { order: "asc" }`
+  的 `Issue.order` 是每本刊各自從 0 起算的，全站掃描時大量並列；排序不是全序，offset 分頁就會讓
+  同一列出現在兩頁、中間那列被跳過（實測 2306 筆裡 24 筆重複、同時漏掉 24 期）。四個端點一起掃過：
+  `/api/issues`、`/api/articles` 各補 `{ id: "asc" }`，`/api/games` 改在共用的 `gameOrderBy()`
+  收尾補（後台清單與公開的 `/games` 一起修好），`/api/photos` 沒有 GET 不受影響。
+  重現腳本、其餘同形狀但這次沒動的查詢見
+  [issues-pagination-order-ties.md](issues-pagination-order-ties.md)（2026-09-02）
+
 - [x] **顯示名稱的重名檢查擋不住同時送出**（2026-08-30 補上唯一索引） — `PATCH /api/users/me` 是先查再寫，
   而 `users.name` 沒有唯一索引。兩個人同時挑同一個名字，兩邊都查到「沒人用」，於是都寫進去——正好變成
   這個檢查想避免的「排行榜上兩列分不出誰是誰」（2026-08-16，code review 指出）。
