@@ -369,6 +369,17 @@ export default async function MagazineDetailPage({
             </p>
           )}
 
+          {/* 收錄數比已知期數多不是資料寫錯，站上就是收了那個數字沒算進去的
+              期次。**不能寫成「增刊一律不計入」**：算不算增刊是各來源自己的
+              事，同一份維基列表把勝利小子的 57 期算成含增刊 2 冊與特別號 1 冊，
+              卻沒把增刊算進電腦玩家的 216 期。範圍寫在 knownIssueCountSource
+              裡，這句只負責讓「收錄 217 期・已知 216 期」不被讀成算錯了。 */}
+          {magazine.knownIssueCount && total > magazine.knownIssueCount && (
+            <p className="basis-full text-xs text-muted-foreground">
+              收錄數多於已知期數：站上有幾期不在那個數字的計算範圍內（多半是增刊或特刊）。
+            </p>
+          )}
+
           {/* A rule, not just space: the heading's trailing 「（共 N 期）」 is the
               same grey and nearly the same size as the 篩選 label, so 96px of
               gap still read as one continuous string. Hidden once the row
