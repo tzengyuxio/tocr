@@ -92,7 +92,7 @@ export default async function HomePage() {
               <span className="text-primary">目錄索引</span>
             </h1>
             <p className="mx-auto mb-6 max-w-xl text-lg text-muted-foreground">
-              收錄台灣與日本遊戲雜誌的完整目錄資料，透過 AI 辨識技術，
+              收錄台灣遊戲雜誌的完整目錄資料，透過 AI 辨識技術，
               將紙本目錄數位化為可搜尋的索引
             </p>
 
