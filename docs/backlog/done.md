@@ -7,7 +7,7 @@
   用 `~/lab/nostalib-toolkit/scripts/tocr_create_issues.py` 打正式站，
   電玩e世代 14 → 38 期依發行日重排，電腦玩家的特刊插在第 86 期之後、其餘 216 期順序不動。
   回驗（`covers_vs_tocr.py`）：「站上沒有這一期」49 → 0、「可以上傳」95 → 144。
-  封面本身還沒上傳，卡在 Blob 額度——見 [nostalibrary-covers.md](nostalibrary-covers.md)。
+  同日也把這 25 期的封面（c1）傳上去了（`tocr_upload_covers.py`），封底 c4 的 24 張還沒傳。
   判讀依據與交叉驗證見 [covers-missing-issues.md](covers-missing-issues.md)（2026-09-02）
 
 - [x] **`/api/issues` 的分頁會重複與漏列**（2026-09-02 補 tie-breaker） — `orderBy: { order: "asc" }`
