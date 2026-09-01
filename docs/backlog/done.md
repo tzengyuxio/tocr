@@ -2,6 +2,14 @@
 
 從 `BACKLOG.md` 封存出來的項目，依完成時間由新到舊。這裡只作紀錄，不再更新。
 
+- [x] **掃好的封面對不到站上的期次，補建 25 期**（2026-09-02 建完） — 電玩e世代 24 期
+  （No.33–No.112，發行日取自封底右側資訊帶，逐本判讀）＋ 電腦玩家「即時戰爭遊戲特刊」1 期。
+  用 `~/lab/nostalib-toolkit/scripts/tocr_create_issues.py` 打正式站，
+  電玩e世代 14 → 38 期依發行日重排，電腦玩家的特刊插在第 86 期之後、其餘 216 期順序不動。
+  回驗（`covers_vs_tocr.py`）：「站上沒有這一期」49 → 0、「可以上傳」95 → 144。
+  封面本身還沒上傳，卡在 Blob 額度——見 [nostalibrary-covers.md](nostalibrary-covers.md)。
+  判讀依據與交叉驗證見 [covers-missing-issues.md](covers-missing-issues.md)（2026-09-02）
+
 - [x] **`/api/issues` 的分頁會重複與漏列**（2026-09-02 補 tie-breaker） — `orderBy: { order: "asc" }`
   的 `Issue.order` 是每本刊各自從 0 起算的，全站掃描時大量並列；排序不是全序，offset 分頁就會讓
   同一列出現在兩頁、中間那列被跳過（實測 2306 筆裡 24 筆重複、同時漏掉 24 期）。四個端點一起掃過：
