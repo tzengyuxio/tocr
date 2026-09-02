@@ -110,6 +110,12 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
               unit.knownIssueCount
                 ? `站上收錄 ${unit.issueCount} 期，已知共 ${unit.knownIssueCount} 期${
                     unit.knownIssueCountSource ? `（${unit.knownIssueCountSource}）` : ""
+                  }${
+                    // 收錄數比較大時說一句，否則「217 / 216」看起來像算錯了。
+                    // 算不算增刊看來源，所以不寫成通則。
+                    unit.issueCount > unit.knownIssueCount
+                      ? "；站上有幾期不在那個數字的計算範圍內"
+                      : ""
                   }`
                 : undefined
             }
