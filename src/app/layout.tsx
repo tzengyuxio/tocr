@@ -35,6 +35,10 @@ export const metadata: Metadata = {
     images: [DEFAULT_OG_IMAGE],
   },
   twitter: { card: "summary_large_image" },
+  // Search Console 的「HTML 標記」驗證。與 public/google*.html 那個檔案是兩條
+  // 各自獨立的驗證方式，都留著：任一條斷了（換 DNS 供應商、檔案被清掉）還有
+  // 別的撐著。驗證方式撤掉就會失效，所以這串不能當成沒用的字刪掉。
+  verification: { google: "A9S8mqH8pKatJNUsiC8H3s-Ha3r8dpAfeGrMtQjP6nQ" },
 };
 
 export default function RootLayout({
