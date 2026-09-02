@@ -290,6 +290,24 @@ DATABASE_URL="<production-unpooled-url>" npx prisma migrate deploy
 
 ---
 
+## Google Search Console 驗證
+
+同一個資源上了三條各自獨立的驗證方式，任一條斷了還有別的撐著。**三條都不能撤**
+——Search Console 會定期重新確認，撤掉哪一條那一條就失效：
+
+| 方式 | 落點 |
+|---|---|
+| 網域名稱供應商（DNS TXT） | 網域的 DNS 記錄，涵蓋整個網域含子網域 |
+| HTML 檔案 | `public/google161b8818fa96b9ff.html`，以站台根目錄的路徑供應 |
+| HTML 標記 | `src/app/layout.tsx` 的 `metadata.verification.google` |
+
+Google Analytics 那種驗證法**沒有採用**：它要求追蹤片段出現在首頁 `<head>`，
+而站上的 GA 是 `@next/third-parties` 在 hydration 後注入 `<body>` 的，而且刻意
+只掛在公開頁（見上面的 [Google Analytics](#google-analytics)）。為了驗證把它移到
+root layout，等於連 `/admin` 的操作都送進 GA——自己編目一整晚會蓋過真實訪客。
+
+---
+
 ## CI/CD 設定
 
 Vercel 預設會在每次推送到 main 分支時自動部署。
