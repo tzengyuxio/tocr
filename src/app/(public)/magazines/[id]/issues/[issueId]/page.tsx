@@ -26,6 +26,7 @@ import { publicationIssueJsonLd } from "@/lib/structured-data";
 import { titleForIssue } from "@/lib/magazine-title";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
+import { splitLinks, shortenUrl } from "@/lib/linkify";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -250,9 +251,26 @@ export default async function IssueDetailPage({ params }: PageProps) {
                   本期資訊
                 </p>
                 {/* The notes are written a fact to a line -- cover subject,
-                    inserts, ISBN -- so the breaks carry meaning. */}
-                <p className="whitespace-pre-line text-sm text-muted-foreground">
-                  {issue.notes}
+                    inserts, ISBN -- so the breaks carry meaning. A source URL
+                    is shown shortened and broken mid-word: written out in full
+                    it is wider than the sidebar, and the whole page then
+                    scrolls sideways. */}
+                <p className="whitespace-pre-line break-words text-sm text-muted-foreground">
+                  {splitLinks(issue.notes).map((segment, i) =>
+                    segment.type === "link" ? (
+                      <a
+                        key={i}
+                        href={segment.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2 hover:text-foreground"
+                      >
+                        {shortenUrl(segment.value)}
+                      </a>
+                    ) : (
+                      segment.value
+                    )
+                  )}
                 </p>
               </div>
             )}

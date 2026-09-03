@@ -80,3 +80,18 @@ export function splitLinks(text: string): Segment[] {
 
   return segments;
 }
+
+/**
+ * 網址的顯示形式。點得開的仍是原網址，這裡只管畫面上那一行有多長。
+ *
+ * 這些欄位裡的網址是出處而不是內容，讀者要的是「這條連到哪個站」，不是把
+ * 商品編號讀完。留下網域與路徑的開頭就夠認人，尾巴截掉——不截的話，一條
+ * 露天商品頁就能把整個側欄撐出水平捲軸。
+ */
+export function shortenUrl(url: string, max = 32): string {
+  const bare = url
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\/$/, "");
+  return bare.length <= max ? bare : `${bare.slice(0, max - 1)}…`;
+}
