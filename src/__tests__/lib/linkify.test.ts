@@ -1,4 +1,4 @@
-import { splitLinks } from "@/lib/linkify";
+import { splitLinks, shortenUrl } from "@/lib/linkify";
 
 /** 只取連結片段的值，斷言網址切在哪裡時比整個陣列好讀。 */
 function links(text: string): string[] {
@@ -81,5 +81,21 @@ describe("splitLinks", () => {
     const source =
       "創刊報導（https://gnn.gamer.com.tw/detail.php?sn=8712）；另見 https://example.com/b。";
     expect(splitLinks(source).map((s) => s.value).join("")).toBe(source);
+  });
+});
+
+describe("shortenUrl", () => {
+  it("drops the scheme, the www and the trailing slash", () => {
+    expect(shortenUrl("https://www.example.com/a/")).toBe("example.com/a");
+  });
+
+  it("keeps a short url whole", () => {
+    expect(shortenUrl("https://example.com/a")).toBe("example.com/a");
+  });
+
+  it("truncates a long one to the limit", () => {
+    const short = shortenUrl("https://www.ruten.com.tw/item/22234134910685/", 24);
+    expect(short).toBe("ruten.com.tw/item/22234…");
+    expect(short.length).toBe(24);
   });
 });

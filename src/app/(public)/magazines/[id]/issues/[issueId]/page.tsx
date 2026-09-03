@@ -26,6 +26,7 @@ import { publicationIssueJsonLd } from "@/lib/structured-data";
 import { titleForIssue } from "@/lib/magazine-title";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
+import { splitLinks, shortenUrl } from "@/lib/linkify";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -168,6 +169,24 @@ export default async function IssueDetailPage({ params }: PageProps) {
     issue.price ? `NT$ ${Number(issue.price)}` : null,
   ].filter(Boolean);
 
+  // 相鄰的期用 `order` 找，不是期號加一：期號排不出前後（vol.01、試刊號、
+  // 70+71 之間沒有大小），而 order 本來就是這本刊的順序。也不能用 order ± 1
+  // ——合併號各佔一格，站上又不是每一期都建了，序號中間有洞。
+  const [previousIssue, nextIssue] = await Promise.all([
+    prisma.issue.findFirst({
+      where: { magazineId: issue.magazineId, order: { lt: issue.order } },
+      orderBy: { order: "desc" },
+      select: { slug: true, issueNumber: true },
+    }),
+    prisma.issue.findFirst({
+      where: { magazineId: issue.magazineId, order: { gt: issue.order } },
+      orderBy: { order: "asc" },
+      select: { slug: true, issueNumber: true },
+    }),
+  ]);
+  const issueHref = (slug: string) =>
+    `/magazines/${issue.magazine.slug}/issues/${encodeURIComponent(slug)}`;
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* 這一份目錄多半只有這裡有，所以要讓抓取端讀得到它，而不只是人眼看得到。 */}
@@ -183,7 +202,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
       {/* Title block: the cover no longer sets the height, so nothing has to
           fill 256px of space beside it. */}
       <div className="mb-5">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {/* The magazine and the issue number together are the title -- a bare
               "96" names nothing on its own. */}
           <h1 className="text-2xl font-bold sm:text-3xl">
@@ -206,6 +225,27 @@ export default async function IssueDetailPage({ params }: PageProps) {
             >
               <SquarePen className="h-4 w-4" />
             </Link>
+          )}
+          {/* 同一列置右，不放頁尾：一期一期翻下去的人不該為了下一個連結先捲到底。 */}
+          {(previousIssue || nextIssue) && (
+            <nav className="ml-auto flex shrink-0 items-center gap-3 text-sm">
+              {previousIssue && (
+                <Link
+                  href={issueHref(previousIssue.slug)}
+                  className="text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  ← {formatIssueNumber(previousIssue.issueNumber)}
+                </Link>
+              )}
+              {nextIssue && (
+                <Link
+                  href={issueHref(nextIssue.slug)}
+                  className="text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  {formatIssueNumber(nextIssue.issueNumber)} →
+                </Link>
+              )}
+            </nav>
           )}
         </div>
         {issue.title && (
@@ -250,9 +290,26 @@ export default async function IssueDetailPage({ params }: PageProps) {
                   本期資訊
                 </p>
                 {/* The notes are written a fact to a line -- cover subject,
-                    inserts, ISBN -- so the breaks carry meaning. */}
-                <p className="whitespace-pre-line text-sm text-muted-foreground">
-                  {issue.notes}
+                    inserts, ISBN -- so the breaks carry meaning. A source URL
+                    is shown shortened and broken mid-word: written out in full
+                    it is wider than the sidebar, and the whole page then
+                    scrolls sideways. */}
+                <p className="whitespace-pre-line break-words text-sm text-muted-foreground">
+                  {splitLinks(issue.notes).map((segment, i) =>
+                    segment.type === "link" ? (
+                      <a
+                        key={i}
+                        href={segment.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2 hover:text-foreground"
+                      >
+                        {shortenUrl(segment.value)}
+                      </a>
+                    ) : (
+                      segment.value
+                    )
+                  )}
                 </p>
               </div>
             )}

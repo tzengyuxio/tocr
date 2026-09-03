@@ -100,6 +100,7 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 遊戲設計大師 | `game-developer` | `game-developer` | 1.PARA | 14 | `gd` | 未縮成 game-dev，守住每段有出處 |
 | 遊戲工場 | `game-factory` | `game-factory` | 1.PARA | 12 | `gf` |  |
 | Game天堂! | `game-paradise` | `game-paradise` | 1.PARA | 13 | — | ファミマガ 的授權中文版，但並列刊名為台灣版自取，故不走 2.SOURCE |
+| Game天堂EX | `game-paradise-ex` | `game-paradise-ex` | 1.PARA | 16 | — | 1997-02 的改版，另建一本：封面已無ファミマガ授權字樣，而 `sourceTitle` 是 Magazine 層欄位，併為刊名時期就無處表達授權關係的改變。首段沿用姊妹刊 `game-paradise` |
 | 電玩時代 | `game-times` | `game-times` | 1.PARA | 10 | `gtimes` |  |
 | 電遊人 | `game-walker` | `game-walker` | 1.PARA | 11 | `gwalker` |  |
 | GameQ | `gameq` | `gameq` | 1.PARA | 5 | — | 刊名本身即拉丁字，非並列刊名 |

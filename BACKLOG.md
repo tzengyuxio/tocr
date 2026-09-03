@@ -166,4 +166,22 @@
 
   **2026-08-18 覆核**：games 那支從 681 漲到 1054，整整多出來的是 #95 的合併對話框——它自成一塊（搜尋候選、選保留方、預覽、送出），是現成的抽離對象。原本榜首的 `OcrResultEditor.tsx` 已隨複查整合刪除（2026-08-16 覆核）
 
+- [ ] **創刊日與停刊日補齊** — 43 本裡 36 本沒有停刊日、4 本沒有創刊日，跨刊的年代軸做不出來；動工前要先定 `endedDate` 記什麼，見 [docs/backlog/publication-dates.md](docs/backlog/publication-dates.md)（2026-09-04）
+
+
+- [ ] **出一本台灣遊戲雜誌圖鑑** — 工具書定位、按年代分六卷、200 頁上下的內容規劃，見 [docs/backlog/book.md](docs/backlog/book.md)（2026-09-04）
+
+
+- [ ] **`~/Downloads/gamexpress-covers` 裡還有沒建的刊與期** — 該資料夾 212 張封面，本日只用掉《電玩双週刊》144–237 那 89 張。剩下的三類：
+  《電玩宅速配》vol.12 起到第 90 期（2026 年 8 月號，仍在發行，含合併號第84+85期）、
+  **《電玩APP情報誌》VOL.1–43（站上還沒有這本刊）**、以及《電玩雙週刊》的特輯別冊
+  （STEAM 特輯、桌遊同樂會、家用主機情報站、精靈寶可夢特輯等）與遊戲攻略本
+  （天堂2、RO）。別冊要先決定算增刊還是另立一本（2026-09-04）
+
+
+- [ ] **`/games/<game>` 與 `/tags/<tag>` 的表格要對齊** — 一個「刊期」一欄、一個拆「雜誌」「單期」，頁碼也只有一邊有；順帶重想欄位順序、加排序與刊期 hover 顯示封面，見 [docs/backlog/games-tags-table.md](docs/backlog/games-tags-table.md)（2026-09-04）
+
+
+- [ ] **系列標籤的髒資料清理** — 205 個 SERIES 標籤有 77 個不合規範（型別吃進名字、缺「系列」後綴、拉丁寫法）；規範與 OCR 提示詞已改，存量待清，還缺一支 merge-tag，見 [docs/backlog/series-tag-cleanup.md](docs/backlog/series-tag-cleanup.md)（2026-09-04）
+
 ---
