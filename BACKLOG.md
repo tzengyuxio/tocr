@@ -178,4 +178,10 @@
   （STEAM 特輯、桌遊同樂會、家用主機情報站、精靈寶可夢特輯等）與遊戲攻略本
   （天堂2、RO）。別冊要先決定算增刊還是另立一本（2026-09-04）
 
+
+- [ ] **`/games/<game>` 與 `/tags/<tag>` 的表格要對齊** — 一個「刊期」一欄、一個拆「雜誌」「單期」，頁碼也只有一邊有；順帶重想欄位順序、加排序與刊期 hover 顯示封面，見 [docs/backlog/games-tags-table.md](docs/backlog/games-tags-table.md)（2026-09-04）
+
+
+- [ ] **系列標籤的髒資料清理** — 205 個 SERIES 標籤有 77 個不合規範（型別吃進名字、缺「系列」後綴、拉丁寫法）；規範與 OCR 提示詞已改，存量待清，還缺一支 merge-tag，見 [docs/backlog/series-tag-cleanup.md](docs/backlog/series-tag-cleanup.md)（2026-09-04）
+
 ---
