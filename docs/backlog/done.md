@@ -2,6 +2,18 @@
 
 從 `BACKLOG.md` 封存出來的項目，依完成時間由新到舊。這裡只作紀錄，不再更新。
 
+- [x] **`/games/<game>` 與 `/tags/<tag>` 的表格對齊**（2026-09-04） — 兩頁列的是同一種東西，
+  表格卻各長各的：一邊把刊期併成一欄、一邊拆「雜誌」「單期」，頁碼只有 games 有。
+  **整個表格抽成 `src/components/ArticleListTable.tsx` 兩頁共用**，而不是各修一次——各修
+  一次只會再漂開一次。形狀取 games 那版（刊期併一欄，理由是它要回答「哪一本的哪一期」，
+  拆開後左欄那個連到期刊首頁的連結幫不上忙），tags 補上頁碼欄，頁碼留在最後。
+
+  排序改成點欄位標題（刊期序／出版日期序），走既有的 `searchParams` 模式、定義集中在
+  `src/lib/article-listing.ts`：出版日期為預設且由新到舊，刊期序跨刊時先按刊名聚起來，
+  沒有日期的期一律墊底。滑鼠移過刊期浮出封面——用 Popover 而不是純 CSS group-hover，
+  因為表格容器是 `overflow-x-auto`，CSS 規範下 `overflow-y: visible` 會被算成 `auto`，
+  浮出去的東西會被裁掉。細節見 [games-tags-table.md](games-tags-table.md)
+
 - [x] **掃好的封面對不到站上的期次，補建 25 期**（2026-09-02 建完） — 電玩e世代 24 期
   （No.33–No.112，發行日取自封底右側資訊帶，逐本判讀）＋ 電腦玩家「即時戰爭遊戲特刊」1 期。
   用 `~/lab/nostalib-toolkit/scripts/tocr_create_issues.py` 打正式站，
