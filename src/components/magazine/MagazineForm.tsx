@@ -28,9 +28,21 @@ import {
 import {
   MAGAZINE_CATEGORY_LABELS,
   MAGAZINE_CATEGORY_VALUES,
+  MAGAZINE_FREQUENCY_LABELS,
+  MAGAZINE_FREQUENCY_VALUES,
 } from "@/lib/magazine-browse";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+
+/** 「未填」的哨兵值：Radix 的 SelectItem 不收空字串。 */
+const FREQUENCY_NONE = "__none__";
 
 interface MagazineFormProps {
   initialData?: MagazineCreateInput & { id?: string };
@@ -57,6 +69,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
       sourceTitle: initialData?.sourceTitle || "",
       aliases: initialData?.aliases || [],
       publisher: initialData?.publisher || "",
+      frequency: initialData?.frequency ?? null,
       issn: initialData?.issn || "",
       knownIssueCount: initialData?.knownIssueCount ?? undefined,
       knownIssueCountSource: initialData?.knownIssueCountSource || "",
@@ -188,6 +201,42 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                 id="publisher"
                 placeholder="例如：角川出版"
                 {...register("publisher")}
+              />
+            </div>
+
+            {/* 發刊頻率 */}
+            <div className="space-y-2">
+              <Controller
+                name="frequency"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label>發刊頻率</Label>
+                    {/* Radix 的 SelectItem 不收空字串當 value，所以「未填」用
+                        FREQUENCY_NONE 這個哨兵值代打，寫回表單時再轉成 null。 */}
+                    <Select
+                      value={field.value ?? FREQUENCY_NONE}
+                      onValueChange={(value) =>
+                        field.onChange(value === FREQUENCY_NONE ? null : value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={FREQUENCY_NONE}>未填</SelectItem>
+                        {MAGAZINE_FREQUENCY_VALUES.map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {MAGAZINE_FREQUENCY_LABELS[value]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      創刊時的頻率。中途改過（月刊轉雙週刊很常見）不換這欄，沿革寫進下方的簡介
+                    </p>
+                  </div>
+                )}
               />
             </div>
 

@@ -26,6 +26,14 @@ import {
   issueCreateSchema,
   type IssueCreateInput,
 } from "@/lib/validators/issue";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ISSUE_KIND_LABELS, ISSUE_KIND_VALUES } from "@/lib/issue-browse";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -131,6 +139,7 @@ export function IssueForm({
       magazineId,
       issueNumber: initialData?.issueNumber || "",
       altNumbers: initialData?.altNumbers || [],
+      kind: initialData?.kind || "REGULAR",
       slug: initialData?.slug || "",
       // No field of its own: one issue in the whole catalogue uses it, and what
       // it holds -- 第六卷第九號 -- is what altNumbers is for. Kept in the
@@ -140,6 +149,9 @@ export function IssueForm({
       title: initialData?.title || "",
       publishDate: initialData?.publishDate || "",
       coverImage: initialData?.coverImage || "",
+      coverGames: initialData?.coverGames || [],
+      coverSubjects: initialData?.coverSubjects || [],
+      coverCredit: initialData?.coverCredit || "",
       tocImages: initialData?.tocImages || [],
       pageCount: initialData?.pageCount || null,
       price: initialData?.price || null,
@@ -287,6 +299,35 @@ export function IssueForm({
               />
             </div>
 
+            {/* 刊種 */}
+            <div className="space-y-2">
+              <Controller
+                name="kind"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label>刊種</Label>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ISSUE_KIND_VALUES.map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {ISSUE_KIND_LABELS[value]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      看封面上的編號：進入正刊編號序列的是本刊，另立名目的（特刊、增刊、
+                      別冊、產品目錄）選特刊，正式創刊前的選試刊。只有本刊算進「收錄 N 期」
+                    </p>
+                  </div>
+                )}
+              />
+            </div>
+
             {/* 永久短碼 */}
             {code && (
               <div className="space-y-2 @md:col-span-2">
@@ -370,6 +411,64 @@ export function IssueForm({
                   />
                 )}
               />
+            </div>
+
+            {/* 封面資訊 */}
+            <div className="space-y-2 @md:col-span-2">
+              <Controller
+                name="coverGames"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label>封面遊戲</Label>
+                    <CommaListInput
+                      placeholder="以逗號分隔（例如：快打旋風 II, 太空戰士 VII）"
+                      value={field.value || []}
+                      format={formatStringList}
+                      parse={parseStringList}
+                      onChange={field.onChange}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      封面上出現的遊戲。遊戲角色（春麗、瑪利歐）也記在這裡
+                    </p>
+                  </div>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2 @md:col-span-2">
+              <Controller
+                name="coverSubjects"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-2">
+                    <Label>封面人物</Label>
+                    <CommaListInput
+                      placeholder="以逗號分隔（例如：郭富城）"
+                      value={field.value || []}
+                      format={formatStringList}
+                      parse={parseStringList}
+                      onChange={field.onChange}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      只記真人。遊戲角色請填在封面遊戲，兩欄分開才不會互搶
+                    </p>
+                  </div>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2 @md:col-span-2">
+              <Label htmlFor="coverCredit">封面繪師</Label>
+              <Input
+                id="coverCredit"
+                placeholder="例如：VOFan"
+                {...register("coverCredit")}
+              />
+              <p className="text-xs text-muted-foreground">
+                預設是繪者，直接寫名字。不是繪者時自帶角色詞，例如「攝影：陳某」
+                「設計：某工作室」
+              </p>
             </div>
 
             {/* 目錄頁圖片（多張） */}

@@ -283,6 +283,39 @@ export default async function IssueDetailPage({ params }: PageProps) {
               photos={issue.photos}
               issueNumber={issue.issueNumber}
             />
+            {/* 封面資訊：緊接著封面圖，因為它講的就是上面那張圖。三欄都空就
+                整段不出現——絕大多數期還沒填，空標題比沒有更吵。
+                「封面繪師」的值可能自帶角色詞（「攝影：陳某」），所以標籤寫成
+                「封面」而不是「繪師」，兩種寫法讀起來都通。 */}
+            {(issue.coverGames.length > 0 ||
+              issue.coverSubjects.length > 0 ||
+              issue.coverCredit) && (
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="mb-1 text-xs font-medium text-muted-foreground">
+                  封面資訊
+                </p>
+                <dl className="space-y-0.5 text-sm text-muted-foreground">
+                  {issue.coverGames.length > 0 && (
+                    <div className="flex gap-1.5">
+                      <dt className="shrink-0">遊戲</dt>
+                      <dd className="min-w-0">{issue.coverGames.join("、")}</dd>
+                    </div>
+                  )}
+                  {issue.coverSubjects.length > 0 && (
+                    <div className="flex gap-1.5">
+                      <dt className="shrink-0">人物</dt>
+                      <dd className="min-w-0">{issue.coverSubjects.join("、")}</dd>
+                    </div>
+                  )}
+                  {issue.coverCredit && (
+                    <div className="flex gap-1.5">
+                      <dt className="shrink-0">封面</dt>
+                      <dd className="min-w-0">{issue.coverCredit}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
             <ExternalLinkList links={issue.links} />
             {issue.notes && (
               <div className="rounded-lg border bg-muted/30 p-3">

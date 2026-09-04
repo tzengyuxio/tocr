@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import type { IssueKind } from "./issue-browse";
 import { formatEdtf } from "./edtf";
 import {
   sortTitlePeriods,
@@ -44,6 +45,36 @@ export const MAGAZINE_CATEGORY_CHIPS: Record<
   PC_GAME: { label: "PC", className: "bg-blue-100 text-blue-800" },
   TV_GAME: { label: "TV", className: "bg-green-100 text-green-800" },
   ONLINE_GAME: { label: "OLG", className: "bg-violet-100 text-violet-800" },
+};
+
+/**
+ * 發刊頻率。順序即畫面上的順序：由密到疏，最後才是不定期。
+ *
+ * 沒有對應的篩選按鈕——這是識別資訊不是收窄視角，列表上也沒有地方放第二排
+ * chips。表放這裡是為了讓 validator 與後台表單讀同一份，同 MAGAZINE_CATEGORY。
+ * 語意見 prisma/schema.prisma 的 MagazineFrequency。
+ */
+export const MAGAZINE_FREQUENCY_VALUES = [
+  "WEEKLY",
+  "BIWEEKLY",
+  "SEMIMONTHLY",
+  "MONTHLY",
+  "BIMONTHLY",
+  "QUARTERLY",
+  "IRREGULAR",
+] as const;
+
+export type MagazineFrequency = (typeof MAGAZINE_FREQUENCY_VALUES)[number];
+
+/** 中文標籤：這幾個詞讀者本來就是用中文認的，不像分類要跟上游對照。 */
+export const MAGAZINE_FREQUENCY_LABELS: Record<MagazineFrequency, string> = {
+  WEEKLY: "週刊",
+  BIWEEKLY: "雙週刊",
+  SEMIMONTHLY: "半月刊",
+  MONTHLY: "月刊",
+  BIMONTHLY: "雙月刊",
+  QUARTERLY: "季刊",
+  IRREGULAR: "不定期",
 };
 
 export const MAGAZINE_FILTERS = [
@@ -196,7 +227,18 @@ export interface MagazineDisplayUnit {
   categories: MagazineCategory[];
   /** 已格式化的發行期間，如「1999 年 8 月 – 2000 年 3 月」；不明則空字串。 */
   span: string;
-  issueCount: number;
+  /**
+   * 站上收錄的**本刊**數，也就是「收錄 N 期」寫的那個數字。
+   *
+   * 不含試刊與特刊：那兩種沒有拿到正刊編號，摻進來這個數字就沒有跨雜誌一致的
+   * 定義，而它正是拿來跟已知總期數並排的。判準見 prisma/schema.prisma 的
+   * IssueKind。
+   */
+  regularCount: number;
+  /** 特刊、增刊、別冊、產品目錄，另外講。 */
+  specialCount: number;
+  /** 試刊，另外講。 */
+  pilotCount: number;
   /**
    * 這本刊已知總共出過幾期（`Magazine.knownIssueCount`），沒查到就是 null。
    *
@@ -233,7 +275,12 @@ interface DisplayMagazine {
     titleParallel: string | null;
     titleSource: string | null;
   })[];
-  _count: { issues: number };
+  /**
+   * 這本刊各刊種各有幾期。取代原本的 `_count.issues`：頁面上要講的是本刊數，
+   * 而 Prisma 的關聯計數一次只給得出一個數字，同一個關聯要不了三個別名。
+   * 沒有某一種就是 0，呼叫端補齊，這裡不處理缺鍵。
+   */
+  kindCounts: Record<IssueKind, number>;
 }
 
 /** publishSort 是資料庫存的 UTC 午夜，取年月來顯示，精度跟 formatEdtf 的月級一致。 */
@@ -303,7 +350,7 @@ export function magazineSubtitle(
 
 export function magazineDisplayUnits(
   magazine: DisplayMagazine,
-  issues: { order: number; publishSort: Date | null }[]
+  issues: { order: number; publishSort: Date | null; kind: IssueKind }[]
 ): MagazineDisplayUnit[] {
   const base = {
     publisher: magazine.publisher,
@@ -325,7 +372,9 @@ export function magazineDisplayUnits(
           formatEdtf(magazine.endedDate),
           "創刊"
         ),
-        issueCount: magazine._count.issues,
+        regularCount: magazine.kindCounts.REGULAR,
+        specialCount: magazine.kindCounts.SPECIAL,
+        pilotCount: magazine.kindCounts.PILOT,
         knownIssueCount: magazine.knownIssueCount,
         knownIssueCountSource: magazine.knownIssueCountSource,
         isActive: magazine.isActive,
@@ -382,7 +431,9 @@ export function magazineDisplayUnits(
       previousTitle: previousPeriodTitle(sorted, anchorSeq, segment.period?.title),
       logoImage: segment.period?.logoImage ?? magazine.logoImage,
       span: spanLabel(start, end, isFirst ? "創刊" : "起"),
-      issueCount: segment.issues.length,
+      regularCount: segment.issues.filter((i) => i.kind === "REGULAR").length,
+      specialCount: segment.issues.filter((i) => i.kind === "SPECIAL").length,
+      pilotCount: segment.issues.filter((i) => i.kind === "PILOT").length,
       // 時期列不帶已知總數：那是整條刊系的數字，見 MagazineDisplayUnit 的註解。
       knownIssueCount: null,
       knownIssueCountSource: null,
@@ -390,6 +441,37 @@ export function magazineDisplayUnits(
       sortDate: isFirst ? (magazine.foundedSort ?? first) : first,
     };
   });
+}
+
+/**
+ * 期數徽章的 tooltip：把徽章上放不下的話一次講完。
+ *
+ * 兩種檢視共用一份，否則列表與卡片會對同一個數字給出不同的解釋。徽章本身只有
+ * 幾個字寬，所以特刊、試刊與已知數的出處都落在這裡。
+ */
+export function magazineCountTitle(unit: {
+  regularCount: number;
+  specialCount: number;
+  pilotCount: number;
+  knownIssueCount: number | null;
+  knownIssueCountSource: string | null;
+}): string {
+  const parts = [`站上收錄本刊 ${unit.regularCount} 期`];
+  if (unit.specialCount) parts.push(`特刊 ${unit.specialCount} 期`);
+  if (unit.pilotCount) parts.push(`試刊 ${unit.pilotCount} 期`);
+
+  let text = parts.join("、");
+  if (unit.knownIssueCount) {
+    text += `；已知共 ${unit.knownIssueCount} 期`;
+    if (unit.knownIssueCountSource) text += `（${unit.knownIssueCountSource}）`;
+    // 本刊數比已知數還多，表示那個來源已經被站上的資料超越了，數字不再是參照。
+    // 見 docs/data-conventions.md〈已知總期數〉：這時候的做法是把它清掉，而清掉
+    // 是人工動作，所以這句還得留著。
+    if (unit.regularCount > unit.knownIssueCount) {
+      text += "；本刊數已多於該來源，這個數字待更新";
+    }
+  }
+  return text;
 }
 
 /**

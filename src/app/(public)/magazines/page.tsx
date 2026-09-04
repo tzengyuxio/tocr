@@ -21,6 +21,7 @@ import { MagazineBrowseBar } from "@/components/magazine/MagazineBrowseBar";
 import { MagazineList } from "@/components/magazine/MagazineList";
 import {
   MAGAZINE_FILTERS,
+  magazineCountTitle,
   magazineDisplayUnits,
   parseMagazineDirection,
   parseMagazineFilter,
@@ -28,6 +29,7 @@ import {
   parseMagazineView,
   sortMagazineDisplayUnits,
 } from "@/lib/magazine-browse";
+import type { IssueKind } from "@/lib/issue-browse";
 
 export default async function MagazinesPage({
   searchParams,
@@ -50,9 +52,6 @@ export default async function MagazinesPage({
   // 36 一邊 40。
   const magazines = await prisma.magazine.findMany({
     include: {
-      _count: {
-        select: { issues: true },
-      },
       titles: {
         select: {
           id: true,
@@ -66,13 +65,28 @@ export default async function MagazinesPage({
     },
   });
 
+  // 各刊種各有幾期。用 groupBy 而不是關聯計數：Prisma 的 _count 一次只給得出
+  // 一個數字，同一個關聯要不了 REGULAR／SPECIAL／PILOT 三個別名。
+  const kindRows = await prisma.issue.groupBy({
+    by: ["magazineId", "kind"],
+    _count: { _all: true },
+  });
+  const kindCountsByMagazine = new Map<string, Record<IssueKind, number>>();
+  for (const row of kindRows) {
+    const counts =
+      kindCountsByMagazine.get(row.magazineId) ??
+      { REGULAR: 0, PILOT: 0, SPECIAL: 0 };
+    counts[row.kind] = row._count._all;
+    kindCountsByMagazine.set(row.magazineId, counts);
+  }
+
   // 有刊名沿革的雜誌要展開成一時期一卡，期間與期數從各時期涵蓋的期推導，
   // 所以把這幾本（絕大多數雜誌沒有 titles，撈不到幾筆）的期抓進來分段。
   const withTitles = magazines.filter((magazine) => magazine.titles.length > 0);
   const periodIssues = withTitles.length
     ? await prisma.issue.findMany({
         where: { magazineId: { in: withTitles.map((m) => m.id) } },
-        select: { magazineId: true, order: true, publishSort: true },
+        select: { magazineId: true, order: true, publishSort: true, kind: true },
         orderBy: { order: "asc" },
       })
     : [];
@@ -84,7 +98,15 @@ export default async function MagazinesPage({
   }
 
   const allUnits = magazines.flatMap((magazine) =>
-    magazineDisplayUnits(magazine, issuesByMagazine.get(magazine.id) ?? [])
+    magazineDisplayUnits(
+      {
+        ...magazine,
+        kindCounts:
+          kindCountsByMagazine.get(magazine.id) ??
+          { REGULAR: 0, PILOT: 0, SPECIAL: 0 },
+      },
+      issuesByMagazine.get(magazine.id) ?? []
+    )
   );
 
   const units = sortMagazineDisplayUnits(
@@ -177,10 +199,15 @@ export default async function MagazinesPage({
                     <span className="text-muted-foreground text-xs">
                       {unit.publisher || "未知出版社"}
                     </span>
-                    <Badge variant={unit.isActive ? "default" : "secondary"} className="text-xs">
+                    {/* 本刊數，與列表檢視同一個數字與同一份 tooltip。 */}
+                    <Badge
+                      variant={unit.isActive ? "default" : "secondary"}
+                      className="text-xs"
+                      title={magazineCountTitle(unit)}
+                    >
                       {unit.knownIssueCount
-                        ? `${unit.issueCount} / ${unit.knownIssueCount} 期`
-                        : `${unit.issueCount} 期`}
+                        ? `${unit.regularCount} / ${unit.knownIssueCount} 期`
+                        : `${unit.regularCount} 期`}
                     </Badge>
                   </div>
                 </CardContent>

@@ -10,6 +10,7 @@ import {
   parseMagazineFilter,
   DEFAULT_MAGAZINE_VIEW,
   parseMagazineView,
+  magazineCountTitle,
   magazineDisplayUnits,
   magazineSubtitle,
 } from "@/lib/magazine-browse";
@@ -134,9 +135,13 @@ describe("magazineDisplayUnits 的沿革標記", () => {
       { id: "t2", title: "遊戲世界", startIssue: { order: 3 }, logoImage: null, titleParallel: null, titleSource: null },
       { id: "t3", title: "遊戲世界 2", startIssue: { order: 5 }, logoImage: null, titleParallel: null, titleSource: null },
     ],
-    _count: { issues: 6 },
+    kindCounts: { REGULAR: 6, PILOT: 0, SPECIAL: 0 },
   };
-  const issues = [1, 2, 3, 4, 5, 6].map((order) => ({ order, publishSort: null }));
+  const issues = [1, 2, 3, 4, 5, 6].map((order) => ({
+    order,
+    publishSort: null,
+    kind: "REGULAR" as const,
+  }));
 
   it("names the previous period, not the lineage", () => {
     const units = magazineDisplayUnits(magazine, issues);
@@ -183,7 +188,42 @@ describe("magazineDisplayUnits 的沿革標記", () => {
 
     expect(units[0].knownIssueCount).toBe(24);
     expect(units[0].knownIssueCountSource).toBe("國圖");
-    expect(units[0].issueCount).toBe(6);
+    expect(units[0].regularCount).toBe(6);
+  });
+
+  // 「收錄 N 期」數的是本刊：試刊與特刊沒有拿到正刊編號，摻進來這個數字就沒有
+  // 跨雜誌一致的定義，而它正是拿來跟已知總期數並排的。
+  it("counts only regular issues, per period", () => {
+    const mixed = [
+      { order: 1, publishSort: null, kind: "PILOT" as const },
+      { order: 2, publishSort: null, kind: "REGULAR" as const },
+      { order: 3, publishSort: null, kind: "REGULAR" as const },
+      { order: 4, publishSort: null, kind: "SPECIAL" as const },
+      { order: 5, publishSort: null, kind: "REGULAR" as const },
+      { order: 6, publishSort: null, kind: "REGULAR" as const },
+    ];
+
+    const units = magazineDisplayUnits(magazine, mixed);
+
+    expect(units.map((u) => u.regularCount)).toEqual([1, 1, 2]);
+    expect(units.map((u) => u.pilotCount)).toEqual([1, 0, 0]);
+    expect(units.map((u) => u.specialCount)).toEqual([0, 1, 0]);
+  });
+
+  // 沒改過名的刊不分段，數字直接來自 groupBy 的結果，不從期陣列數。
+  it("takes the counts from kindCounts when there are no periods", () => {
+    const units = magazineDisplayUnits(
+      {
+        ...magazine,
+        titles: [],
+        kindCounts: { REGULAR: 4, PILOT: 1, SPECIAL: 2 },
+      },
+      []
+    );
+
+    expect(units[0].regularCount).toBe(4);
+    expect(units[0].pilotCount).toBe(1);
+    expect(units[0].specialCount).toBe(2);
   });
 
   it("leaves it empty for a magazine that never changed its name", () => {
@@ -272,9 +312,13 @@ describe("magazineDisplayUnits 的逐時期副標", () => {
         titleSource: "ファミ通PSP+PS3",
       },
     ],
-    _count: { issues: 6 },
+    kindCounts: { REGULAR: 6, PILOT: 0, SPECIAL: 0 },
   };
-  const issues = [1, 2, 3, 4, 5, 6].map((order) => ({ order, publishSort: null }));
+  const issues = [1, 2, 3, 4, 5, 6].map((order) => ({
+    order,
+    publishSort: null,
+    kind: "REGULAR" as const,
+  }));
 
   it("gives each period the source magazine it actually translated", () => {
     const units = magazineDisplayUnits(famitsuPs2, issues);
@@ -320,5 +364,49 @@ describe("magazineDisplayUnits 的逐時期副標", () => {
       "GAME fans",
       "TV GAME MAGAZINE",
     ]);
+  });
+});
+
+// 徽章只有幾個字寬，特刊、試刊與已知數的出處都落在 tooltip。兩種檢視共用一份，
+// 否則列表與卡片會對同一個數字給出不同的解釋。
+describe("magazineCountTitle", () => {
+  const base = {
+    regularCount: 216,
+    specialCount: 0,
+    pilotCount: 0,
+    knownIssueCount: null,
+    knownIssueCountSource: null,
+  };
+
+  it("says only the regular count when there is nothing else to add", () => {
+    expect(magazineCountTitle(base)).toBe("站上收錄本刊 216 期");
+  });
+
+  it("adds the special and pilot counts only when there are any", () => {
+    expect(
+      magazineCountTitle({ ...base, specialCount: 1, pilotCount: 2 })
+    ).toBe("站上收錄本刊 216 期、特刊 1 期、試刊 2 期");
+  });
+
+  it("carries the known total and where it came from", () => {
+    expect(
+      magazineCountTitle({
+        ...base,
+        knownIssueCount: 220,
+        knownIssueCountSource: "維基百科",
+      })
+    ).toBe("站上收錄本刊 216 期；已知共 220 期（維基百科）");
+  });
+
+  // 本刊數多過來源，表示那個數字已經被站上的資料超越了——做法是清掉它，
+  // 而清掉是人工動作，所以這句是提醒。
+  it("flags a known total the site has already overtaken", () => {
+    expect(
+      magazineCountTitle({
+        ...base,
+        knownIssueCount: 200,
+        knownIssueCountSource: null,
+      })
+    ).toBe("站上收錄本刊 216 期；已知共 200 期；本刊數已多於該來源，這個數字待更新");
   });
 });

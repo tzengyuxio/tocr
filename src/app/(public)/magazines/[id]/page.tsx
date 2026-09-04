@@ -139,6 +139,17 @@ export default async function MagazineDetailPage({
   );
   const total = counts.all;
 
+  // 「收錄 N 期」數的是本刊，特刊與試刊另外講——它們沒有拿到正刊編號，摻進來
+  // 這個數字就沒有跨雜誌一致的定義，而它正是拿來跟已知總期數並排的。
+  // 判準見 prisma/schema.prisma 的 IssueKind。
+  const kindRows = await prisma.issue.groupBy({
+    by: ["kind"],
+    where: { magazineId: id },
+    _count: { _all: true },
+  });
+  const kindCounts = { REGULAR: 0, PILOT: 0, SPECIAL: 0 };
+  for (const row of kindRows) kindCounts[row.kind] = row._count._all;
+
   // 刊名沿革。頁首那行要涵蓋整段歷史，所以另撈全部期算各時期的期號範圍——
   // 上面的 issues 已被篩選（預設只看有封面的），不能拿來當歷史。
   const sortedTitles = sortTitlePeriods(magazine.titles);
@@ -352,7 +363,10 @@ export default async function MagazineDetailPage({
               {/* 查到這本刊總共出過幾期就一起講，讀者才知道站上收了多大一塊；
                   查不到的刊什麼都不加。有兩個數字時開頭改說「收錄」——並排著
                   「已知 120 期」，「共 92 期」會被讀成這本刊只出了 92 期。 */}
-              （{magazine.knownIssueCount ? "收錄" : "共"} {total} 期
+              （{magazine.knownIssueCount ? "收錄" : "共"} {kindCounts.REGULAR} 期
+              {kindCounts.SPECIAL > 0 && `，另有特刊 ${kindCounts.SPECIAL}`}
+              {kindCounts.PILOT > 0 &&
+                `${kindCounts.SPECIAL > 0 ? "、" : "，另有"}試刊 ${kindCounts.PILOT}`}
               {magazine.knownIssueCount && `・已知 ${magazine.knownIssueCount} 期`}
               {/* Only when the list really is shorter: 軟體世界 has a cover
                   for all 201, and 「共 201 期，顯示 201 期」 reads like a bug. */}
@@ -369,16 +383,16 @@ export default async function MagazineDetailPage({
             </p>
           )}
 
-          {/* 收錄數比已知期數多不是資料寫錯，站上就是收了那個數字沒算進去的
-              期次。**不能寫成「增刊一律不計入」**：算不算增刊是各來源自己的
-              事，同一份維基列表把勝利小子的 57 期算成含增刊 2 冊與特別號 1 冊，
-              卻沒把增刊算進電腦玩家的 216 期。範圍寫在 knownIssueCountSource
-              裡，這句只負責讓「收錄 217 期・已知 216 期」不被讀成算錯了。 */}
-          {magazine.knownIssueCount && total > magazine.knownIssueCount && (
-            <p className="basis-full text-xs text-muted-foreground">
-              收錄數多於已知期數：站上有幾期不在那個數字的計算範圍內（多半是增刊或特刊）。
-            </p>
-          )}
+          {/* 站上的本刊數已經多過那個來源，表示它被超越了——不是資料寫錯，是
+              那個數字不再是參照。做法是把它清掉（見 docs/data-conventions.md
+              〈已知總期數〉），而清掉是人工動作，所以這句還得留著提醒讀者。
+              特刊與試刊不再進這個比較，它們在上面已經分開講了。 */}
+          {magazine.knownIssueCount &&
+            kindCounts.REGULAR > magazine.knownIssueCount && (
+              <p className="basis-full text-xs text-muted-foreground">
+                站上收錄的本刊數已多於這個來源，該數字待更新。
+              </p>
+            )}
 
           {/* A rule, not just space: the heading's trailing 「（共 N 期）」 is the
               same grey and nearly the same size as the 篩選 label, so 96px of

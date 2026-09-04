@@ -32,6 +32,7 @@ export const CSV_HEADERS = [
   "magazine_source_title",
   "aliases",
   "publisher",
+  "frequency",
   "issn",
   "known_issue_count",
   "known_issue_count_source",
@@ -43,6 +44,7 @@ export const CSV_HEADERS = [
   "logo_image",
   "issue_number",
   "alt_numbers",
+  "issue_kind",
   "volume_number",
   "issue_slug",
   "issue_code",
@@ -51,6 +53,9 @@ export const CSV_HEADERS = [
   "page_count",
   "price",
   "cover_image",
+  "cover_games",
+  "cover_subjects",
+  "cover_credit",
   "toc_images",
   "toc_reviewed_at",
   "complete_at",
@@ -67,8 +72,8 @@ export const CSV_HEADERS = [
   "games",
 ];
 
-const MAGAZINE_FIELD_COUNT = 15;
-const ISSUE_FIELD_COUNT = 15;
+const MAGAZINE_FIELD_COUNT = 16;
+const ISSUE_FIELD_COUNT = 19;
 const ARTICLE_FIELD_COUNT = 9;
 
 // Prisma returns Decimal for price; anything with toString will do here.
@@ -81,6 +86,7 @@ export interface ExportMagazine {
   sourceTitle: string | null;
   aliases: string[];
   publisher: string | null;
+  frequency: string | null;
   issn: string | null;
   knownIssueCount: number | null;
   knownIssueCountSource: string | null;
@@ -107,6 +113,7 @@ export interface ExportArticle {
 export interface ExportIssue {
   issueNumber: string;
   altNumbers: string[];
+  kind: string;
   volumeNumber: string | null;
   slug: string;
   code: string;
@@ -115,6 +122,9 @@ export interface ExportIssue {
   pageCount: number | null;
   price: Numeric | null;
   coverImage: string | null;
+  coverGames: string[];
+  coverSubjects: string[];
+  coverCredit: string | null;
   tocImages: string[];
   tocReviewedAt: Date | null;
   completeAt: Date | null;
@@ -169,6 +179,7 @@ export function rowsFor(
     magazine.sourceTitle ?? "",
     list(magazine.aliases),
     magazine.publisher ?? "",
+    magazine.frequency ?? "",
     magazine.issn ?? "",
     magazine.knownIssueCount?.toString() ?? "",
     magazine.knownIssueCountSource ?? "",
@@ -190,6 +201,7 @@ export function rowsFor(
     const issueFields = [
       issue.issueNumber,
       list(issue.altNumbers),
+      issue.kind,
       issue.volumeNumber ?? "",
       issue.slug,
       issue.code,
@@ -198,6 +210,9 @@ export function rowsFor(
       issue.pageCount != null ? String(issue.pageCount) : "",
       issue.price != null ? String(issue.price) : "",
       issue.coverImage ?? "",
+      list(issue.coverGames),
+      list(issue.coverSubjects),
+      issue.coverCredit ?? "",
       list(issue.tocImages),
       timestamp(issue.tocReviewedAt),
       timestamp(issue.completeAt),
