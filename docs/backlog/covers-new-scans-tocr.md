@@ -1,6 +1,7 @@
 ---
-status: open
+status: done
 created: 2026-09-05
+completed: 2026-09-05
 ---
 
 # 新一批封面要接回站上——填 124 列 `tocr_issue`、補建 4 刊 33 期
@@ -45,8 +46,14 @@ created: 2026-09-05
 
 腳本留在 `~/lab/nostalib-toolkit/scripts/tocr_create_new_scans.py`（冪等，可重跑）。
 
-**還沒做的**：下面電擊GAMES 的 Vol.26 疑問，要翻版權頁，我這邊查不出來。
-封底 c4（這批 29 張，連同舊的 42 張）仍等 `/api/photos` 那條。
+**Vol.26 的疑問結掉了**（2026-09-05，yuxio）：不是打錯。2003 年 2 月號是改名後的
+第一本，仍沿用《電擊王》的編號系統所以標 Vol.26；3 月號是改名後的第二本，
+從 Vol.2 起另編一段。站上那期的 notes 本來就寫著「這期仍沿用電擊王期數編號，
+但之後都以這期為 No.1 重新計數」——與此一致，**資料不用改**。
+`MagazineTitle`（電擊王 → DengekiGAMES）也早在 2026-08-30 就建好了，
+見 [magazine-title-periods.md](magazine-title-periods.md)。
+
+**還沒做的**：封底 c4（這批 29 張，連同舊的 42 張）仍等 `/api/photos` 那條。
 
 ## 現況
 
@@ -186,7 +193,7 @@ manifest 所在目錄（也就是 `raw/`）取圖，這三張要嘛手動傳 der
   建期時別建成兩期；合併號的連接符號要用哪個，見
   [scan-followups.md](scan-followups.md) 裡《軟體世界》`70+71` 那條
 
-## 電擊 GAMES 10 期——期號有疑問，請對版權頁
+## 電擊 GAMES 10 期——期號疑問已解決
 
 我的 10 張封面是 2003 年 2、3、5、6、7、8、9、10、11、12 月號。
 **封面只印年月，沒有 Vol 號**（報頭右側是「`2` / FEBRUARY 2003 / SPECIAL PRICE NT.148」
@@ -209,18 +216,14 @@ dev DB 的《電擊王》(`dengeki-oh-tw`) 底下有 `DengekiGAMES Vol.N` 這些
 | 2003-12 | DengekiGAMES Vol.11 | 2003年末趨勢／FF12發表會特寫 |
 
 **3 月到 12 月是 `Vol.N = 月 − 1`，一路整齊；照這條推 2 月號該是 Vol.1，
-但站上記的是 Vol.26。** 兩種可能：
+但站上記的是 Vol.26。** 答案是第一種：2 月號是改名後的第一本，**仍沿用《電擊王》的
+編號系統**所以標 Vol.26；3 月號是改名後的第二本，從 Vol.2 起另編一段——
+缺的不是 Vol.1，2 月號就是那個 1，只是它掛著舊序列的號。
+站上那期的 notes 本來就記著這件事，資料不用改。
 
-1. Vol.26 是《電擊王》舊序列的續號（2 月號是改頭換面的過渡期），3 月才重編為 Vol.2 —— 那 Vol.2 前面缺的 Vol.1 是什麼？
-2. 單純是建檔時打錯，該是 Vol.1
-
-**封面查不出來**（只印月份），要翻版權頁或書背才有定論；我手邊只有 c1，
-無從判斷。請對照站上這期的其他欄位或實體。
-
-順帶一提，「電擊王 → 電擊GAMES」是**改名**（封面自己寫「電擊王大變身」「月刊電擊王
-全新面貌」，日本 Media Works 正式授權中文版）。照 2026-08-30 定的判準
-（改名一律建刊名時期、不看期數多寡），這裡該有一筆 `MagazineTitle`，
-與 [magazine-title-periods.md](magazine-title-periods.md) 同一類工作。
+「電擊王 → 電擊GAMES」是**改名**（封面自己寫「電擊王大變身」「月刊電擊王全新面貌」，
+日本 Media Works 正式授權中文版）。對應的 `MagazineTitle` 已於 2026-08-30 建好，
+見 [magazine-title-periods.md](magazine-title-periods.md)，這裡不必再補。
 封面端已經照這條處理——`title_slug` 用 `dengeki-games`、`magazine_slug` 掛回
 `dengeki-oh-tw`。
 

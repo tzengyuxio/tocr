@@ -9,7 +9,7 @@
 筆記長在裡面會讓每次讀它的成本跟著漲（2026-08-30 拆分，當時 602 行）。
 做完的打勾後移到 [docs/backlog/done.md](docs/backlog/done.md)。
 
-- [ ] **新一批封面要接回站上** — 期刊掃描檔從 188 張長到 265 張，124 列 `tocr_issue` 待回填、4 刊 33 期待建（飛訊 28 期、攻略快報、攻略寶典／秘技大全／攻略大全），另有電擊GAMES 的 Vol.26 期號疑問要對版權頁，見 [docs/backlog/covers-new-scans-tocr.md](docs/backlog/covers-new-scans-tocr.md)（2026-09-05）
+- [ ] **封底 c4 還沒上傳** — 累積 71 張（2026-09-02 那批 42、2026-09-05 新掃的 29）。走 `/api/photos` 不是 `/api/upload`，`tocr_upload_covers.py` 不管這條，要另外寫。先擱著，等 Blob 額度確認再動，見 [docs/backlog/covers-missing-issues.md](docs/backlog/covers-missing-issues.md) 與 [docs/backlog/covers-new-scans-tocr.md](docs/backlog/covers-new-scans-tocr.md)（2026-09-05）
 
 - [ ] **nostalibrary 還有約 15 張封面可以補上站** — 已補 73 張，剩零星幾本與 3 張待決的產品目錄；2026-09-09 回頭看，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
 
