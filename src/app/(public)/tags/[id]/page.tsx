@@ -11,20 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tags, FileText, SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { formatEdtf } from "@/lib/edtf";
-import { CategoryChip, TagTypeChip } from "@/components/chips";
-import { formatIssueNumber } from "@/lib/issue-number";
+import { TagTypeChip } from "@/components/chips";
 import { pageOpenGraph } from "@/lib/og";
 import { ArticleListTable } from "@/components/ArticleListTable";
 import {

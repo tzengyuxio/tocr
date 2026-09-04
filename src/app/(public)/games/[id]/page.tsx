@@ -13,20 +13,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Calendar, FileText, SquarePen } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { formatEdtf } from "@/lib/edtf";
-import { CategoryChip } from "@/components/chips";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { pageOpenGraph } from "@/lib/og";
 import { ArticleListTable } from "@/components/ArticleListTable";
@@ -35,7 +25,6 @@ import {
   parseArticleDirection,
   parseArticleSort,
 } from "@/lib/article-listing";
-import { formatIssueNumber } from "@/lib/issue-number";
 
 interface PageProps {
   params: Promise<{ id: string }>;
