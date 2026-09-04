@@ -13,26 +13,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Calendar, FileText, SquarePen } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { formatEdtf } from "@/lib/edtf";
-import { CategoryChip } from "@/components/chips";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { pageOpenGraph } from "@/lib/og";
-import { formatIssueNumber } from "@/lib/issue-number";
+import { ArticleListTable } from "@/components/ArticleListTable";
+import {
+  articleOrderBy,
+  parseArticleDirection,
+  parseArticleSort,
+} from "@/lib/article-listing";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ sort?: string; dir?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -66,8 +62,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function GameDetailPage({ params }: PageProps) {
+export default async function GameDetailPage({ params, searchParams }: PageProps) {
   const { id: param } = await params;
+  const { sort: sortParam, dir: dirParam } = await searchParams;
+  const sort = parseArticleSort(sortParam);
+  const direction = parseArticleDirection(dirParam, sort);
 
   // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
   const found = await resolveSlugParam("game", param);
@@ -86,15 +85,7 @@ export default async function GameDetailPage({ params }: PageProps) {
     where: { id },
     include: {
       articleGames: {
-        orderBy: {
-          article: {
-            issue: {
-              // Nulls last: an issue with no stated date has no place on a
-              // timeline, and Postgres would otherwise sort them first here.
-              publishSort: { sort: "desc", nulls: "last" },
-            },
-          },
-        },
+        orderBy: articleOrderBy(sort, direction),
         include: {
           article: {
             include: {
@@ -104,6 +95,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                   issueNumber: true,
                   slug: true,
                   publishDate: true,
+                  coverImage: true,
                   magazine: {
                     select: { id: true, name: true, slug: true },
                   },
@@ -236,87 +228,12 @@ export default async function GameDetailPage({ params }: PageProps) {
               尚無相關文章
             </div>
           ) : (
-            <>
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      {/* 期刊與單期併成一欄，形狀沿用 /admin/issues。這一欄要回答的是
-                          「哪一本的哪一期」，那本來就是一件事；而拆成兩欄時，左邊那個
-                          連到期刊首頁的連結幫不上忙——來到這頁的人要找的是這一期。 */}
-                      <TableHead>刊期</TableHead>
-                      <TableHead>出版日期</TableHead>
-                      <TableHead>文章標題</TableHead>
-                      <TableHead>分類</TableHead>
-                      <TableHead>頁碼</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {game.articleGames.map((ag) => (
-                      <TableRow key={ag.id}>
-                        <TableCell>
-                          <Link
-                            href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`}
-                            className="hover:underline"
-                          >
-                            {ag.article.issue.magazine.name}{" "}
-                            <span className="font-semibold">
-                              {formatIssueNumber(ag.article.issue.issueNumber)}
-                            </span>
-                          </Link>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatEdtf(ag.article.issue.publishDate)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">{ag.article.title}</div>
-                          {ag.article.subtitle && (
-                            <div className="text-sm text-muted-foreground">
-                              {ag.article.subtitle}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {ag.article.category ? (
-                            <CategoryChip category={ag.article.category} />
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {ag.article.pageStart || "-"}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="divide-y md:hidden">
-                {game.articleGames.map((ag) => (
-                  <div key={ag.id} className="py-3">
-                    <div className="font-medium">{ag.article.title}</div>
-                    {ag.article.subtitle && (
-                      <div className="text-sm text-muted-foreground">{ag.article.subtitle}</div>
-                    )}
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                      <Link
-                        href={`/magazines/${ag.article.issue.magazine.slug}/issues/${encodeURIComponent(ag.article.issue.slug)}`}
-                        className="hover:underline"
-                      >
-                        {ag.article.issue.magazine.name}{" "}
-                        {formatIssueNumber(ag.article.issue.issueNumber)}
-                      </Link>
-                      <span>·</span>
-                      <span>{formatEdtf(ag.article.issue.publishDate)}</span>
-                      {ag.article.pageStart && <span>· p.{ag.article.pageStart}</span>}
-                    </div>
-                    {ag.article.category && (
-                      <CategoryChip category={ag.article.category} className="mt-1 text-xs" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
+            <ArticleListTable
+              rows={game.articleGames}
+              sort={sort}
+              direction={direction}
+              basePath={`/games/${encodeURIComponent(found.slug)}`}
+            />
           )}
         </CardContent>
       </Card>
