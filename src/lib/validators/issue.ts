@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { edtfSortDate, isValidEdtf } from "../edtf";
 import { issueSlugify } from "../slugify";
+import { ISSUE_KIND_VALUES } from "../issue-browse";
 import { blankToNull, optionalText } from "./fields";
 
 // A blank number input submits "", which z.coerce.number() turns into 0 and
@@ -31,6 +32,8 @@ export const issueCreateSchema = z.object({
   ),
   // The other numbers printed on the same issue -- see Issue.altNumbers.
   altNumbers: z.array(z.string()).default([]),
+  // 本刊／試刊／特刊。有預設而且不可空，見 prisma/schema.prisma 的 IssueKind。
+  kind: z.enum(ISSUE_KIND_VALUES).default("REGULAR"),
   volumeNumber: optionalText,
   title: optionalText,
   // EDTF (ISO 8601-2), not a calendar date: a cover may give only the month
@@ -45,6 +48,11 @@ export const issueCreateSchema = z.object({
       .optional()
   ),
   coverImage: optionalText,
+  // 封面上的遊戲與真人、封面是誰做的。前兩者是陣列（一張封面常放好幾款遊戲、
+  // 藝人同框也常見），coverCredit 單值且角色詞寫在值裡。見 Issue 的欄位註解。
+  coverGames: z.array(z.string()).default([]),
+  coverSubjects: z.array(z.string()).default([]),
+  coverCredit: optionalText,
   tocImages: z.array(z.string()).default([]),
   pageCount: optionalInt,
   price: optionalDecimal,
@@ -66,6 +74,9 @@ export const issueUpdateSchema = issueCreateSchema
   .extend({
     tocImages: z.array(z.string()).optional(),
     altNumbers: z.array(z.string()).optional(),
+    coverGames: z.array(z.string()).optional(),
+    coverSubjects: z.array(z.string()).optional(),
+    kind: z.enum(ISSUE_KIND_VALUES).optional(),
   });
 
 /**

@@ -5,6 +5,7 @@ import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { VerifiedMark } from "@/components/magazine/VerifiedMark";
+import { issueKindBadge, type IssueKind } from "@/lib/issue-browse";
 
 interface IssueCardProps {
   issue: {
@@ -16,6 +17,8 @@ interface IssueCardProps {
     publishDate: string | null;
     /** 資料核對過了。三態收成兩態的地方見 lib/issue-complete.ts。 */
     isVerified?: boolean;
+    /** 本刊不標，只有試刊與特刊掛字樣——讀者要看的是例外。 */
+    kind?: IssueKind;
     _count: { articles: number };
   };
   magazineSlug: string;
@@ -64,6 +67,13 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
             <p className="min-w-0 flex-1 truncate font-medium">
               {formatIssueNumber(issue.issueNumber)}
             </p>
+            {/* 期號本身多半已經寫著「試刊 3 號」「即時戰爭遊戲特刊」，這個
+                標記是給那些沒寫在期號裡、只印在封面上的。 */}
+            {issue.kind && issueKindBadge(issue.kind) && (
+              <span className="shrink-0 rounded-sm bg-muted px-1 text-[10px] text-muted-foreground">
+                {issueKindBadge(issue.kind)}
+              </span>
+            )}
             {/* 卡片的字本來就小（14px），照標題那個比例會縮到看不出形狀。 */}
             <VerifiedMark verified={issue.isVerified ?? false} sizeEm={0.9} />
           </div>

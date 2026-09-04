@@ -80,6 +80,7 @@ export default async function EditMagazinePage({ params }: PageProps) {
     sourceTitle: magazine.sourceTitle,
     aliases: magazine.aliases,
     publisher: magazine.publisher,
+    frequency: magazine.frequency,
     issn: magazine.issn,
     knownIssueCount: magazine.knownIssueCount,
     knownIssueCountSource: magazine.knownIssueCountSource,

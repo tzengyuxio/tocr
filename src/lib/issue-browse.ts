@@ -13,6 +13,31 @@ import type { Prisma } from "@prisma/client";
  * leaves out, so a plain /magazines/<slug> stays the address people share.
  */
 
+/**
+ * 刊種：這一冊在雜誌自己的編號序列裡的身分，也是「收錄 N 期」數的是什麼。
+ *
+ * 沒有對應的篩選按鈕——特刊與試刊加起來是全站的極少數，一個永遠只濾出兩三筆的
+ * 按鈕不值得占掉那排寬度。表放這裡是為了讓 validator、後台表單與計數讀同一份。
+ * 判準見 prisma/schema.prisma 的 IssueKind。
+ */
+export const ISSUE_KIND_VALUES = ["REGULAR", "PILOT", "SPECIAL"] as const;
+
+export type IssueKind = (typeof ISSUE_KIND_VALUES)[number];
+
+export const ISSUE_KIND_LABELS: Record<IssueKind, string> = {
+  REGULAR: "本刊",
+  PILOT: "試刊",
+  SPECIAL: "特刊",
+};
+
+/**
+ * 期列表上標在非本刊那幾列的字樣。本刊不標——標了等於每一列都掛一個字，
+ * 而讀者要看的是例外。
+ */
+export function issueKindBadge(kind: IssueKind): string | null {
+  return kind === "REGULAR" ? null : ISSUE_KIND_LABELS[kind];
+}
+
 export const ISSUE_FILTERS = [
   { value: "all", label: "全部", where: {} },
   { value: "cover", label: "有封面", where: { coverImage: { not: null } } },

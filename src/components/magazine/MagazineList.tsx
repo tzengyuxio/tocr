@@ -4,6 +4,7 @@ import { BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   MAGAZINE_CATEGORY_CHIPS,
+  magazineCountTitle,
   type MagazineDisplayUnit,
 } from "@/lib/magazine-browse";
 import { cn } from "@/lib/utils";
@@ -102,27 +103,17 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
           </div>
 
           {/* tabular-nums 讓期數的位數對齊，一整欄才掃得出誰收得多。
-              查到總期數的刊寫成「12 / 24」——左邊是站上收錄的，右邊是這本刊
-              已知出過幾期；沒查到的照舊只有一個數字。 */}
+              數的是**本刊**：試刊與特刊沒有拿到正刊編號，摻進來這個數字就沒有
+              跨雜誌一致的定義，而它正是拿來跟已知總期數並排的。
+              查到總期數的刊寫成「12 / 24」；欄寬只有幾個字，特刊與試刊塞不進來，
+              放 tooltip。 */}
           <div
             className="w-24 shrink-0 text-right text-sm tabular-nums text-muted-foreground"
-            title={
-              unit.knownIssueCount
-                ? `站上收錄 ${unit.issueCount} 期，已知共 ${unit.knownIssueCount} 期${
-                    unit.knownIssueCountSource ? `（${unit.knownIssueCountSource}）` : ""
-                  }${
-                    // 收錄數比較大時說一句，否則「217 / 216」看起來像算錯了。
-                    // 算不算增刊看來源，所以不寫成通則。
-                    unit.issueCount > unit.knownIssueCount
-                      ? "；站上有幾期不在那個數字的計算範圍內"
-                      : ""
-                  }`
-                : undefined
-            }
+            title={magazineCountTitle(unit)}
           >
             {unit.knownIssueCount
-              ? `${unit.issueCount} / ${unit.knownIssueCount} 期`
-              : `${unit.issueCount} 期`}
+              ? `${unit.regularCount} / ${unit.knownIssueCount} 期`
+              : `${unit.regularCount} 期`}
           </div>
         </Link>
       ))}

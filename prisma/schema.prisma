@@ -88,7 +88,7 @@ model VerificationToken {
 enum UserRole {
   VIEWER // 只能瀏覽
   EDITOR // 可編輯內容
-  ADMIN  // 管理者
+  ADMIN // 管理者
 }
 
 // ==================== 期刊相關 ====================
@@ -100,14 +100,50 @@ enum UserRole {
 /// 同一本會同時出現在該節與 TV Game（電視遊樂雜誌、電擊王、電玩通等七本都是）。
 /// 匯入時只取這三節，否則會得到互相矛盾的分類。
 enum MagazineCategory {
-  PC_GAME     // 電腦遊戲
-  TV_GAME     // 電視遊樂器
+  PC_GAME // 電腦遊戲
+  TV_GAME // 電視遊樂器
   ONLINE_GAME // 線上遊戲
 }
 
+/// 發刊頻率。**單一值**：頻率是時序屬性，一本刊在任何一個時間點只有一種，
+/// 「月刊＋雙週刊」複選起來既說不出先後也說不出主次。與 categories 用陣列不
+/// 衝突——那個是真的並存（同一期同時報 PC 與 TV 遊戲）。
+///
+/// 取創刊時的版本，同 publisher；中途改變（月刊轉雙週刊很常見）寫進
+/// description。理由是可機械判定：「主要頻率」是主觀判斷，兩個編輯會填出不同
+/// 答案。不掛 MagazineTitle：頻率變動與改名不同步，切在刊名時期上會對不齊。
+enum MagazineFrequency {
+  WEEKLY // 週刊
+  BIWEEKLY // 雙週刊（每兩週，一年約 26 期）
+  SEMIMONTHLY // 半月刊（每月兩期，一年 24 期）
+  MONTHLY // 月刊
+  BIMONTHLY // 雙月刊
+  QUARTERLY // 季刊
+  IRREGULAR // 不定期
+}
+
+/// 這一冊在雜誌自己的編號序列裡的身分，也是站上「收錄 N 期」的定義。
+///
+/// 判準只看封面上的編號：**進入正刊編號序列的是本刊**；另立名目的（特刊、
+/// 增刊、別冊、產品目錄）不是；正式創刊前的試刊也不是——出版社自己是從創刊號
+/// 開始數第 1 期。它不要求判斷「這本重不重要」，所以兩個編輯會得到同一個答案。
+///
+/// 試刊獨立而不併進 REGULAR，與 foundedDate「記創刊號、不記試刊號」同一個理由：
+/// 跨雜誌比較要有一致的基準線，同一個站對「試刊算不算」不能給兩種答案。特刊與
+/// 增刊則合成一個值——兩者在這批雜誌的用法相當混，分開會逼錄入時每次判一次，
+/// 而判準拿不出來。
+///
+/// **只影響計數與標示，不影響序列**：試刊仍然是正常的 Issue，order 照排在創刊號
+/// 之前，《電視遊樂快訊》拿試刊號當刊名時期起點也照舊。
+enum IssueKind {
+  REGULAR // 本刊
+  PILOT // 試刊
+  SPECIAL // 特刊、增刊、別冊、產品目錄
+}
+
 model Magazine {
-  id             String    @id @default(cuid())
-  name           String
+  id                    String             @id @default(cuid())
+  name                  String
   // URL handle. ASCII only, unlike Game.slug and Tag.slug -- a magazine slug
   // is the prefix of every issue URL, so a Chinese one would percent-encode
   // into the most-shared URLs on the site. Values come from nostalibrary
@@ -116,7 +152,7 @@ model Magazine {
   // The cuid default is for CSV import, which has no slug column: the row gets
   // an unreadable but working URL until an editor names it. The admin form
   // requires one (validators/magazine.ts), so that is the only lenient path.
-  slug           String    @unique @default(cuid())
+  slug                  String             @unique @default(cuid())
   // The parallel title: the other-language name the magazine prints alongside
   // its own, on the same cover. Stores the form the magazine uses as its
   // signboard, not the fullest form -- 電腦玩家 printed both ACE and Amazing
@@ -126,7 +162,7 @@ model Magazine {
   //
   // Takes the founding-era value, like `publisher`: 電腦玩家 dropped ACE around
   // issue 63 and picked up PC GAMER at 96, and this field is not a history.
-  nameParallel   String?   @map("name_parallel")
+  nameParallel          String?            @map("name_parallel")
   // The foreign magazine this one is the Chinese edition of. Empty means the
   // magazine is not a translation.
   //
@@ -135,57 +171,59 @@ model Magazine {
   // edition and fills this in, while 電腦玩家 licensed PC GAMER articles (and
   // even printed "PC GAMER 國際中文版") without becoming that magazine, so it
   // does not. See docs/plans/2026-08-23-magazine-name-fields-design.md.
-  sourceTitle    String?   @map("source_title")
+  sourceTitle           String?            @map("source_title")
   // Other names the magazine is known by: nicknames (法米通, 電擊PS) and
   // alternative spellings of the parallel title. A title change belongs to
   // MagazineTitle, the parallel title to `nameParallel`, the source magazine
   // to `sourceTitle` -- this field is what is left over, and it is what search
   // falls back on.
-  aliases        String[]  @default([])
-  publisher      String?
+  aliases               String[]           @default([])
+  publisher             String?
+  // 發刊頻率，創刊值。見上面 MagazineFrequency 的註解。
+  frequency             MagazineFrequency?
   // Not unique: a title change can carry the ISSN over, so two magazines
   // legitimately share one (電擊王 and 電玩通 both use 1561-8099).
-  issn           String?
+  issn                  String?
   // 這本刊總共出過幾期，**已知**而不是應有——查到多少記多少，查不到就留空，
   // 站上的收錄數仍然是 issues 自己數得出來的。仍在發行的刊沒有這個數字。
   //
   // 掛在刊系而不是刊名時期：改名刊的分段總數往往查不到，而讀者問的是「這本
   // 總共出了幾期」。列表上改過名的刊一時期一列，那幾列因此只顯示收錄數。
-  knownIssueCount Int?    @map("known_issue_count")
+  knownIssueCount       Int?               @map("known_issue_count")
   // 上面那個數字哪來的（「國圖臺灣期刊論文索引」、某篇藏家整理文）。可空：
   // 填寫負擔為零，查到出處時才有地方放——不必塞進 description 靠人讀。
-  knownIssueCountSource String? @map("known_issue_count_source")
-  description    String?   @db.Text
+  knownIssueCountSource String?            @map("known_issue_count_source")
+  description           String?            @db.Text
   // The masthead, as one representative image: the thing a reader recognises
   // the magazine by. A long-running title redrew its standard type more than
   // once -- 軟體世界 has at least ten over fifteen years -- and an editor picks
   // whichever one identifies it best rather than the site holding all of them.
   // Recording that evolution is a separate job with no home yet; see BACKLOG.
-  logoImage      String?   @map("logo_image")
+  logoImage             String?            @map("logo_image")
   // What kinds of games the magazine covered. A list rather than one value:
   // a long-running title crosses over -- 電玩通 moved from consoles into online
   // games, 電腦玩家 covered both by its final years -- and a single column would
   // force the editor to pick a side. An enum rather than String[] so the filter
   // can list its own options: Game.platforms is free text, and the chips there
   // would have to be derived from data that is not filled in yet.
-  categories     MagazineCategory[] @default([])
+  categories            MagazineCategory[] @default([])
   // EDTF (ISO 8601-2) so month-, year- and season-level precision can be
   // recorded without inventing a day: "1999-05", "1994", "1994-22".
-  foundedDate    String?   @map("founded_date")
-  endedDate      String?   @map("ended_date")
+  foundedDate           String?            @map("founded_date")
+  endedDate             String?            @map("ended_date")
   // Start of the range foundedDate covers. Derived on write; EDTF strings
   // cannot be ordered directly.
-  foundedSort    DateTime? @map("founded_sort")
-  isActive       Boolean   @default(true) @map("is_active")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  foundedSort           DateTime?          @map("founded_sort")
+  isActive              Boolean            @default(true) @map("is_active")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
 
   // Relations
-  issues    Issue[]
-  titles    MagazineTitle[]
-  oldSlugs  MagazineSlug[]
-  photos    Photo[]
-  links     ExternalLink[]
+  issues   Issue[]
+  titles   MagazineTitle[]
+  oldSlugs MagazineSlug[]
+  photos   Photo[]
+  links    ExternalLink[]
 
   @@index([issn])
   @@index([foundedSort])
@@ -222,16 +260,16 @@ model MagazineSlug {
 }
 
 model Issue {
-  id           String   @id @default(cuid())
+  id              String    @id @default(cuid())
   // A short, global handle that never moves. Every segment of the public URL
   // can change -- a magazine gets renamed, an issue number is corrected, a
   // slug is retyped -- so a link that has been shared needs something else to
   // hold on to. Truncating the cuid cannot serve: its entropy sits at the
   // tail, and the first 7 characters of the 764 issues in dev collapse into
   // 12 distinct values.
-  code         String   @unique @default(nanoid(8))
-  magazineId   String   @map("magazine_id")
-  issueNumber  String   @map("issue_number") // "第 42 期" 或 "Vol.5 No.3"
+  code            String    @unique @default(nanoid(8))
+  magazineId      String    @map("magazine_id")
+  issueNumber     String    @map("issue_number") // "第 42 期" 或 "Vol.5 No.3"
   // The other numbers printed on the same issue. 電玩通 carries four at once:
   // a dated release number (1月30日號), a within-year number (2014 02), a
   // Hong Kong volume (HK VOL 308) and the running total (第468期), which is
@@ -239,13 +277,17 @@ model Issue {
   // many exist varies by issue -- the HK volume only appears once the Hong
   // Kong edition does. The cost is that no single one can be queried or
   // sorted on its own.
-  altNumbers   String[] @default([]) @map("alt_numbers")
+  altNumbers      String[]  @default([]) @map("alt_numbers")
+  // 本刊／試刊／特刊，見 IssueKind。有 default 而且不可空：每一冊都有身分，
+  // 「還沒判」與「是本刊」在這裡是同一件事，絕大多數本來就是本刊，給 null 只會
+  // 讓每一處計數都要多處理一種情形。
+  kind            IssueKind @default(REGULAR)
   // URL handle, unique within the magazine -- the magazine slug is already in
   // the path. Defaults to issueSlugify(issueNumber) but editors override it:
   // see lib/slugify.ts for why no rule can be trusted here.
-  slug         String
-  volumeNumber String?  @map("volume_number")
-  title        String? // 本期特輯標題
+  slug            String
+  volumeNumber    String?   @map("volume_number")
+  title           String? // 本期特輯標題
   // EDTF (ISO 8601-2), same as Magazine: an issue is often dated only to the
   // month or the season. See docs/data-conventions.md.
   //
@@ -253,40 +295,55 @@ model Issue {
   // can recover -- 華泰任天堂秘笈 prints neither a colophon date nor a cover
   // month. Their place in the run is held by `order` instead, which is what
   // a magazine's own issue list is sorted by.
-  publishDate  String?  @map("publish_date")
+  publishDate     String?   @map("publish_date")
   // Start of the range publishDate covers. Derived on write; never sorted on
   // the EDTF string. Null exactly when publishDate is, so cross-magazine
   // lists (search, tags, games) order on it with nulls last.
-  publishSort  DateTime? @map("publish_sort")
-  coverImage   String?  @map("cover_image")
-  tocImages    String[] @default([]) @map("toc_images") // 目錄頁掃描圖（可多張）
+  publishSort     DateTime? @map("publish_sort")
+  coverImage      String?   @map("cover_image")
+  // 封面上有什麼、封面是誰做的。分界不在「有幾種角色」，而在這兩端本來就是不同
+  // 的東西：被畫的那端是封閉集合（遊戲、真人兩種），製作的那端是開放集合（繪師、
+  // 攝影、設計、美術指導⋯⋯），而開放集合放進欄位名就是無底洞。
+  //
+  // 所以開放的部分寫進**值**裡：coverCredit 預設是繪者，直接寫「VOFan」；不是
+  // 繪者時自帶角色詞，「攝影：陳某」「設計：某工作室」。加一種角色不需要 migration。
+  // 代價是角色資訊 GROUP BY 不了——「某繪師畫了幾本」的統計評估為效益不大，
+  // 這個代價目前等於零，真要時從寫法一致的欄位回填也不難。
+  //
+  // coverGames 不接 Game 關聯：封面上的遊戲多半在目錄裡也有欄目，反查那條路已經
+  // 存在，第二條路徑只會與它不一致。coverSubjects 只記真人，遊戲角色（春麗、
+  // 瑪利歐）歸 coverGames——兩欄不分界會互搶。見 docs/data-conventions.md。
+  coverGames      String[]  @default([]) @map("cover_games")
+  coverSubjects   String[]  @default([]) @map("cover_subjects")
+  coverCredit     String?   @map("cover_credit")
+  tocImages       String[]  @default([]) @map("toc_images") // 目錄頁掃描圖（可多張）
   // When a person confirmed the table of contents. OCR run through the API
   // token leaves this null, so unreviewed issues can be found and checked.
-  tocReviewedAt DateTime? @map("toc_reviewed_at")
+  tocReviewedAt   DateTime? @map("toc_reviewed_at")
   // 完備：這一期該有的資料都有了，不必再回頭看。只有 ADMIN 能設，只有 ADMIN
   // 看得到。這是對資料的陳述，不是對某個人審閱動作的紀錄——誰設的問 EditLog。
-  completeAt    DateTime? @map("complete_at")
+  completeAt      DateTime? @map("complete_at")
   // 完備之後第一次被改動的時間；null 表示標記仍然成立。
   //
   // 存第一次而不是拿 updatedAt 去比：設定完備這個動作本身就會更新 updatedAt，
   // 比對永遠會讀成「已變更」。分成兩欄也就順便答得出「什麼時候開始不作數的」。
   completeStaleAt DateTime? @map("complete_stale_at")
-  pageCount    Int?     @map("page_count")
-  price        Decimal? @db.Decimal(10, 2)
-  notes        String?  @db.Text
+  pageCount       Int?      @map("page_count")
+  price           Decimal?  @db.Decimal(10, 2)
+  notes           String?   @db.Text
   // Position within the magazine, and the ruler its issue list is sorted by.
   // Dates cannot serve: not every issue has one, and issue numbers sort "10"
   // before "9". Set from the source's own sequence on import; PUT
   // /api/issues/reorder renumbers when an issue turns up in the middle.
-  order        Int      @default(0)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  order           Int       @default(0)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  magazine Magazine  @relation(fields: [magazineId], references: [id], onDelete: Cascade)
-  articles Article[]
-  photos   Photo[]
-  links    ExternalLink[]
+  magazine         Magazine       @relation(fields: [magazineId], references: [id], onDelete: Cascade)
+  articles         Article[]
+  photos           Photo[]
+  links            ExternalLink[]
   titlePeriodStart MagazineTitle?
 
   @@unique([magazineId, issueNumber])
@@ -303,9 +360,9 @@ model Issue {
  * docs/plans/2026-08-22-magazine-title-design.md。
  */
 model MagazineTitle {
-  id         String @id @default(cuid())
-  magazineId String @map("magazine_id")
-  title      String
+  id            String  @id @default(cuid())
+  magazineId    String  @map("magazine_id")
+  title         String
   // 該時期的並列刊名。與 Magazine.nameParallel 的分工，同 title 與
   // Magazine.name：那邊存創刊值，這邊存各時期值。只在並列刊名跟著改名一起換時
   // 才填（電視遊樂雜誌 TV GAME MAGAZINE → GAME fans）；正題名沒變而並列刊名
@@ -315,24 +372,24 @@ model MagazineTitle {
   // 這邊存各時期值。翻譯刊跟著原刊改名時才填（電玩通PS2 的三個時期各自對應
   // ファミ通PS2／ファミ通PS+／ファミ通PSP+PS3）；null 表示原刊沒換，沿用
   // Magazine.sourceTitle。
-  titleSource String? @map("title_source")
+  titleSource   String? @map("title_source")
   // 從這一期起改用此刊名。只存起點：一段的終點就是下一段起點的前一期（按
   // Issue.order 比較，startIssueId 只是指標），最後一段開放至今，結構上
   // 不可能出現縫隙或重疊。
-  startIssueId String @unique @map("start_issue_id")
+  startIssueId  String  @unique @map("start_issue_id")
   // 這個時期自己的刊頭；null 時 fallback Magazine.logoImage。改名必然換
   // 刊頭，刊頭本來就是跟著時期走的東西。
-  logoImage String? @map("logo_image")
+  logoImage     String? @map("logo_image")
   // 判定依據與封面照錄，如「封面標示『革新一號（124期）』」。
-  note String? @db.Text
+  note          String? @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  magazine Magazine @relation(fields: [magazineId], references: [id], onDelete: Cascade)
+  magazine   Magazine @relation(fields: [magazineId], references: [id], onDelete: Cascade)
   // Restrict：刪除被當作時期起點的期要先改起點或刪時期，默默 cascade 會讓
   // 一段沿革無聲消失。
-  startIssue Issue @relation(fields: [startIssueId], references: [id], onDelete: Restrict)
+  startIssue Issue    @relation(fields: [startIssueId], references: [id], onDelete: Restrict)
 
   @@index([magazineId])
   @@map("magazine_titles")
@@ -342,18 +399,16 @@ model MagazineTitle {
 
 /**
  * 額外圖片：來源不是本站的圖，加上原本存在 `Magazine.photos` 的藏書照。
- *
  * 站上其他的圖各有固定用途（刊頭、封面、目錄頁掃描），而且都沒有記出處的地方。
  * 這張表收的是另一類——網路上看到人分享的、網拍商品頁截下來的——它們要記得住
  * 出處，也要分得出哪些還沒確認來路、不該公開。設計見
  * docs/plans/2026-08-31-photos-design.md。
- *
  * 掛雜誌或掛單期，二擇一。指向「尚未建檔的期」的圖不給自由文字指向欄位：圖上
  * 讀得出期號的就先建一筆只有期號的期再掛上去，讀不出來的掛雜誌、推測寫進
  * caption。自由指向欄位查不了也排不了，見 docs/backlog/masthead-evolution.md。
  */
 model Photo {
-  id         String @id @default(cuid())
+  id         String  @id @default(cuid())
   // 二擇一，由 photos_one_owner 約束把關；Prisma 表達不了 XOR，所以那條
   // CHECK 手寫在 migration 20260831000000_add_photos 裡。
   magazineId String? @map("magazine_id")
@@ -400,10 +455,8 @@ enum ExternalSite {
 
 /**
  * 站外的雜誌資訊：全本掃描、上游條目、書目紀錄、百科條目。
- *
  * 不分「延伸」與「出處」——實際上兩種都有，而站點幾乎就決定了它是哪一種，
  * 多存一個維度只會讓每筆連結多一次判斷。畫面上一起列成「站外資訊」。
- *
  * 掛雜誌或掛單期，二擇一，與 Photo 同形（external_links_one_owner 把關）。
  * 沒有 isPublic：連結不是還沒確認來路的圖，要藏就直接刪。
  */
@@ -412,11 +465,11 @@ model ExternalLink {
   magazineId String? @map("magazine_id")
   issueId    String? @map("issue_id")
 
-  site ExternalSite
-  url  String
+  site  ExternalSite
+  url   String
   /// 只有 site 為 OTHER 時要填；其餘由站點決定顯示名稱。
   label String?
-  order Int     @default(0)
+  order Int          @default(0)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -430,21 +483,21 @@ model ExternalLink {
 }
 
 model Article {
-  id        String   @id @default(cuid())
-  issueId   String   @map("issue_id")
+  id        String           @id @default(cuid())
+  issueId   String           @map("issue_id")
   title     String
   subtitle  String?
   authors   String[] // 作者可能有多位
   // Stored as a stable key so the Chinese label can be reworded without a
   // data migration -- it was reworded twice before this existed.
   category  ArticleCategory?
-  pageStart Int?     @map("page_start")
-  pageEnd   Int?     @map("page_end")
-  summary   String?  @db.Text
-  content   String?  @db.Text // 可選的全文內容
-  sortOrder Int      @default(0) @map("sort_order")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  pageStart Int?             @map("page_start")
+  pageEnd   Int?             @map("page_end")
+  summary   String?          @db.Text
+  content   String?          @db.Text // 可選的全文內容
+  sortOrder Int              @default(0) @map("sort_order")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
 
   // Relations
   issue        Issue         @relation(fields: [issueId], references: [id], onDelete: Cascade)
@@ -460,19 +513,19 @@ model Article {
 }
 
 enum ArticleCategory {
-  FEATURE          // 特輯
-  PREVIEW          // 新作預覽
-  REVIEW           // 遊戲評測
-  WALKTHROUGH      // 攻略
-  NEWS             // 新聞
-  INTERVIEW        // 訪談
-  HARDWARE         // 硬體
-  COMIC            // 漫畫
-  RANKING          // 排行榜
+  FEATURE // 特輯
+  PREVIEW // 新作預覽
+  REVIEW // 遊戲評測
+  WALKTHROUGH // 攻略
+  NEWS // 新聞
+  INTERVIEW // 訪談
+  HARDWARE // 硬體
+  COMIC // 漫畫
+  RANKING // 排行榜
   RELEASE_SCHEDULE // 預定發售表
-  READER           // 讀者投稿
-  SERIAL           // 連載
-  OTHER            // 其他
+  READER // 讀者投稿
+  SERIAL // 連載
+  OTHER // 其他
 }
 
 // ==================== Tag 系統 ====================
@@ -501,11 +554,11 @@ model Tag {
 }
 
 enum TagType {
-  GENERAL  // 一般標籤
-  PERSON   // 人物
-  EVENT    // 活動
-  SERIES   // 系列
-  COMPANY  // 公司
+  GENERAL // 一般標籤
+  PERSON // 人物
+  EVENT // 活動
+  SERIES // 系列
+  COMPANY // 公司
   PLATFORM // 平台
 }
 
@@ -615,7 +668,6 @@ model EditLog {
 
 /**
  * 誰在什麼時候把資料匯出去。只有管理員看得到（/admin/export-logs）。
- *
  * 不放進 EditLog：那裡的語意是 CREATE/UPDATE/DELETE，而且會餵貢獻者排行榜
  * 與活動流，匯出擠進去等於到處補排除條件。
  */
@@ -630,8 +682,8 @@ model ExportLog {
   // 串流結束才知道，所以是 null 就代表那次匯出沒跑完。
   rowCount Int? @map("row_count")
 
-  ipAddress String? @map("ip_address")
-  userAgent String? @map("user_agent")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id])
@@ -646,7 +698,6 @@ model ExportLog {
 /**
  * 讓貢獻者用腳本寫入的憑證。持有 token 等同該使用者本人的操作：編輯紀錄署他的名，
  * 權限也讀他當下的 role——降級或刪帳號，token 立刻跟著失效，不必另外撤銷。
- *
  * 只存 sha256，明碼在建立當下回傳一次就不再存在。prefix 是明碼的前 12 碼，
  * 純粹讓人在列表上認出「這支是哪一台機器的」。
  */
@@ -659,11 +710,11 @@ model ApiToken {
   tokenHash String @unique @map("token_hash")
   prefix    String
 
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
   // 一次匯入會打上百個請求，所以節流更新，只求「這支還在用嗎」。
   lastUsedAt DateTime? @map("last_used_at")
   // 撤銷不刪列：刪掉就看不出這支存在過。
-  revokedAt DateTime? @map("revoked_at")
+  revokedAt  DateTime? @map("revoked_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
