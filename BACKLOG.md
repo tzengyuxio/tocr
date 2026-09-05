@@ -13,7 +13,7 @@
 
 - [ ] **nostalibrary 還有約 15 張封面可以補上站** — 已補 73 張，剩零星幾本與 3 張待決的產品目錄；2026-09-09 回頭看，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
 
-- [ ] **其餘改名刊的沿革資料** — 只剩電視遊樂報導，而它要等期數匯入，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）
+- [ ] **其餘改名刊的沿革資料** — 電視遊樂報導的「情報→報導」2026-09-05 已建，只剩「報導→Super Gamer」的切點要查，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）
 
 - [ ] **疾風快報／攻略快報的期數與封面待補** — 這條刊系 2026-08-30 才開張，站上只有 4 期：
   疾風快報 No.211（2002-03-16）、No.212（2002-03-23）、攻略快報試刊號（2002-04-13）與
@@ -196,5 +196,9 @@
   優先補得動的是頻率那半；封面資訊沒有「補完」這個終點（2026-09-05）
 
 - [ ] **系列標籤的髒資料清理** — 205 個 SERIES 標籤有 77 個不合規範（型別吃進名字、缺「系列」後綴、拉丁寫法）；規範與 OCR 提示詞已改，存量待清，還缺一支 merge-tag，見 [docs/backlog/series-tag-cleanup.md](docs/backlog/series-tag-cleanup.md)（2026-09-04）
+
+- [ ] **電視遊樂報導／雜誌的 slug 要改用發行日，但日期還填不滿** — 2026-09-05 決定改，等日期補齊再動（yuxio）。報導 287 期只有 62 期有發行日、雜誌 300 期有 233 期；現在改下去會有 292 期只能留期號 slug，同一本刊出現兩種網址形狀，正是 [data-conventions.md](docs/data-conventions.md)〈網址代號與期號是兩回事〉說「填不滿的欄位當不了 slug」的情形。同批已經改完的是《新世紀 HYPER PlayStation》（`1999-11`→`1999-v11`，避開與年月同形）；《疾風快報》（含改版後的《攻略快報》時期，`wolf`）4 期本來就是日期 slug，不用動。換 slug 沒有轉址，既有網址會失效（`/i/<code>` 短碼不受影響）（2026-09-05）
+
+- [ ] **`tvgame-magazine` 早期發行日有兩期是錯的** — 第 28 期、第 31 期站上的日期比封面印的晚 10 天與 16 天，第 72 期可補；看起來 026–035 那一段某處錯開了一期，要找實物抽查，見 [docs/backlog/tvgame-magazine-dates.md](docs/backlog/tvgame-magazine-dates.md)（2026-09-05）
 
 ---
