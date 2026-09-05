@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, ScanText } from "lucide-react";
+import { ArrowLeft, ExternalLink, ScanText } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { formatIssueNumber } from "@/lib/issue-number";
 
@@ -29,7 +29,7 @@ export default async function EditIssuePage({ params }: PageProps) {
     where: { id: issueId },
     include: {
       magazine: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, slug: true },
       },
       links: {
         orderBy: { order: "asc" },
@@ -106,6 +106,18 @@ export default async function EditIssuePage({ params }: PageProps) {
         <h1 className="text-2xl font-bold">
           {issue.magazine.name} - {formatIssueNumber(issue.issueNumber)}
         </h1>
+        {/* 改完常要立刻看前台長什麼樣，而網址是兩段 slug 拼的，記不住也猜不出。
+            開新分頁，因為看完通常是回來繼續改。 */}
+        <Button asChild variant="outline" size="sm" className="ml-auto shrink-0">
+          <Link
+            href={`/magazines/${issue.magazine.slug}/issues/${issue.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            前台頁面
+            <ExternalLink className="ml-1 h-3 w-3" />
+          </Link>
+        </Button>
       </div>
       {/* Two jobs on one page: the fields are set once, the article list is
           gone over line by line. Side by side, so reviewing the list never
