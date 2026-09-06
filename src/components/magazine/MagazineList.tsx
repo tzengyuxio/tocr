@@ -102,6 +102,14 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
             ))}
           </div>
 
+          {/* ISSN 排在期數之前、分類之後：它是識別資訊，和左邊那幾欄（出版社、
+              期間）是同一類東西，而期數是統計量，留在最右邊當結尾。
+              最後才出現（2xl）是因為前面已經有五欄，而讀者掃索引時要的是刊名與
+              期數，刊號是查證時才看的。tabular-nums 讓四位數字對齊成一直行。 */}
+          <div className="hidden w-28 shrink-0 text-sm tabular-nums text-muted-foreground 2xl:block">
+            {unit.issn || <span className="text-muted-foreground/50">—</span>}
+          </div>
+
           {/* tabular-nums 讓期數的位數對齊，一整欄才掃得出誰收得多。
               數的是**本刊**：試刊與特刊沒有拿到正刊編號，摻進來這個數字就沒有
               跨雜誌一致的定義，而它正是拿來跟已知總期數並排的。

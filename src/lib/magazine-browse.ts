@@ -132,6 +132,8 @@ export const MAGAZINE_SORTS = [
   // 那本讀起——與 ISSUE_SORTS 的出版日期同一個道理。
   { value: "name", label: "名稱", defaultDirection: "asc" },
   { value: "founded", label: "創刊日", defaultDirection: "asc" },
+  // 期數從多的那頭讀起：問「誰收得最多」的人不會想先看 0 期的那幾本。
+  { value: "issues", label: "期數", defaultDirection: "desc" },
 ] as const satisfies ReadonlyArray<{
   value: string;
   label: string;
@@ -197,6 +199,12 @@ export function magazineOrderBy(
     return [{ foundedSort: { sort: direction, nulls: "last" } }, { name: "asc" }];
   }
   if (sort.value === "created") return [{ createdAt: direction }];
+  // 後台這條數的是**所有**期，前台的 sortMagazineDisplayUnits 數的是本刊
+  // ——Prisma 的關聯計數排序不吃 where，篩不掉試刊與特刊。差異只在後台看得到，
+  // 而後台要的正是「這本刊底下有幾筆資料」。名稱當第二鍵，同期數的順序才穩定。
+  if (sort.value === "issues") {
+    return [{ issues: { _count: direction } }, { name: "asc" }];
+  }
   return [{ name: direction }];
 }
 
@@ -225,6 +233,12 @@ export interface MagazineDisplayUnit {
   publisher: string | null;
   logoImage: string | null;
   categories: MagazineCategory[];
+  /**
+   * 刊號。與 knownIssueCount 不同，**改過名的刊每一列都帶得到值**：ISSN 是識別
+   * 資訊不是統計量，而且改名時本來就可能沿用同一組（電擊王與電玩通同為
+   * 1561-8099），重複出現正是它要講的事。見 prisma/schema.prisma 的 Magazine.issn。
+   */
+  issn: string | null;
   /** 已格式化的發行期間，如「1999 年 8 月 – 2000 年 3 月」；不明則空字串。 */
   span: string;
   /**
@@ -266,6 +280,7 @@ interface DisplayMagazine {
   foundedDate: string | null;
   endedDate: string | null;
   foundedSort: Date | null;
+  issn: string | null;
   knownIssueCount: number | null;
   knownIssueCountSource: string | null;
   isActive: boolean;
@@ -355,6 +370,7 @@ export function magazineDisplayUnits(
   const base = {
     publisher: magazine.publisher,
     categories: magazine.categories,
+    issn: magazine.issn,
   };
 
   if (magazine.titles.length === 0) {
@@ -495,6 +511,13 @@ export function sortMagazineDisplayUnits(
       if (b.sortDate === null) return -1;
       const byDate = a.sortDate.getTime() - b.sortDate.getTime();
       if (byDate !== 0) return byDate * dir;
+      return collator.compare(a.name, b.name);
+    }
+    if (sort.value === "issues") {
+      // 比的是本刊數，也就是列上顯示的那個數字——排序與畫面必須是同一個量，
+      // 否則「28 期排在 30 期前面」看起來就是壞的。
+      const byCount = a.regularCount - b.regularCount;
+      if (byCount !== 0) return byCount * dir;
       return collator.compare(a.name, b.name);
     }
     return collator.compare(a.name, b.name) * dir;
