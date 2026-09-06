@@ -94,7 +94,7 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 電玩e世代 | `e-generation` | `e-generation` | 1.PARA | 12 | `egen` |  |
 | 電玩通PS2 | `famitsu-ps2-tw` | `famitsu-ps2-tw` | 2.SOURCE | 14 | `fmtps-tw` |  |
 | 電玩通PLAYSTATION+ | — | `famitsu-ps2-tw` | — | — | — | VOL.103 起的刊名，尚無掃描檔 |
-| FAMITSU PSP+PS3 TAIWAN | — | `famitsu-ps2-tw` | — | — | — | VOL.116 起的刊名，尚無掃描檔 |
+| 電玩通PSP+PS3 | `famitsu-psp-ps3-tw` | `famitsu-ps2-tw` | 2.SOURCE | 18 | — | VOL.116 起的刊名；`PSP+PS3` 是母刊題名裡的固定複合段，算一段 |
 | 電玩通 | `famitsu-tw` | `famitsu-tw` | 2.SOURCE | 10 | `fmt-tw` |  |
 | 飛訊電玩周刊 | `fashion-game` | `fashion-game` | 1.PARA | 12 | `fashion` |  |
 | 遊戲設計大師 | `game-developer` | `game-developer` | 1.PARA | 14 | `gd` | 未縮成 game-dev，守住每段有出處 |
