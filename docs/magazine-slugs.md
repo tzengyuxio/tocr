@@ -84,7 +84,7 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 星際遊樂雜誌 | `astro` | `astro` | 1.PARA | 5 | `astro` | 自印簡稱 |
 | 星際遊樂快報 | `astro-kuaibao` | `astro-kuaibao` | 3.PINYIN | 13 | — | 首段沿用姊妹刊 astro，依據待補 |
 | 電腦遊戲世界 | `cgw-tw` | `cgw-tw` | 2.SOURCE | 6 | `cgw` | Computer Gaming World 國際中文版 |
-| 遊戲世界 | — | `cgw-tw` | — | — | — | 第 163 期起的刊名，尚無掃描檔 |
+| 遊戲世界 | — | `cgw-tw` | — | — | — | 第 163 期起的刊名；**已有掃描檔**（169／180 兩期）。中文刊名與前期不同，title slug 是否另立待定 |
 | 城市少年 | `city-boy` | `city-boy` | 1.PARA | 8 | — |  |
 | 金手指補給站 | `code-supply-depot` | `code-supply-depot` | 1.PARA | 17 | — | TOUGH CODE SUPPLY DEPOT 四段取三，捨 TOUGH |
 | 電擊王 | `dengeki-oh-tw` | `dengeki-oh-tw` | 2.SOURCE | 13 | `doh-tw` |  |
