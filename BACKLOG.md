@@ -12,6 +12,8 @@
 - [ ] **42 條 `封面：主題 …` 還在 notes 裡** — 封面資訊已於 2026-09-06 整批搬進 `coverGames`／`coverSubjects`／`coverCredit`（219 期），只剩這一族沒搬：值一半是遊戲名、一半帶宣傳語（「暑假超強大作—新絕代雙驕貳」「專訪幻影特攻女主角」），要逐筆判，分佈在軟體世界 15、電腦玩家 14、新遊戲時代 13。見 [docs/data-conventions.md](docs/data-conventions.md) 的「封面資訊」（2026-09-06）
 - [ ] **封底 c4 還沒上傳** — 累積 131 張（2026-09-02 那批 42、2026-09-05 新掃的 29、2026-09-06 電玩通 PS 系那批 22、SG／電視遊樂報導／城市少年 3 與《電玩通》週刊那批 35）。走 `/api/photos` 不是 `/api/upload`，`tocr_upload_covers.py` 不管這條，要另外寫。先擱著，等 Blob 額度確認再動，見 [docs/backlog/covers-missing-issues.md](docs/backlog/covers-missing-issues.md) 與 [docs/backlog/covers-new-scans-tocr.md](docs/backlog/covers-new-scans-tocr.md)（2026-09-05）
 
+- [ ] **《軟體世界》目錄辨識的收尾** — 201 期的目錄掃描 2026-09-06 已整批上站並辨識，剩第 72 期辨識不出來（模型重複輸出、頁碼假造到 780）、第 47 期的 28 篇是舊資料、第 58 期把欄目名當成文章標題，另有 3 筆同標題同頁碼的重複條目要刪；全部 201 期的 `tocReviewedAt` 都還空著，見 [docs/backlog/swm-toc-scans.md](docs/backlog/swm-toc-scans.md)（2026-09-06）
+
 - [ ] **nostalibrary 還有約 15 張封面可以補上站** — 已補 73 張，剩零星幾本與 3 張待決的產品目錄；2026-09-09 回頭看，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
 
 - [ ] **其餘改名刊的沿革資料** — 電視遊樂報導的「情報→報導」2026-09-05 已建，只剩「報導→Super Gamer」的切點要查，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）
