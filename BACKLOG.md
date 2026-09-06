@@ -9,6 +9,7 @@
 筆記長在裡面會讓每次讀它的成本跟著漲（2026-08-30 拆分，當時 602 行）。
 做完的打勾後移到 [docs/backlog/done.md](docs/backlog/done.md)。
 
+- [ ] **42 條 `封面：主題 …` 還在 notes 裡** — 封面資訊已於 2026-09-06 整批搬進 `coverGames`／`coverSubjects`／`coverCredit`（219 期），只剩這一族沒搬：值一半是遊戲名、一半帶宣傳語（「暑假超強大作—新絕代雙驕貳」「專訪幻影特攻女主角」），要逐筆判，分佈在軟體世界 15、電腦玩家 14、新遊戲時代 13。見 [docs/data-conventions.md](docs/data-conventions.md) 的「封面資訊」（2026-09-06）
 - [ ] **封底 c4 還沒上傳** — 累積 131 張（2026-09-02 那批 42、2026-09-05 新掃的 29、2026-09-06 電玩通 PS 系那批 22、SG／電視遊樂報導／城市少年 3 與《電玩通》週刊那批 35）。走 `/api/photos` 不是 `/api/upload`，`tocr_upload_covers.py` 不管這條，要另外寫。先擱著，等 Blob 額度確認再動，見 [docs/backlog/covers-missing-issues.md](docs/backlog/covers-missing-issues.md) 與 [docs/backlog/covers-new-scans-tocr.md](docs/backlog/covers-new-scans-tocr.md)（2026-09-05）
 
 - [ ] **nostalibrary 還有約 15 張封面可以補上站** — 已補 73 張，剩零星幾本與 3 張待決的產品目錄；2026-09-09 回頭看，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
