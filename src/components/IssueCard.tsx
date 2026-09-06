@@ -53,7 +53,11 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
           // a magazine-shaped hole rather than as a squashed card.
           <CoverPlaceholder kind="issue" className="w-full min-h-0" />
         )}
-        <CardContent className="space-y-0.5 !p-2.5">
+        {/* mt-auto：格線列高由該列最高的封面決定，而掃描件的比例各不相同，
+            所以矮的那幾張下面會多出空白。空白留在圖與文字之間、文字貼著卡片
+            底部，一整列的文字區塊就對得齊——否則它的上緣會跟著每張封面的高度
+            上下跳。卡片本身已經是 h-full 撐滿列高，這裡只決定空白落在哪。 */}
+        <CardContent className="mt-auto space-y-0.5 !p-2.5">
           {magazineName && (
             <p className="text-xs text-muted-foreground line-clamp-1">
               {magazineName}

@@ -13,6 +13,8 @@ import {
   magazineCountTitle,
   magazineDisplayUnits,
   magazineSubtitle,
+  sortMagazineDisplayUnits,
+  type MagazineDisplayUnit,
 } from "@/lib/magazine-browse";
 
 describe("MAGAZINE_FILTERS", () => {
@@ -89,11 +91,41 @@ describe("magazineOrderBy", () => {
   });
 });
 
+describe("the issue-count sort", () => {
+  it("reads from the many end by default", () => {
+    expect(parseMagazineDirection(undefined, parseMagazineSort("issues"))).toBe("desc");
+  });
+
+  // 後台的 orderBy 數的是所有期（Prisma 的關聯計數排序篩不掉試刊與特刊），
+  // 前台的 sortMagazineDisplayUnits 數的是本刊。差異是知道的，不是漏的。
+  it("orders on the relation count and breaks ties on the name", () => {
+    expect(magazineOrderBy(parseMagazineSort("issues"), "desc")).toEqual([
+      { issues: { _count: "desc" } },
+      { name: "asc" },
+    ]);
+  });
+
+  it("sorts the display units on the number the row actually shows", () => {
+    const unit = (name: string, regularCount: number, specialCount: number) =>
+      ({ name, regularCount, specialCount }) as MagazineDisplayUnit;
+    // 30 期本刊＋0 特刊 vs 28 期本刊＋9 特刊：照總數排會把後者放前面，
+    // 而列上寫的是 30 與 28。
+    const units = [unit("乙", 28, 9), unit("甲", 30, 0)];
+
+    expect(
+      sortMagazineDisplayUnits(units, parseMagazineSort("issues"), "desc").map(
+        (u) => u.name
+      )
+    ).toEqual(["甲", "乙"]);
+  });
+});
+
 describe("the admin-only sort", () => {
   it("offers 建立日期 on top of the public two", () => {
     expect(ADMIN_MAGAZINE_SORTS.map((s) => s.value)).toEqual([
       "name",
       "founded",
+      "issues",
       "created",
     ]);
   });
@@ -127,6 +159,7 @@ describe("magazineDisplayUnits 的沿革標記", () => {
     foundedDate: null,
     endedDate: null,
     foundedSort: null,
+    issn: null,
     knownIssueCount: null,
     knownIssueCountSource: null,
     isActive: false,
@@ -283,6 +316,7 @@ describe("magazineDisplayUnits 的逐時期副標", () => {
     foundedDate: null,
     endedDate: null,
     foundedSort: null,
+    issn: null,
     knownIssueCount: null,
     knownIssueCountSource: null,
     isActive: false,
