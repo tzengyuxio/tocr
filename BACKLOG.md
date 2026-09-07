@@ -18,6 +18,10 @@
 
 - [ ] **nostalibrary 還有約 15 張封面可以補上站** — 已補 73 張，剩零星幾本與 3 張待決的產品目錄；2026-09-09 回頭看，見 [docs/backlog/nostalibrary-covers.md](docs/backlog/nostalibrary-covers.md)（2026-08-26）
 
+- [ ] **《電視遊樂雜誌》新刊6號還沒收** — 新刊5號（通卷297號、1999-12-05）的版權頁預告「下期元月5日登場」，所以應有新刊6號（通卷298號、2000-01-05）；站上這條刊系到通卷297 為止，`knownIssueCount` 記 301。實物或封面出現再建期，不從預告直接建（預告只證明打算出，不證明出了）（2026-09-07）
+
+- [ ] **刊頭上方的自我定位文字，邊界還沒縮到單期** — 《電視遊樂雜誌》的定位隨主力平台改寫（PC-Engine → 電視遊樂 → 超級任天堂 → SFC+MD → SS+N64 → SEGA SATURN），《電視遊樂報導》則有「全國第一本電視遊樂報導」與 ASCII《ファミコン通信》授權標示；已知期別與未定邊界見 [docs/backlog/masthead-taglines.md](docs/backlog/masthead-taglines.md)（2026-09-08）
+
 - [ ] **其餘改名刊的沿革資料** — 電視遊樂報導的「情報→報導」2026-09-05 已建，只剩「報導→Super Gamer」的切點要查，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）
 
 - [ ] **疾風快報／攻略快報的期數與封面待補** — 這條刊系 2026-08-30 才開張，站上只有 4 期：
