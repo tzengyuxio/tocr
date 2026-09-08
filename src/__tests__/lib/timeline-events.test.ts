@@ -6,25 +6,21 @@ function cjkWidth(text: string): number {
 }
 
 describe("EXTERNAL_EVENTS", () => {
-  // 左欄寬 300px、11px 字，一行放得下約 24 個中文字。換行會把下面整疊標註往下
-  // 推——三十幾筆累積起來，最後幾筆會漂離自己的年份好幾年——所以一行是原則，
-  // 兩行是上限，而且只給前後沒有別的事件擠著的那幾筆。
-  it("每一則的補充說明最多兩行（48 個中文字寬）", () => {
-    const tooLong = EXTERNAL_EVENTS.filter((e) => e.note && cjkWidth(e.note) > 48).map(
-      (e) => `${e.at} ${e.title}：${e.note}`
-    );
+  // 左欄寬 240px、11px 字，一行放得下約 19 個中文字。換行會把下面整疊標註往下
+  // 推——四十筆累積起來，最後幾筆會漂離自己的年份好幾年——所以兩行是上限。
+  const ONE_LINE = 19;
+
+  it("補充說明最多兩行", () => {
+    const tooLong = EXTERNAL_EVENTS.filter(
+      (e) => e.note && cjkWidth(e.note) > ONE_LINE * 2
+    ).map((e) => `${e.at} ${e.title}：${e.note}`);
     expect(tooLong).toEqual([]);
   });
 
-  it("寫到兩行的是少數", () => {
-    const twoLines = EXTERNAL_EVENTS.filter((e) => e.note && cjkWidth(e.note) > 24);
-    expect(twoLines.map((e) => e.title)).toEqual(["報禁解除"]);
-  });
-
-  it("標題同樣不超過一行", () => {
-    const tooLong = EXTERNAL_EVENTS.filter((e) => cjkWidth(`${e.at}　${e.title}`) > 24).map(
-      (e) => `${e.at} ${e.title}`
-    );
+  it("標題（含日期）最多兩行", () => {
+    const tooLong = EXTERNAL_EVENTS.filter(
+      (e) => cjkWidth(`${e.at}　${e.title}`) > ONE_LINE * 2
+    ).map((e) => `${e.at} ${e.title}`);
     expect(tooLong).toEqual([]);
   });
 

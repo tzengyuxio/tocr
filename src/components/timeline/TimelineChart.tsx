@@ -24,10 +24,13 @@ import type { ExternalEvent, MagazineEvent, MagazineLink } from "@/lib/timeline-
  * 本來就要靠捲動讀，把它做成可縮放的互動圖，換來的是每個讀者都得先學會操作它。
  */
 
-const LEFT_WIDTH = 300;
+// 整張圖的寬度＝ LEFT ＋ AXIS ＋ 線 ＋ 封面欄 ＋ RIGHT。2026-09-08 量到 1688px
+// （20 條線），比多數筆電的可視寬度還寬，所以兩側各收 60px、線距收 8px，
+// 換到約 1408px。再要瘦下去就得動到「一本刊一條線」這個前提了。
+const LEFT_WIDTH = 240;
 const AXIS_WIDTH = 96;
-const LANE_WIDTH = 40;
-const RIGHT_WIDTH = 300;
+const LANE_WIDTH = 32;
+const RIGHT_WIDTH = 240;
 
 const LINE_WIDTH = 4;
 
@@ -63,7 +66,7 @@ const UNKNOWN_TAIL = 34;
 /**
  * 一則側欄標註佔多高。**估出來的，不是量出來的**——版面在伺服器上算完，這裡沒有
  * 瀏覽器可以問，所以按字數推行數：標題 11px、註解 10px，欄寬扣掉內距約放得下
- * 24 與 26 個中文字。估得寬一點沒關係（欄位空一點），估窄了才會疊在一起。
+ * 19 與 21 個中文字。估得寬一點沒關係（欄位空一點），估窄了才會疊在一起。
  */
 function labelHeight(head: string, note?: string): number {
   // 半形字（日期、拉丁刊名）大約只佔中文字的一半寬，一起數的話光是行首的日期
@@ -71,7 +74,7 @@ function labelHeight(head: string, note?: string): number {
   const cjkWidth = (text: string) =>
     [...text].reduce((w, ch) => w + (/[\x00-\xFF]/.test(ch) ? 0.55 : 1), 0);
   const lines = (text: string, perLine: number) => Math.max(1, Math.ceil(cjkWidth(text) / perLine));
-  return 15 * lines(head, 24) + 12 * (note ? lines(note, 26) : 0) + 6;
+  return 15 * lines(head, 19) + 12 * (note ? lines(note, 21) : 0) + 6;
 }
 
 const CATEGORY_TINT: Record<string, string> = {
@@ -652,7 +655,7 @@ function ExternalEventLabel({
         style={{ left: 0, top: labelY - 8, width: axisLeft }}
       >
         <div className="text-[11px] leading-tight">
-          <span className="mr-1.5 tabular-nums text-muted-foreground">{event.at}</span>
+          <span className="mr-1.5 whitespace-nowrap tabular-nums text-muted-foreground">{event.at}</span>
           <span className={event.emphasis ? "font-semibold" : ""}>{event.title}</span>
         </div>
         {event.note && (
@@ -712,7 +715,7 @@ function MagazineEventLabel({
         style={{ left: columnLeft, top: labelY - 8, width: RIGHT_WIDTH }}
       >
         <div className="text-[11px] leading-tight">
-          <span className="mr-1.5 tabular-nums text-muted-foreground">{item.at}</span>
+          <span className="mr-1.5 whitespace-nowrap tabular-nums text-muted-foreground">{item.at}</span>
           <Link
             href={`/magazines/${track.slug}`}
             className="font-medium hover:underline"
