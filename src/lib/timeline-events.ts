@@ -85,7 +85,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "1990-11-21",
-    title: "Super Famicom 發售（日本）",
+    title: "Super Famicom 發售（日）",
     source: "ファミ通",
   },
   {
@@ -115,12 +115,12 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "1994-11-22",
-    title: "SEGA Saturn 發售（日本）",
+    title: "SEGA Saturn 發售（日）",
     source: "SEGA 官方",
   },
   {
     at: "1994-12-03",
-    title: "PlayStation 發售（日本）",
+    title: "PlayStation 發售（日）",
     note: "台灣無正式上市日，當時尚無 SCE 據點。",
     source: "電撃オンライン",
   },
@@ -138,7 +138,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "1996-06-23",
-    title: "NINTENDO 64 發售（日本）",
+    title: "NINTENDO 64 發售（日）",
     source: "nippon.com、GAME Watch",
   },
   {
@@ -149,7 +149,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "1998-11-27",
-    title: "Dreamcast 發售（日本）",
+    title: "Dreamcast 發售（日）",
     note: "台灣上市日查不到；亞洲版 HKT-3010 涵蓋港台韓。",
     source: "日文維基百科「ドリームキャスト」",
   },
@@ -160,7 +160,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "2000-03-04",
-    title: "PlayStation 2 發售（日本）",
+    title: "PlayStation 2 發售（日）",
     source: "日文維基百科「PlayStation 2」",
   },
   {
@@ -177,7 +177,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "2001-09-14",
-    title: "Nintendo GameCube 發售（日本）",
+    title: "Nintendo GameCube 發售（日）",
     source: "電ファミニコゲーマー",
   },
   {
@@ -188,7 +188,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "2001-11-15",
-    title: "Xbox 發售（北美）",
+    title: "Xbox 發售（美）",
     source: "維基百科「Xbox」",
   },
   {
@@ -274,7 +274,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "2007-06-29",
-    title: "iPhone 發售（美國）",
+    title: "iPhone 發售（美）",
     note: "智慧型手機改寫了日常，也改寫了遊戲的形狀。",
     emphasis: true,
     source: "Apple 新聞稿（1st gen，美國首賣日）",
