@@ -18,10 +18,10 @@
  * 日期用 EDTF（同 `Magazine.foundedDate`）：查得到哪一天就寫到哪一天，只查得到
  * 月份就停在月份，不要為了畫面整齊補一個 01 上去。
  *
- * **標題限一行、`note` 以一行為原則，最多兩行**（一行約 24 個中文字寬，
- * `timeline-events.test.ts` 會擋）。左欄的標註是往下推著排的，多一行就把後面整疊
- * 推遠一點，三十幾筆累積起來，最後幾筆會漂離自己的年份好幾年。前後沒有別的事件
- * 擠著時才寫到兩行（1988 報禁解除那筆就是），寫不完的留給 `source` 或 backlog。
+ * **標題與 `note` 各最多兩行**（左欄一行約 19 個中文字寬，`timeline-events.test.ts`
+ * 會擋）。左欄的標註是往下推著排的，多一行就把後面整疊推遠一點，四十筆累積起來，
+ * 最後幾筆會漂離自己的年份好幾年——所以能一行講完的就一行講完，寫不完的細節留給
+ * `source` 或 backlog，不要靠 `note` 交代。
  */
 import { edtfSortDate } from "./edtf";
 
@@ -410,10 +410,10 @@ const MAGAZINE: MagazineEventInput[] = [
   },
   {
     magazineSlug: "ace",
-    at: "1999-07",
+    at: "1996-11",
     title: "英文名改掛 PC GAMER",
-    note: "第 96 期起；原本的 ACE 在第 63 期前後停用，中間三年封面上沒有英文名。",
-    source: "站上各期封面（Magazine.nameParallel 的註解）",
+    note: "第 64 期起；62 期封面仍是 ACE，63 期未見。",
+    source: "第 62、64 期封面（yuxio 2026-09-08 覆核實物）",
   },
   {
     magazineSlug: "city-boy",

@@ -160,8 +160,9 @@ model Magazine {
   // long form goes to `aliases`. Evidence is the cover masthead, a cover logo,
   // the colophon, or the magazine's own domain (軟體世界 is swm.com.tw).
   //
-  // Takes the founding-era value, like `publisher`: 電腦玩家 dropped ACE around
-  // issue 63 and picked up PC GAMER at 96, and this field is not a history.
+  // Takes the founding-era value, like `publisher`: 電腦玩家 swapped ACE for
+  // PC GAMER between issues 62 and 64 (62 still prints ACE, 64 already prints
+  // PC GAMER; 63 has not been seen), and this field is not a history.
   nameParallel          String?            @map("name_parallel")
   // The foreign magazine this one is the Chinese edition of. Empty means the
   // magazine is not a translation.
