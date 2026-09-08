@@ -99,6 +99,11 @@ export interface TimelineChartProps {
  */
 interface RightItem {
   key: string;
+  /**
+   * 這行字前面掛的刊名。改名的用**改名前**那一段的名字，其餘用 `Magazine.name`
+   * ——不然《電視遊樂報導》那條會讀成「電視遊樂報導 改名為《電視遊樂報導》」。
+   */
+  name: string;
   /** 改名的節點是 `buildTrack` 從 MagazineTitle 長出來的，線上已經有一道橫槓；
    *  事件沒有節點，要另外在線上補一個記號，否則引線看起來接在空氣上。 */
   kind: "rename" | "event";
@@ -155,9 +160,13 @@ export function TimelineChart({
       .map((m) => ({
         key: `${track.slug}-rename-${m.at.toISOString()}`,
         kind: "rename" as const,
+        name: m.titleBefore ?? track.name,
         track,
         date: m.at,
-        at: formatEdtf(m.edtf),
+        // 照錄 EDTF，不走 formatEdtf——右欄同時排著改名與事件，事件那半的日期
+        // 直接來自 timeline-events 的 EDTF 字串，兩種寫法混在同一欄裡（「1998 年
+        // 2 月」與「2004-10」）只會讓人以為它們是兩種不同的東西。
+        at: m.edtf,
         title: m.label,
         note: m.issueNumber ? `自 ${m.issueNumber} 起` : undefined,
       }))
@@ -167,6 +176,7 @@ export function TimelineChart({
     .map((e) => ({
       key: `${e.magazineSlug}-${e.at}-${e.title}`,
       kind: "event" as const,
+      name: byId.get(e.magazineSlug)!.name,
       track: byId.get(e.magazineSlug)!,
       date: e.date,
       at: e.at,
@@ -176,7 +186,7 @@ export function TimelineChart({
   const rightLabels = stackLabels(
     [...renameItems, ...eventItems],
     (item) => y(item.date),
-    (item) => labelHeight(`${item.at}　${item.track.name}　${item.title}`, item.note)
+    (item) => labelHeight(`${item.at}　${item.name}　${item.title}`, item.note)
   );
 
   // 封面：每條線的頭（試刊或創刊）與尾各一張。改名節點不放——那件事右欄有一整
@@ -345,7 +355,7 @@ export function TimelineChart({
                 backgroundColor: trackColor(item.track.colorIndex),
                 opacity: 0.85,
               }}
-              title={`${item.track.name}　${item.at}　${item.title}`}
+              title={`${item.name}　${item.at}　${item.title}`}
             />
           ))}
 
@@ -487,7 +497,7 @@ function Track({
 
 /** 節點的說明文字，封面與圓點共用一份。 */
 function markerCaption(track: TimelineTrack, marker: TimelineMarker): string {
-  return `${track.name}　${marker.label}${
+  return `${marker.titleBefore ?? track.name}　${marker.label}${
     marker.issueNumber ? `（${marker.issueNumber}）` : ""
   }　${formatEdtf(marker.edtf)}`;
 }
@@ -721,7 +731,7 @@ function MagazineEventLabel({
             className="font-medium hover:underline"
             style={{ color }}
           >
-            {track.name}
+            {item.name}
           </Link>
           <span className="ml-1">{item.title}</span>
         </div>
