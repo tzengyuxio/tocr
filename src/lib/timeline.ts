@@ -86,6 +86,14 @@ export interface TimelineMarker {
   /** 有 slug 才連得過去；`ended` 節點取自 `endedDate` 時沒有對應的期。 */
   issueSlug: string | null;
   coverImage: string | null;
+  /**
+   * 這個節點之前用的是哪個刊名。只有 `rename` 有值。
+   *
+   * 畫面上那行字是「A 改名為《B》」，A 要是**改名前那一段的刊名**，不是
+   * `Magazine.name`——後者存的是撐得最久的那個名字，用它會寫出「電視遊樂報導
+   * 改名為《電視遊樂報導》」這種句子。
+   */
+  titleBefore: string | null;
 }
 
 /** 尾端那截虛線代表什麼。null＝有 `endedDate`，線就收在那裡。 */
@@ -209,6 +217,7 @@ export function buildTrack(
       issueNumber: firstPilot.issue.issueNumber,
       issueSlug: firstPilot.issue.slug,
       coverImage: firstPilot.issue.coverImage,
+      titleBefore: null,
     });
   }
 
@@ -223,14 +232,17 @@ export function buildTrack(
     issueNumber: firstRegular?.issueNumber ?? null,
     issueSlug: firstRegular?.slug ?? null,
     coverImage: firstRegular?.coverImage ?? null,
+    titleBefore: null,
   });
 
-  // 首段不是改名——它是這條脈絡的原名。第二段起才是事件。
-  for (const period of sortTitlePeriods(magazine.titles).slice(1)) {
+  // 首段不是改名——它是這條脈絡的原名。第二段起才是事件，而每一段都要記得
+  // 「改名前叫什麼」：那是前一段的刊名，不是 `Magazine.name`。
+  const periods = sortTitlePeriods(magazine.titles);
+  periods.slice(1).forEach((period, index) => {
     const at = period.startIssue.publishDate
       ? edtfSortDate(period.startIssue.publishDate)
       : null;
-    if (!at) continue;
+    if (!at) return;
     markers.push({
       kind: "rename",
       at,
@@ -239,8 +251,9 @@ export function buildTrack(
       issueNumber: period.startIssue.issueNumber,
       issueSlug: period.startIssue.slug,
       coverImage: period.startIssue.coverImage,
+      titleBefore: periods[index].title,
     });
-  }
+  });
 
   // 尾端節點。有 `endedDate` 才敢說「停刊」，否則只能說「已知最後一期」——
   // 查到的最後一期不等於它停在那裡，見 docs/backlog/publication-dates.md。
@@ -253,6 +266,7 @@ export function buildTrack(
       issueNumber: lastIssue?.issue.issueNumber ?? null,
       issueSlug: lastIssue?.issue.slug ?? null,
       coverImage: lastIssue?.issue.coverImage ?? null,
+      titleBefore: null,
     });
   } else if (lastIssue && lastIssue.at.getTime() > foundedAt.getTime()) {
     markers.push({
@@ -263,6 +277,7 @@ export function buildTrack(
       issueNumber: lastIssue.issue.issueNumber,
       issueSlug: lastIssue.issue.slug,
       coverImage: lastIssue.issue.coverImage,
+      titleBefore: null,
     });
   }
 

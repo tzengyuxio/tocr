@@ -158,6 +158,50 @@ describe("buildTrack", () => {
     const renames = track.markers.filter((m) => m.kind === "rename");
     expect(renames).toHaveLength(1);
     expect(renames[0].label).toBe("改名為《電視遊樂報導》");
+    // 畫面上那行字是「A 改名為《B》」，A 取自前一段刊名。用 Magazine.name
+    // （這裡是「測試刊」，實際資料裡常常就是改名後的名字）會寫出
+    // 「電視遊樂報導 改名為《電視遊樂報導》」。
+    expect(renames[0].titleBefore).toBe("電視遊樂情報");
+  });
+
+  it("三段刊名的第二次改名，記的是第二段的名字", () => {
+    const period = (id: string, title: string, order: number, publishDate: string) => ({
+      id,
+      title,
+      titleParallel: null,
+      note: null,
+      startIssue: {
+        id,
+        slug: String(order + 1),
+        issueNumber: `第${order + 1}期`,
+        publishDate,
+        coverImage: null,
+        order,
+      },
+    });
+    const track = buildTrack(
+      magazine({
+        foundedDate: "1987-07",
+        titles: [
+          period("t1", "電視遊樂快訊", 0, "1987-07"),
+          period("t2", "電視遊樂雜誌", 1, "1987-08"),
+          period("t3", "GAME fans", 2, "1999-08"),
+        ],
+      }),
+      TODAY
+    )!;
+    const renames = track.markers.filter((m) => m.kind === "rename");
+    expect(renames.map((m) => m.titleBefore)).toEqual(["電視遊樂快訊", "電視遊樂雜誌"]);
+  });
+
+  it("改名以外的節點沒有 titleBefore", () => {
+    const track = buildTrack(
+      magazine({ endedDate: "2006-22", issues: [issue({ publishDate: "1995-03", order: 0 })] }),
+      TODAY
+    )!;
+    expect(track.markers.filter((m) => m.kind !== "rename").every((m) => m.titleBefore === null)).toBe(
+      true
+    );
   });
 
   it("有 endedDate 才說停刊，否則只說已知最後一期", () => {
