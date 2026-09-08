@@ -81,3 +81,16 @@ export function formatEdtf(value: string | null | undefined): string {
 
   return text;
 }
+
+/**
+ * End of the range the value covers. `edtfSortDate` gives the other end, and a
+ * timeline needs both: a magazine whose `endedDate` is only "2003" ran through
+ * that whole year, and drawing its line to 2003-01-01 would cut off a year.
+ */
+export function edtfRangeEnd(value: string): Date | null {
+  try {
+    return new Date(edtf(value).max);
+  } catch {
+    return null;
+  }
+}
