@@ -315,6 +315,7 @@ export function TimelineChart({
             marker={marker}
             anchorX={laneCenter(track.lane)}
             anchorY={anchorY + COVER_HEIGHT / 2}
+            coverZoneLeft={coverZoneLeft}
             left={coverZoneLeft + 8 + column * COVER_COL_WIDTH}
             top={top}
           />
@@ -562,6 +563,7 @@ function CoverCallout({
   marker,
   anchorX,
   anchorY,
+  coverZoneLeft,
   left,
   top,
 }: {
@@ -569,6 +571,8 @@ function CoverCallout({
   marker: TimelineMarker;
   anchorX: number;
   anchorY: number;
+  /** 封面欄的左緣。說明的小標籤不能越過它。 */
+  coverZoneLeft: number;
   left: number;
   top: number;
 }) {
@@ -582,19 +586,57 @@ function CoverCallout({
   const toY = centerY - svgTop + 1;
 
   return (
-    <>
+    // 滑到封面時，這一組（引線、線上的節點、封面）一起亮起來。分不出一張封面
+    // 屬於哪一條線是這張圖最容易迷路的地方——引線細、又有八十幾條交錯。三者包
+    // 在同一個 group 裡就只靠 CSS 做得到，不必把整張圖變成 client component。
+    <div className="group">
       <svg
-        className="pointer-events-none absolute"
-        style={{ left: anchorX, top: svgTop - 1, width, height: svgHeight, opacity: 0.4 }}
+        className="pointer-events-none absolute opacity-40 transition-opacity group-hover:opacity-100"
+        style={{ left: anchorX, top: svgTop - 1, width, height: svgHeight }}
         aria-hidden
       >
         <path
           d={`M 0 ${fromY} L 12 ${fromY} L ${width} ${toY}`}
           fill="none"
           stroke={color}
-          strokeWidth={1}
+          className="[stroke-width:1] transition-[stroke-width] group-hover:[stroke-width:2.5]"
         />
       </svg>
+
+      {/* 節點外面套一圈，變成雙圓圈。畫成外環而不是放大節點本身：節點放大會蓋掉
+          它兩側的線，讀者反而看不出它落在哪一段上。 */}
+      <div
+        className="pointer-events-none absolute z-20 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+        style={{
+          left: anchorX - 6.5,
+          top: anchorY - 6.5,
+          width: 13,
+          height: 13,
+          border: `1.5px solid ${color}`,
+          boxShadow: "0 0 0 1.5px var(--background)",
+        }}
+        aria-hidden
+      />
+
+      {/* 節點的說明本來只在 `title` 裡，要停一秒才等得到，而且系統的 tooltip 會
+          跳到游標旁邊——游標那時在封面上，離節點好幾百像素遠。改成直接浮在節點
+          上方，跟外環一起出現，指的是哪一期一眼就對得起來。
+          **右緣釘在封面欄的左緣**，往左長（`translateX(-100%)`）：長度不定的字往
+          右長會伸進封面欄疊上那張放大的圖，貼齊節點又會退到圖的另一頭去，粗線、
+          標籤、封面散成兩處。收在封面欄外緣，三者剛好排在同一段視線上。
+          `z-50` 是全圖最上層——它是暫時浮起來的說明，蓋住底下什麼都無所謂。 */}
+      <div
+        className="pointer-events-none absolute z-50 rounded-sm border border-border bg-background/95 px-1.5 py-0.5 text-[10px] leading-tight whitespace-nowrap opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+        style={{
+          left: coverZoneLeft - 4,
+          top: anchorY - 22,
+          transform: "translateX(-100%)",
+          color,
+        }}
+        aria-hidden
+      >
+        {caption}
+      </div>
 
       <Link
         href={markerHref(track, marker)}
@@ -611,7 +653,7 @@ function CoverCallout({
           className="h-auto w-full rounded-[2px] bg-muted"
         />
       </Link>
-    </>
+    </div>
   );
 }
 
