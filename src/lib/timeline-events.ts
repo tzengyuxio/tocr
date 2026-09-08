@@ -131,7 +131,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "1995-11-28",
-    title: "Windows 95 繁體中文版在台上市",
+    title: "Windows 95 在台上市",
     note: "英文版 8/24；PC 遊戲讀者群換了一批。",
     emphasis: true,
     source: "報時光／聯合報",
@@ -143,7 +143,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "1998-07-31",
-    title: "Windows 98 中文版在台上市",
+    title: "Windows 98 在台上市",
     note: "距英文版只差一個月，Win95 當年差了三個月。",
     source: "iThome 1998-07-31",
   },
@@ -182,7 +182,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "2001-10-30",
-    title: "Windows XP 中文版在台上市",
+    title: "Windows XP 在台上市",
     note: "全球版 10 月 25 日，只差五天。",
     source: "iThome 2001-09-05（上市前公告）",
   },
@@ -190,12 +190,6 @@ const EXTERNAL: ExternalEventInput[] = [
     at: "2001-11-15",
     title: "Xbox 發售（美）",
     source: "維基百科「Xbox」",
-  },
-  {
-    at: "2001",
-    title: "台灣再度列入優先觀察名單",
-    note: "主因是光碟盜版。",
-    source: "USTR, 2001 Special 301 Report",
   },
   {
     at: "2002-01-01",
