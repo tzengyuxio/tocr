@@ -271,12 +271,20 @@ export default async function IssueDetailPage({ params }: PageProps) {
           Stretching the aside to the row's height gives the sticky block the
           whole index to travel down. */}
       <div className="flex flex-col gap-6 lg:flex-row">
-        <aside className="shrink-0 lg:w-64 xl:w-72">
+        {/* 16rem/18rem 是圖本身的寬度，多出來的 0.75rem 是下面 pr-3 讓給捲軸的
+            那一條。寬度加在 aside 上而不是從圖身上扣，代價由右欄的 flex-1 吸收
+            ——目錄那一欄少 12px 看不出來，封面少 12px 看得出來。改 pr-3 時這兩
+            個值要跟著動。 */}
+        <aside className="shrink-0 lg:w-[16.75rem] xl:w-[18.75rem]">
           {/* 4.5rem clears the sticky 3.5rem header plus the page's own gap.
               A sticky block taller than its scrollport can never reach its own
               bottom, so on a short window this one scrolls inside itself
-              rather than dragging the foot of the notes out of reach. */}
-          <div className="space-y-4 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto">
+              rather than dragging the foot of the notes out of reach.
+              pr-3 keeps that scrollbar off the cover: the column is exactly as
+              wide as the image, so without it the bar sits on the artwork --
+              and an overlay scrollbar (the macOS default) is drawn *over* the
+              content, so scrollbar-gutter reserves nothing for it. */}
+          <div className="space-y-4 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-3">
             <IssueImages
               coverImage={issue.coverImage}
               tocImages={issue.tocImages}
