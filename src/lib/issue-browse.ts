@@ -38,6 +38,21 @@ export function issueKindBadge(kind: IssueKind): string | null {
   return kind === "REGULAR" ? null : ISSUE_KIND_LABELS[kind];
 }
 
+/**
+ * 試刊與特刊的標記各給一個色相：兩者都是灰底的時候，一整片封面牆掃過去只看得出
+ * 「這幾期不是本刊」，分不出哪幾期是創刊前的試水溫、哪幾期是中途的別冊。
+ *
+ * 刻意留在 -100/-700 這一級（分類 chip 用的是 -100/-800）：它標的是例外，
+ * 認得出來就好，不該比期號還搶眼。色相沿用 tag-colors.ts 的 tint 慣例。
+ */
+export const ISSUE_KIND_CHIPS: Record<IssueKind, string> = {
+  REGULAR: "",
+  // 試刊在創刊之前，用暖色讀起來像「還沒定案」。
+  PILOT: "bg-amber-100 text-amber-700",
+  // 特刊是額外多出來的一本，用另一個色相與試刊分開就夠了。
+  SPECIAL: "bg-teal-100 text-teal-700",
+};
+
 export const ISSUE_FILTERS = [
   { value: "all", label: "全部", where: {} },
   { value: "cover", label: "有封面", where: { coverImage: { not: null } } },

@@ -5,7 +5,7 @@ import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { VerifiedMark } from "@/components/magazine/VerifiedMark";
-import { issueKindBadge, type IssueKind } from "@/lib/issue-browse";
+import { ISSUE_KIND_CHIPS, issueKindBadge, type IssueKind } from "@/lib/issue-browse";
 
 interface IssueCardProps {
   issue: {
@@ -74,7 +74,9 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
             {/* 期號本身多半已經寫著「試刊 3 號」「即時戰爭遊戲特刊」，這個
                 標記是給那些沒寫在期號裡、只印在封面上的。 */}
             {issue.kind && issueKindBadge(issue.kind) && (
-              <span className="shrink-0 rounded-sm bg-muted px-1 text-[10px] text-muted-foreground">
+              <span
+                className={`shrink-0 rounded-sm px-1 text-[10px] ${ISSUE_KIND_CHIPS[issue.kind]}`}
+              >
                 {issueKindBadge(issue.kind)}
               </span>
             )}
