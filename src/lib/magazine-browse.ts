@@ -218,6 +218,11 @@ export function magazineOrderBy(
  */
 export interface MagazineDisplayUnit {
   key: string;
+  /**
+   * 這張卡屬於哪一個 `Magazine`。同一本刊的各時期卡帶同一個值——頁首的「計 N 本」
+   * 就是數這個去重之後的數量，篩選之後也還算得出來。
+   */
+  magazineId: string;
   href: string;
   name: string;
   /** 已組好的副標，見 magazineSubtitle()。空字串表示沒有副標。 */
@@ -368,6 +373,7 @@ export function magazineDisplayUnits(
   issues: { order: number; publishSort: Date | null; kind: IssueKind }[]
 ): MagazineDisplayUnit[] {
   const base = {
+    magazineId: magazine.id,
     publisher: magazine.publisher,
     categories: magazine.categories,
     issn: magazine.issn,
