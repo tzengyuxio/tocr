@@ -282,12 +282,22 @@ export function TimelineChart({
               >
                 {year}
               </span>
-              {/* 在架刊數。橫條而不是數字：讀者要的是形狀，一年一個數字反而看不出 1998 那個高峰。 */}
-              <span
-                className="mt-1 h-1.5 rounded-sm bg-primary/25"
-                style={{ width: Math.max(1, (count / peak) * 36) }}
-                title={`${year} 年在架 ${count} 本`}
-              />
+              {/* 在架刊數。橫條而不是數字：讀者要的是形狀，一年一個數字反而看不出
+                  1998 那個高峰。形狀看得出高峰，但看不出高峰是幾本——滑上去才給
+                  數字，跟封面的說明同一套做法（`z-50` 的小標籤，不是 `title`）。
+                  外面那層 `py-1 -my-1` 只是把 1.5px 高的橫條變得指得到。 */}
+              <span className="group relative -my-1 mt-0.5 flex items-center py-1">
+                <span
+                  className="h-1.5 rounded-sm bg-primary/25 transition-colors group-hover:bg-primary/70"
+                  style={{ width: Math.max(1, (count / peak) * 36) }}
+                />
+                <span
+                  className="pointer-events-none absolute left-full z-50 ml-1.5 rounded-sm border border-border bg-background/95 px-1.5 py-0.5 text-[10px] leading-tight whitespace-nowrap opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                  aria-hidden
+                >
+                  {year} 年在架 {count} 本
+                </span>
+              </span>
             </div>
           );
         })}
