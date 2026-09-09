@@ -132,7 +132,7 @@ const EXTERNAL: ExternalEventInput[] = [
   {
     at: "1995-11-28",
     title: "Windows 95 在台上市",
-    note: "英文版 8/24；PC 遊戲讀者群換了一批。",
+    note: "繁中版上市日；英文版 8/24 已在台販售。PC 讀者群換了一批。",
     emphasis: true,
     source: "報時光／聯合報",
   },
@@ -144,7 +144,7 @@ const EXTERNAL: ExternalEventInput[] = [
   {
     at: "1998-07-31",
     title: "Windows 98 在台上市",
-    note: "距英文版只差一個月，Win95 當年差了三個月。",
+    note: "繁中版上市日，距英文版只差一個月；Win95 當年差了三個月。",
     source: "iThome 1998-07-31",
   },
   {
