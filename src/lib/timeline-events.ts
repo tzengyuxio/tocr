@@ -131,8 +131,8 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "1995-11-28",
-    title: "Windows 95 繁體中文版在台上市",
-    note: "英文版 8/24；PC 遊戲讀者群換了一批。",
+    title: "Windows 95 在台上市",
+    note: "繁中版上市日；英文版 8/24 已在台販售。PC 讀者群換了一批。",
     emphasis: true,
     source: "報時光／聯合報",
   },
@@ -143,8 +143,8 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "1998-07-31",
-    title: "Windows 98 中文版在台上市",
-    note: "距英文版只差一個月，Win95 當年差了三個月。",
+    title: "Windows 98 在台上市",
+    note: "繁中版上市日，距英文版只差一個月；Win95 當年差了三個月。",
     source: "iThome 1998-07-31",
   },
   {
@@ -182,7 +182,7 @@ const EXTERNAL: ExternalEventInput[] = [
   },
   {
     at: "2001-10-30",
-    title: "Windows XP 中文版在台上市",
+    title: "Windows XP 在台上市",
     note: "全球版 10 月 25 日，只差五天。",
     source: "iThome 2001-09-05（上市前公告）",
   },
@@ -190,12 +190,6 @@ const EXTERNAL: ExternalEventInput[] = [
     at: "2001-11-15",
     title: "Xbox 發售（美）",
     source: "維基百科「Xbox」",
-  },
-  {
-    at: "2001",
-    title: "台灣再度列入優先觀察名單",
-    note: "主因是光碟盜版。",
-    source: "USTR, 2001 Special 301 Report",
   },
   {
     at: "2002-01-01",
@@ -457,7 +451,9 @@ export const LANE_GROUPS: string[][] = [
   // 雜誌與報導同時在架，佔兩欄；電玩通晚十年，接在其中一欄後面。
   ["tvgame-magazine", "tvgame-report", "famitsu-tw"],
   // 台灣最後一本單機遊戲雜誌，與十年後那本寫這批雜誌的雜誌。兩段不重疊。
-  ["ace", "retro-game-time"],
+  // 《新遊戲時代》擺在《電腦玩家》右邊：九〇年代中期兩本並存的 PC 遊戲刊，
+  // 讀者當年是拿它們互相比較的，分開排就看不出這件事。兩段重疊，佔相鄰兩欄。
+  ["ace", "sgm", "retro-game-time"],
   // 智冠的兩本 PC 刊，最後一本併進另一本（2004-09）。並存十三年，佔相鄰兩欄。
   ["swm", "cgw-tw"],
   // 分家：1998 年部分疾風人員出走另創飛訊。兩者並存，會落在相鄰兩欄，

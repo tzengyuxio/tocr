@@ -282,12 +282,22 @@ export function TimelineChart({
               >
                 {year}
               </span>
-              {/* 在架刊數。橫條而不是數字：讀者要的是形狀，一年一個數字反而看不出 1998 那個高峰。 */}
-              <span
-                className="mt-1 h-1.5 rounded-sm bg-primary/25"
-                style={{ width: Math.max(1, (count / peak) * 36) }}
-                title={`${year} 年在架 ${count} 本`}
-              />
+              {/* 在架刊數。橫條而不是數字：讀者要的是形狀，一年一個數字反而看不出
+                  1998 那個高峰。形狀看得出高峰，但看不出高峰是幾本——滑上去才給
+                  數字，跟封面的說明同一套做法（`z-50` 的小標籤，不是 `title`）。
+                  外面那層 `py-1 -my-1` 只是把 1.5px 高的橫條變得指得到。 */}
+              <span className="group relative -my-1 mt-0.5 flex items-center py-1">
+                <span
+                  className="h-1.5 rounded-sm bg-primary/25 transition-colors group-hover:bg-primary/70"
+                  style={{ width: Math.max(1, (count / peak) * 36) }}
+                />
+                <span
+                  className="pointer-events-none absolute left-full z-50 ml-1.5 rounded-sm border border-border bg-background/95 px-1.5 py-0.5 text-[10px] leading-tight whitespace-nowrap opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                  aria-hidden
+                >
+                  {year} 年在架 {count} 本
+                </span>
+              </span>
             </div>
           );
         })}
@@ -315,6 +325,7 @@ export function TimelineChart({
             marker={marker}
             anchorX={laneCenter(track.lane)}
             anchorY={anchorY + COVER_HEIGHT / 2}
+            coverZoneLeft={coverZoneLeft}
             left={coverZoneLeft + 8 + column * COVER_COL_WIDTH}
             top={top}
           />
@@ -562,6 +573,7 @@ function CoverCallout({
   marker,
   anchorX,
   anchorY,
+  coverZoneLeft,
   left,
   top,
 }: {
@@ -569,6 +581,8 @@ function CoverCallout({
   marker: TimelineMarker;
   anchorX: number;
   anchorY: number;
+  /** 封面欄的左緣。說明的小標籤不能越過它。 */
+  coverZoneLeft: number;
   left: number;
   top: number;
 }) {
@@ -582,23 +596,62 @@ function CoverCallout({
   const toY = centerY - svgTop + 1;
 
   return (
-    <>
+    // 滑到封面時，這一組（引線、線上的節點、封面）一起亮起來。分不出一張封面
+    // 屬於哪一條線是這張圖最容易迷路的地方——引線細、又有八十幾條交錯。三者包
+    // 在同一個 group 裡就只靠 CSS 做得到，不必把整張圖變成 client component。
+    <div className="group">
       <svg
-        className="pointer-events-none absolute"
-        style={{ left: anchorX, top: svgTop - 1, width, height: svgHeight, opacity: 0.4 }}
+        className="pointer-events-none absolute opacity-40 transition-opacity group-hover:opacity-100"
+        style={{ left: anchorX, top: svgTop - 1, width, height: svgHeight }}
         aria-hidden
       >
         <path
           d={`M 0 ${fromY} L 12 ${fromY} L ${width} ${toY}`}
           fill="none"
           stroke={color}
-          strokeWidth={1}
+          className="[stroke-width:1] transition-[stroke-width] group-hover:[stroke-width:2.5]"
         />
       </svg>
 
+      {/* 節點外面套一圈，變成雙圓圈。畫成外環而不是放大節點本身：節點放大會蓋掉
+          它兩側的線，讀者反而看不出它落在哪一段上。 */}
+      <div
+        className="pointer-events-none absolute z-20 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+        style={{
+          left: anchorX - 6.5,
+          top: anchorY - 6.5,
+          width: 13,
+          height: 13,
+          border: `1.5px solid ${color}`,
+          boxShadow: "0 0 0 1.5px var(--background)",
+        }}
+        aria-hidden
+      />
+
+      {/* 節點的說明本來只在 `title` 裡，要停一秒才等得到，而且系統的 tooltip 會
+          跳到游標旁邊——游標那時在封面上，離節點好幾百像素遠。改成直接浮在節點
+          上方，跟外環一起出現，指的是哪一期一眼就對得起來。
+          **右緣釘在封面欄的左緣**，往左長（`translateX(-100%)`）：長度不定的字往
+          右長會伸進封面欄疊上那張放大的圖，貼齊節點又會退到圖的另一頭去，粗線、
+          標籤、封面散成兩處。收在封面欄外緣，三者剛好排在同一段視線上。
+          `z-50` 是全圖最上層——它是暫時浮起來的說明，蓋住底下什麼都無所謂。 */}
+      <div
+        className="pointer-events-none absolute z-50 rounded-sm border border-border bg-background/95 px-1.5 py-0.5 text-[10px] leading-tight whitespace-nowrap opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+        style={{
+          left: coverZoneLeft - 4,
+          top: anchorY - 22,
+          transform: "translateX(-100%)",
+          color,
+        }}
+        aria-hidden
+      >
+        {caption}
+      </div>
+
+      {/* 沒有 `title`：同一段字上面那塊標籤已經在講了，留著只會讓系統的 tooltip
+          晚一秒再冒出來一份，還冒在幾百像素外的游標旁邊。無障礙那份在 alt 裡。 */}
       <Link
         href={markerHref(track, marker)}
-        title={caption}
         className="absolute z-10 block rounded-[2px] ring-1 ring-black/20 transition-transform hover:z-30 hover:scale-[2.2]"
         style={{ left, top, width: COVER_WIDTH, transformOrigin: "left center" }}
       >
@@ -611,7 +664,7 @@ function CoverCallout({
           className="h-auto w-full rounded-[2px] bg-muted"
         />
       </Link>
-    </>
+    </div>
   );
 }
 
