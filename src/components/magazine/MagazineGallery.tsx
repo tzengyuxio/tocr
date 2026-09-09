@@ -99,7 +99,10 @@ export function MagazineGallery({
              touch screen not at all. This row is the one that is always
              visible, so it carries the controls that have to be found. */
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span className="min-w-0 truncate">
+            {/* 不截斷：這條的寬度由圖框決定（量到 334px，約 22 個中文字），而
+                說明加來源幾乎一定比它長——截掉的那一段往往正是出處。折行讓這
+                一列變高，比讓人讀不到攝影者是誰划算。 */}
+            <span className="min-w-0">
               {current.note}
               {current.source && (
                 <>
