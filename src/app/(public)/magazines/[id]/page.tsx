@@ -32,7 +32,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { periodicalJsonLd } from "@/lib/structured-data";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
-import { magazineSubtitle } from "@/lib/magazine-browse";
+import { MAGAZINE_FREQUENCY_LABELS, magazineSubtitle } from "@/lib/magazine-browse";
 import { splitLinks } from "@/lib/linkify";
 
 interface PageProps {
@@ -297,6 +297,12 @@ export default async function MagazineDetailPage({
               <p>
                 <span className="text-muted-foreground">出版社：</span>
                 {magazine.publisher}
+              </p>
+            )}
+            {magazine.frequency && (
+              <p>
+                <span className="text-muted-foreground">發刊頻率：</span>
+                {MAGAZINE_FREQUENCY_LABELS[magazine.frequency]}
               </p>
             )}
             {magazine.issn && (
