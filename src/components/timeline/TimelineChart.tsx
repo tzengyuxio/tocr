@@ -638,9 +638,10 @@ function CoverCallout({
         {caption}
       </div>
 
+      {/* 沒有 `title`：同一段字上面那塊標籤已經在講了，留著只會讓系統的 tooltip
+          晚一秒再冒出來一份，還冒在幾百像素外的游標旁邊。無障礙那份在 alt 裡。 */}
       <Link
         href={markerHref(track, marker)}
-        title={caption}
         className="absolute z-10 block rounded-[2px] ring-1 ring-black/20 transition-transform hover:z-30 hover:scale-[2.2]"
         style={{ left, top, width: COVER_WIDTH, transformOrigin: "left center" }}
       >
