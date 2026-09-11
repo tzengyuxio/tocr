@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { LightboxArrow, useLightboxKeys } from "@/components/ui/lightbox";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { formatIssueNumber } from "@/lib/issue-number";
 
@@ -53,6 +54,14 @@ export function IssueImages({
   const photoOffset = (coverImage ? 1 : 0) + tocImages.length;
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
   const zoomed = zoomedIndex === null ? null : images[zoomedIndex];
+
+  const step = (by: number) =>
+    setZoomedIndex((i) =>
+      i === null ? i : Math.min(images.length - 1, Math.max(0, i + by)),
+    );
+
+  // Only while enlarged: on the page itself the arrow keys scroll.
+  useLightboxKeys(zoomed !== null && images.length > 1, step);
 
   return (
     <>
@@ -187,6 +196,22 @@ export function IssueImages({
           >
             <X className="h-5 w-5" />
           </button>
+          {zoomed && images.length > 1 && (
+            <>
+              <LightboxArrow
+                side="left"
+                label="上一張"
+                disabled={zoomedIndex === 0}
+                onClick={() => step(-1)}
+              />
+              <LightboxArrow
+                side="right"
+                label="下一張"
+                disabled={zoomedIndex === images.length - 1}
+                onClick={() => step(1)}
+              />
+            </>
+          )}
           {zoomed && (
             <div className="relative" onClick={(e) => e.stopPropagation()}>
               {/* eslint-disable-next-line @next/next/no-img-element -- the
@@ -204,7 +229,7 @@ export function IssueImages({
                     size="icon"
                     className="h-8 w-8 text-white hover:bg-white/20 hover:text-white"
                     disabled={zoomedIndex === 0}
-                    onClick={() => setZoomedIndex((i) => (i ?? 0) - 1)}
+                    onClick={() => step(-1)}
                     aria-label="上一張"
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -215,7 +240,7 @@ export function IssueImages({
                     size="icon"
                     className="h-8 w-8 text-white hover:bg-white/20 hover:text-white"
                     disabled={zoomedIndex === images.length - 1}
-                    onClick={() => setZoomedIndex((i) => (i ?? 0) + 1)}
+                    onClick={() => step(1)}
                     aria-label="下一張"
                   >
                     <ChevronRight className="h-5 w-5" />
