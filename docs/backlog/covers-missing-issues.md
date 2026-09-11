@@ -115,7 +115,7 @@ ISBN `957-98704-3-8`。封面故事 Force Commander 星戰指揮官，收錄 82 
 
 - **《GAME fans》站上以「新刊N號」為期號，掃描檔那邊用的是通卷號**
   （新刊3號＝通卷295、新刊5號＝通卷297）。兩邊都對，只是 key 不同，純字串比對必然失敗。
-  已在 `~/Pictures/covers/raw/manifest.csv` 新增 `tocr_issue` 欄（存 `Issue.code`）解決
+  已在 `~/Pictures/covers/raw/magazines/manifest.csv` 新增 `tocr_issue` 欄（存 `Issue.code`）解決
 - **《電腦玩家》1998-09 有兩筆不同的東西**：月刊第 86 期（`publishDate: 1998-09`）
   與這次要建的特刊（`1998-09-01`）。日期近到只差一層精度，靠日期比對會配錯，
   也是靠 `tocr_issue` 這個明確外鍵才分得開

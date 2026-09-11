@@ -87,7 +87,7 @@ python3 ~/lab/nostalib-toolkit/scripts/covers_vs_tocr.py --fill-codes <輸出檔
 ```
 
 `--fill-codes` 只填「唯一對得上」的列、其餘留空，且輸出到新檔不覆寫原 manifest。
-比對完把結果併回 `~/Pictures/covers/raw/manifest.csv`——**那份是封面端的正本**。
+比對完把結果併回 `~/Pictures/covers/raw/magazines/manifest.csv`——**那份是封面端的正本**。
 
 期號形狀對不上的地方要人工看（`fashion-game` 我存 `002`、站上可能是 `No.2`）。
 
