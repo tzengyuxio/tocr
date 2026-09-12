@@ -12,6 +12,9 @@ describe("publicSourceUrl", () => {
     expect(
       publicSourceUrl("https://www.kingbooks.com.tw/product/土星少年34/")
     ).toBeNull();
+    expect(
+      publicSourceUrl("https://www.eslite.com/product/1001129222581905")
+    ).toBeNull();
   });
 
   it("keeps sources that are something to read", () => {

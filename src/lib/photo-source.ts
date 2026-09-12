@@ -16,6 +16,7 @@ const MARKETPLACE_HOSTS = [
   "shopee.tw",
   "bid.yahoo.com",
   "kingbooks.com.tw",
+  "eslite.com",
 ];
 
 /** 公開頁該用的出處網址：賣東西的頁面回 null，其餘原樣回傳。 */
