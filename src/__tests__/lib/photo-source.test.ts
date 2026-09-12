@@ -1,13 +1,16 @@
 import { publicSourceUrl, withPublicSourceUrls } from "@/lib/photo-source";
 
 describe("publicSourceUrl", () => {
-  it("drops the marketplaces the photos actually come from", () => {
+  it("drops the shopping sites the photos actually come from", () => {
     expect(
       publicSourceUrl("https://www.ruten.com.tw/item/22602925873994/")
     ).toBeNull();
     expect(publicSourceUrl("https://shopee.tw/i.32717632.27889449172")).toBeNull();
     expect(
       publicSourceUrl("https://tw.bid.yahoo.com/item/1234567890")
+    ).toBeNull();
+    expect(
+      publicSourceUrl("https://www.kingbooks.com.tw/product/土星少年34/")
     ).toBeNull();
   });
 

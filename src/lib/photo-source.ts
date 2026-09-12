@@ -1,9 +1,9 @@
 /**
  * 額外圖片的出處，公開頁看得到哪一部分。
  *
- * 拍賣與購物網站的出處**只留名字、不連結**：連出去像在替賣場導流，而商品下架
- * 之後那個連結本來也活不久。文章、論壇、部落格這類來源不受影響——那是真的有
- * 東西可讀的出處，連過去對讀者有用。
+ * 賣東西的頁面（拍賣、購物平台、網路書店）出處**只留名字、不連結**：連出去像在
+ * 替賣場導流，而商品下架之後那個連結本來也活不久。文章、論壇、部落格這類來源不受
+ * 影響——那是真的有東西可讀的出處，連過去對讀者有用。
  *
  * 判斷要在頁面組資料那一步做完，不要留到元件裡：值只要進了 props 就會落在
  * RSC payload，view-source 搜得到、爬蟲也吃得到，等於「點不到」但仍然公開。
@@ -11,9 +11,14 @@
  */
 
 /** 註冊網域；子網域一併涵蓋（`tw.bid.yahoo.com` 走 `bid.yahoo.com`）。 */
-const MARKETPLACE_HOSTS = ["ruten.com.tw", "shopee.tw", "bid.yahoo.com"];
+const MARKETPLACE_HOSTS = [
+  "ruten.com.tw",
+  "shopee.tw",
+  "bid.yahoo.com",
+  "kingbooks.com.tw",
+];
 
-/** 公開頁該用的出處網址：拍賣站回 null，其餘原樣回傳。 */
+/** 公開頁該用的出處網址：賣東西的頁面回 null，其餘原樣回傳。 */
 export function publicSourceUrl(url: string | null): string | null {
   if (!url) return null;
   let host: string;
