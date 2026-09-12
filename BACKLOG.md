@@ -89,8 +89,6 @@
 
 - [ ] **《遊戲天堂》／《Game天堂EX》待建，缺實體本** — 藏家清單有、站上沒有的一組刊系，見 [docs/backlog/game-paradise-ex.md](docs/backlog/game-paradise-ex.md)（2026-08-23）
 
-- [ ] **《電擊Dreamcast》要建成獨立刊還是《電擊SEGA SATURN》的後續刊名時期** — 曾建過一筆獨立的 dengeki-dc-tw，同日撤除，等實體本再定，見 [docs/backlog/dengeki-dreamcast.md](docs/backlog/dengeki-dreamcast.md)（2026-08-23）
-
 - [ ] **《玩家快訊》／《超級玩家》整條刊系沒收** — 尖端電腦類的一本，站上完全沒有（2026-08-24）。
 
   **已知事實**（來源：zh.wikipedia〈臺灣電玩雜誌列表〉，該條無引用）：《玩家快訊》

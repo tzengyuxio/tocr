@@ -92,4 +92,6 @@ data_snapshot: 2026-09-08 正式站
 - ○ 試刊／創刊／休刊日與期名：藏家清單
 - ○ 日本原刊的改名：ja.wikipedia〈電撃Dreamcast〉
 - ○ 台版《電擊Dreamcast》由青文發行、2000 年 11 月停刊：巴哈姆特 GNN 2000-12-11（sn=92）
-- △ 台版是否同一刊系未定，見 [dengeki-dreamcast.md](../../backlog/dengeki-dreamcast.md)
+- ○ 台版同一刊系：DC 創刊 1 號封面「再見了，電擊SEGA SATURN！你好嗎？電擊Dreamcast!!」、
+  SS 創刊 5 號封面預告下一期（2026-09-12 定案，見
+  [dengeki-dreamcast.md](../../backlog/dengeki-dreamcast.md)）
