@@ -119,6 +119,8 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | Official Xbox Magazine | `oxm-tw` | `oxm-tw` | 2.SOURCE | 6 | `oxm` |  |
 | 舊遊戲時代 | `retro-game-time` | `retro-game-time` | 1.PARA | 15 | `rgt` |  |
 | 土星少年 | — | `saturn-boy` | 1.PARA | 10 | — | SATURN BOY MAGAZINE 去體裁尾綴；站上只有網路書店的商品照，還沒有掃描檔 |
+| ai愛少女電玩綜合情報誌 | — | `ai-shaonv` | 4.EXCEPT | 9 | — | 明文例外之三：刊名的拉丁部分只有 `ai`，破 3 字元下限；走 3.PINYIN 的首末詞是 `ai-shaonv-qingbaozhi`（「情報誌」不在可丟棄的體裁尾綴清單內），破拼音 ≤2 段。取識別詞「ai愛少女」 |
+| Passion電玩綜合情報誌 | — | `passion` | 1.PARA | 7 | — | 刊名本身即拉丁字，同 `gameq`、`mania` |
 | SG遊戲週刊 | `sg-game` | `sg-game` | 1.PARA | 7 | — | SG Game Weekly 去體裁尾綴 |
 | 新遊戲時代雜誌 | `sgm` | `sgm` | 1.PARA | 3 | `sgm` | 自印簡稱 |
 | 軟體之星 | `softstar` | `softstar` | 1.PARA | 8 | `ssm` |  |
