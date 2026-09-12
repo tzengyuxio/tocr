@@ -118,6 +118,7 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 次世代遊戲情報 | `next-tw` | `next-tw` | 2.SOURCE | 7 | `next` | 原刊名寫法依通稱推定，未對實物 |
 | Official Xbox Magazine | `oxm-tw` | `oxm-tw` | 2.SOURCE | 6 | `oxm` |  |
 | 舊遊戲時代 | `retro-game-time` | `retro-game-time` | 1.PARA | 15 | `rgt` |  |
+| 土星少年 | — | `saturn-boy` | 1.PARA | 10 | — | SATURN BOY MAGAZINE 去體裁尾綴；站上只有網路書店的商品照，還沒有掃描檔 |
 | SG遊戲週刊 | `sg-game` | `sg-game` | 1.PARA | 7 | — | SG Game Weekly 去體裁尾綴 |
 | 新遊戲時代雜誌 | `sgm` | `sgm` | 1.PARA | 3 | `sgm` | 自印簡稱 |
 | 軟體之星 | `softstar` | `softstar` | 1.PARA | 8 | `ssm` |  |
