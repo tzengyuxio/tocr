@@ -16,6 +16,7 @@ import {
   MagazineGallery,
 } from "@/components/magazine/MagazineGallery";
 import { buildMagazineGallery } from "@/lib/magazine-gallery";
+import { withPublicSourceUrls } from "@/lib/photo-source";
 import {
   ISSUE_FILTERS,
   issueOrderBy,
@@ -207,7 +208,8 @@ export default async function MagazineDetailPage({
   const gallery = buildMagazineGallery({
     name: magazine.name,
     logoImage: magazine.logoImage,
-    photos: magazine.photos,
+    // 拍賣站的出處只留名字：見 lib/photo-source。
+    photos: withPublicSourceUrls(magazine.photos),
     titles: magazine.titles,
     standIn: standIn?.coverImage
       ? {

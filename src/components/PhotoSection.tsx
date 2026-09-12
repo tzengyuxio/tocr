@@ -14,7 +14,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, Eye, EyeOff, Loader2, Trash2, Upload } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Loader2,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { downscaleImage } from "@/lib/downscale-image";
 import { MAX_UPLOAD_BYTES } from "@/lib/image-policy";
@@ -199,15 +208,32 @@ export function PhotoSection({ owner, photos, description }: PhotoSectionProps) 
                       onBlur={() => commit(photo, "sourceName")}
                       placeholder="圖片來源，如露天拍賣、巴哈姆特哈啦板"
                     />
-                    <Input
-                      value={value(photo, "sourceUrl")}
-                      onChange={(e) => edit(photo.id, "sourceUrl", e.target.value)}
-                      onBlur={() => commit(photo, "sourceUrl")}
-                      placeholder="來源網址"
-                    />
+                    {/* 網址是輸入框，點不開，而查驗來源是這裡最常做的事——旁邊
+                        補一個外開連結。公開頁對拍賣站不連結，後台仍然要連得出去。 */}
+                    <div className="flex gap-1">
+                      <Input
+                        value={value(photo, "sourceUrl")}
+                        onChange={(e) => edit(photo.id, "sourceUrl", e.target.value)}
+                        onBlur={() => commit(photo, "sourceUrl")}
+                        placeholder="來源網址"
+                      />
+                      {photo.sourceUrl && (
+                        <Button asChild type="button" variant="ghost" size="icon">
+                          <a
+                            href={photo.sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="開啟來源頁查驗"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    來源留空時，公開頁就不標圖片來源。
+                    來源留空時，公開頁就不標圖片來源；拍賣站的網址只存不連，公開頁
+                    僅顯示來源名稱。
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col gap-1">

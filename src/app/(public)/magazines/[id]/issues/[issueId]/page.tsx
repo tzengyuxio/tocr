@@ -27,6 +27,7 @@ import { titleForIssue } from "@/lib/magazine-title";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
 import { splitLinks, shortenUrl } from "@/lib/linkify";
+import { withPublicSourceUrls } from "@/lib/photo-source";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -285,10 +286,11 @@ export default async function IssueDetailPage({ params }: PageProps) {
               and an overlay scrollbar (the macOS default) is drawn *over* the
               content, so scrollbar-gutter reserves nothing for it. */}
           <div className="space-y-4 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-3">
+            {/* photos 的出處網址先過濾：拍賣站只留名字，見 lib/photo-source。 */}
             <IssueImages
               coverImage={issue.coverImage}
               tocImages={issue.tocImages}
-              photos={issue.photos}
+              photos={withPublicSourceUrls(issue.photos)}
               issueNumber={issue.issueNumber}
             />
             {/* 封面資訊：緊接著封面圖，因為它講的就是上面那張圖。三欄都空就
