@@ -9,6 +9,10 @@
 筆記長在裡面會讓每次讀它的成本跟著漲（2026-08-30 拆分，當時 602 行）。
 做完的打勾後移到 [docs/backlog/done.md](docs/backlog/done.md)。
 
+- [ ] **《電擊SEGA SATURN》創刊號的出版節奏對不上** — 創刊1號 1998-10-02、創刊2號 1998-10-16 是雙週節奏，往後推創刊5號應落在 11-27，但站上創刊5號的封面標 12-11，中間多出一個出版週期。創刊3／4 號 2026-09-12 只建了空殼、日期留空，等封面或版權頁出現再補，不從節奏往後推（2026-09-12）
+
+- [ ] **智冠年報大事紀裡還有兩本沒對照** — 2017 年年報記「2008 年 04 月 智冠『電玩 e 週刊』、『電玩雙週刊』雜誌創刊」與「2012 年 04 月 智冠『APP 情報誌』雜誌創刊」（<https://www.soft-world.com/en/pdf/2017AnnualReport.pdf>）。**《電玩e週刊》站上沒有這本刊**，且與既有的《電玩e世代》（銘顯文化、2002-07 創刊）不是同一本，別併；《電玩APP情報誌》的封面在 `~/Downloads/gamexpress-covers`，見下面那條。年報與站上對不上的兩處（level up 記 2006-07、電玩双週刊記 2008-04）已寫進各自的 description（2026-09-12）
+
 - [ ] **拿《電玩通》封底裡的 Game Index 當遊戲名的權威來源** — 每期封底裡印著「電玩通週刊VOL N遊戲索引」，全期遊戲依平台分列、附頁碼，是編輯部自己統一過的譯名表（該頁還附註「均為編輯部參考各式相關資料後研討做成」）。可以拿它當 `Game.name` 的基準，把站上各種 alias 收斂過來；目前手邊有 VOL.184／185／193 三期的掃描（`~/Pictures/covers/raw/magazines/famitsu-tw/*_c3.jpg`）（2026-09-12）
 - [ ] **42 條 `封面：主題 …` 還在 notes 裡** — 封面資訊已於 2026-09-06 整批搬進 `coverGames`／`coverSubjects`／`coverCredit`（219 期），只剩這一族沒搬：值一半是遊戲名、一半帶宣傳語（「暑假超強大作—新絕代雙驕貳」「專訪幻影特攻女主角」），要逐筆判，分佈在軟體世界 15、電腦玩家 14、新遊戲時代 13。見 [docs/data-conventions.md](docs/data-conventions.md) 的「封面資訊」（2026-09-06）
 - [ ] **封底 c4 還沒上傳** — 累積 131 張（2026-09-02 那批 42、2026-09-05 新掃的 29、2026-09-06 電玩通 PS 系那批 22、SG／電視遊樂報導／城市少年 3 與《電玩通》週刊那批 35）。走 `/api/photos` 不是 `/api/upload`，`tocr_upload_covers.py` 不管這條，要另外寫。先擱著，等 Blob 額度確認再動，見 [docs/backlog/covers-missing-issues.md](docs/backlog/covers-missing-issues.md) 與 [docs/backlog/covers-new-scans-tocr.md](docs/backlog/covers-new-scans-tocr.md)（2026-09-05）
