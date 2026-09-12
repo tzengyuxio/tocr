@@ -58,8 +58,9 @@ yuxio 2026-09-12），寫法沿用站上既有的 `DengekiGAMES VOL.2`／`情報
 **已建**：刊名沿革兩段（電擊SEGA SATURN 自試刊1號、電擊Dreamcast 自電擊DC 創刊1號，
 各掛 `titleSource` 電撃セガサターン／電撃Dreamcast）；DC 時期 32 期
 （創刊1～6號、7～31、增刊號 1999-06-11，全部有封面與目錄圖，`price` 80）。
-掃描檔 96 張入 `raw/magazines/dengeki-ss-tw/`，`title_slug` 另立為 `dengeki-dc-tw`
-（刊名層 slug，正是兩層 slug 要處理的情形）。
+掃描檔 96 張，`title_slug` 另立為 `dengeki-dc-tw`（刊名層 slug，正是兩層 slug 要處理的情形）：
+封面與封底 64 張入 `raw/magazines/dengeki-ss-tw/`，目錄頁 32 張入 `raw/magazine-pages/`
+（`kind` 為 `toc+colophon`——這本刊的目錄頁右欄就是版權欄與 STAFF）。
 
 **還缺**：DC 時期 VOL.32～41（藏家清單記共 42 本，VOL.39～41 改月刊）、SS 時期試刊 5～12 號與
 創刊 1～4 號；`endedDate`（藏家清單記 2000-10-27 休刊、封面 2000/11/24）；DC 時期的刊頭標準字。
