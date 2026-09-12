@@ -103,6 +103,10 @@ enum MagazineCategory {
   PC_GAME // 電腦遊戲
   TV_GAME // 電視遊樂器
   ONLINE_GAME // 線上遊戲
+  // 手機遊戲。前三個沿用 nostalibrary 的分節，這一個是站上自己加的（2026-09-13）
+  // ——上游收的年代還沒有手遊，而東立 2017 年的《Passion》與《ai愛少女》兩本
+  // 報導的全是手遊，硬歸進 ONLINE_GAME 會讓那個篩選不可信。
+  MOBILE_GAME // 手機遊戲
 }
 
 /// 發刊頻率。**單一值**：頻率是時序屬性，一本刊在任何一個時間點只有一種，

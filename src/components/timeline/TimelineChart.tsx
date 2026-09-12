@@ -81,6 +81,7 @@ const CATEGORY_TINT: Record<string, string> = {
   PC_GAME: "PC",
   TV_GAME: "TV",
   ONLINE_GAME: "OLG",
+  MOBILE_GAME: "Mobile",
 };
 
 export interface TimelineChartProps {
