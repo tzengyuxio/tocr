@@ -130,7 +130,7 @@ pnpm test
   是建 `Game` 時的判斷，不在這份轉錄裡先做掉
 
 轉錄自 `~/Pictures/covers/raw/magazines/famitsu-tw/famitsu-tw_<期>_c3.jpg`（封底裡掃描），
-目前 44 期 1727 列，涵蓋 2008 與 2010–2013 兩段，全部人工讀圖轉錄。
+目前 55 期 2094 列，涵蓋 2008 與 2010–2013 兩段，全部人工讀圖轉錄。
 
 **目錄頁標的頁碼不代表封底裡沒有索引。** 目錄頁右下角會標「Game Index 封底裡」或
 「Game Index P.NNN」，但 VOL.335（標 P.120）與 VOL.336（標 P.118）的封底裡**照樣印著
@@ -149,7 +149,8 @@ npx tsx --env-file=.env.local scripts/read-game-index.ts <c3.jpg> <期號>
 
 **雜誌自己印錯的地方照印，不改。** 已知這幾處是原頁就錯的，登錄時原樣保留：
 VOL.361「鐵拳 3D PRIME EDTION」（應為 EDITION）、VOL.343 與 348「福音戰士新劇場版
-3nd Impact」（應為 3rd）、VOL.328「魔槍戰記 -魔槍軍神與英雄戰-」（其他期都有「爭」）。
+3nd Impact」（應為 3rd）、VOL.328「魔槍戰記 -魔槍軍神與英雄戰-」（其他期都有「爭」）、
+VOL.366 目錄頁「戰國無雙3 Z Specail」（應為 Special）。
 VOL.360 與 363 的索引各印了連續兩條「Wii」色帶，第二條應為「Wii U」（VOL.361 印的是對的），
 **兩期都只轉錄第一條**——第二條的內容與第一條完全重複（同一款 DRAGON QUEST X、同一個頁碼），
 收兩次只會多出一列不存在的資料。
