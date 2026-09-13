@@ -34,7 +34,7 @@
 
 - [ ] **刊頭上方的自我定位文字，邊界還沒縮到單期** — 《電視遊樂雜誌》的定位隨主力平台改寫（PC-Engine → 電視遊樂 → 超級任天堂 → SFC+MD → SS+N64 → SEGA SATURN），《電視遊樂報導》則有「全國第一本電視遊樂報導」與 ASCII《ファミコン通信》授權標示；已知期別與未定邊界見 [docs/backlog/masthead-taglines.md](docs/backlog/masthead-taglines.md)（2026-09-08）
 
-- [ ] **其餘改名刊的沿革資料** — 電視遊樂報導的「情報→報導」2026-09-05 已建，只剩「報導→Super Gamer」的切點要查，見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22）
+- [ ] **其餘改名刊的沿革資料** — 電視遊樂報導的「情報→報導」2026-09-05 已建，還剩兩條要查：「報導→Super Gamer」的切點，以及《電遊人》前身可能叫 Playone（VOL.14 是改版第一期，總編輯在編輯的話裡說了改名，但沒有前一段的封面），見 [docs/backlog/magazine-title-periods.md](docs/backlog/magazine-title-periods.md)（2026-08-22，2026-09-13 加第二條）
 
 - [ ] **疾風快報／攻略快報的期數與封面待補** — 這條刊系 2026-08-30 才開張，站上只有 4 期：
   疾風快報 No.211（2002-03-16）、No.212（2002-03-23）、攻略快報試刊號（2002-04-13）與
