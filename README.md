@@ -130,7 +130,11 @@ pnpm test
   是建 `Game` 時的判斷，不在這份轉錄裡先做掉
 
 轉錄自 `~/Pictures/covers/raw/magazines/famitsu-tw/famitsu-tw_<期>_c3.jpg`（封底裡掃描），
-目前有 VOL.181／184／185／193／412／438 六期，全部人工讀圖轉錄。
+目前 42 期 1648 列，涵蓋 2008 與 2010–2013 兩段，全部人工讀圖轉錄。
+
+**索引不一定在封底裡。** 目錄頁右下角會標「Game Index 封底裡」或「Game Index P.NNN」；
+標頁碼的那幾期，封底裡只有下期預告與版權欄，索引在內頁（VOL.335、336 就是這樣，
+內頁沒掃到，所以這兩期沒有列）。
 
 要加新的一期，用 [`scripts/read-game-index.ts`](scripts/read-game-index.ts) 起草：
 
