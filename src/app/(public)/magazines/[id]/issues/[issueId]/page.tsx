@@ -296,7 +296,10 @@ export default async function IssueDetailPage({ params }: PageProps) {
             {/* 封面資訊：緊接著封面圖，因為它講的就是上面那張圖。三欄都空就
                 整段不出現——絕大多數期還沒填，空標題比沒有更吵。
                 「封面繪師」的值可能自帶角色詞（「攝影：陳某」），所以標籤寫成
-                「封面」而不是「繪師」，兩種寫法讀起來都通。 */}
+                「封面」而不是「繪師」，兩種寫法讀起來都通。
+                標籤與值之間用全形冒號而不是空白：《電玩通》封面把日本藝人的姓名
+                分寫成「水樹 奈奈」，值裡本來就有空白，再用空白當分隔就讀不出
+                哪一個是分隔。 */}
             {(issue.coverGames.length > 0 ||
               issue.coverSubjects.length > 0 ||
               issue.coverCredit) && (
@@ -306,20 +309,20 @@ export default async function IssueDetailPage({ params }: PageProps) {
                 </p>
                 <dl className="space-y-0.5 text-sm text-muted-foreground">
                   {issue.coverGames.length > 0 && (
-                    <div className="flex gap-1.5">
-                      <dt className="shrink-0">遊戲</dt>
+                    <div className="flex">
+                      <dt className="shrink-0">遊戲：</dt>
                       <dd className="min-w-0">{issue.coverGames.join("、")}</dd>
                     </div>
                   )}
                   {issue.coverSubjects.length > 0 && (
-                    <div className="flex gap-1.5">
-                      <dt className="shrink-0">人物</dt>
+                    <div className="flex">
+                      <dt className="shrink-0">人物：</dt>
                       <dd className="min-w-0">{issue.coverSubjects.join("、")}</dd>
                     </div>
                   )}
                   {issue.coverCredit && (
-                    <div className="flex gap-1.5">
-                      <dt className="shrink-0">封面</dt>
+                    <div className="flex">
+                      <dt className="shrink-0">封面：</dt>
                       <dd className="min-w-0">{issue.coverCredit}</dd>
                     </div>
                   )}
