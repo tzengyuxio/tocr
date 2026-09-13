@@ -3,7 +3,7 @@ const dir = process.cwd(); // run from a work dir holding mags.json + issues/
 const OUT = (process.env.BOOK_DIR || '/Users/user/repos/tocr/docs/book') + '/appendix';
 const idx = JSON.parse(fs.readFileSync(dir + '/index.json'));
 const FREQ = { WEEKLY: '週刊', BIWEEKLY: '雙週刊', SEMIMONTHLY: '半月刊', MONTHLY: '月刊', BIMONTHLY: '雙月刊', QUARTERLY: '季刊', IRREGULAR: '不定期' };
-const CAT = { PC_GAME: 'PC', TV_GAME: 'TV', ONLINE_GAME: '線上' };
+const CAT = { PC_GAME: 'PC', TV_GAME: 'TV', ONLINE_GAME: '線上', MOBILE_GAME: '手遊' };
 const P = (s) => (s == null || s === '' ? '—' : s);
 const year = (e) => (e ? Number(String(e).slice(0, 4)) : null);
 

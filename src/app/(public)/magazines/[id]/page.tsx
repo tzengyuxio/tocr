@@ -16,6 +16,7 @@ import {
   MagazineGallery,
 } from "@/components/magazine/MagazineGallery";
 import { buildMagazineGallery } from "@/lib/magazine-gallery";
+import { withPublicSourceUrls } from "@/lib/photo-source";
 import {
   ISSUE_FILTERS,
   issueOrderBy,
@@ -32,7 +33,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { periodicalJsonLd } from "@/lib/structured-data";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
-import { magazineSubtitle } from "@/lib/magazine-browse";
+import { MAGAZINE_FREQUENCY_LABELS, magazineSubtitle } from "@/lib/magazine-browse";
 import { splitLinks } from "@/lib/linkify";
 
 interface PageProps {
@@ -207,7 +208,8 @@ export default async function MagazineDetailPage({
   const gallery = buildMagazineGallery({
     name: magazine.name,
     logoImage: magazine.logoImage,
-    photos: magazine.photos,
+    // 拍賣站的出處只留名字：見 lib/photo-source。
+    photos: withPublicSourceUrls(magazine.photos),
     titles: magazine.titles,
     standIn: standIn?.coverImage
       ? {
@@ -297,6 +299,12 @@ export default async function MagazineDetailPage({
               <p>
                 <span className="text-muted-foreground">出版社：</span>
                 {magazine.publisher}
+              </p>
+            )}
+            {magazine.frequency && (
+              <p>
+                <span className="text-muted-foreground">發刊頻率：</span>
+                {MAGAZINE_FREQUENCY_LABELS[magazine.frequency]}
               </p>
             )}
             {magazine.issn && (

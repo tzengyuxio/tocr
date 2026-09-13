@@ -9,7 +9,7 @@ const FREQ = {
   WEEKLY: '週刊', BIWEEKLY: '雙週刊', SEMIMONTHLY: '半月刊', MONTHLY: '月刊',
   BIMONTHLY: '雙月刊', QUARTERLY: '季刊', IRREGULAR: '不定期',
 };
-const CAT = { PC_GAME: '電腦遊戲', TV_GAME: '電視遊樂器', ONLINE_GAME: '線上遊戲' };
+const CAT = { PC_GAME: '電腦遊戲', TV_GAME: '電視遊樂器', ONLINE_GAME: '線上遊戲', MOBILE_GAME: '手機遊戲' };
 const KIND = { REGULAR: '本刊', PILOT: '試刊', SPECIAL: '特刊／增刊' };
 
 // EDTF-ish sort key: year, then month/season, then day.

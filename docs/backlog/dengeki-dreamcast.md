@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 created: 2026-08-23
 ---
 
@@ -41,3 +41,27 @@ created: 2026-08-23
 證據，但不同號可以反證）、編者話或封面有無「原《電擊SEGA SATURN》」之類的宣告、
 以及編輯團隊有沒有換。查到之後二擇一：併進 `dengeki-ss-tw` 建 `MagazineTitle` 兩段，
 或另建一筆 `dengeki-dc-tw`（slug 已定，yuxio 2026-08-23）。
+
+## 2026-09-12 定案：同一條刊系，併進 `dengeki-ss-tw`
+
+**台版自己的宣告找到了，判準 4 成立。** DC 創刊 1 號封面上緣橫印
+「再見了，電擊SEGA SATURN！你好嗎？電擊Dreamcast!!」；SS 創刊 5 號封面也預告了下一期就是
+電擊Dreamcast；DC 創刊 1 號的編輯雜記另有一則道歉啟事提到同一件事（yuxio 2026-09-12，
+該頁目前無圖）。判準 2（同為青文）與判準 3（1998-12-11 → 1998-12-25 正好接上雙週刊週期）
+本來就成立，反向判準只中「期號重起」一項——判同一條刊系。
+
+**併起來會撞期號，解法是刊名前綴。** `@@unique([magazineId, issueNumber])`：SS 有創刊 1～5 號、
+DC 也有創刊 1～6 號。兩段的「創刊N號」一律加刊名前綴（`電擊SS 創刊5號`、`電擊DC 創刊1號`…，
+yuxio 2026-09-12），寫法沿用站上既有的 `DengekiGAMES VOL.2`／`情報 NO.1`——前綴＋空格＋期號；
+封面的原寫法進 `altNumbers`。VOL.7 以後是中性的 VOL. 前綴，照既有規則只存數字。
+
+**已建**：刊名沿革兩段（電擊SEGA SATURN 自試刊1號、電擊Dreamcast 自電擊DC 創刊1號，
+各掛 `titleSource` 電撃セガサターン／電撃Dreamcast）；DC 時期 32 期
+（創刊1～6號、7～31、增刊號 1999-06-11，全部有封面與目錄圖，`price` 80）。
+掃描檔 96 張，`title_slug` 另立為 `dengeki-dc-tw`（刊名層 slug，正是兩層 slug 要處理的情形）：
+封面與封底 64 張入 `raw/magazines/dengeki-ss-tw/`，目錄頁 32 張入 `raw/magazine-pages/`
+（`kind` 為 `toc+colophon`——這本刊的目錄頁右欄就是版權欄與 STAFF）。
+
+**還缺**：DC 時期 VOL.32～41（藏家清單記共 42 本，VOL.39～41 改月刊）、SS 時期試刊 5～12 號與
+創刊 1～4 號；`endedDate`（藏家清單記 2000-10-27 休刊、封面 2000/11/24）；DC 時期的刊頭標準字。
+

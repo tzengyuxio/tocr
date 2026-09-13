@@ -17,7 +17,12 @@ import {
  */
 
 /** enum 的值，給 validator 與後台表單用；順序即畫面上的順序。 */
-export const MAGAZINE_CATEGORY_VALUES = ["PC_GAME", "TV_GAME", "ONLINE_GAME"] as const;
+export const MAGAZINE_CATEGORY_VALUES = [
+  "PC_GAME",
+  "TV_GAME",
+  "ONLINE_GAME",
+  "MOBILE_GAME",
+] as const;
 
 export type MagazineCategory = (typeof MAGAZINE_CATEGORY_VALUES)[number];
 
@@ -29,14 +34,16 @@ export const MAGAZINE_CATEGORY_LABELS: Record<MagazineCategory, string> = {
   PC_GAME: "PC Game",
   TV_GAME: "TV Game",
   ONLINE_GAME: "Online Game",
+  // 上游沒有這一節，手遊也沒有通行的英文縮寫，所以用全字。
+  MOBILE_GAME: "Mobile",
 };
 
 /**
  * list 檢視的窄欄版分類 chip：全名太寬，縮寫加色相讓一整欄掃得出類別。
  * OLG 是台灣圈內的慣用縮寫（巴哈姆特 OLG 板），不是自創的。
  * 色相沿用 tag-colors.ts 的 -100/-800 tint 慣例。
- * 未來若加 MOBILE_GAME（目前 enum 還沒有），在這裡補一行即可——手遊沒有
- * 通行的英文縮寫，label 建議用全字 "Mobile"（或中文「手遊」），色相建議 rose。
+ * MOBILE_GAME 沒有縮寫可用，照這則註解原本的建議留全字 Mobile、色相 rose
+ * （2026-09-13 補上）。
  */
 export const MAGAZINE_CATEGORY_CHIPS: Record<
   MagazineCategory,
@@ -45,6 +52,7 @@ export const MAGAZINE_CATEGORY_CHIPS: Record<
   PC_GAME: { label: "PC", className: "bg-blue-100 text-blue-800" },
   TV_GAME: { label: "TV", className: "bg-green-100 text-green-800" },
   ONLINE_GAME: { label: "OLG", className: "bg-violet-100 text-violet-800" },
+  MOBILE_GAME: { label: "Mobile", className: "bg-rose-100 text-rose-800" },
 };
 
 /**
