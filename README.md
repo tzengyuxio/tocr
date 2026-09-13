@@ -112,6 +112,40 @@ pnpm test
 |---|---|
 | [`data/magazines.json`](data/magazines.json) | 雜誌基本資料，上游是 nostalibrary 的 `content/magazines/` |
 | [`data/collectors-note.txt`](data/collectors-note.txt) | 一位收藏家的「全期數已收齊」清單，21 本刊的創刊、休刊、期名與本數。用來比對站上還缺哪些刊——它記的是**收齊的**，不是收藏的全部 |
+| [`data/famitsu-game-index.csv`](data/famitsu-game-index.csv) | 《電玩通》封底裡「遊戲索引」的逐列轉錄，欄位 `issue, platform_printed, platform_tag, name, pages` |
+
+### `data/famitsu-game-index.csv`
+
+《電玩通》每期封底裡印一張「電玩通週刊VOL N遊戲索引」，把全期出現過的遊戲依平台分列、
+附頁碼，頁上並註明譯名「均為編輯部參考各式相關資料後研討做成」——**那是編輯部自己統一
+過的譯名表**，所以拿它當 `Game.name` 與 `PLATFORM` 標籤的基準，而不是拿目錄頁的報導標題
+（同一款在標題裡常帶宣傳語或簡稱，掛上去就會長出一堆寫法不一的遊戲）。
+
+- `platform_printed` 是索引上印的欄頭，原樣保留——同一個平台在不同期印法不一
+  （`PlayStation2` 與 `PLAYSTATION3`、`WiiU` 與 `Wii U`）
+- `platform_tag` 是對應到站上 `PLATFORM` 標籤的那個名字，一個平台一個值
+- `pages` 一列多個頁碼時用 `;` 接（索引上印的是 `32、66`）
+- `name` **照索引印的登錄**，包含 `（暫定）` 這類未定譯名與未翻譯的日文原名
+  （VOL.438 的「超速変形ジャイロゼッター アルバロスの翼」）。要不要剝掉 `（暫定）`
+  是建 `Game` 時的判斷，不在這份轉錄裡先做掉
+
+轉錄自 `~/Pictures/covers/raw/magazines/famitsu-tw/famitsu-tw_<期>_c3.jpg`（封底裡掃描），
+目前有 VOL.181／184／185／193／412／438 六期，全部人工讀圖轉錄。
+
+要加新的一期，用 [`scripts/read-game-index.ts`](scripts/read-game-index.ts) 起草：
+
+```bash
+npx tsx --env-file=.env.local scripts/read-game-index.ts <c3.jpg> <期號>
+```
+
+它直接打 `OPENAI_BASE_URL` 那個端點，**不走 `/api/ocr`**——那條路是拿目錄頁餵
+`TOC_EXTRACTION_PROMPT`，索引頁送進去會被當成目錄、每一列生出一篇假文章（VOL.181
+生了 62 篇），見 [BACKLOG.md](BACKLOG.md)。
+
+**起草完仍要對圖。** 索引是平鋪清單，比目錄頁可靠，但不是零錯：VOL.184 的 38 列有
+2 列錯字（`荒野雙蛟龍`→`雙姣龍`、`神秘樂園`→`神秘秘樂園`）。而**這一欄的用途正是當
+譯名的正本**，錯字放進去等於用它去污染 `Game.name`。`platform_tag` 腳本一律留空，
+由人決定對應到哪個 `PLATFORM` 標籤——新平台第一次出現時本來就要決定叫什麼。
 
 ## 授權
 
