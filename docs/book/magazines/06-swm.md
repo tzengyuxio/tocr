@@ -5,7 +5,7 @@ order: 6
 tier: A
 pages: 4–6 頁
 status: 資料整理完成，未撰稿
-data_snapshot: 2026-09-08 正式站
+data_snapshot: 2026-09-14 正式站
 ---
 
 # 06　《軟體世界》
@@ -139,7 +139,4 @@ data_snapshot: 2026-09-08 正式站
 
 ## 出處
 
-- ◉ 201 期封面與目錄掃描（`~/Downloads/CC_TOC`，站上全數已上）
-- ◉ 十款刊頭標準字掃描（`~/Downloads/swm_logos/`，檔名帶期號）
-- ○ 已知總期數 201：zh.wikipedia〈臺灣電玩雜誌列表〉
-- △ 第 47 期的 28 篇是舊資料、第 58 期把欄目名當標題、3 筆同標題同頁碼待刪，見 [swm-toc-scans.md](../../backlog/swm-toc-scans.md)
+<!-- 待補：逐條列出可引用的來源，並標 ◉ 實物／○ 文獻／△ 待考 -->
