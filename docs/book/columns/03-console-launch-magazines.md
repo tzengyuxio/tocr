@@ -2,7 +2,7 @@
 column: 3
 title: 主機發表就創刊：SS／PS 大戰引爆的創刊潮
 pages: 2
-place: 插在 25《電擊SEGA SATURN》與 29《電擊PlayStation》之間
+place: 插在 26《電擊SEGA SATURN》與 30《電擊PlayStation》之間
 status: 資料整理完成，未撰稿
 ---
 
@@ -20,14 +20,17 @@ status: 資料整理完成，未撰稿
 
 | 刊 | 平台 | 起 | 迄 | 長度 |
 | --- | --- | --- | --- | --- |
-| 25 電擊SEGA SATURN | SS | 1998-02 試刊 | 1998-11 | 約 9 個月 |
-| 29 電擊PlayStation | PS | 1998-08 試刊 | 2001-09 | 約 3 年 |
-| 38 Official Xbox Magazine | Xbox | 2003 | 2005-11 | 約 2 年 |
-| 32 新世紀 HYPER PlayStation | PS | 1999-01 | 2001-12 | 約 3 年 |
-| 37 電玩通PS2 | PS2 | 2002-12 | 2010 之後 | 7 年以上 |
+| 26 電擊SEGA SATURN | SS → DC | 1998-02 試刊 | 2000-04 | 約 2 年（1998-12 改名《電擊Dreamcast》）|
+| 30 電擊PlayStation | PS | 1998-08 試刊 | 2001-09 | 約 3 年 |
+| 41 Official Xbox Magazine | Xbox | 2003 | 2005-11 | 約 2 年 |
+| 33 新世紀 HYPER PlayStation | PS | 1999-01 | 2001-12 | 約 3 年 |
+| 40 電玩通PS2 | PS2 | 2002-12 | 2010 之後 | 7 年以上 |
 
 - **同一台主機養得起三本**：PS 世代同時有《電擊PlayStation》《新世紀 HYPER
   PlayStation》《電玩通PS2》。
+- **主機退場時刊不一定跟著收**：《電擊SEGA SATURN》在 1998 年 12 月改名
+  《電擊Dreamcast》接著出到 2000 年 4 月，刊名跟著硬體換代——與「主機發表就創刊」
+  正好是一頭一尾的兩種對應。
 - **創刊潮的密度**：1996 年 3 本、1997 年 4 本、1998 年 5 本、1999 年 3 本
   （見 [chronology.md](../appendix/chronology.md) 的在架刊數表）。
 - **刊頭上的自我定位跟著主機改**：03《電視遊樂雜誌》十二年換過六種說法

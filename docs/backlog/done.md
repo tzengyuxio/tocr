@@ -1,14 +1,5 @@
 # 已完成
 
-- [x] **《電擊Dreamcast》判為《電擊SEGA SATURN》的後續刊名時期**（2026-09-12） — 缺的那份
-  證據補上了：DC 創刊 1 號封面印「再見了，電擊SEGA SATURN！你好嗎？電擊Dreamcast!!」，SS 創刊
-  5 號封面也預告了下一期（yuxio）。併進 `dengeki-ss-tw` 建兩段刊名沿革，DC 時期 32 期一併建檔
-  （創刊1～6號、7～31、增刊號 1999-06-11，封面與目錄圖齊）。
-
-  **併起來兩段各有一組「創刊N號」，撞 `@@unique([magazineId, issueNumber])`**，兩段一律加刊名
-  前綴（`電擊SS 創刊5號`、`電擊DC 創刊1號`），沿用 `DengekiGAMES VOL.2`／`情報 NO.1` 的寫法，
-  封面原寫法進 `altNumbers`。細節見 [dengeki-dreamcast.md](dengeki-dreamcast.md)
-
 從 `BACKLOG.md` 封存出來的項目，依完成時間由新到舊。這裡只作紀錄，不再更新。
 
 - [x] **《電玩通》早期五期的目錄頁碼錯位已修，66 篇掛不上關聯的收掉 38 篇**（2026-09-13） —
@@ -26,6 +17,15 @@
   **接索引時只掛與標題同名的那一款**，不掛該頁全部——VOL.284 p109 的索引有三款，
   目錄只列了其中一款，全掛會變成這篇講了它沒講的遊戲。這比 `link_famitsu.py` 的
   A 規則再嚴一級。腳本 `fix_pages.py`／`link_fixed.py`／`link_b3.py` 在 scratchpad。
+
+- [x] **《電擊Dreamcast》判為《電擊SEGA SATURN》的後續刊名時期**（2026-09-12） — 缺的那份
+  證據補上了：DC 創刊 1 號封面印「再見了，電擊SEGA SATURN！你好嗎？電擊Dreamcast!!」，SS 創刊
+  5 號封面也預告了下一期（yuxio）。併進 `dengeki-ss-tw` 建兩段刊名沿革，DC 時期 32 期一併建檔
+  （創刊1～6號、7～31、增刊號 1999-06-11，封面與目錄圖齊）。
+
+  **併起來兩段各有一組「創刊N號」，撞 `@@unique([magazineId, issueNumber])`**，兩段一律加刊名
+  前綴（`電擊SS 創刊5號`、`電擊DC 創刊1號`），沿用 `DengekiGAMES VOL.2`／`情報 NO.1` 的寫法，
+  封面原寫法進 `altNumbers`。細節見 [dengeki-dreamcast.md](dengeki-dreamcast.md)
 
 - [x] **《電玩通》11 期的封面人物補回姓名中間的空格**（2026-09-13） — 同日稍早照目錄頁的
   COVER STAFF 欄填成不分寫的 11 期（316、317、326、329、333、338、343、363、412、416、420）
