@@ -5,6 +5,24 @@ const dir = process.cwd(); // run from a work dir holding mags.json + issues/
 const OUT = process.env.BOOK_DIR || '/Users/user/repos/tocr/docs/book'; // BOOK_DIR overrides (use it to dry-run without clobbering)
 
 const mags = JSON.parse(fs.readFileSync(dir + '/mags.json')).data;
+const SNAPSHOT = process.env.SNAPSHOT || new Date().toISOString().slice(0, 10);
+
+// 〈沿革〉〈可寫的話題〉〈出處〉三節是人寫的，其餘全由站上的資料推出來。重跑
+// 以前會把那三節一起洗掉（見 README），所以每次更新都要先備份再貼回來；現在改成
+// 從既有的那份稿裡原樣搬過來——認的是 slug 不是檔名，因為編號前綴每次都依創刊日
+// 重算，新增一本刊就會讓後面整批位移。
+const existingBySlug = new Map();
+for (const f of fs.readdirSync(path.join(OUT, 'magazines'))) {
+  const m = /^\d+-(.+)\.md$/.exec(f);
+  if (m) existingBySlug.set(m[1], f);
+}
+
+/** The body of `## <heading>` in `text`, or null when it is still the placeholder. */
+function carriedSection(text, heading) {
+  const re = new RegExp(`^## ${heading}\\n([\\s\\S]*?)(?=^## |\\Z)`, 'm');
+  const body = re.exec(text)?.[1]?.trim();
+  return body && !/^<!-- 待補/.test(body) ? body : null;
+}
 const FREQ = {
   WEEKLY: '週刊', BIWEEKLY: '雙週刊', SEMIMONTHLY: '半月刊', MONTHLY: '月刊',
   BIMONTHLY: '雙月刊', QUARTERLY: '季刊', IRREGULAR: '不定期',
@@ -86,6 +104,11 @@ rows.forEach((r, idx) => {
   const cs = {};
   for (const i of issues) for (const x of i.coverSubjects || []) cs[x] = (cs[x] || 0) + 1;
 
+  const previousFile = existingBySlug.get(m.slug);
+  const previous = previousFile
+    ? fs.readFileSync(path.join(OUT, 'magazines', previousFile), 'utf8')
+    : null;
+
   const est = m.knownIssueCount;
   const cov = est ? `${issues.length}／${est}（${Math.round((issues.length / est) * 100)}%）` : `${issues.length}／未詳`;
 
@@ -97,7 +120,7 @@ rows.forEach((r, idx) => {
   L.push(`tier: ${tier}`);
   L.push(`pages: ${PAGES[tier]}`);
   L.push(`status: 資料整理完成，未撰稿`);
-  L.push(`data_snapshot: 2026-09-08 正式站`);
+  L.push(`data_snapshot: ${SNAPSHOT} 正式站`);
   L.push('---');
   L.push('');
   L.push(`# ${String(idx + 1).padStart(2, '0')}　《${m.name}》`);
@@ -183,14 +206,14 @@ rows.forEach((r, idx) => {
     issues.forEach((i) => L.push(`| ${i.issueNumber}${i.kind !== 'REGULAR' ? `（${KIND[i.kind]}）` : ''} | ${i.publishDate || '—'} | ${i.price ? Number(i.price) : '—'} | ${i.pageCount || '—'} | ${i.coverImage ? '◉' : '—'} | ${(i.tocImages || []).length ? '◉' : '—'} |`));
     L.push('');
   }
-  L.push('## 沿革');
-  L.push('');
-  L.push('<!-- 待補：這一節由人整理，寫成可直接改寫成解說的年表 -->');
-  L.push('');
-  L.push('## 可寫的話題');
-  L.push('');
-  L.push('<!-- 待補 -->');
-  L.push('');
+  const hand = (heading, placeholder) => {
+    L.push(`## ${heading}`);
+    L.push('');
+    L.push((previous && carriedSection(previous, heading)) || placeholder);
+    L.push('');
+  };
+  hand('沿革', '<!-- 待補：這一節由人整理，寫成可直接改寫成解說的年表 -->');
+  hand('可寫的話題', '<!-- 待補 -->');
   L.push('## 圖版候選');
   L.push('');
   L.push(`- 創刊號封面：${issues[0] && issues[0].coverImage ? '站上已有' : '**缺**'}`);
@@ -215,12 +238,14 @@ rows.forEach((r, idx) => {
   holes.push('發行人、總編輯、開本三欄站上沒有欄位，要翻版權頁');
   holes.forEach((h) => L.push(`- ${h}`));
   L.push('');
-  L.push('## 出處');
-  L.push('');
-  L.push('<!-- 待補：逐條列出可引用的來源，並標 ◉ 實物／○ 文獻／△ 待考 -->');
-  L.push('');
+  hand('出處', '<!-- 待補：逐條列出可引用的來源，並標 ◉ 實物／○ 文獻／△ 待考 -->');
 
   const file = `${nn}-${m.slug}.md`;
+  // A new magazine shifts every later prefix by one, so the old file has to go
+  // — leaving it behind would give the same magazine two sheets.
+  if (previousFile && previousFile !== file) {
+    fs.rmSync(path.join(OUT, 'magazines', previousFile));
+  }
   fs.writeFileSync(path.join(OUT, 'magazines', file), L.join('\n'));
   index.push({ nn, file, m, issues, tier, covers, tocs, arts, dated, cov, est });
 });

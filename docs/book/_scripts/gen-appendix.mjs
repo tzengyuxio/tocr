@@ -1,6 +1,7 @@
 import fs from "node:fs";
 const dir = process.cwd(); // run from a work dir holding mags.json + issues/
 const OUT = (process.env.BOOK_DIR || '/Users/user/repos/tocr/docs/book') + '/appendix';
+const SNAPSHOT = process.env.SNAPSHOT || new Date().toISOString().slice(0, 10);
 const idx = JSON.parse(fs.readFileSync(dir + '/index.json'));
 const FREQ = { WEEKLY: '週刊', BIWEEKLY: '雙週刊', SEMIMONTHLY: '半月刊', MONTHLY: '月刊', BIMONTHLY: '雙月刊', QUARTERLY: '季刊', IRREGULAR: '不定期' };
 const CAT = { PC_GAME: 'PC', TV_GAME: 'TV', ONLINE_GAME: '線上', MOBILE_GAME: '手遊' };
@@ -10,7 +11,7 @@ const year = (e) => (e ? Number(String(e).slice(0, 4)) : null);
 // ---------- 全刊總表 ----------
 {
   const L = ['# 全刊總表', '',
-    '2026-09-08 正式站快照。**書上的「全刊總表」直接排這張**（一頁 12 本、四頁排完）。',
+    `${SNAPSHOT} 正式站快照。**書上的「全刊總表」直接排這張**（一頁 12 本、四頁排完）。`,
     '欄位缺值一律寫「未詳」，不留空白。', '',
     '| # | 刊名 | 並列刊名 | 出版社 | 刊期 | 創刊 | 停刊 | 已知期數 | 站上收錄 | 封面 | 類別 |',
     '| --: | --- | --- | --- | --- | --- | --- | --: | --: | --: | --- |'];
@@ -18,7 +19,7 @@ const year = (e) => (e ? Number(String(e).slice(0, 4)) : null);
     L.push(`| ${m.nn} | ${m.name} | ${P(m.parallel)} | ${P(m.publisher)} | ${P(FREQ[m.freq])} | ${P(m.founded)} | ${m.active ? '仍在發行' : P(m.ended)} | ${m.known ?? '—'} | ${m.issues} | ${m.covers} | ${m.cats.map((c) => CAT[c]).join('+')} |`);
   }
   const tot = idx.reduce((a, m) => ({ i: a.i + m.issues, c: a.c + m.covers, t: a.t + m.tocs, ar: a.ar + m.arts }), { i: 0, c: 0, t: 0, ar: 0 });
-  L.push('', `**合計**：44 本、${tot.i} 期、封面 ${tot.c} 張、目錄掃描 ${tot.t} 期、目錄文章 ${tot.ar} 篇。`);
+  L.push('', `**合計**：${idx.length} 本、${tot.i} 期、封面 ${tot.c} 張、目錄掃描 ${tot.t} 期、目錄文章 ${tot.ar} 篇。`);
   fs.writeFileSync(OUT + '/master-table.md', L.join('\n') + '\n');
 }
 
@@ -99,10 +100,10 @@ const year = (e) => (e ? Number(String(e).slice(0, 4)) : null);
 
 // ---------- 統計頁 ----------
 {
-  const L = ['# 統計頁的資料', '', '2026-09-08 正式站快照。所有數字都是**站上收錄**，不是市場實數——書上每張圖都要標這一句。', ''];
+  const L = ['# 統計頁的資料', '', `${SNAPSHOT} 正式站快照。所有數字都是**站上收錄**，不是市場實數——書上每張圖都要標這一句。`, ''];
   const freq = {};
   for (const m of idx) freq[FREQ[m.freq] || '未詳'] = (freq[FREQ[m.freq] || '未詳'] || 0) + 1;
-  L.push('## 刊期分布（創刊值，44 本）', '', '| 刊期 | 本數 |', '| --- | --: |');
+  L.push(`## 刊期分布（創刊值，${idx.length} 本）`, '', '| 刊期 | 本數 |', '| --- | --: |');
   for (const [k, v] of Object.entries(freq).sort((a, b) => b[1] - a[1])) L.push(`| ${k} | ${v} |`);
 
   const cat = {};
@@ -165,10 +166,10 @@ const year = (e) => (e ? Number(String(e).slice(0, 4)) : null);
     '- **《電玩e世代》No.62**——No.61 與 No.63 之間差 28 天，少一週，這一期能定案是停刊還是合刊',
     '- **《Game天堂!》No.36 之後任一期**——能分辨藏家清單的「64 期／1997-01-17 休刊」哪一項不對',
     '- **《華泰任天堂秘笈》任一期的版權頁**——可驗證或推翻整組出版日推定',
-    '- **《金手指補給站》第 1–10 期**——連帶可查與《金手指行家補給站》（1997-07-10 NO.1）的關係',
+    '- **《金手指補給站》第 8、12、14、20、27 期**——其餘 1–31 期已建齊，補完就是完整的一條刊系',
     '- **《疾風快報》第 1–210 期**——站上只有 9 期，是缺得最兇的一條刊系',
     '- **《電玩双週刊》第 1–139 期、238–244 期；《電玩宅速配》vol.43–74**',
-    '- **《電玩向前走》全刊**——站上零期');
+    '- **《電玩向前走》的新春凸擊增刊號**——其餘 6 期已建，但**一張封面都沒有**，整本刊看不到長相');
   fs.writeFileSync(OUT + '/wanted-list.md', L.join('\n') + '\n');
 }
 
