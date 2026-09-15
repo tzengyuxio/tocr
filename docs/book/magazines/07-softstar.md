@@ -5,7 +5,7 @@ order: 7
 tier: B
 pages: 2–3 頁
 status: 資料整理完成，未撰稿
-data_snapshot: 2026-09-14 正式站
+data_snapshot: 2026-09-16 正式站
 ---
 
 # 07　《軟體之星》

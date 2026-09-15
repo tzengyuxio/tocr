@@ -5,7 +5,7 @@ order: 13
 tier: B
 pages: 2–3 頁
 status: 資料整理完成，未撰稿
-data_snapshot: 2026-09-14 正式站
+data_snapshot: 2026-09-16 正式站
 ---
 
 # 13　《勝利小子》

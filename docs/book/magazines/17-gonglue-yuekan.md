@@ -5,7 +5,7 @@ order: 17
 tier: C
 pages: 1 頁（或與鄰刊共頁）
 status: 資料整理完成，未撰稿
-data_snapshot: 2026-09-14 正式站
+data_snapshot: 2026-09-16 正式站
 ---
 
 # 17　《攻略月刊》

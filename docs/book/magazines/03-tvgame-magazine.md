@@ -5,7 +5,7 @@ order: 3
 tier: A
 pages: 4–6 頁
 status: 資料整理完成，未撰稿
-data_snapshot: 2026-09-14 正式站
+data_snapshot: 2026-09-16 正式站
 ---
 
 # 03　《電視遊樂雜誌》

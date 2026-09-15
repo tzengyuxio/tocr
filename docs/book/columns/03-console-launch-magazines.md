@@ -20,11 +20,11 @@ status: 資料整理完成，未撰稿
 
 | 刊 | 平台 | 起 | 迄 | 長度 |
 | --- | --- | --- | --- | --- |
-| 26 電擊SEGA SATURN | SS → DC | 1998-02 試刊 | 2000-04 | 約 2 年（1998-12 改名《電擊Dreamcast》）|
-| 30 電擊PlayStation | PS | 1998-08 試刊 | 2001-09 | 約 3 年 |
-| 41 Official Xbox Magazine | Xbox | 2003 | 2005-11 | 約 2 年 |
-| 33 新世紀 HYPER PlayStation | PS | 1999-01 | 2001-12 | 約 3 年 |
-| 40 電玩通PS2 | PS2 | 2002-12 | 2010 之後 | 7 年以上 |
+| 27 電擊SEGA SATURN | SS → DC | 1998-02 試刊 | 2000-04 | 約 2 年（1998-12 改名《電擊Dreamcast》）|
+| 31 電擊PlayStation | PS | 1998-08 試刊 | 2001-09 | 約 3 年 |
+| 42 Official Xbox Magazine | Xbox | 2003 | 2005-11 | 約 2 年 |
+| 34 新世紀 HYPER PlayStation | PS | 1999-01 | 2001-12 | 約 3 年 |
+| 41 電玩通PS2 | PS2 | 2002-12 | 2010 之後 | 7 年以上 |
 
 - **同一台主機養得起三本**：PS 世代同時有《電擊PlayStation》《新世紀 HYPER
   PlayStation》《電玩通PS2》。
