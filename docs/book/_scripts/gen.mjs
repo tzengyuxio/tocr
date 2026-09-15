@@ -5,7 +5,10 @@ const dir = process.cwd(); // run from a work dir holding mags.json + issues/
 const OUT = process.env.BOOK_DIR || '/Users/user/repos/tocr/docs/book'; // BOOK_DIR overrides (use it to dry-run without clobbering)
 
 const mags = JSON.parse(fs.readFileSync(dir + '/mags.json')).data;
-const SNAPSHOT = process.env.SNAPSHOT || new Date().toISOString().slice(0, 10);
+// 台北時間，不是 UTC：跑在深夜（台北 08:00 前）時 toISOString() 會標成前一天。
+const SNAPSHOT =
+  process.env.SNAPSHOT ||
+  new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
 
 // 〈沿革〉〈可寫的話題〉〈出處〉三節是人寫的，其餘全由站上的資料推出來。重跑
 // 以前會把那三節一起洗掉（見 README），所以每次更新都要先備份再貼回來；現在改成
