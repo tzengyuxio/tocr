@@ -336,25 +336,33 @@ export default async function MagazineDetailPage({
             </p>
           </div>
           {magazine.description && (
-            // whitespace-pre-line 讓分段顯示得出來（同 Issue.notes 的寫法），
+            // 一行一段，段間留白：描述裝的是好幾件事（刊名沿革、出版社與頻率
+            // 的變動、考據依據），只靠 whitespace-pre-line 的換行讀不出邊界。
             // splitLinks 讓寫在描述裡的出處點得開——考證來源常常是一條網址。
-            <p className="mt-4 whitespace-pre-line text-muted-foreground">
-              {splitLinks(magazine.description).map((segment, i) =>
-                segment.type === "link" ? (
-                  <a
-                    key={i}
-                    href={segment.value}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-2 hover:text-foreground"
-                  >
-                    {segment.value}
-                  </a>
-                ) : (
-                  segment.value
-                )
-              )}
-            </p>
+            <div className="mt-4 space-y-2 text-muted-foreground">
+              {magazine.description
+                .split("\n")
+                .filter((paragraph) => paragraph.trim())
+                .map((paragraph, p) => (
+                  <p key={p}>
+                    {splitLinks(paragraph).map((segment, i) =>
+                      segment.type === "link" ? (
+                        <a
+                          key={i}
+                          href={segment.value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2 hover:text-foreground"
+                        >
+                          {segment.value}
+                        </a>
+                      ) : (
+                        segment.value
+                      )
+                    )}
+                  </p>
+                ))}
+            </div>
           )}
           <ExternalLinkList links={magazine.links} className="mt-4" />
         </div>

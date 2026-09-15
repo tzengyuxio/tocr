@@ -336,27 +336,34 @@ export default async function IssueDetailPage({ params }: PageProps) {
                   本期資訊
                 </p>
                 {/* The notes are written a fact to a line -- cover subject,
-                    inserts, ISBN -- so the breaks carry meaning. A source URL
-                    is shown shortened and broken mid-word: written out in full
-                    it is wider than the sidebar, and the whole page then
-                    scrolls sideways. */}
-                <p className="whitespace-pre-line break-words text-sm text-muted-foreground">
-                  {splitLinks(issue.notes).map((segment, i) =>
-                    segment.type === "link" ? (
-                      <a
-                        key={i}
-                        href={segment.value}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline underline-offset-2 hover:text-foreground"
-                      >
-                        {shortenUrl(segment.value)}
-                      </a>
-                    ) : (
-                      segment.value
-                    )
-                  )}
-                </p>
+                    inserts, ISBN -- so each line becomes its own paragraph and
+                    the breaks read as breaks. A source URL is shown shortened
+                    and broken mid-word: written out in full it is wider than
+                    the sidebar, and the whole page then scrolls sideways. */}
+                <div className="space-y-1.5 text-sm text-muted-foreground">
+                  {issue.notes
+                    .split("\n")
+                    .filter((paragraph) => paragraph.trim())
+                    .map((paragraph, p) => (
+                      <p key={p} className="break-words">
+                        {splitLinks(paragraph).map((segment, i) =>
+                          segment.type === "link" ? (
+                            <a
+                              key={i}
+                              href={segment.value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline underline-offset-2 hover:text-foreground"
+                            >
+                              {shortenUrl(segment.value)}
+                            </a>
+                          ) : (
+                            segment.value
+                          )
+                        )}
+                      </p>
+                    ))}
+                </div>
               </div>
             )}
           </div>
