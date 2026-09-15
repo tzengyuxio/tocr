@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { IssueForm } from "@/components/magazine/IssueForm";
+import { PhotoSection } from "@/components/PhotoSection";
+import { LinkSection } from "@/components/LinkSection";
 import { isSessionAdmin } from "@/lib/require-editor";
 import { ArticleListClient } from "@/components/article/ArticleListClient";
 import { Button } from "@/components/ui/button";
@@ -12,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, ScanText } from "lucide-react";
+import { ArrowLeft, ExternalLink, ScanText } from "lucide-react";
 import { formatTaipei } from "@/lib/datetime";
 import { formatIssueNumber } from "@/lib/issue-number";
 
@@ -27,7 +29,22 @@ export default async function EditIssuePage({ params }: PageProps) {
     where: { id: issueId },
     include: {
       magazine: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, slug: true },
+      },
+      links: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
+      },
+      photos: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          url: true,
+          caption: true,
+          sourceName: true,
+          sourceUrl: true,
+          isPublic: true,
+        },
       },
       articles: {
         orderBy: { sortOrder: "asc" },
@@ -60,11 +77,15 @@ export default async function EditIssuePage({ params }: PageProps) {
     magazineId: issue.magazineId,
     issueNumber: issue.issueNumber,
     altNumbers: issue.altNumbers,
+    kind: issue.kind,
     slug: issue.slug,
     volumeNumber: issue.volumeNumber,
     title: issue.title,
     publishDate: issue.publishDate,
     coverImage: issue.coverImage,
+    coverGames: issue.coverGames,
+    coverSubjects: issue.coverSubjects,
+    coverCredit: issue.coverCredit,
     tocImages: issue.tocImages,
     pageCount: issue.pageCount,
     price: issue.price ? Number(issue.price) : null,
@@ -85,6 +106,18 @@ export default async function EditIssuePage({ params }: PageProps) {
         <h1 className="text-2xl font-bold">
           {issue.magazine.name} - {formatIssueNumber(issue.issueNumber)}
         </h1>
+        {/* 改完常要立刻看前台長什麼樣，而網址是兩段 slug 拼的，記不住也猜不出。
+            開新分頁，因為看完通常是回來繼續改。 */}
+        <Button asChild variant="outline" size="sm" className="ml-auto shrink-0">
+          <Link
+            href={`/magazines/${issue.magazine.slug}/issues/${issue.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            前台頁面
+            <ExternalLink className="ml-1 h-3 w-3" />
+          </Link>
+        </Button>
       </div>
       {/* Two jobs on one page: the fields are set once, the article list is
           gone over line by line. Side by side, so reviewing the list never
@@ -159,6 +192,18 @@ export default async function EditIssuePage({ params }: PageProps) {
               )}
             </CardContent>
           </Card>
+
+          <PhotoSection
+            owner={{ issueId: issue.id }}
+            photos={issue.photos}
+            description="這一期的額外圖片：另一版封面、封底，或網路上看到的、網拍截下來的圖。封面與目錄頁掃描請走左邊的表單"
+          />
+
+          <LinkSection
+            owner={{ issueId: issue.id }}
+            links={issue.links}
+            description="站外關於這一期的資訊：Internet Archive 的全本掃描、上游的單期條目"
+          />
 
           {/* 文章列表 */}
           <ArticleListClient

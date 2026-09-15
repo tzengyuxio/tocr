@@ -25,6 +25,21 @@ function repairUnquotedValues(json: string): string {
   );
 }
 
+/**
+ * Drop the leading zeros from a number value.
+ *
+ * The model pads a page number it read off the scan: `"pageStart": 03`, which
+ * is not JSON. 《電玩通》VOL.181 failed this way three runs in a row, every one
+ * of them at the same offset, so the whole issue came back with no articles.
+ *
+ * Anchored to a key at the start of its own line, like the repair above: a
+ * loose `:\s*0+\d` would also rewrite a colon inside a summary string. `0` on
+ * its own, `0.95` and a number that starts with any other digit are untouched.
+ */
+function stripLeadingZeroNumbers(json: string): string {
+  return json.replace(/^(\s*"[A-Za-z]\w*":\s*)0+(\d)/gm, "$1$2");
+}
+
 export function parseOcrResponse(
   text: string
 ): Omit<OcrResult, "provider" | "processingTime"> {
@@ -40,23 +55,29 @@ export function parseOcrResponse(
     };
   }
 
-  // The repair is a second attempt, never the first: a response that parses as
-  // it stands must not be rewritten on the way in.
+  // The repairs are later attempts, never the first: a response that parses as
+  // it stands must not be rewritten on the way in. They are applied
+  // cumulatively because a long response can carry both defects at once.
   let lastError: unknown;
-  for (const [attempt, candidate] of [
-    jsonStr,
-    repairUnquotedValues(jsonStr),
-  ].entries()) {
+  const repairs: [string, (json: string) => string][] = [
+    ["repairUnquotedValues", repairUnquotedValues],
+    ["stripLeadingZeroNumbers", stripLeadingZeroNumbers],
+  ];
+  const candidates = repairs.reduce(
+    (acc, [, repair]) => [...acc, repair(acc[acc.length - 1])],
+    [jsonStr]
+  );
+  for (const [attempt, candidate] of candidates.entries()) {
     try {
       const parsed = JSON.parse(candidate);
-      // Says out loud when the fallback was what saved the response. The
-      // dropped opening quote is suspected to come from presence_penalty 1.5,
+      // Says out loud which fallback was what saved the response. The dropped
+      // opening quote is suspected to come from presence_penalty 1.5,
       // inherited from the qwen3.6 base by every derived model; the qwen-ocr
-      // backend sets it to 0. If this line stops appearing, the repair above
+      // backend sets it to 0. If a line stops appearing, the repair it names
       // has become dead code and can go.
       if (attempt > 0) {
         console.warn(
-          "parseOcrResponse: JSON only parsed after repairUnquotedValues()"
+          `parseOcrResponse: JSON only parsed after ${repairs[attempt - 1][0]}()`
         );
       }
       return {

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { LightboxArrow, useLightboxKeys } from "@/components/ui/lightbox";
 import type { GalleryImage } from "@/lib/magazine-gallery";
 
 export type { GalleryImage };
@@ -34,13 +35,17 @@ export function MagazineGallery({
   const [index, setIndex] = useState(initialIndex);
   const [isZoomed, setIsZoomed] = useState(false);
 
+  const step = (by: number) =>
+    setIndex((i) => Math.min(images.length - 1, Math.max(0, i + by)));
+
+  // Only while enlarged: on the page itself the arrow keys scroll, and the
+  // frame is one element among many.
+  useLightboxKeys(isZoomed && images.length > 1, step);
+
   if (images.length === 0) return null;
   const current = images[Math.min(index, images.length - 1)];
   const many = images.length > 1;
   const alt = current.note ? `${name}：${current.note}` : name;
-
-  const step = (by: number) =>
-    setIndex((i) => Math.min(images.length - 1, Math.max(0, i + by)));
 
   return (
     <>
@@ -93,13 +98,24 @@ export function MagazineGallery({
           )}
         </div>
 
-        {(current.note || many) && (
+        {(current.note || current.source || many) && (
           /* The arrows repeat here, beside the counter, because the pair over
              the image only appears once the pointer is near it -- and on a
              touch screen not at all. This row is the one that is always
              visible, so it carries the controls that have to be found. */
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span className="min-w-0 truncate">{current.note}</span>
+            {/* 不截斷：這條的寬度由圖框決定（量到 334px，約 22 個中文字），而
+                說明加來源幾乎一定比它長——截掉的那一段往往正是出處。折行讓這
+                一列變高，比讓人讀不到攝影者是誰划算。 */}
+            <span className="min-w-0">
+              {current.note}
+              {current.source && (
+                <>
+                  {current.note && "　"}
+                  來源：<SourceName source={current.source} />
+                </>
+              )}
+            </span>
             {many && (
               <span className="flex shrink-0 items-center gap-1">
                 <CaptionArrow
@@ -141,6 +157,22 @@ export function MagazineGallery({
           >
             <X className="h-5 w-5" />
           </button>
+          {many && (
+            <>
+              <LightboxArrow
+                side="left"
+                label="上一張"
+                disabled={index === 0}
+                onClick={() => step(-1)}
+              />
+              <LightboxArrow
+                side="right"
+                label="下一張"
+                disabled={index === images.length - 1}
+                onClick={() => step(1)}
+              />
+            </>
+          )}
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element -- the
                 lightbox sizes itself to the viewport, which next/image cannot
@@ -150,7 +182,7 @@ export function MagazineGallery({
               alt={alt}
               className="max-h-[94vh] w-auto max-w-[94vw] object-contain"
             />
-            {(many || current.note) && (
+            {(many || current.note || current.source) && (
               <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full bg-black/60 px-4 py-2 text-white">
                 {many && (
                   <Button
@@ -166,8 +198,10 @@ export function MagazineGallery({
                 )}
                 <span className="max-w-[60vw] truncate text-sm">
                   {current.note}
+                  {current.source &&
+                    `${current.note ? "　" : ""}來源：${current.source.name}`}
                   {many &&
-                    `${current.note ? "　" : ""}${index + 1} / ${images.length}`}
+                    `${current.note || current.source ? "　" : ""}${index + 1} / ${images.length}`}
                 </span>
                 {many && (
                   <Button
@@ -187,6 +221,22 @@ export function MagazineGallery({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/* 出處。有網址就是連結，只有名字就是純文字——沒填來源的圖不標，
+   buildMagazineGallery 根本不會給 source。 */
+function SourceName({ source }: { source: { name: string; url: string | null } }) {
+  if (!source.url) return <>{source.name}</>;
+  return (
+    <a
+      href={source.url}
+      target="_blank"
+      rel="nofollow noopener"
+      className="underline underline-offset-2 hover:text-foreground"
+    >
+      {source.name}
+    </a>
   );
 }
 

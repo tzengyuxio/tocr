@@ -38,6 +38,10 @@ enum 的數字就是判定順序：**1 → 2 → 3**，命中即停；4 是規�
 後者把「遊樂」丟掉了，讀起來像「電視快訊」。
 與 `3do-qingbao` 同型——一段拉丁、一段拼音的混合段是允許的。
 
+`software` 是第二個這樣的詞（2026-08-31）。語料裡三本刊帶「軟體」，而既有兩本都自印拉丁形
+——《軟體之星》`softstar`、《軟體世界雜誌》`swm`——所以走 3.PINYIN 的《立東軟體》取
+`lidong-software`，不是 `lidong-ruanti`。
+
 **可丟棄的體裁尾綴（封閉清單）**：雜誌、月刊、週刊、半月刊、雙週刊、旬刊，
 Magazine、Weekly、Biweekly、Monthly、Quarterly。
 **不在清單內**：報導、快報、通訊、情報、秘笈、總合情報誌——這些在本語料裡帶區別力。
@@ -80,7 +84,7 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 星際遊樂雜誌 | `astro` | `astro` | 1.PARA | 5 | `astro` | 自印簡稱 |
 | 星際遊樂快報 | `astro-kuaibao` | `astro-kuaibao` | 3.PINYIN | 13 | — | 首段沿用姊妹刊 astro，依據待補 |
 | 電腦遊戲世界 | `cgw-tw` | `cgw-tw` | 2.SOURCE | 6 | `cgw` | Computer Gaming World 國際中文版 |
-| 遊戲世界 | — | `cgw-tw` | — | — | — | 第 163 期起的刊名，尚無掃描檔 |
+| 遊戲世界 | — | `cgw-tw` | — | — | — | 第 163 期起的刊名；**已有掃描檔**（169／180 兩期）。中文刊名與前期不同，title slug 是否另立待定 |
 | 城市少年 | `city-boy` | `city-boy` | 1.PARA | 8 | — |  |
 | 金手指補給站 | `code-supply-depot` | `code-supply-depot` | 1.PARA | 17 | — | TOUGH CODE SUPPLY DEPOT 四段取三，捨 TOUGH |
 | 電擊王 | `dengeki-oh-tw` | `dengeki-oh-tw` | 2.SOURCE | 13 | `doh-tw` |  |
@@ -90,12 +94,14 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 電玩e世代 | `e-generation` | `e-generation` | 1.PARA | 12 | `egen` |  |
 | 電玩通PS2 | `famitsu-ps2-tw` | `famitsu-ps2-tw` | 2.SOURCE | 14 | `fmtps-tw` |  |
 | 電玩通PLAYSTATION+ | — | `famitsu-ps2-tw` | — | — | — | VOL.103 起的刊名，尚無掃描檔 |
-| FAMITSU PSP+PS3 TAIWAN | — | `famitsu-ps2-tw` | — | — | — | VOL.116 起的刊名，尚無掃描檔 |
+| 電玩通PSP+PS3 | `famitsu-psp-ps3-tw` | `famitsu-ps2-tw` | 2.SOURCE | 18 | — | VOL.116 起的刊名；`PSP+PS3` 是母刊題名裡的固定複合段，算一段 |
 | 電玩通 | `famitsu-tw` | `famitsu-tw` | 2.SOURCE | 10 | `fmt-tw` |  |
 | 飛訊電玩周刊 | `fashion-game` | `fashion-game` | 1.PARA | 12 | `fashion` |  |
 | 遊戲設計大師 | `game-developer` | `game-developer` | 1.PARA | 14 | `gd` | 未縮成 game-dev，守住每段有出處 |
 | 遊戲工場 | `game-factory` | `game-factory` | 1.PARA | 12 | `gf` |  |
+| 遊戲王國 | `game-kingdom` | `game-kingdom` | 1.PARA | 12 | — | 封面刊頭印 Game Kingdom；第 8 期起改以簡寫 GK 為主標，slug 仍取完整拉丁刊名 |
 | Game天堂! | `game-paradise` | `game-paradise` | 1.PARA | 13 | — | ファミマガ 的授權中文版，但並列刊名為台灣版自取，故不走 2.SOURCE |
+| Game天堂EX | `game-paradise-ex` | `game-paradise-ex` | 1.PARA | 16 | — | 1997-02 的改版，另建一本：封面已無ファミマガ授權字樣，而 `sourceTitle` 是 Magazine 層欄位，併為刊名時期就無處表達授權關係的改變。首段沿用姊妹刊 `game-paradise` |
 | 電玩時代 | `game-times` | `game-times` | 1.PARA | 10 | `gtimes` |  |
 | 電遊人 | `game-walker` | `game-walker` | 1.PARA | 11 | `gwalker` |  |
 | GameQ | `gameq` | `gameq` | 1.PARA | 5 | — | 刊名本身即拉丁字，非並列刊名 |
@@ -107,11 +113,15 @@ Magazine、Weekly、Biweekly、Monthly、Quarterly。
 | 任天堂程式解法大公開 | `rentiantang-jiefa` | `huatai-miji` | 3.PINYIN | 17 | — | 創刊名，第 5–6 期；首末詞輸出 rentiantang-dagongkai 破 20 字元上限，末詞改取「解法」 |
 | 華泰任天堂秘笈 | `huatai-miji` | `huatai-miji` | 3.PINYIN | 11 | `htntd` | 第 7–28 期，slug 錨定此期；未授權翻印ファミマガ，不掛 -tw |
 | 新世紀 HYPER PlayStation | `hyper-ps-tw` | `hyper-ps-tw` | 2.SOURCE | 11 | `hps-tw` |  |
+| 立東軟體 | `lidong-software` | `lidong-software` | 3.PINYIN | 15 | — | 封面無拉丁刊名；末段用固定題材詞 `software` 而非 `ruanti`，同語料的《軟體之星》`softstar`、《軟體世界雜誌》`swm` 都自印拉丁形，發行公司亦自稱 Crazy Software。不取 crazy-software：那是公司名不是刊名 |
 | 精訊電腦 | `jingxun-diannao` | `jingxun-diannao` | 3.PINYIN | 15 | `jxdn` | 已查證無拉丁刊名 |
 | Mania 遊戲玩瘋誌 | `mania` | `mania` | 1.PARA | 5 | `mania` | 刊名本身即拉丁字 |
 | 次世代遊戲情報 | `next-tw` | `next-tw` | 2.SOURCE | 7 | `next` | 原刊名寫法依通稱推定，未對實物 |
 | Official Xbox Magazine | `oxm-tw` | `oxm-tw` | 2.SOURCE | 6 | `oxm` |  |
 | 舊遊戲時代 | `retro-game-time` | `retro-game-time` | 1.PARA | 15 | `rgt` |  |
+| 土星少年 | — | `saturn-boy` | 1.PARA | 10 | — | SATURN BOY MAGAZINE 去體裁尾綴；站上只有網路書店的商品照，還沒有掃描檔 |
+| ai愛少女電玩綜合情報誌 | — | `ai-shaonv` | 4.EXCEPT | 9 | — | 明文例外之三：刊名的拉丁部分只有 `ai`，破 3 字元下限；走 3.PINYIN 的首末詞是 `ai-shaonv-qingbaozhi`（「情報誌」不在可丟棄的體裁尾綴清單內），破拼音 ≤2 段。取識別詞「ai愛少女」 |
+| Passion電玩綜合情報誌 | — | `passion` | 1.PARA | 7 | — | 刊名本身即拉丁字，同 `gameq`、`mania` |
 | SG遊戲週刊 | `sg-game` | `sg-game` | 1.PARA | 7 | — | SG Game Weekly 去體裁尾綴 |
 | 新遊戲時代雜誌 | `sgm` | `sgm` | 1.PARA | 3 | `sgm` | 自印簡稱 |
 | 軟體之星 | `softstar` | `softstar` | 1.PARA | 8 | `ssm` |  |

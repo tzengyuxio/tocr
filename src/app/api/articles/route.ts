@@ -44,9 +44,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     prisma.article.findMany({
       where,
       // Nulls last: undated issues have no place on a timeline.
+      // 同一天出刊的兩本刊會拿到同一組 (publishSort, sortOrder)，並列沒有
+      // tie-breaker 時 offset 分頁會重複與漏列，所以最後補上 id。
       orderBy: [
         { issue: { publishSort: { sort: "desc", nulls: "last" } } },
         { sortOrder: "asc" },
+        { id: "asc" },
       ],
       skip,
       take: limit,

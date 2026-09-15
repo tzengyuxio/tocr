@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, BookOpen, Gamepad2, Tags, Search, Home, Settings, Award } from "lucide-react";
+import { Menu, BookOpen, Gamepad2, Tags, Search, Home, Settings, Award, CalendarRange } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "首頁", icon: Home },
   { href: "/magazines", label: "雜誌", icon: BookOpen },
+  { href: "/timeline", label: "年代軸", icon: CalendarRange },
   { href: "/games", label: "遊戲", icon: Gamepad2 },
   { href: "/tags", label: "標籤", icon: Tags },
   { href: "/search", label: "搜尋", icon: Search },

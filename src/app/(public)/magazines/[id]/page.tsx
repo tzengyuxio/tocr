@@ -6,6 +6,8 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { isVerifiedIssue } from "@/lib/issue-complete";
+import { ExternalLinkList } from "@/components/ExternalLinkList";
 import { formatEdtf } from "@/lib/edtf";
 import { Badge } from "@/components/ui/badge";
 import { IssueCard } from "@/components/IssueCard";
@@ -14,6 +16,7 @@ import {
   MagazineGallery,
 } from "@/components/magazine/MagazineGallery";
 import { buildMagazineGallery } from "@/lib/magazine-gallery";
+import { withPublicSourceUrls } from "@/lib/photo-source";
 import {
   ISSUE_FILTERS,
   issueOrderBy,
@@ -30,7 +33,8 @@ import { JsonLd } from "@/components/JsonLd";
 import { periodicalJsonLd } from "@/lib/structured-data";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
-import { magazineSubtitle } from "@/lib/magazine-browse";
+import { MAGAZINE_FREQUENCY_LABELS, magazineSubtitle } from "@/lib/magazine-browse";
+import { splitLinks } from "@/lib/linkify";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -93,6 +97,17 @@ export default async function MagazineDetailPage({
           startIssue: { select: { order: true } },
         },
       },
+      links: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
+      },
+      // 未公開的圖濾在這裡，不是濾在畫面上：濾在畫面上等於把還沒確認來路的
+      // 網址一起送到瀏覽器。
+      photos: {
+        where: { isPublic: true },
+        orderBy: { order: "asc" },
+        select: { url: true, caption: true, sourceName: true, sourceUrl: true },
+      },
     },
   });
 
@@ -103,7 +118,7 @@ export default async function MagazineDetailPage({
   // The issues are fetched separately now that the filter narrows them: the
   // counts have to cover the whole magazine even when the list does not, so
   // they cannot come from the rows that came back.
-  const [issues, ...filterCounts] = await Promise.all([
+  const [rawIssues, ...filterCounts] = await Promise.all([
     prisma.issue.findMany({
       where: { magazineId: id, ...filter.where },
       orderBy: issueOrderBy(sort, direction),
@@ -114,10 +129,27 @@ export default async function MagazineDetailPage({
     ),
   ]);
 
+  // 「已校訂」是公開頁認得的兩態之一；後台那三態留在 CompleteBadge。
+  const issues = rawIssues.map((issue) => ({
+    ...issue,
+    isVerified: isVerifiedIssue(issue),
+  }));
+
   const counts = Object.fromEntries(
     ISSUE_FILTERS.map((option, index) => [option.value, filterCounts[index]])
   );
   const total = counts.all;
+
+  // 「收錄 N 期」數的是本刊，特刊與試刊另外講——它們沒有拿到正刊編號，摻進來
+  // 這個數字就沒有跨雜誌一致的定義，而它正是拿來跟已知總期數並排的。
+  // 判準見 prisma/schema.prisma 的 IssueKind。
+  const kindRows = await prisma.issue.groupBy({
+    by: ["kind"],
+    where: { magazineId: id },
+    _count: { _all: true },
+  });
+  const kindCounts = { REGULAR: 0, PILOT: 0, SPECIAL: 0 };
+  for (const row of kindRows) kindCounts[row.kind] = row._count._all;
 
   // 刊名沿革。頁首那行要涵蓋整段歷史，所以另撈全部期算各時期的期號範圍——
   // 上面的 issues 已被篩選（預設只看有封面的），不能拿來當歷史。
@@ -176,7 +208,8 @@ export default async function MagazineDetailPage({
   const gallery = buildMagazineGallery({
     name: magazine.name,
     logoImage: magazine.logoImage,
-    photos: magazine.photos,
+    // 拍賣站的出處只留名字：見 lib/photo-source。
+    photos: withPublicSourceUrls(magazine.photos),
     titles: magazine.titles,
     standIn: standIn?.coverImage
       ? {
@@ -268,6 +301,12 @@ export default async function MagazineDetailPage({
                 {magazine.publisher}
               </p>
             )}
+            {magazine.frequency && (
+              <p>
+                <span className="text-muted-foreground">發刊頻率：</span>
+                {MAGAZINE_FREQUENCY_LABELS[magazine.frequency]}
+              </p>
+            )}
             {magazine.issn && (
               <p>
                 <span className="text-muted-foreground">ISSN：</span>
@@ -297,8 +336,35 @@ export default async function MagazineDetailPage({
             </p>
           </div>
           {magazine.description && (
-            <p className="mt-4 text-muted-foreground">{magazine.description}</p>
+            // 一行一段，段間留白：描述裝的是好幾件事（刊名沿革、出版社與頻率
+            // 的變動、考據依據），只靠 whitespace-pre-line 的換行讀不出邊界。
+            // splitLinks 讓寫在描述裡的出處點得開——考證來源常常是一條網址。
+            <div className="mt-4 space-y-2 text-muted-foreground">
+              {magazine.description
+                .split("\n")
+                .filter((paragraph) => paragraph.trim())
+                .map((paragraph, p) => (
+                  <p key={p}>
+                    {splitLinks(paragraph).map((segment, i) =>
+                      segment.type === "link" ? (
+                        <a
+                          key={i}
+                          href={segment.value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2 hover:text-foreground"
+                        >
+                          {segment.value}
+                        </a>
+                      ) : (
+                        segment.value
+                      )
+                    )}
+                  </p>
+                ))}
+            </div>
           )}
+          <ExternalLinkList links={magazine.links} className="mt-4" />
         </div>
       </div>
 
@@ -310,13 +376,39 @@ export default async function MagazineDetailPage({
           <h2 className="text-2xl font-bold">
             單期列表
             <span className="ml-2 text-lg font-normal text-muted-foreground">
-              （共 {total} 期
+              {/* 查到這本刊總共出過幾期就一起講，讀者才知道站上收了多大一塊；
+                  查不到的刊什麼都不加。有兩個數字時開頭改說「收錄」——並排著
+                  「已知 120 期」，「共 92 期」會被讀成這本刊只出了 92 期。 */}
+              （{magazine.knownIssueCount ? "收錄" : "共"} {kindCounts.REGULAR} 期
+              {kindCounts.SPECIAL > 0 && `，另有特刊 ${kindCounts.SPECIAL}`}
+              {kindCounts.PILOT > 0 &&
+                `${kindCounts.SPECIAL > 0 ? "、" : "，另有"}試刊 ${kindCounts.PILOT}`}
+              {magazine.knownIssueCount && `・已知 ${magazine.knownIssueCount} 期`}
               {/* Only when the list really is shorter: 軟體世界 has a cover
                   for all 201, and 「共 201 期，顯示 201 期」 reads like a bug. */}
               {issues.length !== total && `，顯示 ${issues.length} 期`}
               ）
             </span>
           </h2>
+
+          {/* 出處跟著數字走：列表頁只掛得上 tooltip（手機碰不到），這裡有空間就
+              寫出來——「已知 24 期」是外部查來的，讀者該看得到它哪來的。 */}
+          {magazine.knownIssueCount && magazine.knownIssueCountSource && (
+            <p className="basis-full text-xs text-muted-foreground">
+              已知期數來源：{magazine.knownIssueCountSource}
+            </p>
+          )}
+
+          {/* 站上的本刊數已經多過那個來源，表示它被超越了——不是資料寫錯，是
+              那個數字不再是參照。做法是把它清掉（見 docs/data-conventions.md
+              〈已知總期數〉），而清掉是人工動作，所以這句還得留著提醒讀者。
+              特刊與試刊不再進這個比較，它們在上面已經分開講了。 */}
+          {magazine.knownIssueCount &&
+            kindCounts.REGULAR > magazine.knownIssueCount && (
+              <p className="basis-full text-xs text-muted-foreground">
+                站上收錄的本刊數已多於這個來源，該數字待更新。
+              </p>
+            )}
 
           {/* A rule, not just space: the heading's trailing 「（共 N 期）」 is the
               same grey and nearly the same size as the 篩選 label, so 96px of

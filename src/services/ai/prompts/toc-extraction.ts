@@ -74,11 +74,13 @@ ${CATEGORY_LIST}
 - **PLATFORM**：遊戲平台（FC/紅白機、SFC/超任、GB、MD/Mega Drive、PCE/PC Engine、SS/Saturn、PS、N64、DC、PS2、GBA、NGC、Xbox、NDS、PSP、Wii、PS3、Xbox 360、3DS、PSV、Wii U、PS4、Xbox One、Switch、PS5、Xbox Series、PC 等）
 - **PERSON**：人物（製作人、設計師等，如宮本茂、坂口博信）
 - **EVENT**：活動（東京玩具展、台北電玩展、E3、TGS 等）
-- **SERIES**：遊戲系列（如勇者鬥惡龍系列、瑪利歐系列）
+- **SERIES**：遊戲系列。name 只寫系列名、**一律以「系列」二字結尾**、中文通稱優先（勇者鬥惡龍系列、瑪利歐系列）；不要寫成「SERIES:勇者鬥惡龍系列」，型別是 type 欄位的事
 - **COMPANY**：公司（開發商或發行商，如 Nintendo、SEGA、CAPCOM、ENIX、SQUARE、KONAMI、光榮、NAMCO 等）
 - **GENERAL**：其他主題標籤
 
-請積極從文章標題中提取隱含的實體。例如「勇者鬥惡龍 IV 全攻略」應產生 SERIES:勇者鬥惡龍系列 和遊戲名「勇者鬥惡龍IV」。
+請積極從文章標題中提取隱含的實體。例如「勇者鬥惡龍 IV 全攻略」應產生標籤 {"name": "勇者鬥惡龍系列", "type": "SERIES"} 和遊戲名「勇者鬥惡龍IV」。
+
+文章若是**跨代的系列綜述**（比較或回顧整個系列，而不是介紹其中某一代），除了該系列的 SERIES 標籤，另加 {"name": "系列綜述", "type": "GENERAL"}。只介紹單一作品的文章不要加。
 
 ### 信心度 (confidence)
 - 1.0：文字清晰、完全確定

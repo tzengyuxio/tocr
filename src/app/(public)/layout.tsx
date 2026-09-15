@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { BookOpen, Gamepad2, Tags, Search, Home, Award } from "lucide-react";
+import { BookOpen, Gamepad2, Tags, Search, Home, Award, CalendarRange } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/MobileNav";
 
@@ -42,6 +42,12 @@ export default function PublicLayout({
               <Link href="/magazines">
                 <BookOpen className="mr-1.5 h-4 w-4" />
                 雜誌
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/timeline">
+                <CalendarRange className="mr-1.5 h-4 w-4" />
+                年代軸
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>

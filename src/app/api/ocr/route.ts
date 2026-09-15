@@ -16,7 +16,13 @@ import {
 // a slow request into "辨識失敗（HTTP 504）": inference itself takes ~23s on
 // the self-hosted backend, but that box holds one model at a time, so a swap
 // adds ~25s (16s unload + 9s load) and lands the request near 48s.
-export const maxDuration = 180;
+//
+// Raised to the ceiling 2026-09-13: a dense page measured 65s end to end on
+// the backend's dense model, and a pathological one (a page the model loops
+// on) ran past 150s before answering. 180 left no room for the swap on top of
+// that, and the request would have died here instead of returning the 422 that
+// says the answer was unusable.
+export const maxDuration = 300;
 
 // Best-effort only: the counters live in memory, so on Vercel each function
 // instance counts on its own and the real ceiling is higher than this. It

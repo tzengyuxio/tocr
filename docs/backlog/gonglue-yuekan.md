@@ -10,7 +10,7 @@ created: 2026-08-25
 **同日補上刊頭與五期**：刊頭取第 4 期封面（`derived/logos/gonglue-yuekan.jpg`）；
 期數建了 3、4、5、6、9（`order` 用期號減一，日後補 7、8 期不必 reorder），各帶封面圖與
 定價 100，日期取封面上緣印的「1994年11月號」等。手邊掃描檔只有這五期的 c1／c4，
-**c4（封底）沒有欄位可放**（Issue 只有 `coverImage` 與 `tocImages`），先留在 `covers/raw/`。
+**c4（封底）沒有欄位可放**（Issue 只有 `coverImage` 與 `tocImages`），先留在 `covers/raw/magazines/gonglue-yuekan/`。
 yuxio 手上有兩本實體（2026-08-25）。
 
 **2026-08-30 從實體補到的**：創刊 1994-09-01（版權頁）、分類 PC_GAME、發行所取版權頁的

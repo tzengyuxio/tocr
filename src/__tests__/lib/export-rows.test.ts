@@ -14,14 +14,16 @@ const magazine: ExportMagazine = {
   sourceTitle: null,
   aliases: [],
   publisher: "第三波",
+  frequency: null,
   issn: "1021-8033",
+  knownIssueCount: null,
+  knownIssueCountSource: null,
   description: null,
   categories: [],
   foundedDate: "1991-08",
   endedDate: null,
   isActive: false,
   logoImage: null,
-  photos: [],
 };
 
 function article(overrides: Partial<ExportArticle> = {}): ExportArticle {
@@ -43,6 +45,7 @@ function issue(overrides: Partial<ExportIssue> = {}): ExportIssue {
   return {
     issueNumber: "105",
     altNumbers: [],
+    kind: "REGULAR",
     volumeNumber: null,
     slug: "105",
     code: "a1b2c3d4",
@@ -51,6 +54,9 @@ function issue(overrides: Partial<ExportIssue> = {}): ExportIssue {
     pageCount: 200,
     price: null,
     coverImage: null,
+    coverGames: [],
+    coverSubjects: [],
+    coverCredit: null,
     tocImages: [],
     tocReviewedAt: null,
     completeAt: null,
@@ -166,12 +172,15 @@ describe("rowsFor", () => {
   // resolve if the same code comes back.
   it("carries the admin-only fields a restore needs", () => {
     const [line] = rowsFor(
-      { ...magazine, aliases: ["ACE"], categories: ["PC"], endedDate: "2006-01", logoImage: "logo.webp", photos: ["a.webp", "b.webp"] },
+      { ...magazine, aliases: ["ACE"], categories: ["PC"], endedDate: "2006-01", logoImage: "logo.webp" },
       [
         issue({
           slug: "1999-05",
           code: "a1b2c3d4",
           coverImage: "cover.webp",
+          coverGames: [],
+          coverSubjects: [],
+          coverCredit: null,
           tocImages: ["toc1.webp", "toc2.webp"],
           tocReviewedAt: new Date("2026-08-20T04:05:06.000Z"),
           completeAt: new Date("2026-08-22T01:02:03.000Z"),
@@ -185,7 +194,6 @@ describe("rowsFor", () => {
     expect(field(line, "categories")).toBe("PC");
     expect(field(line, "ended_date")).toBe("2006-01");
     expect(field(line, "logo_image")).toBe("logo.webp");
-    expect(field(line, "photos")).toBe("a.webp;b.webp");
     expect(field(line, "issue_slug")).toBe("1999-05");
     expect(field(line, "issue_code")).toBe("a1b2c3d4");
     expect(field(line, "cover_image")).toBe("cover.webp");

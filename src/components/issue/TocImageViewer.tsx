@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { LightboxArrow, useLightboxKeys } from "@/components/ui/lightbox";
 
 /**
  * The scan being checked against, beside whatever list is doing the checking.
@@ -12,6 +13,13 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 export function TocImageViewer({ images }: { images: string[] }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
+
+  const step = (by: number) =>
+    setCurrentImageIndex((i) => Math.min(images.length - 1, Math.max(0, i + by)));
+
+  // Only while enlarged: beside the article list the arrow keys belong to
+  // whatever field is being corrected.
+  useLightboxKeys(isZoomed && images.length > 1, step);
 
   if (images.length === 0) return null;
 
@@ -97,6 +105,22 @@ export function TocImageViewer({ images }: { images: string[] }) {
           >
             <X className="h-5 w-5" />
           </button>
+          {images.length > 1 && (
+            <>
+              <LightboxArrow
+                side="left"
+                label="上一頁"
+                disabled={currentImageIndex === 0}
+                onClick={() => step(-1)}
+              />
+              <LightboxArrow
+                side="right"
+                label="下一頁"
+                disabled={currentImageIndex === images.length - 1}
+                onClick={() => step(1)}
+              />
+            </>
+          )}
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element -- the
                 lightbox sizes itself to the viewport; see the note above. */}

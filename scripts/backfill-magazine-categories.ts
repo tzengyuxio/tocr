@@ -24,6 +24,7 @@
 import { readFileSync } from "node:fs";
 import { productionToken } from "./prod-token";
 
+// 上游只有三節，沒有手遊；MOBILE_GAME 是站上自己加的，這支腳本回填不到。
 type Category = "PC_GAME" | "TV_GAME" | "ONLINE_GAME";
 
 const SECTION_TO_CATEGORY: Record<string, Category> = {

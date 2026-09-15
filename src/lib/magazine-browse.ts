@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import type { IssueKind } from "./issue-browse";
 import { formatEdtf } from "./edtf";
 import {
   sortTitlePeriods,
@@ -16,7 +17,12 @@ import {
  */
 
 /** enum 的值，給 validator 與後台表單用；順序即畫面上的順序。 */
-export const MAGAZINE_CATEGORY_VALUES = ["PC_GAME", "TV_GAME", "ONLINE_GAME"] as const;
+export const MAGAZINE_CATEGORY_VALUES = [
+  "PC_GAME",
+  "TV_GAME",
+  "ONLINE_GAME",
+  "MOBILE_GAME",
+] as const;
 
 export type MagazineCategory = (typeof MAGAZINE_CATEGORY_VALUES)[number];
 
@@ -28,14 +34,16 @@ export const MAGAZINE_CATEGORY_LABELS: Record<MagazineCategory, string> = {
   PC_GAME: "PC Game",
   TV_GAME: "TV Game",
   ONLINE_GAME: "Online Game",
+  // 上游沒有這一節，手遊也沒有通行的英文縮寫，所以用全字。
+  MOBILE_GAME: "Mobile",
 };
 
 /**
  * list 檢視的窄欄版分類 chip：全名太寬，縮寫加色相讓一整欄掃得出類別。
  * OLG 是台灣圈內的慣用縮寫（巴哈姆特 OLG 板），不是自創的。
  * 色相沿用 tag-colors.ts 的 -100/-800 tint 慣例。
- * 未來若加 MOBILE_GAME（目前 enum 還沒有），在這裡補一行即可——手遊沒有
- * 通行的英文縮寫，label 建議用全字 "Mobile"（或中文「手遊」），色相建議 rose。
+ * MOBILE_GAME 沒有縮寫可用，照這則註解原本的建議留全字 Mobile、色相 rose
+ * （2026-09-13 補上）。
  */
 export const MAGAZINE_CATEGORY_CHIPS: Record<
   MagazineCategory,
@@ -44,6 +52,37 @@ export const MAGAZINE_CATEGORY_CHIPS: Record<
   PC_GAME: { label: "PC", className: "bg-blue-100 text-blue-800" },
   TV_GAME: { label: "TV", className: "bg-green-100 text-green-800" },
   ONLINE_GAME: { label: "OLG", className: "bg-violet-100 text-violet-800" },
+  MOBILE_GAME: { label: "Mobile", className: "bg-rose-100 text-rose-800" },
+};
+
+/**
+ * 發刊頻率。順序即畫面上的順序：由密到疏，最後才是不定期。
+ *
+ * 沒有對應的篩選按鈕——這是識別資訊不是收窄視角，列表上也沒有地方放第二排
+ * chips。表放這裡是為了讓 validator 與後台表單讀同一份，同 MAGAZINE_CATEGORY。
+ * 語意見 prisma/schema.prisma 的 MagazineFrequency。
+ */
+export const MAGAZINE_FREQUENCY_VALUES = [
+  "WEEKLY",
+  "BIWEEKLY",
+  "SEMIMONTHLY",
+  "MONTHLY",
+  "BIMONTHLY",
+  "QUARTERLY",
+  "IRREGULAR",
+] as const;
+
+export type MagazineFrequency = (typeof MAGAZINE_FREQUENCY_VALUES)[number];
+
+/** 中文標籤：這幾個詞讀者本來就是用中文認的，不像分類要跟上游對照。 */
+export const MAGAZINE_FREQUENCY_LABELS: Record<MagazineFrequency, string> = {
+  WEEKLY: "週刊",
+  BIWEEKLY: "雙週刊",
+  SEMIMONTHLY: "半月刊",
+  MONTHLY: "月刊",
+  BIMONTHLY: "雙月刊",
+  QUARTERLY: "季刊",
+  IRREGULAR: "不定期",
 };
 
 export const MAGAZINE_FILTERS = [
@@ -101,6 +140,8 @@ export const MAGAZINE_SORTS = [
   // 那本讀起——與 ISSUE_SORTS 的出版日期同一個道理。
   { value: "name", label: "名稱", defaultDirection: "asc" },
   { value: "founded", label: "創刊日", defaultDirection: "asc" },
+  // 期數從多的那頭讀起：問「誰收得最多」的人不會想先看 0 期的那幾本。
+  { value: "issues", label: "期數", defaultDirection: "desc" },
 ] as const satisfies ReadonlyArray<{
   value: string;
   label: string;
@@ -166,6 +207,12 @@ export function magazineOrderBy(
     return [{ foundedSort: { sort: direction, nulls: "last" } }, { name: "asc" }];
   }
   if (sort.value === "created") return [{ createdAt: direction }];
+  // 後台這條數的是**所有**期，前台的 sortMagazineDisplayUnits 數的是本刊
+  // ——Prisma 的關聯計數排序不吃 where，篩不掉試刊與特刊。差異只在後台看得到，
+  // 而後台要的正是「這本刊底下有幾筆資料」。名稱當第二鍵，同期數的順序才穩定。
+  if (sort.value === "issues") {
+    return [{ issues: { _count: direction } }, { name: "asc" }];
+  }
   return [{ name: direction }];
 }
 
@@ -179,6 +226,11 @@ export function magazineOrderBy(
  */
 export interface MagazineDisplayUnit {
   key: string;
+  /**
+   * 這張卡屬於哪一個 `Magazine`。同一本刊的各時期卡帶同一個值——頁首的「計 N 本」
+   * 就是數這個去重之後的數量，篩選之後也還算得出來。
+   */
+  magazineId: string;
   href: string;
   name: string;
   /** 已組好的副標，見 magazineSubtitle()。空字串表示沒有副標。 */
@@ -194,9 +246,35 @@ export interface MagazineDisplayUnit {
   publisher: string | null;
   logoImage: string | null;
   categories: MagazineCategory[];
+  /**
+   * 刊號。與 knownIssueCount 不同，**改過名的刊每一列都帶得到值**：ISSN 是識別
+   * 資訊不是統計量，而且改名時本來就可能沿用同一組（電擊王與電玩通同為
+   * 1561-8099），重複出現正是它要講的事。見 prisma/schema.prisma 的 Magazine.issn。
+   */
+  issn: string | null;
   /** 已格式化的發行期間，如「1999 年 8 月 – 2000 年 3 月」；不明則空字串。 */
   span: string;
-  issueCount: number;
+  /**
+   * 站上收錄的**本刊**數，也就是「收錄 N 期」寫的那個數字。
+   *
+   * 不含試刊與特刊：那兩種沒有拿到正刊編號，摻進來這個數字就沒有跨雜誌一致的
+   * 定義，而它正是拿來跟已知總期數並排的。判準見 prisma/schema.prisma 的
+   * IssueKind。
+   */
+  regularCount: number;
+  /** 特刊、增刊、別冊、產品目錄，另外講。 */
+  specialCount: number;
+  /** 試刊，另外講。 */
+  pilotCount: number;
+  /**
+   * 這本刊已知總共出過幾期（`Magazine.knownIssueCount`），沒查到就是 null。
+   *
+   * **只有沒改過名的刊帶得到值**：總數掛在刊系上，而改過名的刊一時期一列，
+   * 把同一個數字重複三次講不出任何東西。
+   */
+  knownIssueCount: number | null;
+  /** 已知總期數的出處，可空。列表把它掛在 title 上。 */
+  knownIssueCountSource: string | null;
   /** 期數徽章的樣式用：非末段的時期一律視為已結束。 */
   isActive: boolean;
   /** 創刊日排序鍵；時期卡用該段第一期的 publishSort。null 排最後。 */
@@ -215,6 +293,9 @@ interface DisplayMagazine {
   foundedDate: string | null;
   endedDate: string | null;
   foundedSort: Date | null;
+  issn: string | null;
+  knownIssueCount: number | null;
+  knownIssueCountSource: string | null;
   isActive: boolean;
   titles: (TitlePeriod & {
     id: string;
@@ -222,7 +303,12 @@ interface DisplayMagazine {
     titleParallel: string | null;
     titleSource: string | null;
   })[];
-  _count: { issues: number };
+  /**
+   * 這本刊各刊種各有幾期。取代原本的 `_count.issues`：頁面上要講的是本刊數，
+   * 而 Prisma 的關聯計數一次只給得出一個數字，同一個關聯要不了三個別名。
+   * 沒有某一種就是 0，呼叫端補齊，這裡不處理缺鍵。
+   */
+  kindCounts: Record<IssueKind, number>;
 }
 
 /** publishSort 是資料庫存的 UTC 午夜，取年月來顯示，精度跟 formatEdtf 的月級一致。 */
@@ -292,11 +378,13 @@ export function magazineSubtitle(
 
 export function magazineDisplayUnits(
   magazine: DisplayMagazine,
-  issues: { order: number; publishSort: Date | null }[]
+  issues: { order: number; publishSort: Date | null; kind: IssueKind }[]
 ): MagazineDisplayUnit[] {
   const base = {
+    magazineId: magazine.id,
     publisher: magazine.publisher,
     categories: magazine.categories,
+    issn: magazine.issn,
   };
 
   if (magazine.titles.length === 0) {
@@ -314,7 +402,11 @@ export function magazineDisplayUnits(
           formatEdtf(magazine.endedDate),
           "創刊"
         ),
-        issueCount: magazine._count.issues,
+        regularCount: magazine.kindCounts.REGULAR,
+        specialCount: magazine.kindCounts.SPECIAL,
+        pilotCount: magazine.kindCounts.PILOT,
+        knownIssueCount: magazine.knownIssueCount,
+        knownIssueCountSource: magazine.knownIssueCountSource,
         isActive: magazine.isActive,
         sortDate: magazine.foundedSort,
       },
@@ -369,11 +461,47 @@ export function magazineDisplayUnits(
       previousTitle: previousPeriodTitle(sorted, anchorSeq, segment.period?.title),
       logoImage: segment.period?.logoImage ?? magazine.logoImage,
       span: spanLabel(start, end, isFirst ? "創刊" : "起"),
-      issueCount: segment.issues.length,
+      regularCount: segment.issues.filter((i) => i.kind === "REGULAR").length,
+      specialCount: segment.issues.filter((i) => i.kind === "SPECIAL").length,
+      pilotCount: segment.issues.filter((i) => i.kind === "PILOT").length,
+      // 時期列不帶已知總數：那是整條刊系的數字，見 MagazineDisplayUnit 的註解。
+      knownIssueCount: null,
+      knownIssueCountSource: null,
       isActive: magazine.isActive && isLast,
       sortDate: isFirst ? (magazine.foundedSort ?? first) : first,
     };
   });
+}
+
+/**
+ * 期數徽章的 tooltip：把徽章上放不下的話一次講完。
+ *
+ * 兩種檢視共用一份，否則列表與卡片會對同一個數字給出不同的解釋。徽章本身只有
+ * 幾個字寬，所以特刊、試刊與已知數的出處都落在這裡。
+ */
+export function magazineCountTitle(unit: {
+  regularCount: number;
+  specialCount: number;
+  pilotCount: number;
+  knownIssueCount: number | null;
+  knownIssueCountSource: string | null;
+}): string {
+  const parts = [`站上收錄本刊 ${unit.regularCount} 期`];
+  if (unit.specialCount) parts.push(`特刊 ${unit.specialCount} 期`);
+  if (unit.pilotCount) parts.push(`試刊 ${unit.pilotCount} 期`);
+
+  let text = parts.join("、");
+  if (unit.knownIssueCount) {
+    text += `；已知共 ${unit.knownIssueCount} 期`;
+    if (unit.knownIssueCountSource) text += `（${unit.knownIssueCountSource}）`;
+    // 本刊數比已知數還多，表示那個來源已經被站上的資料超越了，數字不再是參照。
+    // 見 docs/data-conventions.md〈已知總期數〉：這時候的做法是把它清掉，而清掉
+    // 是人工動作，所以這句還得留著。
+    if (unit.regularCount > unit.knownIssueCount) {
+      text += "；本刊數已多於該來源，這個數字待更新";
+    }
+  }
+  return text;
 }
 
 /**
@@ -397,6 +525,13 @@ export function sortMagazineDisplayUnits(
       if (b.sortDate === null) return -1;
       const byDate = a.sortDate.getTime() - b.sortDate.getTime();
       if (byDate !== 0) return byDate * dir;
+      return collator.compare(a.name, b.name);
+    }
+    if (sort.value === "issues") {
+      // 比的是本刊數，也就是列上顯示的那個數字——排序與畫面必須是同一個量，
+      // 否則「28 期排在 30 期前面」看起來就是壞的。
+      const byCount = a.regularCount - b.regularCount;
+      if (byCount !== 0) return byCount * dir;
       return collator.compare(a.name, b.name);
     }
     return collator.compare(a.name, b.name) * dir;

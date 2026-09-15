@@ -29,17 +29,21 @@ import { prisma } from "../src/lib/prisma";
  * 被誤判。
  */
 async function referencedUrls(): Promise<string[]> {
-  const [magazines, issues, games, ocrRecords, users] = await Promise.all([
-    prisma.magazine.findMany({ select: { logoImage: true, photos: true } }),
+  const [magazines, issues, photos, games, ocrRecords, users] = await Promise.all([
+    prisma.magazine.findMany({ select: { logoImage: true } }),
     prisma.issue.findMany({ select: { coverImage: true, tocImages: true } }),
+    // 額外圖片。原本是 magazines.photos 那一欄，2026-08-31 起自己一張表，
+    // 而且掛得到單期——漏掉它會把整批藏書照與佐證圖報成孤兒。
+    prisma.photo.findMany({ select: { url: true } }),
     prisma.game.findMany({ select: { coverImage: true } }),
     prisma.ocrRecord.findMany({ select: { imageUrl: true } }),
     prisma.user.findMany({ select: { image: true } }),
   ]);
 
   return [
-    ...magazines.flatMap((m) => [m.logoImage, ...m.photos]),
+    ...magazines.map((m) => m.logoImage),
     ...issues.flatMap((i) => [i.coverImage, ...i.tocImages]),
+    ...photos.map((p) => p.url),
     ...games.map((g) => g.coverImage),
     ...ocrRecords.map((r) => r.imageUrl),
     ...users.map((u) => u.image),

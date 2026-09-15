@@ -26,7 +26,9 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const [issues, total] = await Promise.all([
     prisma.issue.findMany({
       where,
-      orderBy: { order: "asc" },
+      // `order` 是每本刊各自從 0 起算的，全站掃描時大量並列。排序不是全序，
+      // offset 分頁就會讓同一列出現在兩頁、中間那列被跳過——所以補上 id。
+      orderBy: [{ order: "asc" }, { id: "asc" }],
       skip,
       take: limit,
       include: {
@@ -42,12 +44,10 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   ]);
 
   const isAdmin = await isSessionAdmin();
-  return paginatedResponse(
-    isAdmin ? issues : issues.map(withoutCompleteMark),
-    total,
-    page,
-    limit
-  );
+  // 兩個分支的列形狀不同（管理員拿到時間戳，其餘人拿到 isVerified 布林），
+  // 所以型別參數要放寬——推斷會咬住第一個分支。
+  const rows: object[] = isAdmin ? issues : issues.map(withoutCompleteMark);
+  return paginatedResponse(rows, total, page, limit);
 }, "Fetch issues");
 
 // POST /api/issues - 新增單期

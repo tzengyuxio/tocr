@@ -5,6 +5,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { decodeParam, resolveIssueParam, resolveSlugParam } from "@/lib/slug-lookup";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { isVerifiedIssue } from "@/lib/issue-complete";
 import {
   Card,
   CardContent,
@@ -16,6 +17,8 @@ import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { IssueImages } from "@/components/issue/IssueImages";
+import { VerifiedMark } from "@/components/magazine/VerifiedMark";
+import { ExternalLinkList } from "@/components/ExternalLinkList";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { JsonLd } from "@/components/JsonLd";
@@ -23,6 +26,8 @@ import { publicationIssueJsonLd } from "@/lib/structured-data";
 import { titleForIssue } from "@/lib/magazine-title";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
+import { splitLinks, shortenUrl } from "@/lib/linkify";
+import { withPublicSourceUrls } from "@/lib/photo-source";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -132,6 +137,16 @@ export default async function IssueDetailPage({ params }: PageProps) {
           },
         },
       },
+      links: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
+      },
+      // 未公開的濾在查詢層，同 /magazines/[id]。
+      photos: {
+        where: { isPublic: true },
+        orderBy: { order: "asc" },
+        select: { url: true, caption: true, sourceName: true, sourceUrl: true },
+      },
     },
   });
 
@@ -155,6 +170,24 @@ export default async function IssueDetailPage({ params }: PageProps) {
     issue.price ? `NT$ ${Number(issue.price)}` : null,
   ].filter(Boolean);
 
+  // 相鄰的期用 `order` 找，不是期號加一：期號排不出前後（vol.01、試刊號、
+  // 70+71 之間沒有大小），而 order 本來就是這本刊的順序。也不能用 order ± 1
+  // ——合併號各佔一格，站上又不是每一期都建了，序號中間有洞。
+  const [previousIssue, nextIssue] = await Promise.all([
+    prisma.issue.findFirst({
+      where: { magazineId: issue.magazineId, order: { lt: issue.order } },
+      orderBy: { order: "desc" },
+      select: { slug: true, issueNumber: true },
+    }),
+    prisma.issue.findFirst({
+      where: { magazineId: issue.magazineId, order: { gt: issue.order } },
+      orderBy: { order: "asc" },
+      select: { slug: true, issueNumber: true },
+    }),
+  ]);
+  const issueHref = (slug: string) =>
+    `/magazines/${issue.magazine.slug}/issues/${encodeURIComponent(slug)}`;
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* 這一份目錄多半只有這裡有，所以要讓抓取端讀得到它，而不只是人眼看得到。 */}
@@ -170,7 +203,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
       {/* Title block: the cover no longer sets the height, so nothing has to
           fill 256px of space beside it. */}
       <div className="mb-5">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {/* The magazine and the issue number together are the title -- a bare
               "96" names nothing on its own. */}
           <h1 className="text-2xl font-bold sm:text-3xl">
@@ -181,6 +214,9 @@ export default async function IssueDetailPage({ params }: PageProps) {
               {magazineName}
             </Link>{" "}
             {formatIssueNumber(issue.issueNumber)}
+            {/* 放進 h1 而不是擺在它旁邊：印的大小是 em，擺在外面繼承到的是
+                外層的 16px，在 30px 的標題旁永遠不成比例。 */}
+            <VerifiedMark verified={isVerifiedIssue(issue)} className="ml-2" />
           </h1>
           {canEdit && (
             <Link
@@ -190,6 +226,27 @@ export default async function IssueDetailPage({ params }: PageProps) {
             >
               <SquarePen className="h-4 w-4" />
             </Link>
+          )}
+          {/* 同一列置右，不放頁尾：一期一期翻下去的人不該為了下一個連結先捲到底。 */}
+          {(previousIssue || nextIssue) && (
+            <nav className="ml-auto flex shrink-0 items-center gap-3 text-sm">
+              {previousIssue && (
+                <Link
+                  href={issueHref(previousIssue.slug)}
+                  className="text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  ← {formatIssueNumber(previousIssue.issueNumber)}
+                </Link>
+              )}
+              {nextIssue && (
+                <Link
+                  href={issueHref(nextIssue.slug)}
+                  className="text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  {formatIssueNumber(nextIssue.issueNumber)} →
+                </Link>
+              )}
+            </nav>
           )}
         </div>
         {issue.title && (
@@ -215,27 +272,98 @@ export default async function IssueDetailPage({ params }: PageProps) {
           Stretching the aside to the row's height gives the sticky block the
           whole index to travel down. */}
       <div className="flex flex-col gap-6 lg:flex-row">
-        <aside className="shrink-0 lg:w-64 xl:w-72">
+        {/* 16rem/18rem 是圖本身的寬度，多出來的 0.75rem 是下面 pr-3 讓給捲軸的
+            那一條。寬度加在 aside 上而不是從圖身上扣，代價由右欄的 flex-1 吸收
+            ——目錄那一欄少 12px 看不出來，封面少 12px 看得出來。改 pr-3 時這兩
+            個值要跟著動。 */}
+        <aside className="shrink-0 lg:w-[16.75rem] xl:w-[18.75rem]">
           {/* 4.5rem clears the sticky 3.5rem header plus the page's own gap.
               A sticky block taller than its scrollport can never reach its own
               bottom, so on a short window this one scrolls inside itself
-              rather than dragging the foot of the notes out of reach. */}
-          <div className="space-y-4 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto">
+              rather than dragging the foot of the notes out of reach.
+              pr-3 keeps that scrollbar off the cover: the column is exactly as
+              wide as the image, so without it the bar sits on the artwork --
+              and an overlay scrollbar (the macOS default) is drawn *over* the
+              content, so scrollbar-gutter reserves nothing for it. */}
+          <div className="space-y-4 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-3">
+            {/* photos 的出處網址先過濾：拍賣站只留名字，見 lib/photo-source。 */}
             <IssueImages
               coverImage={issue.coverImage}
               tocImages={issue.tocImages}
+              photos={withPublicSourceUrls(issue.photos)}
               issueNumber={issue.issueNumber}
             />
+            {/* 封面資訊：緊接著封面圖，因為它講的就是上面那張圖。三欄都空就
+                整段不出現——絕大多數期還沒填，空標題比沒有更吵。
+                「封面繪師」的值可能自帶角色詞（「攝影：陳某」），所以標籤寫成
+                「封面」而不是「繪師」，兩種寫法讀起來都通。
+                標籤與值之間用全形冒號而不是空白：《電玩通》封面把日本藝人的姓名
+                分寫成「水樹 奈奈」，值裡本來就有空白，再用空白當分隔就讀不出
+                哪一個是分隔。 */}
+            {(issue.coverGames.length > 0 ||
+              issue.coverSubjects.length > 0 ||
+              issue.coverCredit) && (
+              <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="mb-1 text-xs font-medium text-muted-foreground">
+                  封面資訊
+                </p>
+                <dl className="space-y-0.5 text-sm text-muted-foreground">
+                  {issue.coverGames.length > 0 && (
+                    <div className="flex">
+                      <dt className="shrink-0">遊戲：</dt>
+                      <dd className="min-w-0">{issue.coverGames.join("、")}</dd>
+                    </div>
+                  )}
+                  {issue.coverSubjects.length > 0 && (
+                    <div className="flex">
+                      <dt className="shrink-0">人物：</dt>
+                      <dd className="min-w-0">{issue.coverSubjects.join("、")}</dd>
+                    </div>
+                  )}
+                  {issue.coverCredit && (
+                    <div className="flex">
+                      <dt className="shrink-0">封面：</dt>
+                      <dd className="min-w-0">{issue.coverCredit}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
+            <ExternalLinkList links={issue.links} />
             {issue.notes && (
               <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="mb-1 text-xs font-medium text-muted-foreground">
                   本期資訊
                 </p>
                 {/* The notes are written a fact to a line -- cover subject,
-                    inserts, ISBN -- so the breaks carry meaning. */}
-                <p className="whitespace-pre-line text-sm text-muted-foreground">
-                  {issue.notes}
-                </p>
+                    inserts, ISBN -- so each line becomes its own paragraph and
+                    the breaks read as breaks. A source URL is shown shortened
+                    and broken mid-word: written out in full it is wider than
+                    the sidebar, and the whole page then scrolls sideways. */}
+                <div className="space-y-1.5 text-sm text-muted-foreground">
+                  {issue.notes
+                    .split("\n")
+                    .filter((paragraph) => paragraph.trim())
+                    .map((paragraph, p) => (
+                      <p key={p} className="break-words">
+                        {splitLinks(paragraph).map((segment, i) =>
+                          segment.type === "link" ? (
+                            <a
+                              key={i}
+                              href={segment.value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline underline-offset-2 hover:text-foreground"
+                            >
+                              {shortenUrl(segment.value)}
+                            </a>
+                          ) : (
+                            segment.value
+                          )
+                        )}
+                      </p>
+                    ))}
+                </div>
               </div>
             )}
           </div>

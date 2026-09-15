@@ -41,7 +41,6 @@ const magazine = {
   endedDate: null,
   isActive: true,
   logoImage: null,
-  photos: [],
 };
 
 describe("GET /api/export", () => {

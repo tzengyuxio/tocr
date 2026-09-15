@@ -80,15 +80,16 @@ export function parseGameDirection(
  * Ordering by article count needs the name as a second key. The counts are a
  * short scale on a long tail -- 481 of 624 games sit on 1 -- so without a
  * tiebreaker the database is free to return those ties in any order, and a game
- * can appear on two pages or on none.
+ * can appear on two pages or on none. Names tie too (同名不同作的遊戲)，所以
+ * 兩種排序都以 id 收尾，讓排序是全序。
  */
 export function gameOrderBy(
   sort: GameSort,
   direction: GameDirection
 ): Prisma.GameOrderByWithRelationInput[] {
   return sort.value === "articles"
-    ? [{ articleGames: { _count: direction } }, { name: "asc" }]
-    : [{ name: direction }];
+    ? [{ articleGames: { _count: direction } }, { name: "asc" }, { id: "asc" }]
+    : [{ name: direction }, { id: "asc" }];
 }
 
 /** Free-text match across every name a game is known by. */

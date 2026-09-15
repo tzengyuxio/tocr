@@ -9,12 +9,22 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { LightboxArrow, useLightboxKeys } from "@/components/ui/lightbox";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { formatIssueNumber } from "@/lib/issue-number";
+
+/** 掛在這一期的額外圖片，公開的那些。 */
+export interface IssuePhoto {
+  url: string;
+  caption: string | null;
+  sourceName: string | null;
+  sourceUrl: string | null;
+}
 
 interface IssueImagesProps {
   coverImage: string | null;
   tocImages: string[];
+  photos: IssuePhoto[];
   issueNumber: string;
 }
 
@@ -26,6 +36,7 @@ interface IssueImagesProps {
 export function IssueImages({
   coverImage,
   tocImages,
+  photos,
   issueNumber,
 }: IssueImagesProps) {
   // One list so the lightbox can page through cover and scans together.
@@ -35,9 +46,22 @@ export function IssueImages({
       src,
       label: tocImages.length > 1 ? `目錄頁 ${i + 1}` : "目錄頁",
     })),
+    ...photos.map((photo, i) => ({
+      src: photo.url,
+      label: photo.caption ?? photo.sourceName ?? `其他圖片 ${i + 1}`,
+    })),
   ];
+  const photoOffset = (coverImage ? 1 : 0) + tocImages.length;
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
   const zoomed = zoomedIndex === null ? null : images[zoomedIndex];
+
+  const step = (by: number) =>
+    setZoomedIndex((i) =>
+      i === null ? i : Math.min(images.length - 1, Math.max(0, i + by)),
+    );
+
+  // Only while enlarged: on the page itself the arrow keys scroll.
+  useLightboxKeys(zoomed !== null && images.length > 1, step);
 
   return (
     <>
@@ -96,6 +120,57 @@ export function IssueImages({
             </div>
           </div>
         )}
+
+        {photos.length > 0 && (
+          <div>
+            <p className="mb-1.5 text-xs text-muted-foreground">
+              其他圖片（點擊放大）
+            </p>
+            <ul className="space-y-2">
+              {photos.map((photo, i) => (
+                <li key={photo.url} className="flex gap-2">
+                  <button
+                    type="button"
+                    className="shrink-0 cursor-zoom-in overflow-hidden rounded border transition-colors hover:border-primary"
+                    onClick={() => setZoomedIndex(photoOffset + i)}
+                    title="放大"
+                  >
+                    <Image
+                      src={photo.url}
+                      alt={photo.caption ?? "其他圖片"}
+                      width={120}
+                      height={160}
+                      unoptimized
+                      className="h-24 w-auto"
+                    />
+                  </button>
+                  <div className="min-w-0 text-xs text-muted-foreground">
+                    {photo.caption && <p>{photo.caption}</p>}
+                    {/* 沒填來源就什麼都不標——標得出出處的圖與標不出的，
+                        在畫面上因此分得開。 */}
+                    {photo.sourceName && (
+                      <p>
+                        來源：
+                        {photo.sourceUrl ? (
+                          <a
+                            href={photo.sourceUrl}
+                            target="_blank"
+                            rel="nofollow noopener"
+                            className="underline underline-offset-2 hover:text-foreground"
+                          >
+                            {photo.sourceName}
+                          </a>
+                        ) : (
+                          photo.sourceName
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <Dialog
@@ -121,6 +196,22 @@ export function IssueImages({
           >
             <X className="h-5 w-5" />
           </button>
+          {zoomed && images.length > 1 && (
+            <>
+              <LightboxArrow
+                side="left"
+                label="上一張"
+                disabled={zoomedIndex === 0}
+                onClick={() => step(-1)}
+              />
+              <LightboxArrow
+                side="right"
+                label="下一張"
+                disabled={zoomedIndex === images.length - 1}
+                onClick={() => step(1)}
+              />
+            </>
+          )}
           {zoomed && (
             <div className="relative" onClick={(e) => e.stopPropagation()}>
               {/* eslint-disable-next-line @next/next/no-img-element -- the
@@ -138,7 +229,7 @@ export function IssueImages({
                     size="icon"
                     className="h-8 w-8 text-white hover:bg-white/20 hover:text-white"
                     disabled={zoomedIndex === 0}
-                    onClick={() => setZoomedIndex((i) => (i ?? 0) - 1)}
+                    onClick={() => step(-1)}
                     aria-label="上一張"
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -149,7 +240,7 @@ export function IssueImages({
                     size="icon"
                     className="h-8 w-8 text-white hover:bg-white/20 hover:text-white"
                     disabled={zoomedIndex === images.length - 1}
-                    onClick={() => setZoomedIndex((i) => (i ?? 0) + 1)}
+                    onClick={() => step(1)}
                     aria-label="下一張"
                   >
                     <ChevronRight className="h-5 w-5" />

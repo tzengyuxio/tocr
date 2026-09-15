@@ -37,8 +37,11 @@ describe("parseGameDirection", () => {
 });
 
 describe("gameOrderBy", () => {
-  it("orders by name alone", () => {
-    expect(gameOrderBy(parseGameSort("name"), "asc")).toEqual([{ name: "asc" }]);
+  it("orders by name, with the id as a tiebreaker", () => {
+    expect(gameOrderBy(parseGameSort("name"), "asc")).toEqual([
+      { name: "asc" },
+      { id: "asc" },
+    ]);
   });
 
   it("adds the name as a tiebreaker when ordering by article count", () => {
@@ -47,6 +50,7 @@ describe("gameOrderBy", () => {
     expect(gameOrderBy(parseGameSort("articles"), "desc")).toEqual([
       { articleGames: { _count: "desc" } },
       { name: "asc" },
+      { id: "asc" },
     ]);
   });
 });

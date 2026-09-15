@@ -11,24 +11,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tags, FileText, SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { formatEdtf } from "@/lib/edtf";
-import { CategoryChip, TagTypeChip } from "@/components/chips";
-import { formatIssueNumber } from "@/lib/issue-number";
+import { TagTypeChip } from "@/components/chips";
 import { pageOpenGraph } from "@/lib/og";
+import { ArticleListTable } from "@/components/ArticleListTable";
+import {
+  articleOrderBy,
+  parseArticleDirection,
+  parseArticleSort,
+} from "@/lib/article-listing";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ sort?: string; dir?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -58,8 +55,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function TagDetailPage({ params }: PageProps) {
+export default async function TagDetailPage({ params, searchParams }: PageProps) {
   const { id: param } = await params;
+  const { sort: sortParam, dir: dirParam } = await searchParams;
+  const sort = parseArticleSort(sortParam);
+  const direction = parseArticleDirection(dirParam, sort);
 
   // 網址上是 slug；舊的 cuid 連結還在外面流傳，所以認出來就永久轉址。
   const found = await resolveSlugParam("tag", param);
@@ -78,15 +78,7 @@ export default async function TagDetailPage({ params }: PageProps) {
     where: { id },
     include: {
       articleTags: {
-        orderBy: {
-          article: {
-            issue: {
-              // Nulls last: an issue with no stated date has no place on a
-              // timeline, and Postgres would otherwise sort them first here.
-              publishSort: { sort: "desc", nulls: "last" },
-            },
-          },
-        },
+        orderBy: articleOrderBy(sort, direction),
         include: {
           article: {
             include: {
@@ -96,6 +88,7 @@ export default async function TagDetailPage({ params }: PageProps) {
                   issueNumber: true,
                   slug: true,
                   publishDate: true,
+                  coverImage: true,
                   magazine: {
                     select: { id: true, name: true, slug: true },
                   },
@@ -159,85 +152,12 @@ export default async function TagDetailPage({ params }: PageProps) {
               尚無相關文章
             </div>
           ) : (
-            <>
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>雜誌</TableHead>
-                      <TableHead>單期</TableHead>
-                      <TableHead>出版日期</TableHead>
-                      <TableHead>文章標題</TableHead>
-                      <TableHead>分類</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {tag.articleTags.map((at) => (
-                      <TableRow key={at.id}>
-                        <TableCell>
-                          <Link
-                            href={`/magazines/${at.article.issue.magazine.slug}`}
-                            className="hover:underline"
-                          >
-                            {at.article.issue.magazine.name}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Link
-                            href={`/magazines/${at.article.issue.magazine.slug}/issues/${encodeURIComponent(at.article.issue.slug)}`}
-                            className="hover:underline"
-                          >
-                            {formatIssueNumber(at.article.issue.issueNumber)}
-                          </Link>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatEdtf(at.article.issue.publishDate)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">{at.article.title}</div>
-                          {at.article.subtitle && (
-                            <div className="text-sm text-muted-foreground">
-                              {at.article.subtitle}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {at.article.category ? (
-                            <CategoryChip category={at.article.category} />
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="divide-y md:hidden">
-                {tag.articleTags.map((at) => (
-                  <div key={at.id} className="py-3">
-                    <div className="font-medium">{at.article.title}</div>
-                    {at.article.subtitle && (
-                      <div className="text-sm text-muted-foreground">{at.article.subtitle}</div>
-                    )}
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                      <Link href={`/magazines/${at.article.issue.magazine.slug}`} className="hover:underline">
-                        {at.article.issue.magazine.name}
-                      </Link>
-                      <span>·</span>
-                      <Link href={`/magazines/${at.article.issue.magazine.slug}/issues/${encodeURIComponent(at.article.issue.slug)}`} className="hover:underline">
-                        {formatIssueNumber(at.article.issue.issueNumber)}
-                      </Link>
-                      <span>·</span>
-                      <span>{formatEdtf(at.article.issue.publishDate)}</span>
-                    </div>
-                    {at.article.category && (
-                      <CategoryChip category={at.article.category} className="mt-1 text-xs" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
+            <ArticleListTable
+              rows={tag.articleTags}
+              sort={sort}
+              direction={direction}
+              basePath={`/tags/${encodeURIComponent(found.slug)}`}
+            />
           )}
         </CardContent>
       </Card>

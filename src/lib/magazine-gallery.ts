@@ -4,6 +4,16 @@ import { sortTitlePeriods } from "./magazine-title";
 export interface GalleryImage {
   url: string;
   note?: string;
+  /** 圖的出處，沒填就是 undefined。刊頭與封面沒有這個。 */
+  source?: { name: string; url: string | null };
+}
+
+/** 額外圖片（Photo）進 gallery 時要用到的欄位。 */
+export interface GalleryPhoto {
+  url: string;
+  caption: string | null;
+  sourceName: string | null;
+  sourceUrl: string | null;
 }
 
 export interface GalleryTitlePeriod {
@@ -15,7 +25,7 @@ export interface GalleryTitlePeriod {
 export interface MagazineGalleryInput {
   name: string;
   logoImage: string | null;
-  photos: string[];
+  photos: GalleryPhoto[];
   titles: GalleryTitlePeriod[];
   /** 一張刊頭都沒有時頂替的最早一期封面；見刊系頁的說明。 */
   standIn?: { url: string; note: string } | null;
@@ -63,7 +73,21 @@ export function buildMagazineGallery(input: MagazineGalleryInput): {
   // 四十本沒有 titles 的刊走的是這條，顯示與加這個功能之前一樣。
   if (mastheads.length === 1) delete mastheads[0].note;
 
-  const images = mastheads.length ? mastheads : input.standIn ? [input.standIn] : [];
-  images.push(...input.photos.map((url) => ({ url, note: "藏書照" })));
+  const images: GalleryImage[] = mastheads.length
+    ? mastheads
+    : input.standIn
+      ? [input.standIn]
+      : [];
+  // 說明優先，沒有說明就讓來源自己當說明；兩個都沒有的維持原本那句
+  // 「藏書照」——Magazine.photos 遷成 Photo 之後，那批就是走這條。
+  images.push(
+    ...input.photos.map((photo) => ({
+      url: photo.url,
+      note: photo.caption ?? (photo.sourceName ? undefined : "藏書照"),
+      source: photo.sourceName
+        ? { name: photo.sourceName, url: photo.sourceUrl }
+        : undefined,
+    }))
+  );
   return { images, initialIndex };
 }

@@ -36,21 +36,23 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
       mag.sourceTitle ?? "",
       mag.aliases.join(";"),
       mag.publisher ?? "",
+      mag.frequency ?? "",
       mag.issn ?? "",
+      mag.knownIssueCount?.toString() ?? "",
+      mag.knownIssueCountSource ?? "",
       mag.description ?? "",
       mag.categories.join(";"),
       mag.foundedDate ?? "",
       mag.endedDate ?? "",
       mag.isActive ? "true" : "false",
       mag.logoImage ?? "",
-      mag.photos.join(";"),
     ];
 
     if (mag.issues.length === 0) {
-      // 14 magazine fields + 24 blanks against a 38-column header. The
+      // 16 magazine fields + 28 blanks against a 44-column header. The
       // original emitted a short row here, which a strict parser rejects or
       // misaligns; see the column-count assertions in export-rows.test.ts.
-      rows.push([...magFields, ...Array(24).fill("")]);
+      rows.push([...magFields, ...Array(28).fill("")]);
       continue;
     }
 
@@ -58,6 +60,7 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
       const issueFields: string[] = [
         issue.issueNumber,
         issue.altNumbers.join(";"),
+        issue.kind,
         issue.volumeNumber ?? "",
         issue.slug,
         issue.code,
@@ -66,6 +69,9 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
         issue.pageCount != null ? String(issue.pageCount) : "",
         issue.price != null ? String(issue.price) : "",
         issue.coverImage ?? "",
+        issue.coverGames.join(";"),
+        issue.coverSubjects.join(";"),
+        issue.coverCredit ?? "",
         issue.tocImages.join(";"),
         issue.tocReviewedAt ? issue.tocReviewedAt.toISOString() : "",
         issue.completeAt ? issue.completeAt.toISOString() : "",
@@ -133,6 +139,7 @@ function issue(n: number, articleCount: number): ExportIssue {
   return {
     issueNumber: String(n),
     altNumbers: n % 5 === 0 ? [`HK VOL ${n}`, `${n} 月號`] : [],
+    kind: "REGULAR",
     volumeNumber: n % 3 === 0 ? `Vol.${n}` : null,
     slug: `no-${n}`,
     code: `code${n}`,
@@ -141,6 +148,9 @@ function issue(n: number, articleCount: number): ExportIssue {
     pageCount: n % 5 === 0 ? null : 200 + n,
     price: n % 2 === 0 ? { toString: () => "180.00" } : null,
     coverImage: n % 3 === 0 ? null : `https://blob.test/cover-${n}.webp`,
+    coverGames: [],
+    coverSubjects: [],
+    coverCredit: null,
     tocImages: n % 4 === 0 ? [] : [`https://blob.test/toc-${n}-1.webp`],
     tocReviewedAt: n % 5 === 0 ? new Date("2026-08-20T04:05:06.000Z") : null,
     completeAt: n % 7 === 0 ? new Date("2026-08-22T01:02:03.000Z") : null,
@@ -168,14 +178,16 @@ const FIXTURE: Magazine[] = [
     sourceTitle: null,
     aliases: ["Amazing Computer Entertainment", "ACE"],
     publisher: "第三波",
+    frequency: null,
     issn: "1021-8033",
+    knownIssueCount: 187,
+    knownIssueCountSource: "國圖臺灣期刊論文索引",
     description: "含,逗號的描述",
     categories: ["PC"],
     foundedDate: "1991-08",
     endedDate: "2006-01",
     isActive: false,
     logoImage: "https://blob.test/logo-acer.webp",
-    photos: ["https://blob.test/shelf-1.webp", "https://blob.test/shelf-2.webp"],
     issues: Array.from({ length: 23 }, (_, i) => issue(i + 1, (i % 4) + 1)),
   },
   {
@@ -186,14 +198,16 @@ const FIXTURE: Magazine[] = [
     sourceTitle: null,
     aliases: [],
     publisher: null,
+    frequency: null,
     issn: null,
+    knownIssueCount: null,
+    knownIssueCountSource: null,
     description: null,
     categories: [],
     foundedDate: null,
     endedDate: null,
     isActive: true,
     logoImage: null,
-    photos: [],
     issues: [],
   },
   {
@@ -203,14 +217,16 @@ const FIXTURE: Magazine[] = [
     sourceTitle: null,
     aliases: [],
     publisher: null,
+    frequency: null,
     issn: null,
+    knownIssueCount: null,
+    knownIssueCountSource: null,
     description: null,
     categories: ["CONSOLE", "PC"],
     foundedDate: "1998",
     endedDate: null,
     isActive: true,
     logoImage: null,
-    photos: [],
     // Includes an issue with no articles.
     issues: [issue(100, 2), issue(101, 0), issue(102, 3)],
   },

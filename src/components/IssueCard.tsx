@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
+import { VerifiedMark } from "@/components/magazine/VerifiedMark";
+import { ISSUE_KIND_CHIPS, issueKindBadge, type IssueKind } from "@/lib/issue-browse";
 
 interface IssueCardProps {
   issue: {
@@ -13,6 +15,10 @@ interface IssueCardProps {
     issueNumber: string;
     title?: string | null;
     publishDate: string | null;
+    /** 資料核對過了。三態收成兩態的地方見 lib/issue-complete.ts。 */
+    isVerified?: boolean;
+    /** 本刊不標，只有試刊與特刊掛字樣——讀者要看的是例外。 */
+    kind?: IssueKind;
     _count: { articles: number };
   };
   magazineSlug: string;
@@ -47,15 +53,36 @@ export function IssueCard({ issue, magazineSlug, magazineName }: IssueCardProps)
           // a magazine-shaped hole rather than as a squashed card.
           <CoverPlaceholder kind="issue" className="w-full min-h-0" />
         )}
-        <CardContent className="space-y-0.5 !p-2.5">
+        {/* mt-auto：格線列高由該列最高的封面決定，而掃描件的比例各不相同，
+            所以矮的那幾張下面會多出空白。空白留在圖與文字之間、文字貼著卡片
+            底部，一整列的文字區塊就對得齊——否則它的上緣會跟著每張封面的高度
+            上下跳。卡片本身已經是 h-full 撐滿列高，這裡只決定空白落在哪。 */}
+        <CardContent className="mt-auto space-y-0.5 !p-2.5">
           {magazineName && (
             <p className="text-xs text-muted-foreground line-clamp-1">
               {magazineName}
             </p>
           )}
-          <p className="font-medium text-sm line-clamp-1">
-            {formatIssueNumber(issue.issueNumber)}
-          </p>
+          {/* 標記跟期號同一行：底下那行只有 182px 寬，日期與篇數已經用滿，
+              第三個元素會把日期折成兩行。期號短，讓得出這個位置。 */}
+          {/* text-sm 掛在這一層而不只在 <p> 上：印的大小是 em，掛在 <p> 裡面的話
+              它繼承到的是外層 16px，會比旁邊的期號還大一號。 */}
+          <div className="flex items-center gap-1.5 text-sm">
+            <p className="min-w-0 flex-1 truncate font-medium">
+              {formatIssueNumber(issue.issueNumber)}
+            </p>
+            {/* 期號本身多半已經寫著「試刊 3 號」「即時戰爭遊戲特刊」，這個
+                標記是給那些沒寫在期號裡、只印在封面上的。 */}
+            {issue.kind && issueKindBadge(issue.kind) && (
+              <span
+                className={`shrink-0 rounded-sm px-1 text-[10px] ${ISSUE_KIND_CHIPS[issue.kind]}`}
+              >
+                {issueKindBadge(issue.kind)}
+              </span>
+            )}
+            {/* 卡片的字本來就小（14px），照標題那個比例會縮到看不出形狀。 */}
+            <VerifiedMark verified={issue.isVerified ?? false} sizeEm={0.9} />
+          </div>
           {issue.title && (
             <p className="text-xs text-muted-foreground line-clamp-1">
               {issue.title}

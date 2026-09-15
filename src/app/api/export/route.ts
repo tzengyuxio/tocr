@@ -39,14 +39,16 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       sourceTitle: true,
       aliases: true,
       publisher: true,
+      frequency: true,
       issn: true,
+      knownIssueCount: true,
+      knownIssueCountSource: true,
       description: true,
       categories: true,
       foundedDate: true,
       endedDate: true,
       isActive: true,
       logoImage: true,
-      photos: true,
     },
   });
 

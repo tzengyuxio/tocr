@@ -178,3 +178,26 @@ describe("magazineUpdateSchema defaults", () => {
     }
   });
 });
+
+describe("magazineCreateSchema 的已知總期數", () => {
+  const base = { name: "立東軟體", slug: "lidong-software" };
+
+  it("takes a positive integer", () => {
+    const result = magazineCreateSchema.safeParse({ ...base, knownIssueCount: "24" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.knownIssueCount).toBe(24);
+  });
+
+  // 空字串是「沒填」，不是 0——表單送出的未填欄位長這樣。
+  it("reads a blank field as absent", () => {
+    const result = magazineCreateSchema.safeParse({ ...base, knownIssueCount: "" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.knownIssueCount).toBeNull();
+  });
+
+  // 0 的意思會變成「一期都沒出過」，那是另一件事，不是「查不到」。
+  it("rejects zero and negatives", () => {
+    expect(magazineCreateSchema.safeParse({ ...base, knownIssueCount: 0 }).success).toBe(false);
+    expect(magazineCreateSchema.safeParse({ ...base, knownIssueCount: -3 }).success).toBe(false);
+  });
+});

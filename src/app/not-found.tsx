@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { BookOpen, Home, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BookOpen } from "lucide-react";
 import { NotFoundNotice } from "@/components/NotFoundNotice";
+import { publicContents } from "@/lib/not-found-contents";
 
 /**
  * 網址完全對不上任何一條路由時的 404。
@@ -27,21 +27,9 @@ export default function NotFound() {
       </header>
       <NotFoundNotice
         title="找不到這個頁面"
-        description="網址可能打錯了，或這個頁面已經不在了。"
-      >
-        <Button asChild>
-          <Link href="/">
-            <Home className="mr-1.5 h-4 w-4" />
-            回首頁
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/search">
-            <Search className="mr-1.5 h-4 w-4" />
-            搜尋
-          </Link>
-        </Button>
-      </NotFoundNotice>
+        description="網址可能打錯了，或這個頁面已經不在了。目錄上有的都還在。"
+        entries={publicContents}
+      />
     </div>
   );
 }

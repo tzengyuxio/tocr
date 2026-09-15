@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { edtfSortDate, isValidEdtf } from "../edtf";
-import { MAGAZINE_CATEGORY_VALUES } from "../magazine-browse";
+import {
+  MAGAZINE_CATEGORY_VALUES,
+  MAGAZINE_FREQUENCY_VALUES,
+} from "../magazine-browse";
 import { blankToNull, optionalText } from "./fields";
 
 // Dates are EDTF (ISO 8601-2), not calendar dates, so that "1999-05" and
@@ -29,11 +32,20 @@ export const magazineCreateSchema = z.object({
   sourceTitle: optionalText,
   aliases: z.array(z.string()).default([]),
   publisher: optionalText,
+  // 發刊頻率，創刊值。空字串（表單的「未填」）讀成 null，不是無效值。
+  frequency: z.preprocess(
+    blankToNull,
+    z.enum(MAGAZINE_FREQUENCY_VALUES).nullable().optional()
+  ),
   issn: optionalText,
+  // 已知總期數。正整數，可空——查不到就留空，不是 0：0 的意思是「一期都沒出過」。
+  knownIssueCount: z.preprocess(
+    blankToNull,
+    z.coerce.number().int().positive("已知總期數要是正整數").nullable().optional()
+  ),
+  knownIssueCountSource: optionalText,
   description: optionalText,
   logoImage: optionalText,
-  // 藏書照，純網址。刊頭是識別、這些是收藏的證據，見 docs/data-conventions.md
-  photos: z.array(z.string()).default([]),
   // 報導哪一類遊戲。一本可以跨多類，見 prisma/schema.prisma 的 MagazineCategory
   categories: z.array(z.enum(MAGAZINE_CATEGORY_VALUES)).default([]),
   foundedDate: optionalEdtf,
@@ -46,7 +58,6 @@ export const magazineCreateSchema = z.object({
 // aliases back to empty. Drop the defaults for updates.
 export const magazineUpdateSchema = magazineCreateSchema.partial().extend({
   aliases: z.array(z.string()).optional(),
-  photos: z.array(z.string()).optional(),
   categories: z.array(z.enum(MAGAZINE_CATEGORY_VALUES)).optional(),
   isActive: z.boolean().optional(),
 });

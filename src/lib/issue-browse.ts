@@ -13,6 +13,46 @@ import type { Prisma } from "@prisma/client";
  * leaves out, so a plain /magazines/<slug> stays the address people share.
  */
 
+/**
+ * 刊種：這一冊在雜誌自己的編號序列裡的身分，也是「收錄 N 期」數的是什麼。
+ *
+ * 沒有對應的篩選按鈕——特刊與試刊加起來是全站的極少數，一個永遠只濾出兩三筆的
+ * 按鈕不值得占掉那排寬度。表放這裡是為了讓 validator、後台表單與計數讀同一份。
+ * 判準見 prisma/schema.prisma 的 IssueKind。
+ */
+export const ISSUE_KIND_VALUES = ["REGULAR", "PILOT", "SPECIAL"] as const;
+
+export type IssueKind = (typeof ISSUE_KIND_VALUES)[number];
+
+export const ISSUE_KIND_LABELS: Record<IssueKind, string> = {
+  REGULAR: "本刊",
+  PILOT: "試刊",
+  SPECIAL: "特刊",
+};
+
+/**
+ * 期列表上標在非本刊那幾列的字樣。本刊不標——標了等於每一列都掛一個字，
+ * 而讀者要看的是例外。
+ */
+export function issueKindBadge(kind: IssueKind): string | null {
+  return kind === "REGULAR" ? null : ISSUE_KIND_LABELS[kind];
+}
+
+/**
+ * 試刊與特刊的標記各給一個色相：兩者都是灰底的時候，一整片封面牆掃過去只看得出
+ * 「這幾期不是本刊」，分不出哪幾期是創刊前的試水溫、哪幾期是中途的別冊。
+ *
+ * 刻意留在 -100/-700 這一級（分類 chip 用的是 -100/-800）：它標的是例外，
+ * 認得出來就好，不該比期號還搶眼。色相沿用 tag-colors.ts 的 tint 慣例。
+ */
+export const ISSUE_KIND_CHIPS: Record<IssueKind, string> = {
+  REGULAR: "",
+  // 試刊在創刊之前，用暖色讀起來像「還沒定案」。
+  PILOT: "bg-amber-100 text-amber-700",
+  // 特刊是額外多出來的一本，用另一個色相與試刊分開就夠了。
+  SPECIAL: "bg-teal-100 text-teal-700",
+};
+
 export const ISSUE_FILTERS = [
   { value: "all", label: "全部", where: {} },
   { value: "cover", label: "有封面", where: { coverImage: { not: null } } },

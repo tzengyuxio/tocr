@@ -18,6 +18,7 @@ import {
   Search,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { isVerifiedIssue } from "@/lib/issue-complete";
 
 // Two rows of eight on a wide screen.
 const LATEST_ISSUE_COUNT = 16;
@@ -55,17 +56,21 @@ export default async function HomePage() {
     prisma.game.count(),
     prisma.tag.count(),
     // An issue whose contents are indexed is what the site is for, so those
-    // come first and the rest only fill the row out.
+    // come first and the rest only fill the row out. A cover is required in
+    // both tiers: the card is mostly the cover, and one without it reads as a
+    // hole in the row even when the issue behind it has a full table of
+    // contents. Photos hung on the issue do not count -- those are sourced
+    // from elsewhere and carry someone else's credit.
     prisma.issue.findMany({
       ...latestIssueQuery,
       take: LATEST_ISSUE_COUNT,
-      where: { articles: { some: {} } },
+      where: { articles: { some: {} }, coverImage: { not: null } },
     }),
   ]);
 
   // Most of the imported issues are still bare records with nothing but a
-  // number and a date -- showing those reads as a broken page, so a cover is
-  // the minimum for the second tier.
+  // number and a date, so the second tier takes covered issues that have no
+  // contents yet.
   const filler =
     withArticles.length < LATEST_ISSUE_COUNT
       ? await prisma.issue.findMany({
@@ -74,7 +79,11 @@ export default async function HomePage() {
           where: { articles: { none: {} }, coverImage: { not: null } },
         })
       : [];
-  const latestIssues = [...withArticles, ...filler];
+  // 同一張卡片在首頁與刊系頁該說一樣的話，所以這裡也算得出「已校訂」。
+  const latestIssues = [...withArticles, ...filler].map((issue) => ({
+    ...issue,
+    isVerified: isVerifiedIssue(issue),
+  }));
 
   return (
     <div className="animate-fade-in-up">
@@ -87,7 +96,7 @@ export default async function HomePage() {
               <span className="text-primary">目錄索引</span>
             </h1>
             <p className="mx-auto mb-6 max-w-xl text-lg text-muted-foreground">
-              收錄台灣與日本遊戲雜誌的完整目錄資料，透過 AI 辨識技術，
+              收錄台灣遊戲雜誌的完整目錄資料，透過 AI 辨識技術，
               將紙本目錄數位化為可搜尋的索引
             </p>
 

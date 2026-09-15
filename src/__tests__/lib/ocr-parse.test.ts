@@ -40,6 +40,31 @@ describe("parseOcrResponse", () => {
     expect(result.parseError).toBeUndefined();
   });
 
+  it("repairs a page number written with a leading zero", () => {
+    const result = parseOcrResponse(
+      envelope(
+        `    {\n      "title": "立體貪吃蛇",\n      "pageStart": 03,\n      "pageEnd": 007,\n      "confidence": 0.95\n    }`
+      )
+    );
+
+    expect(result.articles).toHaveLength(1);
+    expect(result.articles[0].pageStart).toBe(3);
+    expect(result.articles[0].pageEnd).toBe(7);
+    expect(result.parseError).toBeUndefined();
+  });
+
+  it("leaves a plain zero and a decimal alone while stripping leading zeros", () => {
+    const result = parseOcrResponse(
+      envelope(
+        `    {\n      "title": "零",\n      "pageStart": 0,\n      "confidence": 0.85\n    }`
+      )
+    );
+
+    expect(result.articles[0].pageStart).toBe(0);
+    expect(result.articles[0].confidence).toBe(0.85);
+    expect(result.parseError).toBeUndefined();
+  });
+
   it("reports what it could not parse instead of returning no articles", () => {
     const result = parseOcrResponse('{ "articles": [ {{{ ] }');
 

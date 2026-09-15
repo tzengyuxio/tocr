@@ -9,6 +9,7 @@
 | `/magazines/[slug]` | 雜誌詳情與單期列表。網址吃 ASCII slug（`/magazines/ace`），**退役的舊 slug** 與舊的 cuid 連結皆永久轉址 |
 | `/magazines/[slug]/issues/[issueSlug]` | 單期目錄。兩段都吃 slug；雜誌那段也收退役的舊 slug，單期那段也收期號與舊 cuid，皆永久轉址 |
 | `/i/[code]` | 單期永久短碼，307 轉到當下的正規網址。`Issue.code` 是自動產生的 8 碼，正規網址的每一段都可能變，這條不會 |
+| `/timeline` | 年代軸：每本刊一條線由上而下，兩側標註外部事件與雜誌自身的改名／授權／刊期變動 |
 | `/games` | 遊戲列表 |
 | `/games/[slug]` | 該遊戲的相關文章。網址吃 slug（可為中文），舊的 cuid 連結永久轉址 |
 | `/tags` | 標籤索引 |
@@ -112,6 +113,12 @@
 |---|---|---|
 | POST | `/api/ocr` | 執行辨識，單次上限 10 張圖 |
 | GET | `/api/ocr` | 可用的 Provider 列表 |
+| POST | `/api/links` | 新增站外連結（掛雜誌或掛單期，二擇一） |
+| PATCH · DELETE | `/api/links/[id]` | 改站點／網址／顯示名稱、刪除 |
+| PUT | `/api/links/reorder` | 同一個掛點底下的排序 |
+| POST | `/api/photos` | 新增額外圖片（掛雜誌或掛單期，二擇一） |
+| PATCH · DELETE | `/api/photos/[id]` | 改說明／來源／公開與否、刪除 |
+| PUT | `/api/photos/reorder` | 同一個掛點底下的排序 |
 | POST | `/api/upload` | 圖片上傳（自動縮圖轉檔，見 [features.md](features.md#檔案儲存)） |
 | POST | `/api/import/magazines-issues` | CSV 批次匯入 |
 | GET | `/api/export` | 匯出 CSV（串流，需登入） |

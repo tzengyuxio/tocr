@@ -171,6 +171,15 @@ https://your-domain.com/api/auth/callback/google
 
 migration 走 `DATABASE_URL_UNPOOLED`（Neon 的 pooler 不適合跑 DDL），沒設的話會退回 `DATABASE_URL`。
 
+⚠️ **破壞性 migration 會弄壞還在服務的舊版。** 順序是「先改資料庫 → 再 build → 最後才把新版切上線」，
+所以從 migration 跑完到新版上線的那幾分鐘，**線上跑的是舊程式配新 schema**。刪欄位、改欄位型別、
+加 NOT NULL 都會在這段空窗炸掉——2026-08-31 的 `20260831000000_add_photos` 最後一行
+`DROP COLUMN magazines.photos`，就讓舊版的 `/admin/magazines/[id]`（用 `include` 撈整列，SQL 裡還有
+那一欄）回 server-side exception，新版切上線後自己好。
+
+**要避開就拆兩次部署（expand → contract）**：先上一版「不再讀那個欄位」的程式，等它上線，下一個 PR 才
+刪欄位。純新增欄位、加索引不受影響——舊程式不知道新欄位存在，不會去讀它。
+
 ### preview 有自己的資料庫（2026-08-17 起）
 
 Neon 專案下有兩條 branch，Vercel 的環境變數分別指過去：
@@ -278,6 +287,24 @@ DATABASE_URL="<production-unpooled-url>" npx prisma migrate deploy
 2. 新增你的網域
 3. 依照指示設定 DNS 記錄
 4. 更新 Google OAuth Redirect URI
+
+---
+
+## Google Search Console 驗證
+
+同一個資源上了三條各自獨立的驗證方式，任一條斷了還有別的撐著。**三條都不能撤**
+——Search Console 會定期重新確認，撤掉哪一條那一條就失效：
+
+| 方式 | 落點 |
+|---|---|
+| 網域名稱供應商（DNS TXT） | 網域的 DNS 記錄，涵蓋整個網域含子網域 |
+| HTML 檔案 | `public/google161b8818fa96b9ff.html`，以站台根目錄的路徑供應 |
+| HTML 標記 | `src/app/layout.tsx` 的 `metadata.verification.google` |
+
+Google Analytics 那種驗證法**沒有採用**：它要求追蹤片段出現在首頁 `<head>`，
+而站上的 GA 是 `@next/third-parties` 在 hydration 後注入 `<body>` 的，而且刻意
+只掛在公開頁（見上面的 [Google Analytics](#google-analytics)）。為了驗證把它移到
+root layout，等於連 `/admin` 的操作都送進 GA——自己編目一整晚會蓋過真實訪客。
 
 ---
 
@@ -586,7 +613,7 @@ npx tsx --env-file=.env.local scripts/find-orphan-blobs.ts
 
 ⚠️ **資料庫與 store 必須是同一個環境**。`.env.local` 的 `BLOB_READ_WRITE_TOKEN` 指向正式站的 store，而 `DATABASE_URL` 指向本機的 dev 庫——那樣算出來的「孤兒」其實是正式站正在用的圖。所以 `DATABASE_URL` 指著 localhost 時腳本預設拒跑，只想看它跑不跑得動再加 `--allow-local-db`。
 
-比對涵蓋每一個存得下網址的欄位：`magazines.logo_image`／`photos`、`issues.cover_image`／`toc_images`、`games.cover_image`、`ocr_records.image_url`、`users.image`。**新增存網址的欄位時要一起加進去**，漏掉一欄就會把還在用的圖報成孤兒。
+比對涵蓋每一個存得下網址的欄位：`magazines.logo_image`、`photos.url`（額外圖片，2026-08-31 起自成一張表）、`issues.cover_image`／`toc_images`、`games.cover_image`、`ocr_records.image_url`、`users.image`。**新增存網址的欄位時要一起加進去**，漏掉一欄就會把還在用的圖報成孤兒。
 
 ### 手動備份
 
