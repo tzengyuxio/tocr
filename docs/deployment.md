@@ -83,8 +83,19 @@
 它不是密鑰——`NEXT_PUBLIC_` 前綴的值會被打包進 client bundle，每個訪客都看得到。
 走環境變數是為了讓「哪個環境要送資料」由部署決定，不是寫死在程式裡。
 
-分析掛在 `src/app/(public)/layout.tsx`，所以 `/admin` 與 `/auth` 不計入：自己編目
-一整晚的點擊會蓋過真實訪客。**改了要 redeploy 才生效**（見[部署組成](#環境變數管理)）。
+分析掛在 `src/app/(public)/layout.tsx`，不放進 root layout，為的是讓 `/admin` 與
+`/auth` 不計入：自己編目一整晚的點擊會蓋過真實訪客。**改了要 redeploy 才生效**
+（見[部署組成](#環境變數管理)）。
+
+但**光挑掛載點擋不住**。用 `<Link>` 從前台點進 `/admin` 是 soft navigation，頁面不
+重載，gtag.js 還留在 DOM 裡，GA4 的 enhanced measurement 會在 History API 變更時補
+送一筆 `/admin` 的 page_view。所以前台連進後台的那幾處（`(public)/layout.tsx`、
+`(public)/page.tsx`、`components/MobileNav.tsx`）刻意用原生 `<a>`，逼出整頁重載；
+覺得突兀想改回 `<Link>` 時，就是在把這個 bug 放回來。
+
+2026-09-18 GA 報表裡撈出 `/admin` 與 `/admin/magazines` 兩筆，就是這樣來的——而那
+兩個路徑正好是當時前台唯一連出去的兩處。程式改了只是之後不再送，**報表裡的歷史資料
+還在**，要乾淨得另外在 GA4 後台加資料篩選器。
 
 ```bash
 vercel env add NEXT_PUBLIC_GA_ID production

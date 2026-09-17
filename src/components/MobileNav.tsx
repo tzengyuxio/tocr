@@ -68,14 +68,15 @@ export function MobileNav() {
             );
           })}
           <div className="my-2 border-t" />
-          <Link
+          {/* Plain <a>, not <Link>: avoids carrying gtag.js into /admin. */}
+          <a
             href="/admin"
             onClick={() => setOpen(false)}
             className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <Settings className="h-4 w-4" />
             後台管理
-          </Link>
+          </a>
         </nav>
       </SheetContent>
     </Sheet>

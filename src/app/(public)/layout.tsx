@@ -10,6 +10,17 @@ import { MobileNav } from "@/components/MobileNav";
  * `/admin` 與 `/auth` 是另一個 layout 底下的事，把它排除掉是這條的重點——自己
  * 編目一整晚的點擊會蓋過真實訪客，而後台的流量本來就沒有分析價值。
  *
+ * ## 光挑掛載點擋不住，連進後台的連結必須是硬導覽
+ *
+ * 掛載點只決定「哪個頁面會載入 gtag.js」，不決定「載入之後還會送出什麼」。用
+ * `<Link>` 從前台點進 `/admin` 是 soft navigation，頁面不重載，gtag.js 還留在
+ * DOM 裡，GA4 的 enhanced measurement 會在 History API 變更時補送一筆 `/admin`
+ * 的 page_view——排除就這樣破了功，而且從程式碼看不出來：掛載點明明是對的。
+ *
+ * 所以前台連進後台的那幾處刻意用原生 `<a>` 而不是 `<Link>`（本檔、`page.tsx`、
+ * `MobileNav.tsx`），逼出一次整頁重載。看到那幾個 `<a>` 覺得突兀想改回 `<Link>`
+ * 時，就是在把這個 bug 放回來。2026-09-18 從 GA 報表裡撈出來過一次。
+ *
  * 未設環境變數就整個不掛，所以本機與 preview 預設不送資料。measurement ID 不是
  * 密鑰（它會出現在每個訪客的頁面原始碼裡），走環境變數是為了讓「哪個環境要不
  * 要送」由部署決定，不是寫死在程式裡。Vercel 的環境變數改了要 redeploy 才生效。
@@ -77,7 +88,9 @@ export default function PublicLayout({
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
-              <Link href="/admin">後台管理</Link>
+              {/* Plain <a>, not <Link>: a soft navigation keeps gtag.js mounted and GA4
+                  enhanced measurement would report an /admin page_view. */}
+              <a href="/admin">後台管理</a>
             </Button>
           </div>
         </div>
