@@ -62,6 +62,67 @@ function retryAfterMs(key: string): number | null {
   return null;
 }
 
+/**
+ * A long answer goes out as a padded stream so a proxy does not give up waiting
+ * for the first byte.
+ *
+ * Cloudflare's 100s ceiling -- not configurable below Enterprise -- is on the
+ * origin's *first byte*, not on the length of the response. This route
+ * routinely runs past it (see maxDuration above), so the moment the site sits
+ * behind the proxy, a dense page comes back as a 524 instead of the answer.
+ *
+ * Leading whitespace is ignored by every JSON parser, so the body still reads
+ * as the same object it always was: `response.json()` and `curl | jq` both keep
+ * working, and nothing about the payload changed.
+ *
+ * The padding cannot wait for the upstream stream to start. The self-hosted
+ * backend holds one model at a time and a swap adds ~25s before its first
+ * token -- silence the proxy counts the same as any other. So the heartbeat is
+ * ours, and it starts before the model is even called.
+ *
+ * The cost is the status code. Headers leave with the first byte, long before
+ * the outcome is known, so everything that reaches here answers 200 and reports
+ * the outcome in the body. Callers check `error`, not the status; the
+ * validation failures above still answer with a real status, because they are
+ * decided in milliseconds and never reach this.
+ */
+const HEARTBEAT_MS = 15_000;
+
+function streamedJson(produce: () => Promise<unknown>): Response {
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      controller.enqueue(encoder.encode(" "));
+      const heartbeat = setInterval(() => {
+        controller.enqueue(encoder.encode(" "));
+      }, HEARTBEAT_MS);
+
+      try {
+        controller.enqueue(encoder.encode(JSON.stringify(await produce())));
+      } catch (error) {
+        // Logged in full, reported generically: the message comes from the
+        // self-hosted model backend and can carry internal URLs and
+        // configuration.
+        console.error("OCR Error:", error);
+        controller.enqueue(
+          encoder.encode(JSON.stringify({ error: "OCR processing failed" }))
+        );
+      } finally {
+        clearInterval(heartbeat);
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
 // A table of contents runs to a handful of pages. Anything beyond this is a
 // mistake or abuse, and each image is a billed model call against a 60s budget.
 const MAX_IMAGES = 10;
@@ -237,41 +298,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 執行 AI 辨識
-    const ocrProvider = OcrProviderFactory.getProvider(provider);
-    const result = await ocrProvider.extractTableOfContents(images);
+    // 執行 AI 辨識。從這裡開始會花上分鐘級的時間，所以改走 streamedJson。
+    return streamedJson(async () => {
+      const ocrProvider = OcrProviderFactory.getProvider(provider);
+      const result = await ocrProvider.extractTableOfContents(images);
 
-    // 儲存辨識紀錄
-    const ocrRecord = await prisma.ocrRecord.create({
-      data: {
-        issueId,
-        imageUrl: imageUrlsRaw || formData.get("imageUrl") as string || "",
-        provider,
-        rawResult: result as object,
-      },
-    });
+      // 儲存辨識紀錄
+      const ocrRecord = await prisma.ocrRecord.create({
+        data: {
+          issueId,
+          imageUrl: imageUrlsRaw || formData.get("imageUrl") as string || "",
+          provider,
+          rawResult: result as object,
+        },
+      });
 
-    // Stored first, then reported: the response is the only evidence of what
-    // the model actually said, and it is what a repair rule gets written
-    // against. Answering 200 with an empty list -- which is what this did --
-    // reads as "the scan has nothing on it" and hides a billed, failed call.
-    if (result.parseError) {
-      return NextResponse.json(
-        {
+      // Stored first, then reported: the response is the only evidence of what
+      // the model actually said, and it is what a repair rule gets written
+      // against. Answering with an empty list -- which is what this did --
+      // reads as "the scan has nothing on it" and hides a billed, failed call.
+      // An `error` and no `result` is what says otherwise now that the status
+      // code can no longer (see streamedJson).
+      if (result.parseError) {
+        return {
           id: ocrRecord.id,
           error: `AI 回傳的內容無法解析（${result.parseError}），沒有取得任何文章。請重新辨識；若持續失敗，辨識紀錄 ${ocrRecord.id} 留有原始回應可供檢查。`,
-        },
-        { status: 422 }
-      );
-    }
+        };
+      }
 
-    return NextResponse.json({
-      id: ocrRecord.id,
-      result,
+      return { id: ocrRecord.id, result };
     });
   } catch (error) {
-    // Logged in full, reported generically: the message comes from the
-    // self-hosted model backend and can carry internal URLs and configuration.
+    // Reaching here is a failure in the validation above, which is all decided
+    // before the first byte goes out -- so this can still answer with a status.
+    // Anything that fails inside the stream is handled by streamedJson.
     console.error("OCR Error:", error);
 
     return NextResponse.json(

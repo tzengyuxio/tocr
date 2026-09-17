@@ -107,9 +107,11 @@ describe("POST /api/ocr authorisation", () => {
   });
 });
 
-// An unreadable answer used to come back as 200 with an empty article list,
-// which is indistinguishable from a scan that has nothing on it. 軟體世界 35
-// and 36 were re-run seven times against that silence.
+// An unreadable answer used to come back with an empty article list and
+// nothing else, which is indistinguishable from a scan that has nothing on it.
+// 軟體世界 35 and 36 were re-run seven times against that silence. The status
+// code cannot carry this any more -- the answer is streamed, so the headers
+// are long gone by the time the model speaks -- so `error` is what says it.
 describe("POST /api/ocr unreadable answers", () => {
   it("reports a response the parser could not read", async () => {
     getProvider.mockReturnValue({
@@ -123,8 +125,8 @@ describe("POST /api/ocr unreadable answers", () => {
     const res = await POST(requestWith({}));
     const json = await res.json();
 
-    expect(res.status).toBe(422);
     expect(json.error).toContain("無法解析");
+    expect(json.result).toBeUndefined();
   });
 
   it("keeps the raw answer even when it cannot be read", async () => {
@@ -149,7 +151,51 @@ describe("POST /api/ocr unreadable answers", () => {
     });
 
     const res = await POST(requestWith({}));
+    const json = await res.json();
 
     expect(res.status).toBe(200);
+    expect(json.error).toBeUndefined();
+    expect(json.result.articles).toEqual([]);
+  });
+});
+
+// The whole point of streaming this route: a proxy in front of it gives up
+// waiting for the first byte at 100s, and a dense page takes longer than that
+// to answer. Waiting for the model before writing anything is what used to
+// turn into a 524.
+describe("POST /api/ocr first byte", () => {
+  it("writes before the model has answered", async () => {
+    let answer: (value: unknown) => void = () => {};
+    getProvider.mockReturnValue({
+      extractTableOfContents: jest.fn(
+        () =>
+          new Promise((resolve) => {
+            answer = resolve;
+          })
+      ),
+    });
+
+    const res = await POST(requestWith({}));
+    const reader = res.body!.getReader();
+    const decoder = new TextDecoder();
+
+    // Only resolves if there are bytes on the wire already, and the model has
+    // not been given an answer to return yet.
+    const first = await reader.read();
+    expect(first.done).toBe(false);
+    expect(decoder.decode(first.value)).toBe(" ");
+
+    answer({ articles: [], rawText: '{"articles":[]}' });
+
+    // Drained rather than cancelled, so the stream closes on its own and the
+    // heartbeat timer is cleared.
+    let body = "";
+    for (;;) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      body += decoder.decode(chunk.value);
+    }
+
+    expect(JSON.parse(body).result.articles).toEqual([]);
   });
 });
