@@ -193,7 +193,13 @@ export function OcrUploader({
         throw new Error(await uploadErrorMessage(response, "辨識失敗"));
       }
 
+      // The long path answers 200 with the outcome in the body: its headers
+      // leave before the model has said anything, so the status cannot carry
+      // it any more. See streamedJson in src/app/api/ocr/route.ts.
       const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
       onResult(data.result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "發生未知錯誤");

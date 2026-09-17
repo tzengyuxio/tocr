@@ -111,7 +111,7 @@
 
 | 方法 | 路徑 | 說明 |
 |---|---|---|
-| POST | `/api/ocr` | 執行辨識，單次上限 10 張圖 |
+| POST | `/api/ocr` | 執行辨識，單次上限 10 張圖（串流，見下） |
 | GET | `/api/ocr` | 可用的 Provider 列表 |
 | POST | `/api/links` | 新增站外連結（掛雜誌或掛單期，二擇一） |
 | PATCH · DELETE | `/api/links/[id]` | 改站點／網址／顯示名稱、刪除 |
@@ -122,3 +122,13 @@
 | POST | `/api/upload` | 圖片上傳（自動縮圖轉檔，見 [features.md](features.md#檔案儲存)） |
 | POST | `/api/import/magazines-issues` | CSV 批次匯入 |
 | GET | `/api/export` | 匯出 CSV（串流，需登入） |
+
+`POST /api/ocr` 的回應**前面帶著空白**。辨識一張密集的目錄頁要 65 秒，極端的會超過
+150 秒（`route.ts` 的 `maxDuration` 因此設 300），而 Cloudflare proxy 對「origin 的
+第一個位元組」有 100 秒上限、Enterprise 以下不可調。所以那條路由一進來就先送出一個
+空白位元組，之後每 15 秒再送一個，等答案出來才寫 JSON。前導空白每個 JSON parser 都
+會忽略，`response.json()` 與 `curl | jq` 照舊。
+
+代價是**狀態碼**：header 跟著第一個位元組就出去了，那時還不知道結果。所以走到辨識這
+一步的請求一律回 200，成敗看 body：**成功有 `result`，失敗有 `error`**（原本的 422）。
+參數驗證的失敗（400／401／429）都在毫秒內決定，沒有這個問題，狀態碼照舊。
