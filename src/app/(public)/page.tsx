@@ -158,9 +158,12 @@ export default async function HomePage() {
                 <p className="font-medium">尚無單期資料</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {canEdit ? (
-                    <Link href="/admin/magazines" className="text-primary hover:underline">
+                    // Plain <a>, not <Link>: a soft navigation keeps gtag.js mounted
+                    // and GA4 would report an /admin page_view. Hard nav is intended.
+                    // eslint-disable-next-line @next/next/no-html-link-for-pages
+                    <a href="/admin/magazines" className="text-primary hover:underline">
                       前往後台新增第一本雜誌
-                    </Link>
+                    </a>
                   ) : "資料建置中，請稍後再來"}
                 </p>
               </CardContent>
