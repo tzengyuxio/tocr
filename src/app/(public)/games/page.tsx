@@ -27,7 +27,7 @@ import {
 import {
   formatYearRange,
   platformCounts,
-  reportingSpans,
+  reportingSummaries,
   reportingYears,
 } from "@/lib/game-years";
 import { Gamepad2, Search, ChevronLeft, ChevronRight } from "lucide-react";
@@ -100,7 +100,7 @@ export default async function GamesPage({
   ]);
 
   // 報導年代只問這一頁的那幾筆，不是整張表。
-  const spans = await reportingSpans(games.map((game) => game.id));
+  const summaries = await reportingSummaries(games.map((game) => game.id));
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   // 分頁連結帶著整組條件走，只換頁碼。
@@ -193,7 +193,7 @@ export default async function GamesPage({
                 platforms: game.platforms,
                 articleCount: game._count.articleGames,
               }))}
-              spans={spans}
+              summaries={summaries}
             />
           ) : (
             /* Four across, not five: the card is a row, not a tile, and at five
@@ -236,9 +236,9 @@ export default async function GamesPage({
                         )}
                         {/* 報導年代放在文章數上面：先說「哪個年代的」再說「寫了幾篇」，
                             與列表檢視同一個順序。 */}
-                        {formatYearRange(spans.get(game.id)) && (
+                        {formatYearRange(summaries.get(game.id)?.years) && (
                           <div className="text-xs tabular-nums text-muted-foreground">
-                            {formatYearRange(spans.get(game.id))}
+                            {formatYearRange(summaries.get(game.id)?.years)}
                           </div>
                         )}
                         <div className="mt-1 flex items-center gap-2">
