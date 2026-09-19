@@ -7,16 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IssueCard } from "@/components/IssueCard";
-import { StatGrid } from "@/components/StatGrid";
-import {
-  BookOpen,
-  Gamepad2,
-  Tags,
-  FileText,
-  ArrowRight,
-  Calendar,
-  Search,
-} from "lucide-react";
+import { BookOpen, ArrowRight, Search } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { isVerifiedIssue } from "@/lib/issue-complete";
 
@@ -132,30 +123,6 @@ export default async function HomePage() {
               </div>
             </form>
           </div>
-
-          {/* Stats - integrated into hero */}
-          <div className="mt-10">
-            <StatGrid
-              items={[
-                { label: "雜誌", value: magazineCount, icon: BookOpen },
-                { label: "單期", value: issueCount, icon: Calendar },
-                { label: "文章", value: articleCount, icon: FileText },
-                { label: "遊戲", value: gameCount, icon: Gamepad2 },
-                { label: "標籤", value: tagCount, icon: Tags },
-              ]}
-            />
-            {/* 涵蓋數跟在單期總數後面講，不另外占兩格：它們不是第六、第七個
-                總數，而是「那 N 期裡有多少期收到了東西」。做成一行小字也避開
-                StatGrid 的五欄格線——七格在 sm 以上排不成一列。 */}
-            {issueCount > 0 && (
-              <p className="mt-3 text-center text-sm text-muted-foreground">
-                其中 <strong className="font-semibold text-foreground">{coveredCount}</strong> 期有封面
-                （{percent(coveredCount, issueCount)}）、
-                <strong className="font-semibold text-foreground">{indexedCount}</strong> 期已錄入目錄
-                （{percent(indexedCount, issueCount)}）
-              </p>
-            )}
-          </div>
         </div>
       </section>
 
@@ -204,7 +171,51 @@ export default async function HomePage() {
             </div>
           )}
         </section>
+
+        {/* 統計搬到頁底。它們說的是這個站有多大，那是關於站本身的事，而讀者
+            進來要找的是雜誌——擺在 hero 時五格卡片會先於搜尋框被看見，而搜尋
+            框才是這一頁的功能。所以改成一行小字放在最後，想知道的人找得到，
+            不想知道的人不會被它擋在前面。
+
+            **一行不是五格**：五個總數之間沒有主次，做成卡片會逼讀者一格一格
+            讀完；連成一句話反而快。涵蓋數接在單期後面講，因為它們是「那 N 期
+            裡有多少期收到了東西」，不是第六、第七個總數。 */}
+        <section className="mt-12 border-t pt-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            目前收錄{" "}
+            <StatLink href="/magazines">{magazineCount} 本雜誌</StatLink>、
+            <span className="tabular-nums">{issueCount.toLocaleString("en-US")}</span> 期、
+            <span className="tabular-nums">{articleCount.toLocaleString("en-US")}</span> 篇文章、
+            <StatLink href="/games">
+              {gameCount.toLocaleString("en-US")} 款遊戲
+            </StatLink>
+            、<StatLink href="/tags">{tagCount.toLocaleString("en-US")} 個標籤</StatLink>
+          </p>
+          {/* 全形括號前不能斷行：JSX 會把換行塌成一個半形空格，讀出來就變成
+              「期有封面 （50%）」。要斷的話斷在頓號後面。 */}
+          {issueCount > 0 && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              其中{" "}
+              <span className="tabular-nums">{coveredCount.toLocaleString("en-US")}</span>
+              {` 期有封面（${percent(coveredCount, issueCount)}）、`}
+              <span className="tabular-nums">{indexedCount.toLocaleString("en-US")}</span>
+              {` 期已錄入目錄（${percent(indexedCount, issueCount)}）`}
+            </p>
+          )}
+        </section>
       </div>
     </div>
+  );
+}
+
+/** 數得出來的東西有自己的頁面時就連過去；單期與文章沒有總表，所以不連。 */
+function StatLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="tabular-nums underline decoration-muted-foreground/40 underline-offset-2 hover:text-foreground"
+    >
+      {children}
+    </Link>
   );
 }
