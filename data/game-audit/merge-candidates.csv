@@ -1,395 +1,371 @@
-cdg_id,cdg_title,year,cdg_platform,cdg_images,tocr_id,tocr_name,articles,tocr_platforms,status
-cdg-0013,1990世界盃足球賽,1989,DOS,2,cmsx2w99n005704ld4pormgdz,1990世界盃足球賽,4,,要判
-cdg-0013,1990世界盃足球賽,1989,DOS,2,cmsx2w99t005804ldzc3zljn9,World Cup Soccer ITALIA '90,1,,要判
-cdg-0080,GP大賽車,1988,DOS,0,cmsvn87fc005304l8rbt57gb9,GP大賽車,2,,要判
-cdg-0080,GP大賽車,1988,DOS,0,cmswqdmg800dw04l6omtm0ve2,方程式賽車,1,,要判
-cdg-0158,七年戰爭2：決戰王朝,2001,Windows,1,cmtplw6um0enl04jvaoapftqb,決戰王朝 2,1,,要判
-cdg-0158,七年戰爭2：決戰王朝,2001,Windows,1,cmtpki0ld02z104jvkvl8qqgp,カスタムメイト・2,5,,要判、名稱含假名
-cdg-0207,三國孔明傳,2002,Windows,1,cmtpng40z034704l6eg0noo4h,三國孔明傳,4,,要判
-cdg-0207,三國孔明傳,2002,Windows,1,cmtpnc6vj02d704l6heojfl3f,孔明傳,2,,要判
-cdg-0209,三國志：風雲再起,1996,Windows,0,cmtpkwmlc05wh04jvxgjzz6jv,三國志風雲再起,2,,要判
-cdg-0209,三國志：風雲再起,1996,Windows,0,cmsumhmxm002c04jovzwvrc8x,三國志,13,,要判
-cdg-0233,三國演義,1991,DOS,4,cmsylqohs003f04jih81zn4j0,三國演義,17,,要判
-cdg-0233,三國演義,1991,DOS,4,cmsylwgrf005604jiajhhyt73,The Rising Dynasty,1,,要判
-cdg-0398,大明英雄傳：龍騰天下,1993,DOS,4,cmtpk4j5z00vm04jvx1o8plsb,大明英雄傳 龍騰天下,3,,要判
-cdg-0398,大明英雄傳：龍騰天下,1993,DOS,4,cmtpk5wap017304jvpk8jbeyy,大明英雄傳,1,,要判
-cdg-0425,大逆鱗3,1999,Windows,2,cmsregzzj001104iefirwgpbo,大逆鱗3,1,,要判
-cdg-0425,大逆鱗3,1999,Windows,2,cmtple5eo0ad204jv4dpzjkqb,大逆鱗III,4,,要判
-cdg-0491,太平洋空戰英雄,1992,DOS,3,cmt9rt6f3000m04jsn35mpmks,太平洋空戰英雄,5,,要判
-cdg-0491,太平洋空戰英雄,1992,DOS,3,cmta069tq000204jr2m4cz0tv,Aces of the Pacific,1,,要判
-cdg-0553,工人物語,1994,DOS,0,cmtpkfc5j028t04jvskd6163n,工人物語,1,,要判
-cdg-0553,工人物語,1994,DOS,0,cmtpkgvvc02mv04jv397awwax,工人物語建國篇,2,,要判
-cdg-0588,幻想西遊記,2000,Win9x,1,cmss8fs1l004a04jsvkv4xsq3,幻想西遊記,2,,要判
-cdg-0588,幻想西遊記,2000,Win9x,1,cmtpnd7o702jp04l6ip43noww,新西遊記,3,,要判
-cdg-0624,水滸傳之梁山好漢,1999,Windows,3,cmtpl2ayl07a704jv10tfko6u,水滸傳之梁山好漢,1,,要判
-cdg-0624,水滸傳之梁山好漢,1999,Windows,3,cmsvuqwox000104lepsmjptw7,水滸傳,21,,要判
-cdg-0627,水管狂想曲,1989,DOS,4,cmsvpx5bx001m04ld7fvxuts0,水管狂想曲,2,,要判
-cdg-0627,水管狂想曲,1989,DOS,4,cmsvpx5c3001o04ldjxk9szc0,Pipe Dream,1,,要判
-cdg-0640,世嘉拉力賽2,1999,Windows,2,cmtxy693b005204kwi4edjcnj,SEGA越野賽車 2,7,,要判
-cdg-0640,世嘉拉力賽2,1999,Windows,2,cmtplmm7h0ck604jv6sjatwq1,SEGA RALLY 2,1,,要判
-cdg-0666,世紀帝國,1997,Windows,1,cmtplab8109i104jvho5o1s18,世紀帝國,2,,要判
-cdg-0666,世紀帝國,1997,Windows,1,cmu5g93qj001a04ky9vlnep2l,Age of Empires,1,,要判
-cdg-0671,世紀爭霸,2001,Windows,1,cmtpn112b000j04l619na1b2i,世紀爭霸,2,,要判
-cdg-0671,世紀爭霸,2001,Windows,1,cmtplw6vl0enw04jvpq4kp2dg,地球帝國,1,,要判
-cdg-0712,失落大地,1999,Windows,2,cmss8fsbt008f04jsr7rfglz3,失落大地,1,,要判
-cdg-0712,失落大地,1999,Windows,2,cmtplaaye09ev04jvux00icbr,失落的大地,1,,要判
-cdg-0745,玉蒲團之浪史奇觀,1997,DOS,0,cmtpl55c5086p04jv2shtdtnl,玉蒲團之浪史奇觀,1,,要判
-cdg-0745,玉蒲團之浪史奇觀,1997,DOS,0,cmtpl55bm086o04jvt2611a4v,玉蒲團,1,,要判
-cdg-0756,地下創世紀：冥河深淵,1992,DOS,4,cmt9n2o6g000d04jmxazbbt2z,地下創世紀：冥河深淵,3,,要判
-cdg-0756,地下創世紀：冥河深淵,1992,DOS,4,cmtpk4j7f00w404jvc9f2ppdh,地下創世紀,1,,要判
-cdg-0833,百戰迷宮,1993,DOS,5,cmtpkd3ux01oi04jvnreyegtx,百戰迷宮,1,,要判
-cdg-0833,百戰迷宮,1993,DOS,5,cmtpkb3y001g304jv8kp1vxlv,DUNGEON HACK,1,,要判
-cdg-0885,裝甲雄師,1989,DOS,4,cmt03mnrd003u04l512bjawz7,裝甲雄師,1,,要判
-cdg-0885,裝甲雄師,1989,DOS,4,cmswq0tcj007404l6etx9t0ob,裝甲雄獅,3,,要判
-cdg-0890,西楚霸王：項羽,1996,DOS,3,cmtpkqejf04bi04jvmr9x7dzi,西楚霸王—項羽,2,,要判
-cdg-0890,西楚霸王：項羽,1996,DOS,3,cmtpktg8s053y04jvhkvkadg9,西楚霸王,3,,要判
-cdg-1029,四川省2,1992,DOS,5,cmta16kxm001404jwi1rx3ig8,四川省2,0,,要判
-cdg-1029,四川省2,1992,DOS,5,cmt1mvac4005r04juq6h9szpg,四川省II,4,,要判
-cdg-1051,御封戰將,1990,DOS,3,cmsybeknm000h04jvka2sq7zw,御封戰將,6,,要判
-cdg-1051,御封戰將,1990,DOS,3,cmsxqcbqe005v04l4y3wzsvju,King's Bounty,1,,要判
-cdg-1117,帝國的光榮,1992,DOS,17,cmt1mvalg008b04jusyvoszx0,帝國的光榮,1,,要判
-cdg-1117,帝國的光榮,1992,DOS,17,cmtdmiijn000j04l4maa9tm14,帝國之光榮,1,,要判
-cdg-1152,決戰大魔域,1993,DOS,1,cmtpkg3fb02fp04jvfg4ibdu4,重返魔域,2,,要判
-cdg-1152,決戰大魔域,1993,DOS,1,cmtpk6hpz01a104jvjrsnm47p,RETURN TO ZORK,1,,要判
-cdg-1162,決戰西洋棋（Battle Chess）,1988,DOS,3,cmsvn61tt001n04l8kw1afpb3,決戰西洋棋,2,,要判
-cdg-1162,決戰西洋棋（Battle Chess）,1988,DOS,3,cmsvpx5gq002t04ld8a0iiorc,Battle Chess,1,,要判
-cdg-1189,波斯王子,1990,DOS,6,cmsx2unfz000p04ldsu7kvqky,波斯王子,9,,要判
-cdg-1189,波斯王子,1990,DOS,6,cmsx2xztr00ci04ldfzp1l94g,波斯王子 (Prince of Persia),3,,要判
-cdg-1194,波斯王子3D,1999,Windows,0,cmtplnxmw0cw204jvw82l9ey4,波斯王子3D,1,,要判
-cdg-1194,波斯王子3D,1999,Windows,0,cmtpnyia306tl04l6rsenw2o2,波斯王子3,1,,要判
-cdg-1361,陸空戰將,1993,DOS,0,cmta91uj4005504l6xb1iluch,陸空戰將,6,,要判
-cdg-1361,陸空戰將,1993,DOS,0,cmtpk43ju00rb04jvv69flbbc,Strike Commander,1,,要判
-cdg-1381,勇士傳奇,1992,DOS,7,cmta8mevy000s04jr4lp79x4z,勇士傳奇,4,,要判
-cdg-1381,勇士傳奇,1992,DOS,7,cmtpjz2pp003704jv2udqq48p,Legends of Valour,1,,要判
-cdg-1413,皇室血裔2,2000,Windows,0,cmtplpi180d7e04jv64lh52f3,王國興亡錄,1,,要判
-cdg-1413,皇室血裔2,2000,Windows,0,cmu84x4q3008b04ih95xup8yj,ガングリフォンII,3,,要判、名稱含假名
-cdg-1420,秋之回憶,2003,Windows,1,cmtpnjwkd03xh04l6kmfkaprm,秋之回憶,2,,要判
-cdg-1420,秋之回憶,2003,Windows,1,cmtxy6a5300an04kwjwj1mzbd,Memories Off,1,,要判
-cdg-1440,科隆戰記2：闇黑帝降臨,1998,Win9x,0,cmtpki0ld02z104jvkvl8qqgp,カスタムメイト・2,5,,要判、名稱含假名
-cdg-1440,科隆戰記2：闇黑帝降臨,1998,Win9x,0,cmu84x4q3008b04ih95xup8yj,ガングリフォンII,3,,要判、名稱含假名
-cdg-1441,科隆戰記3,1999,Windows,1,cmtplokff0czp04jvz5l3j5pu,科隆戰記3,1,,要判
-cdg-1441,科隆戰記3,1999,Windows,1,cmu84x5vx00e604ihnxutqqqg,シャイニングフォースIII,1,,要判、名稱含假名
-cdg-1477,美少女夢工場,1992,DOS,5,cmtpkd3t301ny04jvg13vwhml,美少女夢工場,1,,要判
-cdg-1477,美少女夢工場,1992,DOS,5,cmta16l12001v04jwfc8th1lk,美少女夢工廠,1,,要判
-cdg-1478,美少女夢工場2,1994,DOS,6,cmtpkecer01zt04jv0mioy8sq,美少女夢工場2,1,,要判
-cdg-1478,美少女夢工場2,1994,DOS,6,cmtpkb3x401fu04jvl5l565b7,美少女夢工廠2,2,,要判
-cdg-1531,風色幻想SP：封神之刻,2000,Windows,1,cmtplmm3t0cj504jvih6ib5cm,風色幻想SP～封神之刻,3,,要判
-cdg-1531,風色幻想SP：封神之刻,2000,Windows,1,cmtplnxks0cvg04jvs61oewma,風色幻想SP,1,,要判
-cdg-1547,飛龍騎士,1990,DOS,1,cmsx2w9c2005s04ld3ba4wjca,飛龍騎士,5,,要判
-cdg-1547,飛龍騎士,1990,DOS,1,cmsx2w9ca005t04ld2qefaj72,Dragon Strike,1,,要判
-cdg-1565,仙劍奇俠傳2,2003,Windows,0,cmtpn8s8201qm04l6uf7gzbow,仙劍奇俠傳2,3,,要判
-cdg-1565,仙劍奇俠傳2,2003,Windows,0,cmtpnc6jr028z04l6thmxhwl5,仙劍奇俠傳二,7,,要判
-cdg-1566,仙劍奇俠傳3,2003,Windows,0,cmtpnhyev03gc04l6efzv3xtx,仙劍奇俠傳3,3,,要判
-cdg-1566,仙劍奇俠傳3,2003,Windows,0,cmtpn9mtn01yn04l6sfnlnr1x,仙劍奇俠傳三,8,,要判
-cdg-1574,代碼：冰人,1990,DOS,3,cmswuudso000l04l4pdiof632,代碼：冰人,2,,要判
-cdg-1574,代碼：冰人,1990,DOS,3,cmswuudsw000m04l4iga9g33o,CODENAME: ICEMAN,1,,要判
-cdg-1592,伊蘇國,1989,DOS,2,cmswqdm8u00c104l6v2yjifu0,伊蘇國,3,,要判
-cdg-1592,伊蘇國,1989,DOS,2,cmsvpbm1m000904jvs3fslqf4,Ancient Land of Ys,1,,要判
-cdg-1620,俠客遊,1994,DOS,1,cmtpkxds8064a04jvv07i0krc,俠客遊,2,,要判
-cdg-1620,俠客遊,1994,DOS,1,cmtpki0l002yz04jv5r15adcc,LUNATIC DAWN II,1,,要判
-cdg-1720,快打旋風（Street Fighter）,1988,DOS,3,cmsvv0lvk002m04jrnf5yoosh,快打旋風 (Street Fighter),1,,要判
-cdg-1720,快打旋風（Street Fighter）,1988,DOS,3,cmsvn61qd000r04l8upsvd9gt,快打旋風,3,,要判
-cdg-1732,快樂天堂,1994,DOS,4,cmtpkhksp02s204jvth3m20lt,快樂天堂,1,,要判
-cdg-1732,快樂天堂,1994,DOS,4,cmtpkfc6j029004jvioos90nj,THEME PARK,1,,要判
-cdg-1783,惡魔禁地,1993,DOS,2,cmstskppu000i04l5e3e2bxbh,惡魔禁地,6,,要判
-cdg-1783,惡魔禁地,1993,DOS,2,cmtpjz2it001i04jvtli0vego,Veil of Darkness,2,,要判
-cdg-1832,神奇傳說,1997,Windows,0,cmtpl1ipb071104jvnj9odlxq,神奇傳說,6,,要判
-cdg-1832,神奇傳說,1997,Windows,0,cmtpkznf606q704jvbvhoqntl,Farland Saga,1,,要判
-cdg-1838,神州八劍,1991,DOS,2,cmsylqo73001004jip3ilyfux,神州八劍,8,,要判
-cdg-1838,神州八劍,1991,DOS,2,cmsylqo7a001104ji6uj6ncxo,The Other Side of the Predella,1,,要判
-cdg-1879,笑傲江湖之日月神教,2000,Windows,1,cmss8frw3001r04jsv3kj32m9,笑傲江湖之日月神教,1,,要判
-cdg-1879,笑傲江湖之日月神教,2000,Windows,1,cmsvpbm5o001104jvmclic9g0,笑傲江湖,11,,要判
-cdg-1882,軒轅劍2,1994,DOS,1,cmtpkcbb001hh04jvos70kkop,軒轅劍2,1,,要判
-cdg-1882,軒轅劍2,1994,DOS,1,cmtpkd3q301n104jv9f4czpqo,軒轅劍貳,5,,要判
-cdg-1884,軒轅劍3：雲和山的彼端,1999,Windows,1,cmss8frug001104jsuos063hd,軒轅劍3-雲和山的彼端,1,,要判
-cdg-1884,軒轅劍3：雲和山的彼端,1999,Windows,1,cmtplq3p00ddr04jv6a4q7gmy,軒轅劍參～雲和山的彼端,1,,要判
-cdg-1918,毀滅戰士（Obliterator）,1988,DOS,3,cmsvpx58s000o04ldnqzmqbgs,毀滅戰士,5,,要判
-cdg-1918,毀滅戰士（Obliterator）,1988,DOS,3,cmsvpx58z000q04ldgun6zvjs,Obliterator,1,,要判
-cdg-1938,異域之門,1991,DOS,3,cmt1hzs81002c04ldgwpxkmc8,異域之門,9,,要判
-cdg-1938,異域之門,1991,DOS,3,cmsyrh865004904lfdknkbdek,Gateway to the Savage Frontier,1,,要判
-cdg-1968,雙截龍2：復仇,1988,DOS,3,cmsvuqwtg000p04lesa83s82n,雙截龍 II,1,,要判
-cdg-1968,雙截龍2：復仇,1988,DOS,3,cmsx2unnl002604ldqe5irny6,雙截龍II,2,,要判
-cdg-2050,純愛手札,1998,Windows,1,cmtplfdx90aqw04jvklv5bpft,純愛手札,2,,要判
-cdg-2050,純愛手札,1998,Windows,1,cmtplblxo09uk04jvmxecigaw,ときめきメモリアル～Forever With You,1,,要判、名稱含假名
-cdg-2051,純愛手札：交給我你的心,1999,Windows,0,cmtplokdw0cz604jvyad7i2fb,純愛手札～交給我你的心,1,,要判
-cdg-2051,純愛手札：交給我你的心,1999,Windows,0,cmtplfdx90aqw04jvklv5bpft,純愛手札,2,,要判
-cdg-2091,絕冬城之夜,2002,Windows,0,cmtpn7cu101fa04l69fkvomky,絕冬城之夜,2,,要判
-cdg-2091,絕冬城之夜,2002,Windows,0,cmtplycry0f4f04jvjkjqomub,Neverwinter Nights,1,,要判
-cdg-2178,超未來少女,1995,DOS,0,cmtpkol8p03to04jvehp6wcz2,超未來少女,1,,要判
-cdg-2178,超未來少女,1995,DOS,0,cmtpki0l702z004jv3vfai4xr,FORESIGHT DOLLY,1,,要判
-cdg-2200,NEW星式7号,1990,DOS,1,cmsybi8cs000q04l2570h3dce,Stellar 7,1,,要判
-cdg-2200,NEW星式7号,1990,DOS,1,cmsybi8cj000p04l222l7kylp,NEW星式7號,1,,要判
-cdg-2201,超級星式九號,1991,DOS,0,cmt1hzs3s001904ldfttyu9b2,Nova 9,1,,要判
-cdg-2201,超級星式九號,1991,DOS,0,cmt1hzs3n001804ldofd4dj8m,超級星式9號,3,,要判
-cdg-2262,黎明之砧,1996,DOS,3,cmtpku77705bk04jvurs2f8ub,黎明之砧,5,,要判
-cdg-2262,黎明之砧,1996,DOS,3,cmtpkrzyn04p204jvq4s6veh1,Anvil of Dawn,1,,要判
-cdg-2303,文明帝國,1991,DOS,3,cmtplp0gz0d4t04jvfqhutxef,文明帝國,1,,要判
-cdg-2303,文明帝國,1991,DOS,3,cmtd0z9tk001c04l6cttw3bx1,文明,2,,要判
-cdg-2303,文明帝國,1991,DOS,3,cmt9n2oc3001e04jmjj2zffuq,文明霸業,5,,要判
-cdg-2368,方程式機車賽,1989,DOS,3,cmswq0tj8008t04l6bpyb8ny5,方程式機車賽,1,,要判
-cdg-2368,方程式機車賽,1989,DOS,3,cmswqdmg800dw04l6omtm0ve2,方程式賽車,1,,要判
-cdg-2417,星際爭霸戰：25週年紀念,1992,DOS,1,cmt9n4wh7004r04jm8gld4ln8,Star Trek-25th Anniversary,1,,要判
-cdg-2417,星際爭霸戰：25週年紀念,1992,DOS,1,cmtdmiika000m04l4tyan17tq,星艦迷航記,1,,要判
-cdg-2529,聖少女戰隊2,1995,DOS,9,cmtpknfg803h804jv0tfdb09b,聖少女戰隊 2,3,,要判
-cdg-2529,聖少女戰隊2,1995,DOS,9,cmtpkktah03a704jv3pnovcr5,聖少女戰隊 II,1,,要判
-cdg-2531,聖劍奇兵,1999,Windows,4,cmtplokep0czh04jv8xq7503j,聖劍奇兵,2,,要判
-cdg-2531,聖劍奇兵,1999,Windows,4,cmsvoibo0000u04jpahg219xg,聖戰奇兵,6,,要判
-cdg-2583,運輸大亨,1994,DOS,0,cmtpkkth003c604jvizkpluyw,運輸大亨,1,,要判
-cdg-2583,運輸大亨,1994,DOS,0,cmtpkhkje02pi04jvdmepdpef,Transport Tycoon,1,,要判
-cdg-2657,雲國小精靈,1990,DOS,3,cmsx2w98y005104ld70zxtx01,雲國小精靈,2,,要判
-cdg-2657,雲國小精靈,1990,DOS,3,cmsx2w995005204ld5x8nrcl6,Cloud Kingdoms,1,,要判
-cdg-2676,雷神之鎚,1996,DOS,1,cmtpkv05m05fa04jv8vgj5298,雷神之鎚,3,,要判
-cdg-2676,雷神之鎚,1996,DOS,1,cmtpkp9pw03xs04jvonz29tzb,QUAKE,3,,要判
-cdg-2681,雷電,1994,DOS,0,cmtpki0iv02y804jvmompa2wd,雷電,1,,要判
-cdg-2681,雷電,1994,DOS,0,cmu5g93rr001h04ky47nnzmy5,Raiden,1,,要判
-cdg-2729,夢幻四驅車,1999,Windows,1,cmtpliana0bh204jvey3rxogf,夢幻四驅車,1,,要判
-cdg-2729,夢幻四驅車,1999,Windows,1,cmtplna170cqp04jvq10wdvtg,夢幻遙控車,1,,要判
-cdg-2775,瘋狂主宰,1991,DOS,1,cmtpk4x7r00z904jvfqp1cse0,瘋狂主宰,1,,要判
-cdg-2775,瘋狂主宰,1991,DOS,1,cmtpjz2nq002q04jvh5w7ojh3,Mega Lo Mania,2,,要判
-cdg-2902,銀河英雄,1989,DOS,1,cmsvpx5ap001904ldd264g5gn,銀河英雄,5,,要判
-cdg-2902,銀河英雄,1989,DOS,1,cmsvpx5aw001b04ldxozr3uj8,Space Rogue,1,,要判
-cdg-2903,銀河英雄／寒漠風暴,1997,DOS,2,cmsvpx5ap001904ldd264g5gn,銀河英雄,5,,要判
-cdg-2903,銀河英雄／寒漠風暴,1997,DOS,2,cmtpl1iwp073504jv5ua0oxoo,寒漠風暴,1,,要判
-cdg-2911,銀河飛將,1990,DOS,1,cmsybi8df000v04l24yjk6o3e,銀河飛將,19,,要判
-cdg-2911,銀河飛將,1990,DOS,1,cmsybekru001504jv2ltup9um,Wing Commander,4,,要判
-cdg-2969,創世紀7：黑月之門,1992,DOS,6,cmt9rt67i000104jszp8mwoue,創世紀7：黑月之門,2,,要判
-cdg-2969,創世紀7：黑月之門,1992,DOS,6,cmt9n4wfe004e04jm0ub74vge,創世紀VII——黑月之門,1,,要判
-cdg-2969,創世紀7：黑月之門,1992,DOS,6,cmt9n4wfm004f04jmh4wdi9le,Ultima VII-The Black Gate,1,,要判
-cdg-2971,創世紀8：異教徒,1994,DOS,1,cmtpkgvlr02kt04jvv2z9fj0w,創世紀8 異教徒,1,,要判
-cdg-2971,創世紀8：異教徒,1994,DOS,1,cmtpkerbp023h04jv1myebqii,創世紀8,5,,要判
-cdg-2987,劍俠情緣2,2000,Windows,1,cmtplth460e2d04jvjhteor1e,劍俠情緣 2,1,,要判
-cdg-2987,劍俠情緣2,2000,Windows,1,cmtplw6zs0ep804jv82ve0qta,劍俠情緣貳,1,,要判
-cdg-3044,挑戰極速,1991,DOS,1,cmta8xkyt002v04l62ep5rko9,挑戰極速,1,,要判
-cdg-3044,挑戰極速,1991,DOS,1,cmsyqnpif001q04i5n9yy6hq7,Mario Andretti's Racing Challenge,1,,要判
-cdg-3048,捍衛雄鷹3.0,1991,DOS,2,cmt1mvabr005n04ju49e3afcr,捍衛雄鷹3.0,8,,要判
-cdg-3048,捍衛雄鷹3.0,1991,DOS,2,cmsysz3aa006v04jojdyrfltb,FALCON 3.0,5,,要判
-cdg-3107,楚漢之爭2：赤龍反撲,1992,DOS,7,cmt9n7myw009w04jm14hy9zco,楚漢之爭2—赤龍反撲,2,,要判
-cdg-3107,楚漢之爭2：赤龍反撲,1992,DOS,7,cmt9n4wl7005o04jm805h4fgq,楚漢之爭2,2,,要判
-cdg-3175,模擬城市,1989,DOS,1,cmsvpx56x000504ldpysay0t8,模擬城市,7,,要判
-cdg-3175,模擬城市,1989,DOS,1,cmsvud7tt000l04l6zyg2uajr,SIM CITY,1,,要判
-cdg-3175,模擬城市,1989,DOS,1,cmsxqcbxk007x04l414fm7ej8,SimCity,1,,要判
-cdg-3181,模擬大樓,1997,Windows,2,cmtpkol6j03t304jvdypqahcb,模擬大樓,1,,要判
-cdg-3181,模擬大樓,1997,Windows,2,cmtpl8p3e093l04jv5go9myma,摩天大樓,1,,要判
-cdg-3190,模擬樂園,1999,Windows,4,cmsreh08d004904ieqwybuf37,夢幻遊樂園,1,,要判
-cdg-3190,模擬樂園,1999,Windows,4,cmtpls2iv0ds904jvka5ffdtv,千禧新樂園,1,,要判
-cdg-3271,烏茲衝鋒槍,1989,DOS,3,cmsvpx57k000b04ldneox4wtn,烏茲衝鋒槍,1,,要判
-cdg-3271,烏茲衝鋒槍,1989,DOS,3,cmsvpx57r000d04ld8rdg7rzu,Operation Wolf,1,,要判
-cdg-3274,烽火三國,1999,Windows,2,cmtplv15p0ed504jvpp4zpttf,烽火三國,1,,要判
-cdg-3274,烽火三國,1999,Windows,2,cmtplkk670c1c04jv99855zny,縱橫天地之烽火三國,1,,要判
-cdg-3429,英雄傳奇,1989,DOS,3,cmswq0tdi007d04l6dnphtdiv,英雄傳奇,2,,要判
-cdg-3429,英雄傳奇,1989,DOS,3,cmswuue1e002104l4nbpd0t6r,英雄傳奇I,2,,要判
-cdg-3480,藏天神魔傳,2002,Windows,1,cmtpn7cob01e004l6agjyetnl,藏天神魔傳,1,,要判
-cdg-3480,藏天神魔傳,2002,Windows,1,cmtpn2nv500hd04l6ogywoyui,西藏鎮魔曲,1,,要判
-cdg-3528,狩魔獵人：原罪,1993,DOS,1,cmtpkg3fn02fq04jv9j7o0ora,狩魔獵人－原罪,2,,要判
-cdg-3528,狩魔獵人：原罪,1993,DOS,1,cmtpkdzb101vm04jv7ce1b0ri,狩魔獵人,3,,要判
-cdg-3605,鐵路大亨,1990,DOS,8,cmsyew02g001304l1wqd550i6,鐵路大亨,11,,要判
-cdg-3605,鐵路大亨,1990,DOS,8,cmsybekr5001104jvpfnvhtd7,Railroad Tycoon,1,,要判
-cdg-3610,鑽石方塊,1989,DOS,3,cmsybv6wo00ek04l2557ymfne,鑽石方塊,2,,要判
-cdg-3610,鑽石方塊,1989,DOS,3,cmsxqcbny005704l4yhm0zr28,Puzznic,1,,要判
-cdg-3650,鬼屋魔影,1992,DOS,2,cmta82gdx005q04kztasgjyu3,鬼屋魔影,5,,要判
-cdg-3650,鬼屋魔影,1992,DOS,2,cmta82ge4005r04kzj5x19p1v,Alone in the Dark,1,,要判
-cdg-3663,魔喚精靈,1998,Windows,1,cmtplfzwj0az204jvegdr19m8,魔喚精靈,1,,要判
-cdg-3663,魔喚精靈,1998,Windows,1,cmtpl8p8e094x04jvgtowww9a,VANTAGE MASTER,5,,要判
-cdg-3673,魔域幻境,1998,Windows,1,cmtpl639808cq04jv08q6hbl8,魔域幻境,5,,要判
-cdg-3673,魔域幻境,1998,Windows,1,cmtpk135i00en04jvols8ysj9,Unreal,1,,要判
-cdg-3722,魔法軍團,1998,DOS、Win9x,1,cmtpl55af086a04jvg00wno35,魔法軍團,4,,要判
-cdg-3722,魔法軍團,1998,DOS、Win9x,1,cmtpl55aa086904jvpvh07hmo,Warlocks,1,,要判
-cdg-3757,魔界召喚,1992,DOS,3,cmtpk4j7o00w704jv159rukah,魔界召喚,1,,要判
-cdg-3757,魔界召喚,1992,DOS,3,cmta82gcf005804kzldj63j41,The Summoning,2,,要判
-cdg-3758,魔界歷險,1987,DOS,3,cmswuudul000x04l4549cl9ky,魔界歷險,6,,要判
-cdg-3758,魔界歷險,1987,DOS,3,cmtplfdzw0ar304jvyir56s1z,魔域傳說,1,,要判
-cdg-3758,魔界歷險,1987,DOS,3,cmswuudut000y04l4sh4mdmva,SORCERIAN,1,,要判
-cdg-3763,魔眼殺機：深水城的陰謀,1991,DOS,4,cmsyqnpgf001704i5m4b655wu,Eye of the Beholder,2,,要判
-cdg-3763,魔眼殺機：深水城的陰謀,1991,DOS,4,cmsyqgomy00ac04jnh4utvi37,魔眼殺機,10,,要判
-cdg-3768,魔石堡,1995,DOS,5,cmtpks04504qu04jvqoinoqwd,魔石堡,4,,要判
-cdg-3768,魔石堡,1995,DOS,5,cmtpkr5xt04i304jvkzbztzj9,StoneKeep,1,,要判
-cdg-3773,魔胎,1992,DOS,4,cmta1agav005g04jw4l9n8rba,魔胎,4,,要判
-cdg-3773,魔胎,1992,DOS,4,cmta16ktk000n04jwuy4gapjp,The Dark Half,1,,要判
-cdg-3785,魔鬼推銷員,1995,DOS,2,cmtpkpa2q041b04jv71ghgtjc,魔鬼推銷員,2,,要判
-cdg-3785,魔鬼推銷員,1995,DOS,2,cmtpkgvh902jv04jv6tl0ehq7,推銷之王,1,,要判
-cdg-3812,氙星異形,1988,DOS,2,cmtpkk6e9036d04jvcd0y3xmv,XENON,1,,要判
-cdg-3812,氙星異形,1988,DOS,2,cmsx2uneb000d04ldrw5m06zf,氙星異形I,1,,要判
-cdg-3831,龍騎士3,1995,DOS,6,cmtpkfbvt026t04jvz6mlx5fd,龍騎士3,1,,要判
-cdg-3831,龍騎士3,1995,DOS,6,cmu84x5vx00e604ihnxutqqqg,シャイニングフォースIII,1,,要判、名稱含假名
-cdg-3857,蓋世龍王,1990,DOS,4,cmsylqo2u000d04ji9sfesc82,蓋世龍王,4,,要判
-cdg-3857,蓋世龍王,1990,DOS,4,cmsylqo31000e04ji5nzycmws,Dragon Lord,1,,要判
-cdg-3860,核戰狂人夢,1989,DOS,2,cmsx2w9cr005y04ldhwnw8tjh,核戰狂人夢,3,,要判
-cdg-3860,核戰狂人夢,1989,DOS,2,cmsx2w9cy005z04ldu74ltrkk,Nuclear War,1,,要判
-cdg-3863,猴島小英雄,1990,DOS,3,cmsybi88j000704l2l50i6f2q,猴島小英雄,11,,要判
-cdg-3863,猴島小英雄,1990,DOS,3,cmsybekqa000x04jv30y4dwh5,The Secret of Monkey Island,2,,要判
-cdg-3872,蠟像館之謎,1992,DOS,1,cmtpjz2l0002104jvayspypwq,蠟像館之謎,3,,要判
-cdg-3872,蠟像館之謎,1992,DOS,1,cmtpjz2ld002404jv4u7owc2g,Waxworks,1,,要判
-cdg-3890,忍,1989,DOS,2,cmsvud7vh001404l6r2gqi4jf,忍,2,,要判
-cdg-3890,忍,1989,DOS,2,cmsvud7vo001604l6oq9kbdsc,SHINOBI,1,,要判
-cdg-3894,紗之器,1990,DOS,1,cmswuudvg001304l4snuiqyev,紗之器,2,,要判
-cdg-3894,紗之器,1990,DOS,1,cmswuudvp001404l4p35ctmzt,LOOM,1,,要判
-cdg-3916,囂張拳王,1991,DOS,1,cmt1hzs0x000l04ldq22771n8,囂張拳王,4,,要判
-cdg-3916,囂張拳王,1991,DOS,1,cmsysv1mj000t04jovztewjnn,4D Boxing,3,,要判
-cdg-3944,北與南,1989,DOS,2,cmswq0tbg006v04l63vkc2e6x,北與南,2,,要判
-cdg-3944,北與南,1989,DOS,2,cmsxqcbut007404l4citg7ydd,North & South,1,,要判
-cdg-3946,炮艇,1990,DOS,2,cmsx2undp000804ld6ne8af6j,GUN BOAT,1,,要判
-cdg-3946,炮艇,1990,DOS,2,cmsx2undi000704ldd4i47i55,砲艇,1,,要判
-cdg-3947,快樂泡泡龍,1989,DOS,2,cmswqdm5400b404l6jme796bb,快樂泡泡龍,1,,要判
-cdg-3947,快樂泡泡龍,1989,DOS,2,cmtpl1iof070s04jvabj7dt3d,泡泡龍,1,,要判
-cdg-3950,猛鬼逛街,1989,DOS,2,cmsvud7ux000x04l6dqnbdagc,猛鬼逛街,4,,要判
-cdg-3950,猛鬼逛街,1989,DOS,2,cmsvud7v3000z04l6813huwg2,A NIGHTMARE ON ELM STREET,1,,要判
-cdg-3951,激戰M星雲,1990,DOS,2,cmsybektu001f04jvycwn7y4z,激戰M星雲,1,,要判
-cdg-3951,激戰M星雲,1990,DOS,2,cmsxqcbpm005n04l4ouh2r17h,Star Control,1,,要判
-cdg-3953,烏龍吸血鬼,1988,DOS,2,cmsyqgoxm00cn04jnn2dyfftm,烏龍吸血鬼,1,,要判
-cdg-3953,烏龍吸血鬼,1988,DOS,2,cmsylwgqy005204jimlrsyn42,Night Hunter,1,,要判
-cdg-3959,瑪麗姊妹,1992,DOS,2,cmta7yv0s001e04kz8r7v54jv,瑪麗姊妹,1,,要判
-cdg-3959,瑪麗姊妹,1992,DOS,2,cmta1ag3k004104jw7ka8qlxp,瑪麗姐妹,1,,要判
-cdg-3959,瑪麗姊妹,1992,DOS,2,cmta7yv10001f04kzggi0mc1h,Sister Mary,1,,要判
-cdg-3972,親愛的，我被電視吸走了,1990,DOS,3,cmsylqo41000j04ji5ag5kvco,親愛的，我被電視吸走了！,1,,要判
-cdg-3972,親愛的，我被電視吸走了,1990,DOS,3,cmsylqo4i000k04ji0nkumnxv,Altered Destiny,1,,要判
-cdg-3983,粒子世界,1990,DOS,2,cmsx2w9dg006404ldrsmez0g2,粒子世界,1,,要判
-cdg-3983,粒子世界,1990,DOS,2,cmsx2w9dn006504ldd9n9mhj2,The Game of Harmony,1,,要判
-cdg-3992,銀河超能力戰記,1988,,2,cmsybel4b003a04jvdfpckf9s,銀河超能力戰記,1,,要判
-cdg-3992,銀河超能力戰記,1988,,2,cmtpki0ld02z104jvkvl8qqgp,カスタムメイト・2,5,,要判、名稱含假名
-cdg-3994,拯救地球,1990,DOS,2,cmsybi8a9000d04l291em15xc,拯救地球,5,,要判
-cdg-3994,拯救地球,1990,DOS,2,cmsybi8ap000e04l2f85a4cf1,Buck Rogers: Countdown to Doomsday,1,,要判
-cdg-3997,克萊恩黑暗之后,1992,DOS,3,cmt9rt6g5000s04jsgtnowz4u,克萊恩黑暗之后,4,,要判
-cdg-3997,克萊恩黑暗之后,1992,DOS,3,cmta06a2n001a04jrcltpba25,The Dark Queen Of Krynn,1,,要判
-cdg-4004,浩劫餘生,1990,DOS,2,cmsyqgp0i00d904jnvhmx9yy7,浩劫餘生,4,,要判
-cdg-4004,浩劫餘生,1990,DOS,2,cmsylqo09000204ji9hbxn5lv,Fountain of Dreams,1,,要判
-cdg-4005,魔界神兵2,1988,DOS,5,cmu84x7ek00np04ih42umxfkg,魔界神兵2,1,,要判
-cdg-4005,魔界神兵2,1988,DOS,5,cmsvuqx32002a04lecui5dn81,魔界神兵 II,1,,要判
-cdg-4006,梅杜莎指環,1989,DOS,2,cmsybv6po00cx04l2z60px9xv,梅杜莎指環,4,,要判
-cdg-4006,梅杜莎指環,1989,DOS,2,cmsxqcbni005304l457tofvyo,Rings of Medusa,2,,要判
-cdg-4008,從海底出擊（Wolf Pack）,1990,DOS,0,cmsx2w9f1006h04ldwdz6f3tx,Wolf Pack,1,,要判
-cdg-4008,從海底出擊（Wolf Pack）,1990,DOS,0,cmsx2w9es006g04ldpno4vjf3,從海底出擊,4,,要判
-cdg-4011,紅爵士,1990,DOS,2,cmsyew001000l04l1hdgylwvp,紅爵士,3,,要判
-cdg-4011,紅爵士,1990,DOS,2,cmtb7seu9001t04laeygygemm,Red Baron,1,,要判
-cdg-4012,無敵飛狼2000,1991,DOS,0,cmt1hzrx7000204ldap58bser,無敵飛狼2000,6,,要判
-cdg-4012,無敵飛狼2000,1991,DOS,0,cmsysv1ny001504jowv04oeit,GUNSHIP 2000,3,,要判
-cdg-4022,戰爭風雲錄：韓戰,1992,DOS,0,cmt9rt6iy001904js1sbpysf6,戰爭風雲錄：韓戰,2,,要判
-cdg-4022,戰爭風雲錄：韓戰,1992,DOS,0,cmta069xr000j04jrg9xi4k2q,Conflict: Korea,1,,要判
-cdg-4023,長槍之役,1990,DOS,2,cmsybv6j100ba04l2vb7yh4o2,長槍之役,3,,要判
-cdg-4023,長槍之役,1990,DOS,2,cmsxqcbp7005j04l46e0pxwj2,War of the Lance,1,,要判
-cdg-4024,狂島浴血,1991,DOS,0,cmt9rt6ig001604jstkmtnnbu,狂島浴血,5,,要判
-cdg-4024,狂島浴血,1991,DOS,0,cmta069vv000a04jrica6u0n9,Battle Isle,1,,要判
-cdg-4114,戰狗,1993,DOS,0,cmtplth7e0e3304jv80yreyj7,戰狗,1,,要判
-cdg-4114,戰狗,1993,DOS,0,cmtpk4j4900v204jvy3ulpy6x,危城爭霸 戰狗,1,,要判
-cdg-4147,聖戰物語,1997,DOS,0,cmtpl556o085004jvghsapogz,聖戰物語,2,,要判
-cdg-4147,聖戰物語,1997,DOS,0,cmtpkyu1x06j404jvs9et5huj,Duel Succession,1,,要判
-cdg-4183,英雄傳奇3：戰火焚生錄,1992,DOS,2,cmtpk1s8q00iw04jvi49k9nas,Quest for Glory III: WAGES OF WAR,1,,要判
-cdg-4183,英雄傳奇3：戰火焚生錄,1992,DOS,2,cmta1ag4b004604jwuo0kzbby,英雄傳奇3,0,,要判
-cdg-4195,死亡潛航2,1990,DOS,4,cmsyew086002a04l14umhidif,死亡潛航 II,2,,要判
-cdg-4195,死亡潛航2,1990,DOS,4,cmt1hzs9l002s04ld75z9h3m5,死亡潛航II,1,,要判
-cdg-4195,死亡潛航2,1990,DOS,4,cmsxqcbq0005r04l4q7pbv475,Silent Service II,2,,要判
-cdg-4241,極道梟雄,1993,DOS,0,cmtpkdgp201so04jvzw2gsnr3,極道梟雄,5,,要判
-cdg-4241,極道梟雄,1993,DOS,0,cmtpk5dv5011d04jvb8e1jumw,SYNDICATE,2,,要判
-cdg-4241,極道梟雄,1993,DOS,0,cmtpkfr8k02bc04jvdzr4mpwb,極道梟雄資料片—美洲風暴,1,,要判
-cdg-4245,步步殺機,1989,DOS,2,cmsvud7u9000q04l64hu4ot5e,步步殺機,4,,要判
-cdg-4245,步步殺機,1989,DOS,2,cmsvud7ug000s04l6tsd0mibd,RICK DANGEROUS,1,,要判
-cdg-4255,異域寶藏,1992,DOS,3,cmta06af7003h04jrv0axn03x,異域寶藏,1,,要判
-cdg-4255,異域寶藏,1992,DOS,3,cmta069wn000e04jr6xkw53ik,Treasures of the Savage Frontier,1,,要判
-cdg-4272,風雲霸主,1990,DOS,3,cmta06a0t000z04jrjwsjizfc,風雲霸主,6,,要判
-cdg-4272,風雲霸主,1990,DOS,3,cmta06a14001004jr3yv8kh21,POWERMONGER,1,,要判
-cdg-4322,城市獵人（Rise of the Dragon）,1990,DOS,0,cmsylqo1t000804jimnknhy30,Rise of the Dragon,1,,要判
-cdg-4322,城市獵人（Rise of the Dragon）,1990,DOS,0,cmsylqo1g000704jigkm1rj3y,城市獵人,7,,要判
-cdg-4438,鐵血傭兵,1990,DOS,3,cmt03mni0001z04l5rwoeeux7,鐵血傭兵,3,,要判
-cdg-4438,鐵血傭兵,1990,DOS,3,cmta91ul7005m04l6zzufrfw8,HARD NOVA,1,,要判
-cdg-4468,出擊飛龍,1989,DOS,0,cmswuudqe000704l4vq33r8zu,出擊飛龍,3,,要判
-cdg-4468,出擊飛龍,1989,DOS,0,cmswuudqm000804l4laybungz,STRIDER,1,,要判
-cdg-4468,出擊飛龍,1989,DOS,0,cmsumll2f006804jokkqe0o1x,飛龍,1,,要判
-cdg-4504,蝙蝠俠電影版,1989,DOS,2,cmsyevzw4000104l11vw046rv,蝙蝠俠。電影版,2,,要判
-cdg-4504,蝙蝠俠電影版,1989,DOS,2,cmsyqnps3004g04i5co9lv7xy,蝙蝠俠·電影版,1,,要判
-cdg-4526,中國貳：永恆帝國,2002,Windows,0,cmtpn7cr301ek04l6vunlppv9,中國2,1,,要判
-cdg-4526,中國貳：永恆帝國,2002,Windows,0,cmtpn82xh01lp04l6f9kfbnrw,中國貳,2,,要判
-cdg-4541,金錢帝國黃金版,1996,Windows,0,cmtpl790608sx04jvqejalk5k,金錢帝國黃金版,1,,要判
-cdg-4541,金錢帝國黃金版,1996,Windows,0,cmtpktgea055n04jv98c59asw,金錢帝國,2,,要判
-cdg-4570,金牌拳王,1990,DOS,0,cmsx2unhn001104ld0sgi2kki,金牌拳王,3,,要判
-cdg-4570,金牌拳王,1990,DOS,0,cmsx2unhv001204ldbifpr3ej,LOW BLOW,1,,要判
-cdg-4572,異形神殿,1989,DOS,0,cmsybel0f002j04jv13c6a6zr,異形神殿,2,,要判
-cdg-4572,異形神殿,1989,DOS,0,cmsxqcbos005f04l40yj9qhte,Chamber of the Sci-Mutant Priestess,1,,要判
-cdg-4581,A-6入侵者,1990,DOS,2,cmsylqo6j000v04ji12r01sep,A-6入侵者,1,,要判
-cdg-4581,A-6入侵者,1990,DOS,2,cmsybeksg001904jvw0lzgmdf,Flight of the Intruder,2,,要判
-cdg-4584,F-29復仇者隱形戰鬥機,1989,DOS,0,cmsyq9fm3003u04jn0jhrvwl6,F-29復仇者隱形戰鬥機,1,,要判
-cdg-4584,F-29復仇者隱形戰鬥機,1989,DOS,0,cmsyrh7nb000f04lfuh4op4oc,F-29 復仇者隱形戰鬥機,2,,要判
-cdg-4585,妙賊奇弗,1989,DOS,2,cmsyqgoo400ak04jne8gvom6u,妙賊奇弗,3,,要判
-cdg-4585,妙賊奇弗,1989,DOS,2,cmsyqnpeq000v04i58bykn870,KEEF the THIEF,1,,要判
-cdg-4587,F-14雄貓式戰鬥機,1990,DOS,0,cmsyqgoni00ag04jntrjtt0y3,F-14雄貓式戰鬥機,1,,要判
-cdg-4587,F-14雄貓式戰鬥機,1990,DOS,0,cmsyqnpfd000z04i5pd24y4ph,F-14 Tomcat,1,,要判
-cdg-4588,沙漠之蠱,1989,DOS,3,cmta8xkzm003404l6au9cqo5o,沙漠之蠱,1,,要判
-cdg-4588,沙漠之蠱,1989,DOS,3,cmsyqnphs001j04i58atokf8s,It Came From the Desert,1,,要判
-cdg-4592,警察故事3：陰謀,1991,DOS,0,cmt03mn8u000a04l535m4ump8,警察故事3－陰謀,1,,要判
-cdg-4592,警察故事3：陰謀,1991,DOS,0,cmt03mn92000b04l5ldija64r,Police Quest 3: The Kindred,1,,要判
-cdg-4593,職業網球大賽2,1991,DOS,0,cmt1hzs1q000q04ldau392kcn,職業網球大賽2,2,,要判
-cdg-4593,職業網球大賽2,1991,DOS,0,cmt1hzs1x000r04ldvshqw7qm,Pro Tennis Tour 2,1,,要判
-cdg-4595,天生好手2,1991,DOS,0,cmtdmiiix000g04l4rg0howd7,天生好手2,1,,要判
-cdg-4595,天生好手2,1991,DOS,0,cmt1hzs2j000x04ldz3t0kux7,Earl Weaver Baseball II,1,,要判
-cdg-4595,天生好手2,1991,DOS,0,cmt1hzs2d000w04ldil167ckp,天生好手II,1,,要判
-cdg-4596,空中英雄：長空會戰,1991,DOS,2,cmt1hzs4u001k04ld4qcxnlzf,空中英雄－長空會戰,1,,要判
-cdg-4596,空中英雄：長空會戰,1991,DOS,2,cmt1mj8it000d04ju87j981c1,空中英雄長空會戰,2,,要判
-cdg-4596,空中英雄：長空會戰,1991,DOS,2,cmt03mnej001a04l5reu6of9r,Chuck Yeager's Air Combat,2,,要判
-cdg-4598,小人物狂想曲2,1991,DOS,0,cmtdmiih0000404l4bno7jj50,小人物狂想曲2,1,,要判
-cdg-4598,小人物狂想曲2,1991,DOS,0,cmt8znyko000904jymh5f1dnd,小人物狂想曲 II,3,,要判
-cdg-4599,天才智多星,1991,DOS,0,cmt1hzs5b001p04ld59baxwgf,天才智多星,5,,要判
-cdg-4599,天才智多星,1991,DOS,0,cmt1hzs5g001q04ldfxy8np7x,Castle of Dr. Brain,1,,要判
-cdg-4603,天際寒星：義無反顧,1991,DOS,3,cmt9n4wjz005e04jmtschbw37,天際寒星——義無反顧,1,,要判
-cdg-4603,天際寒星：義無反顧,1991,DOS,3,cmt8znyzk002m04jy9af94sym,PLANET'S EDGE,2,,要判
-cdg-4606,美國鼠譚,1992,DOS,0,cmta069z1000p04jr3w0hcjuo,美國鼠譚,1,,要判
-cdg-4606,美國鼠譚,1992,DOS,0,cmta069zb000q04jrq751s2fv,An American Tail,1,,要判
-cdg-4609,戰爭風雲錄：中東戰爭,1991,DOS,4,cmt9rt6je001c04js2srk60mo,戰爭風雲錄：中東戰爭,3,,要判
-cdg-4609,戰爭風雲錄：中東戰爭,1991,DOS,4,cmta06a6d001v04jrvben362i,Conflict: Middle East,1,,要判
-cdg-4610,香港麻將,1992,DOS,2,cmt9rt6fk000p04jszebwxh40,香港麻將,1,,要判
-cdg-4610,香港麻將,1992,DOS,2,cmta06a05000v04jrphaziq9w,Hong Kong Mahjong Pro,1,,要判
-cdg-4613,夢幻勇士,1990,DOS,0,cmta1ag5v004h04jwouqakfr5,夢幻勇士,1,,要判
-cdg-4613,夢幻勇士,1990,DOS,0,cmtpk135i00en04jvols8ysj9,Unreal,1,,要判
-cdg-4625,烏托邦,1991,DOS,1,cmta7yv53002b04kz2j6t5tuc,烏托邦,4,,要判
-cdg-4625,烏托邦,1991,DOS,1,cmtpk43gk00qk04jvr7jugb4n,UTOPIA,1,,要判
-cdg-4627,太空牛仔,1990,DOS,1,cmtpk43it00r604jv0yquunew,太空牛仔,2,,要判
-cdg-4627,太空牛仔,1990,DOS,1,cmtpk43iz00r704jvftd9sqj2,Spaceward Ho!,1,,要判
-cdg-4629,橋牌高手,1992,DOS,0,cmta8mf53002p04jrehcuvod4,橋牌高手,3,,要判
-cdg-4629,橋牌高手,1992,DOS,0,cmtpjz2kn001y04jvieh7swop,Bridge Master,1,,要判
-cdg-4632,多情藥師酷牛仔,1993,DOS,1,cmtpk4xds00zr04jv2kacpi6p,多情藥師酷牛仔,2,,要判
-cdg-4632,多情藥師酷牛仔,1993,DOS,1,cmtpk43lg00rt04jvz34q07eo,Freddy Pharkas Frontier Pharmacist,1,,要判
-cdg-4642,救世聖主,1993,DOS,1,cmtpkcbgu01iy04jvadx3r54g,救世聖主,2,,要判
-cdg-4642,救世聖主,1993,DOS,1,cmtpk6hru01a604jvtb6pnwc1,SHADOW CASTER,1,,要判
-cdg-4659,跳跳魔法師,1994,DOS,2,cmtpkg3dq02f604jvjiogiisv,跳跳魔法師,2,,要判
-cdg-4659,跳跳魔法師,1994,DOS,2,cmtpkgvbn02it04jvil11i558,HOCUS POCUS,1,,要判
-cdg-4661,網路奇兵,1994,DOS,1,cmtpkgvkb02kj04jvija1748m,網路奇兵,2,,要判
-cdg-4661,網路奇兵,1994,DOS,1,cmtpkgvkl02kk04jvr6syjbty,SYSTEM SHOCK,1,,要判
-cdg-4733,激流浪子,1989,DOS,2,cmswuudoh000104l4cwbxb20v,激流浪子,2,,要判
-cdg-4733,激流浪子,1989,DOS,2,cmswuudp0000204l47atvs3zk,TOOBIN,1,,要判
-cdg-4734,雪國狄斯奈,1990,DOS,2,cmswuudwd001904l4ruu5jun6,雪國狄斯奈,3,,要判
-cdg-4734,雪國狄斯奈,1990,DOS,2,cmswuudwl001a04l471fyveep,SKI OR DIE,1,,要判
-cdg-4736,跳跳飛球,1991,DOS,2,cmsx2w9ag005e04ld4tuk991h,跳跳飛球,1,,要判
-cdg-4736,跳跳飛球,1991,DOS,2,cmsx2w9am005f04lden9mt7k4,Pop Up,1,,要判
-cdg-4737,叢林之神,1989,DOS,2,cmsx2w9e5006a04ldoqkitar1,叢林之神,2,,要判
-cdg-4737,叢林之神,1989,DOS,2,cmsx2w9eb006b04ld9vt6w8ky,Livingstone II,1,,要判
-cdg-4744,極光勇士,1990,DOS,2,cmsybel4u003e04jvf1hpzlce,極光勇士,3,,要判
-cdg-4744,極光勇士,1990,DOS,2,cmsxqcbn4004z04l4zw34nn4y,STARBLADE,1,,要判
-cdg-4752,第六感生死關頭,1989,DOS,2,cmsylqo7r001604jilte6dayl,第六感生死關頭,1,,要判
-cdg-4752,第六感生死關頭,1989,DOS,2,cmsylqo7y001704jiu1v09hah,Interphase,1,,要判
-cdg-4759,緝毒特勤組,1990,DOS,3,cmsysv1pr001k04jocvkdnm9u,緝毒特勤組,2,,要判
-cdg-4759,緝毒特勤組,1990,DOS,3,cmsyqnpgz001b04i5fficgd4r,Hoverforce,1,,要判
-cdg-4764,火爆鋼球,1990,DOS,2,cmt03mnbf000n04l5gwtses2q,火爆鋼球,4,,要判
-cdg-4764,火爆鋼球,1990,DOS,2,cmt03mnbn000o04l51p5p7pkl,Speed Ball 2,1,,要判
-cdg-4770,天下第一刀,1991,DOS,0,cmta7yv04001904kz53adhn9y,天下第一刀,1,,要判
-cdg-4770,天下第一刀,1991,DOS,0,cmta7yv0b001a04kzzs4ct074,The First Samurai,1,,要判
-cdg-4771,玩具兵棋,1992,DOS,1,cmta7yuvg000l04kzkfbmgks7,玩具兵棋,1,,要判
-cdg-4771,玩具兵棋,1992,DOS,1,cmta82gdm005m04kzjrtr77al,Theatre Of War,2,,要判
-cdg-4780,秘境傳說,1998,Windows,1,cmss8frvm001j04jss6uivsko,秘境傳說,1,,要判
-cdg-4780,秘境傳說,1998,Windows,1,cmtplmm6m0cjx04jv3zk3t3sg,Midgard,1,,要判
-cdg-4821,神月紀事,2001,Windows,1,cmtplthbx0e4504jvu28ueway,神月紀事,1,,要判
-cdg-4821,神月紀事,2001,Windows,1,cmtpln9sc0col04jvx4bgspr6,LUNA SAGA,1,,要判
-cdg-4854,白色魔法石,2005,Windows,0,cmtpnyiun06w504l6mtstt6o7,白色魔法石,2,,要判
-cdg-4854,白色魔法石,2005,Windows,0,cmtpki0ld02z104jvkvl8qqgp,カスタムメイト・2,5,,要判、名稱含假名
-cdg-4855,時光的羈絆,2004,Windows,0,cmtpnp2js04rb04l6jmgnu3ej,時光的羈絆,2,,要判
-cdg-4855,時光的羈絆,2004,Windows,0,cmtpnofbp04l304l6dpgd0ybb,EVER17,2,,要判
-cdg-5224,超時空戰機,1995,DOS,1,cmtpks03k04qm04jvbfp2dkmx,超時空戰機,1,,要判
-cdg-5224,超時空戰機,1995,DOS,1,cmtpkkt8l039n04jveowh5wyq,BARYON,1,,要判
-cdg-5233,鐵甲戰士,1994,DOS,1,cmtpkcbbh01hl04jvdtpfgf2h,鐵甲戰士,1,,要判
-cdg-5233,鐵甲戰士,1994,DOS,1,cmtpkhkjp02pl04jvox8rq6lt,Rise of the Robots,1,,要判
-cdg-5249,異星特警,1994,DOS,0,cmtpknfsj03k204jvuz234u7h,異星特警,3,,要判
-cdg-5249,異星特警,1994,DOS,0,cmtpkk6c9035s04jv7j9yhhjw,Creature Shock,1,,要判
-cdg-5313,羅馬帝國AD92,1992,DOS,1,cmtpk43qo00sw04jv8zdw029a,羅馬帝國AD92,1,,要判
-cdg-5313,羅馬帝國AD92,1992,DOS,1,cmtpnr445058504l63vekw3dk,羅馬帝國,1,,要判
-cdg-5359,魔水晶物語,1996,DOS,1,cmtpkr5z804ii04jv1cwfe3bn,魔水晶物語,1,,要判
-cdg-5359,魔水晶物語,1996,DOS,1,cmt9rt6bv000b04js4yp098dw,魔水晶,4,,要判
-cdg-5383,三國志Internet,1999,Win9x,0,cmtplqqu90dhe04jvvnvd0ltz,三國志 INTERNET,1,,要判
-cdg-5383,三國志Internet,1999,Win9x,0,cmsumhmxm002c04jovzwvrc8x,三國志,13,,要判
-cdg-5387,魔導異元素：精靈戰士篇,2000,Windows,2,cmtplq3g60dav04jvrwdfki6d,魔導異元素,1,,要判
-cdg-5387,魔導異元素：精靈戰士篇,2000,Windows,2,cmtpletom0ap504jv4d6n7ebd,Sequence Palladium,1,,要判
+bucket,cdg_id,cdg_title,year,cdg_platform,cdg_images,tocr_id,tocr_name,articles,years,tocr_platforms,status,decision
+A 正規化後完全相同,cdg-1968,雙截龍2：復仇,1988,DOS,3,cmsvuqwtg000p04lesa83s82n,雙截龍 II,1,1990–1990,,要判,
+A 正規化後完全相同,cdg-1968,雙截龍2：復仇,1988,DOS,3,cmsx2unnl002604ldqe5irny6,雙截龍II,2,1990–1990,,要判,
+A 正規化後完全相同,cdg-4504,蝙蝠俠電影版,1989,DOS,2,cmsyevzw4000104l11vw046rv,蝙蝠俠。電影版,2,1991–1991,,要判,
+A 正規化後完全相同,cdg-4504,蝙蝠俠電影版,1989,DOS,2,cmsyqnps3004g04i5co9lv7xy,蝙蝠俠·電影版,1,1991–1991,,要判,
+A 正規化後完全相同,cdg-4584,F-29復仇者隱形戰鬥機,1989,DOS,0,cmsyq9fm3003u04jn0jhrvwl6,F-29復仇者隱形戰鬥機,1,1991–1991,,要判,
+A 正規化後完全相同,cdg-4584,F-29復仇者隱形戰鬥機,1989,DOS,0,cmsyrh7nb000f04lfuh4op4oc,F-29 復仇者隱形戰鬥機,2,1991–1991,,要判,
+B 一中一西,cdg-0013,1990世界盃足球賽,1989,DOS,2,cmsx2w99n005704ld4pormgdz,1990世界盃足球賽,4,1990–1991,,要判,
+B 一中一西,cdg-0013,1990世界盃足球賽,1989,DOS,2,cmsx2w99t005804ldzc3zljn9,World Cup Soccer ITALIA '90,1,1990–1990,,要判,
+B 一中一西,cdg-0233,三國演義,1991,DOS,4,cmsylqohs003f04jih81zn4j0,三國演義,17,1991–1992,,要判,
+B 一中一西,cdg-0233,三國演義,1991,DOS,4,cmsylwgrf005604jiajhhyt73,The Rising Dynasty,1,1991–1991,,要判,
+B 一中一西,cdg-0491,太平洋空戰英雄,1992,DOS,3,cmt9rt6f3000m04jsn35mpmks,太平洋空戰英雄,5,1992–1993,,要判,
+B 一中一西,cdg-0491,太平洋空戰英雄,1992,DOS,3,cmta069tq000204jr2m4cz0tv,Aces of the Pacific,1,1992–1992,,要判,
+B 一中一西,cdg-0627,水管狂想曲,1989,DOS,4,cmsvpx5bx001m04ld7fvxuts0,水管狂想曲,2,1989–1990,,要判,
+B 一中一西,cdg-0627,水管狂想曲,1989,DOS,4,cmsvpx5c3001o04ldjxk9szc0,Pipe Dream,1,1989–1989,,要判,
+B 一中一西,cdg-0640,世嘉拉力賽2,1999,Windows,2,cmtxy693b005204kwi4edjcnj,SEGA越野賽車 2,7,1999–1999,,要判,
+B 一中一西,cdg-0640,世嘉拉力賽2,1999,Windows,2,cmtplmm7h0ck604jv6sjatwq1,SEGA RALLY 2,1,1999–1999,,要判,
+B 一中一西,cdg-0666,世紀帝國,1997,Windows,1,cmtplab8109i104jvho5o1s18,世紀帝國,2,1998–1998,,要判,
+B 一中一西,cdg-0666,世紀帝國,1997,Windows,1,cmu5g93qj001a04ky9vlnep2l,Age of Empires,1,1998–1998,,要判,
+B 一中一西,cdg-0833,百戰迷宮,1993,DOS,5,cmtpkd3ux01oi04jvnreyegtx,百戰迷宮,1,1994–1994,,要判,
+B 一中一西,cdg-0833,百戰迷宮,1993,DOS,5,cmtpkb3y001g304jv8kp1vxlv,DUNGEON HACK,1,1994–1994,,要判,
+B 一中一西,cdg-1051,御封戰將,1990,DOS,3,cmsybeknm000h04jvka2sq7zw,御封戰將,6,1990–1992,,要判,
+B 一中一西,cdg-1051,御封戰將,1990,DOS,3,cmsxqcbqe005v04l4y3wzsvju,King's Bounty,1,1990–1990,,要判,
+B 一中一西,cdg-1152,決戰大魔域,1993,DOS,1,cmtpkg3fb02fp04jvfg4ibdu4,重返魔域,2,1994–1994,,要判,
+B 一中一西,cdg-1152,決戰大魔域,1993,DOS,1,cmtpk6hpz01a104jvjrsnm47p,RETURN TO ZORK,1,1993–1993,,要判,
+B 一中一西,cdg-1162,決戰西洋棋（Battle Chess）,1988,DOS,3,cmsvn61tt001n04l8kw1afpb3,決戰西洋棋,2,1989–1989,,要判,
+B 一中一西,cdg-1162,決戰西洋棋（Battle Chess）,1988,DOS,3,cmsvpx5gq002t04ld8a0iiorc,Battle Chess,1,1989–1989,,要判,
+B 一中一西,cdg-1361,陸空戰將,1993,DOS,0,cmta91uj4005504l6xb1iluch,陸空戰將,6,1991–1993,,要判,
+B 一中一西,cdg-1361,陸空戰將,1993,DOS,0,cmtpk43ju00rb04jvv69flbbc,Strike Commander,1,1993–1993,,要判,
+B 一中一西,cdg-1381,勇士傳奇,1992,DOS,7,cmta8mevy000s04jr4lp79x4z,勇士傳奇,4,1993–1993,,要判,
+B 一中一西,cdg-1381,勇士傳奇,1992,DOS,7,cmtpjz2pp003704jv2udqq48p,Legends of Valour,1,1993–1993,,要判,
+B 一中一西,cdg-1547,飛龍騎士,1990,DOS,1,cmsx2w9c2005s04ld3ba4wjca,飛龍騎士,5,1990–1992,,要判,
+B 一中一西,cdg-1547,飛龍騎士,1990,DOS,1,cmsx2w9ca005t04ld2qefaj72,Dragon Strike,1,1990–1990,,要判,
+B 一中一西,cdg-1574,代碼：冰人,1990,DOS,3,cmswuudso000l04l4pdiof632,代碼：冰人,2,1990–1990,,要判,
+B 一中一西,cdg-1574,代碼：冰人,1990,DOS,3,cmswuudsw000m04l4iga9g33o,CODENAME: ICEMAN,1,1990–1990,,要判,
+B 一中一西,cdg-1592,伊蘇國,1989,DOS,2,cmswqdm8u00c104l6v2yjifu0,伊蘇國,3,1990–1991,,要判,
+B 一中一西,cdg-1592,伊蘇國,1989,DOS,2,cmsvpbm1m000904jvs3fslqf4,Ancient Land of Ys,1,1989–1989,,要判,
+B 一中一西,cdg-1620,俠客遊,1994,DOS,1,cmtpkxds8064a04jvv07i0krc,俠客遊,2,1996–1999,,要判,
+B 一中一西,cdg-1620,俠客遊,1994,DOS,1,cmtpki0l002yz04jv5r15adcc,LUNATIC DAWN II,1,1995–1995,,要判,
+B 一中一西,cdg-1732,快樂天堂,1994,DOS,4,cmtpkhksp02s204jvth3m20lt,快樂天堂,1,1994–1994,,要判,
+B 一中一西,cdg-1732,快樂天堂,1994,DOS,4,cmtpkfc6j029004jvioos90nj,THEME PARK,1,1994–1994,,要判,
+B 一中一西,cdg-1783,惡魔禁地,1993,DOS,2,cmstskppu000i04l5e3e2bxbh,惡魔禁地,6,1993–1994,,要判,
+B 一中一西,cdg-1783,惡魔禁地,1993,DOS,2,cmtpjz2it001i04jvtli0vego,Veil of Darkness,2,1993–1993,,要判,
+B 一中一西,cdg-1832,神奇傳說,1997,Windows,0,cmtpl1ipb071104jvnj9odlxq,神奇傳說,6,1997–1999,,要判,
+B 一中一西,cdg-1832,神奇傳說,1997,Windows,0,cmtpkznf606q704jvbvhoqntl,Farland Saga,1,1996–1996,,要判,
+B 一中一西,cdg-1838,神州八劍,1991,DOS,2,cmsylqo73001004jip3ilyfux,神州八劍,8,1991–1991,,要判,
+B 一中一西,cdg-1838,神州八劍,1991,DOS,2,cmsylqo7a001104ji6uj6ncxo,The Other Side of the Predella,1,1991–1991,,要判,
+B 一中一西,cdg-1918,毀滅戰士（Obliterator）,1988,DOS,3,cmsvpx58s000o04ldnqzmqbgs,毀滅戰士,5,1989–1994,,要判,
+B 一中一西,cdg-1918,毀滅戰士（Obliterator）,1988,DOS,3,cmsvpx58z000q04ldgun6zvjs,Obliterator,1,1989–1989,,要判,
+B 一中一西,cdg-1938,異域之門,1991,DOS,3,cmt1hzs81002c04ldgwpxkmc8,異域之門,9,1992–1992,,要判,
+B 一中一西,cdg-1938,異域之門,1991,DOS,3,cmsyrh865004904lfdknkbdek,Gateway to the Savage Frontier,1,1991–1991,,要判,
+B 一中一西,cdg-2091,絕冬城之夜,2002,Windows,0,cmtpn7cu101fa04l69fkvomky,絕冬城之夜,2,2002–2003,,要判,
+B 一中一西,cdg-2091,絕冬城之夜,2002,Windows,0,cmtplycry0f4f04jvjkjqomub,Neverwinter Nights,1,2001–2001,,要判,
+B 一中一西,cdg-2178,超未來少女,1995,DOS,0,cmtpkol8p03to04jvehp6wcz2,超未來少女,1,1995–1995,,要判,
+B 一中一西,cdg-2178,超未來少女,1995,DOS,0,cmtpki0l702z004jv3vfai4xr,FORESIGHT DOLLY,1,1995–1995,,要判,
+B 一中一西,cdg-2200,NEW星式7号,1990,DOS,1,cmsybi8cs000q04l2570h3dce,Stellar 7,1,1990–1990,,要判,
+B 一中一西,cdg-2200,NEW星式7号,1990,DOS,1,cmsybi8cj000p04l222l7kylp,NEW星式7號,1,1990–1990,,要判,
+B 一中一西,cdg-2201,超級星式九號,1991,DOS,0,cmt1hzs3s001904ldfttyu9b2,Nova 9,1,1992–1992,,要判,
+B 一中一西,cdg-2201,超級星式九號,1991,DOS,0,cmt1hzs3n001804ldofd4dj8m,超級星式9號,3,1992–1992,,要判,
+B 一中一西,cdg-2262,黎明之砧,1996,DOS,3,cmtpku77705bk04jvurs2f8ub,黎明之砧,5,1996–1996,,要判,
+B 一中一西,cdg-2262,黎明之砧,1996,DOS,3,cmtpkrzyn04p204jvq4s6veh1,Anvil of Dawn,1,1996–1996,,要判,
+B 一中一西,cdg-2417,星際爭霸戰：25週年紀念,1992,DOS,1,cmt9n4wh7004r04jm8gld4ln8,Star Trek-25th Anniversary,1,1992–1992,,要判,
+B 一中一西,cdg-2417,星際爭霸戰：25週年紀念,1992,DOS,1,cmtdmiika000m04l4tyan17tq,星艦迷航記,1,1992–1992,,要判,
+B 一中一西,cdg-2583,運輸大亨,1994,DOS,0,cmtpkkth003c604jvizkpluyw,運輸大亨,1,1995–1995,,要判,
+B 一中一西,cdg-2583,運輸大亨,1994,DOS,0,cmtpkhkje02pi04jvdmepdpef,Transport Tycoon,1,1994–1994,,要判,
+B 一中一西,cdg-2657,雲國小精靈,1990,DOS,3,cmsx2w98y005104ld70zxtx01,雲國小精靈,2,1990–1991,,要判,
+B 一中一西,cdg-2657,雲國小精靈,1990,DOS,3,cmsx2w995005204ld5x8nrcl6,Cloud Kingdoms,1,1990–1990,,要判,
+B 一中一西,cdg-2676,雷神之鎚,1996,DOS,1,cmtpkv05m05fa04jv8vgj5298,雷神之鎚,3,1996–1996,,要判,
+B 一中一西,cdg-2676,雷神之鎚,1996,DOS,1,cmtpkp9pw03xs04jvonz29tzb,QUAKE,3,1995–1997,,要判,
+B 一中一西,cdg-2775,瘋狂主宰,1991,DOS,1,cmtpk4x7r00z904jvfqp1cse0,瘋狂主宰,1,1993–1993,,要判,
+B 一中一西,cdg-2775,瘋狂主宰,1991,DOS,1,cmtpjz2nq002q04jvh5w7ojh3,Mega Lo Mania,2,1993–1993,,要判,
+B 一中一西,cdg-2902,銀河英雄,1989,DOS,1,cmsvpx5ap001904ldd264g5gn,銀河英雄,5,1989–1990,,要判,
+B 一中一西,cdg-2902,銀河英雄,1989,DOS,1,cmsvpx5aw001b04ldxozr3uj8,Space Rogue,1,1989–1989,,要判,
+B 一中一西,cdg-2911,銀河飛將,1990,DOS,1,cmsybi8df000v04l24yjk6o3e,銀河飛將,19,1990–1994,,要判,
+B 一中一西,cdg-2911,銀河飛將,1990,DOS,1,cmsybekru001504jv2ltup9um,Wing Commander,4,1990–1993,,要判,
+B 一中一西,cdg-2969,創世紀7：黑月之門,1992,DOS,6,cmt9rt67i000104jszp8mwoue,創世紀7：黑月之門,2,1992–1992,,要判,
+B 一中一西,cdg-2969,創世紀7：黑月之門,1992,DOS,6,cmt9n4wfe004e04jm0ub74vge,創世紀VII——黑月之門,1,1992–1992,,要判,
+B 一中一西,cdg-2969,創世紀7：黑月之門,1992,DOS,6,cmt9n4wfm004f04jmh4wdi9le,Ultima VII-The Black Gate,1,1992–1992,,要判,
+B 一中一西,cdg-3044,挑戰極速,1991,DOS,1,cmta8xkyt002v04l62ep5rko9,挑戰極速,1,1991–1991,,要判,
+B 一中一西,cdg-3044,挑戰極速,1991,DOS,1,cmsyqnpif001q04i5n9yy6hq7,Mario Andretti's Racing Challenge,1,1991–1991,,要判,
+B 一中一西,cdg-3048,捍衛雄鷹3.0,1991,DOS,2,cmt1mvabr005n04ju49e3afcr,捍衛雄鷹3.0,8,1992–1993,,要判,
+B 一中一西,cdg-3048,捍衛雄鷹3.0,1991,DOS,2,cmsysz3aa006v04jojdyrfltb,FALCON 3.0,5,1991–1992,,要判,
+B 一中一西,cdg-3175,模擬城市,1989,DOS,1,cmsvpx56x000504ldpysay0t8,模擬城市,7,1989–2000,,要判,
+B 一中一西,cdg-3175,模擬城市,1989,DOS,1,cmsvud7tt000l04l6zyg2uajr,SIM CITY,1,1989–1989,,要判,
+B 一中一西,cdg-3175,模擬城市,1989,DOS,1,cmsxqcbxk007x04l414fm7ej8,SimCity,1,1990–1990,,要判,
+B 一中一西,cdg-3605,鐵路大亨,1990,DOS,8,cmsyew02g001304l1wqd550i6,鐵路大亨,11,1991–1998,,要判,
+B 一中一西,cdg-3605,鐵路大亨,1990,DOS,8,cmsybekr5001104jvpfnvhtd7,Railroad Tycoon,1,1990–1990,,要判,
+B 一中一西,cdg-3610,鑽石方塊,1989,DOS,3,cmsybv6wo00ek04l2557ymfne,鑽石方塊,2,1991–1991,,要判,
+B 一中一西,cdg-3610,鑽石方塊,1989,DOS,3,cmsxqcbny005704l4yhm0zr28,Puzznic,1,1990–1990,,要判,
+B 一中一西,cdg-3650,鬼屋魔影,1992,DOS,2,cmta82gdx005q04kztasgjyu3,鬼屋魔影,5,1992–1995,,要判,
+B 一中一西,cdg-3650,鬼屋魔影,1992,DOS,2,cmta82ge4005r04kzj5x19p1v,Alone in the Dark,1,1993–1993,,要判,
+B 一中一西,cdg-3663,魔喚精靈,1998,Windows,1,cmtplfzwj0az204jvegdr19m8,魔喚精靈,1,1998–1998,,要判,
+B 一中一西,cdg-3663,魔喚精靈,1998,Windows,1,cmtpl8p8e094x04jvgtowww9a,VANTAGE MASTER,5,1997–1998,,要判,
+B 一中一西,cdg-3722,魔法軍團,1998,DOS、Win9x,1,cmtpl55af086a04jvg00wno35,魔法軍團,4,1997–1998,,要判,
+B 一中一西,cdg-3722,魔法軍團,1998,DOS、Win9x,1,cmtpl55aa086904jvpvh07hmo,Warlocks,1,1997–1997,,要判,
+B 一中一西,cdg-3757,魔界召喚,1992,DOS,3,cmtpk4j7o00w704jv159rukah,魔界召喚,1,1993–1993,,要判,
+B 一中一西,cdg-3757,魔界召喚,1992,DOS,3,cmta82gcf005804kzldj63j41,The Summoning,2,1993–1993,,要判,
+B 一中一西,cdg-3768,魔石堡,1995,DOS,5,cmtpks04504qu04jvqoinoqwd,魔石堡,4,1996–1996,,要判,
+B 一中一西,cdg-3768,魔石堡,1995,DOS,5,cmtpkr5xt04i304jvkzbztzj9,StoneKeep,1,1995–1995,,要判,
+B 一中一西,cdg-3773,魔胎,1992,DOS,4,cmta1agav005g04jw4l9n8rba,魔胎,4,1992–1993,,要判,
+B 一中一西,cdg-3773,魔胎,1992,DOS,4,cmta16ktk000n04jwuy4gapjp,The Dark Half,1,1993–1993,,要判,
+B 一中一西,cdg-3857,蓋世龍王,1990,DOS,4,cmsylqo2u000d04ji9sfesc82,蓋世龍王,4,1991–1991,,要判,
+B 一中一西,cdg-3857,蓋世龍王,1990,DOS,4,cmsylqo31000e04ji5nzycmws,Dragon Lord,1,1991–1991,,要判,
+B 一中一西,cdg-3860,核戰狂人夢,1989,DOS,2,cmsx2w9cr005y04ldhwnw8tjh,核戰狂人夢,3,1990–1990,,要判,
+B 一中一西,cdg-3860,核戰狂人夢,1989,DOS,2,cmsx2w9cy005z04ldu74ltrkk,Nuclear War,1,1990–1990,,要判,
+B 一中一西,cdg-3863,猴島小英雄,1990,DOS,3,cmsybi88j000704l2l50i6f2q,猴島小英雄,11,1990–1991,,要判,
+B 一中一西,cdg-3863,猴島小英雄,1990,DOS,3,cmsybekqa000x04jv30y4dwh5,The Secret of Monkey Island,2,1990–1990,,要判,
+B 一中一西,cdg-3872,蠟像館之謎,1992,DOS,1,cmtpjz2l0002104jvayspypwq,蠟像館之謎,3,1993–1993,,要判,
+B 一中一西,cdg-3872,蠟像館之謎,1992,DOS,1,cmtpjz2ld002404jv4u7owc2g,Waxworks,1,1993–1993,,要判,
+B 一中一西,cdg-3890,忍,1989,DOS,2,cmsvud7vh001404l6r2gqi4jf,忍,2,1989–1990,,要判,
+B 一中一西,cdg-3890,忍,1989,DOS,2,cmsvud7vo001604l6oq9kbdsc,SHINOBI,1,1989–1989,,要判,
+B 一中一西,cdg-3894,紗之器,1990,DOS,1,cmswuudvg001304l4snuiqyev,紗之器,2,1990–1990,,要判,
+B 一中一西,cdg-3894,紗之器,1990,DOS,1,cmswuudvp001404l4p35ctmzt,LOOM,1,1990–1990,,要判,
+B 一中一西,cdg-3916,囂張拳王,1991,DOS,1,cmt1hzs0x000l04ldq22771n8,囂張拳王,4,1992–1992,,要判,
+B 一中一西,cdg-3916,囂張拳王,1991,DOS,1,cmsysv1mj000t04jovztewjnn,4D Boxing,3,1991–1992,,要判,
+B 一中一西,cdg-3944,北與南,1989,DOS,2,cmswq0tbg006v04l63vkc2e6x,北與南,2,1990–1998,,要判,
+B 一中一西,cdg-3944,北與南,1989,DOS,2,cmsxqcbut007404l4citg7ydd,North & South,1,1990–1990,,要判,
+B 一中一西,cdg-3946,炮艇,1990,DOS,2,cmsx2undp000804ld6ne8af6j,GUN BOAT,1,1990–1990,,要判,
+B 一中一西,cdg-3946,炮艇,1990,DOS,2,cmsx2undi000704ldd4i47i55,砲艇,1,1990–1990,,要判,
+B 一中一西,cdg-3950,猛鬼逛街,1989,DOS,2,cmsvud7ux000x04l6dqnbdagc,猛鬼逛街,4,1989–1990,,要判,
+B 一中一西,cdg-3950,猛鬼逛街,1989,DOS,2,cmsvud7v3000z04l6813huwg2,A NIGHTMARE ON ELM STREET,1,1989–1989,,要判,
+B 一中一西,cdg-3951,激戰M星雲,1990,DOS,2,cmsybektu001f04jvycwn7y4z,激戰M星雲,1,1990–1990,,要判,
+B 一中一西,cdg-3951,激戰M星雲,1990,DOS,2,cmsxqcbpm005n04l4ouh2r17h,Star Control,1,1990–1990,,要判,
+B 一中一西,cdg-3953,烏龍吸血鬼,1988,DOS,2,cmsyqgoxm00cn04jnn2dyfftm,烏龍吸血鬼,1,1991–1991,,要判,
+B 一中一西,cdg-3953,烏龍吸血鬼,1988,DOS,2,cmsylwgqy005204jimlrsyn42,Night Hunter,1,1991–1991,,要判,
+B 一中一西,cdg-3959,瑪麗姊妹,1992,DOS,2,cmta7yv0s001e04kz8r7v54jv,瑪麗姊妹,1,1993–1993,,要判,
+B 一中一西,cdg-3959,瑪麗姊妹,1992,DOS,2,cmta1ag3k004104jw7ka8qlxp,瑪麗姐妹,1,1992–1992,,要判,
+B 一中一西,cdg-3959,瑪麗姊妹,1992,DOS,2,cmta7yv10001f04kzggi0mc1h,Sister Mary,1,1993–1993,,要判,
+B 一中一西,cdg-3972,親愛的，我被電視吸走了,1990,DOS,3,cmsylqo41000j04ji5ag5kvco,親愛的，我被電視吸走了！,1,1991–1991,,要判,
+B 一中一西,cdg-3972,親愛的，我被電視吸走了,1990,DOS,3,cmsylqo4i000k04ji0nkumnxv,Altered Destiny,1,1991–1991,,要判,
+B 一中一西,cdg-3983,粒子世界,1990,DOS,2,cmsx2w9dg006404ldrsmez0g2,粒子世界,1,1990–1990,,要判,
+B 一中一西,cdg-3983,粒子世界,1990,DOS,2,cmsx2w9dn006504ldd9n9mhj2,The Game of Harmony,1,1990–1990,,要判,
+B 一中一西,cdg-3994,拯救地球,1990,DOS,2,cmsybi8a9000d04l291em15xc,拯救地球,5,1990–1992,,要判,
+B 一中一西,cdg-3994,拯救地球,1990,DOS,2,cmsybi8ap000e04l2f85a4cf1,Buck Rogers: Countdown to Doomsday,1,1990–1990,,要判,
+B 一中一西,cdg-3997,克萊恩黑暗之后,1992,DOS,3,cmt9rt6g5000s04jsgtnowz4u,克萊恩黑暗之后,4,1992–1992,,要判,
+B 一中一西,cdg-3997,克萊恩黑暗之后,1992,DOS,3,cmta06a2n001a04jrcltpba25,The Dark Queen Of Krynn,1,1992–1992,,要判,
+B 一中一西,cdg-4004,浩劫餘生,1990,DOS,2,cmsyqgp0i00d904jnvhmx9yy7,浩劫餘生,4,1991–1998,,要判,
+B 一中一西,cdg-4004,浩劫餘生,1990,DOS,2,cmsylqo09000204ji9hbxn5lv,Fountain of Dreams,1,1991–1991,,要判,
+B 一中一西,cdg-4006,梅杜莎指環,1989,DOS,2,cmsybv6po00cx04l2z60px9xv,梅杜莎指環,4,1991–1991,,要判,
+B 一中一西,cdg-4006,梅杜莎指環,1989,DOS,2,cmsxqcbni005304l457tofvyo,Rings of Medusa,2,1990–1990,,要判,
+B 一中一西,cdg-4008,從海底出擊（Wolf Pack）,1990,DOS,0,cmsx2w9f1006h04ldwdz6f3tx,Wolf Pack,1,1990–1990,,要判,
+B 一中一西,cdg-4008,從海底出擊（Wolf Pack）,1990,DOS,0,cmsx2w9es006g04ldpno4vjf3,從海底出擊,4,1990–1991,,要判,
+B 一中一西,cdg-4011,紅爵士,1990,DOS,2,cmsyew001000l04l1hdgylwvp,紅爵士,3,1991–1993,,要判,
+B 一中一西,cdg-4011,紅爵士,1990,DOS,2,cmtb7seu9001t04laeygygemm,Red Baron,1,1992–1992,,要判,
+B 一中一西,cdg-4012,無敵飛狼2000,1991,DOS,0,cmt1hzrx7000204ldap58bser,無敵飛狼2000,6,1992–1992,,要判,
+B 一中一西,cdg-4012,無敵飛狼2000,1991,DOS,0,cmsysv1ny001504jowv04oeit,GUNSHIP 2000,3,1991–1992,,要判,
+B 一中一西,cdg-4022,戰爭風雲錄：韓戰,1992,DOS,0,cmt9rt6iy001904js1sbpysf6,戰爭風雲錄：韓戰,2,1992–1992,,要判,
+B 一中一西,cdg-4022,戰爭風雲錄：韓戰,1992,DOS,0,cmta069xr000j04jrg9xi4k2q,Conflict: Korea,1,1992–1992,,要判,
+B 一中一西,cdg-4023,長槍之役,1990,DOS,2,cmsybv6j100ba04l2vb7yh4o2,長槍之役,3,1991–1991,,要判,
+B 一中一西,cdg-4023,長槍之役,1990,DOS,2,cmsxqcbp7005j04l46e0pxwj2,War of the Lance,1,1990–1990,,要判,
+B 一中一西,cdg-4024,狂島浴血,1991,DOS,0,cmt9rt6ig001604jstkmtnnbu,狂島浴血,5,1992–1992,,要判,
+B 一中一西,cdg-4024,狂島浴血,1991,DOS,0,cmta069vv000a04jrica6u0n9,Battle Isle,1,1992–1992,,要判,
+B 一中一西,cdg-4147,聖戰物語,1997,DOS,0,cmtpl556o085004jvghsapogz,聖戰物語,2,1997–1997,,要判,
+B 一中一西,cdg-4147,聖戰物語,1997,DOS,0,cmtpkyu1x06j404jvs9et5huj,Duel Succession,1,1996–1996,,要判,
+B 一中一西,cdg-4183,英雄傳奇3：戰火焚生錄,1992,DOS,2,cmtpk1s8q00iw04jvi49k9nas,Quest for Glory III: WAGES OF WAR,1,1993–1993,,要判,
+B 一中一西,cdg-4183,英雄傳奇3：戰火焚生錄,1992,DOS,2,cmta1ag4b004604jwuo0kzbby,英雄傳奇3,0,,,要判,
+B 一中一西,cdg-4195,死亡潛航2,1990,DOS,4,cmsyew086002a04l14umhidif,死亡潛航 II,2,1991–1991,,要判,
+B 一中一西,cdg-4195,死亡潛航2,1990,DOS,4,cmt1hzs9l002s04ld75z9h3m5,死亡潛航II,1,1992–1992,,要判,
+B 一中一西,cdg-4195,死亡潛航2,1990,DOS,4,cmsxqcbq0005r04l4q7pbv475,Silent Service II,2,1990–1990,,要判,
+B 一中一西,cdg-4241,極道梟雄,1993,DOS,0,cmtpkdgp201so04jvzw2gsnr3,極道梟雄,5,1994–1994,,要判,
+B 一中一西,cdg-4241,極道梟雄,1993,DOS,0,cmtpk5dv5011d04jvb8e1jumw,SYNDICATE,2,1993–1993,,要判,
+B 一中一西,cdg-4241,極道梟雄,1993,DOS,0,cmtpkfr8k02bc04jvdzr4mpwb,極道梟雄資料片—美洲風暴,1,1994–1994,,要判,
+B 一中一西,cdg-4245,步步殺機,1989,DOS,2,cmsvud7u9000q04l64hu4ot5e,步步殺機,4,1989–1991,,要判,
+B 一中一西,cdg-4245,步步殺機,1989,DOS,2,cmsvud7ug000s04l6tsd0mibd,RICK DANGEROUS,1,1989–1989,,要判,
+B 一中一西,cdg-4255,異域寶藏,1992,DOS,3,cmta06af7003h04jrv0axn03x,異域寶藏,1,1992–1992,,要判,
+B 一中一西,cdg-4255,異域寶藏,1992,DOS,3,cmta069wn000e04jr6xkw53ik,Treasures of the Savage Frontier,1,1992–1992,,要判,
+B 一中一西,cdg-4272,風雲霸主,1990,DOS,3,cmta06a0t000z04jrjwsjizfc,風雲霸主,6,1992–1993,,要判,
+B 一中一西,cdg-4272,風雲霸主,1990,DOS,3,cmta06a14001004jr3yv8kh21,POWERMONGER,1,1992–1992,,要判,
+B 一中一西,cdg-4322,城市獵人（Rise of the Dragon）,1990,DOS,0,cmsylqo1t000804jimnknhy30,Rise of the Dragon,1,1991–1991,,要判,
+B 一中一西,cdg-4322,城市獵人（Rise of the Dragon）,1990,DOS,0,cmsylqo1g000704jigkm1rj3y,城市獵人,7,1991–1998,,要判,
+B 一中一西,cdg-4438,鐵血傭兵,1990,DOS,3,cmt03mni0001z04l5rwoeeux7,鐵血傭兵,3,1992–1992,,要判,
+B 一中一西,cdg-4438,鐵血傭兵,1990,DOS,3,cmta91ul7005m04l6zzufrfw8,HARD NOVA,1,1991–1991,,要判,
+B 一中一西,cdg-4468,出擊飛龍,1989,DOS,0,cmswuudqe000704l4vq33r8zu,出擊飛龍,3,1990–1991,,要判,
+B 一中一西,cdg-4468,出擊飛龍,1989,DOS,0,cmswuudqm000804l4laybungz,STRIDER,1,1990–1990,,要判,
+B 一中一西,cdg-4468,出擊飛龍,1989,DOS,0,cmsumll2f006804jokkqe0o1x,飛龍,1,1988–1988,,要判,
+B 一中一西,cdg-4570,金牌拳王,1990,DOS,0,cmsx2unhn001104ld0sgi2kki,金牌拳王,3,1990–1991,,要判,
+B 一中一西,cdg-4570,金牌拳王,1990,DOS,0,cmsx2unhv001204ldbifpr3ej,LOW BLOW,1,1990–1990,,要判,
+B 一中一西,cdg-4572,異形神殿,1989,DOS,0,cmsybel0f002j04jv13c6a6zr,異形神殿,2,1990–1990,,要判,
+B 一中一西,cdg-4572,異形神殿,1989,DOS,0,cmsxqcbos005f04l40yj9qhte,Chamber of the Sci-Mutant Priestess,1,1990–1990,,要判,
+B 一中一西,cdg-4581,A-6入侵者,1990,DOS,2,cmsylqo6j000v04ji12r01sep,A-6入侵者,1,1991–1991,,要判,
+B 一中一西,cdg-4581,A-6入侵者,1990,DOS,2,cmsybeksg001904jvw0lzgmdf,Flight of the Intruder,2,1990–1991,,要判,
+B 一中一西,cdg-4585,妙賊奇弗,1989,DOS,2,cmsyqgoo400ak04jne8gvom6u,妙賊奇弗,3,1991–1991,,要判,
+B 一中一西,cdg-4585,妙賊奇弗,1989,DOS,2,cmsyqnpeq000v04i58bykn870,KEEF the THIEF,1,1991–1991,,要判,
+B 一中一西,cdg-4587,F-14雄貓式戰鬥機,1990,DOS,0,cmsyqgoni00ag04jntrjtt0y3,F-14雄貓式戰鬥機,1,1991–1991,,要判,
+B 一中一西,cdg-4587,F-14雄貓式戰鬥機,1990,DOS,0,cmsyqnpfd000z04i5pd24y4ph,F-14 Tomcat,1,1991–1991,,要判,
+B 一中一西,cdg-4588,沙漠之蠱,1989,DOS,3,cmta8xkzm003404l6au9cqo5o,沙漠之蠱,1,1991–1991,,要判,
+B 一中一西,cdg-4588,沙漠之蠱,1989,DOS,3,cmsyqnphs001j04i58atokf8s,It Came From the Desert,1,1991–1991,,要判,
+B 一中一西,cdg-4592,警察故事3：陰謀,1991,DOS,0,cmt03mn8u000a04l535m4ump8,警察故事3－陰謀,1,1992–1992,,要判,
+B 一中一西,cdg-4592,警察故事3：陰謀,1991,DOS,0,cmt03mn92000b04l5ldija64r,Police Quest 3: The Kindred,1,1992–1992,,要判,
+B 一中一西,cdg-4593,職業網球大賽2,1991,DOS,0,cmt1hzs1q000q04ldau392kcn,職業網球大賽2,2,1992–1992,,要判,
+B 一中一西,cdg-4593,職業網球大賽2,1991,DOS,0,cmt1hzs1x000r04ldvshqw7qm,Pro Tennis Tour 2,1,1992–1992,,要判,
+B 一中一西,cdg-4595,天生好手2,1991,DOS,0,cmtdmiiix000g04l4rg0howd7,天生好手2,1,1992–1992,,要判,
+B 一中一西,cdg-4595,天生好手2,1991,DOS,0,cmt1hzs2j000x04ldz3t0kux7,Earl Weaver Baseball II,1,1992–1992,,要判,
+B 一中一西,cdg-4595,天生好手2,1991,DOS,0,cmt1hzs2d000w04ldil167ckp,天生好手II,1,1992–1992,,要判,
+B 一中一西,cdg-4596,空中英雄：長空會戰,1991,DOS,2,cmt1hzs4u001k04ld4qcxnlzf,空中英雄－長空會戰,1,1992–1992,,要判,
+B 一中一西,cdg-4596,空中英雄：長空會戰,1991,DOS,2,cmt1mj8it000d04ju87j981c1,空中英雄長空會戰,2,1992–1992,,要判,
+B 一中一西,cdg-4596,空中英雄：長空會戰,1991,DOS,2,cmt03mnej001a04l5reu6of9r,Chuck Yeager's Air Combat,2,1992–1992,,要判,
+B 一中一西,cdg-4599,天才智多星,1991,DOS,0,cmt1hzs5b001p04ld59baxwgf,天才智多星,5,1992–1992,,要判,
+B 一中一西,cdg-4599,天才智多星,1991,DOS,0,cmt1hzs5g001q04ldfxy8np7x,Castle of Dr. Brain,1,1992–1992,,要判,
+B 一中一西,cdg-4603,天際寒星：義無反顧,1991,DOS,3,cmt9n4wjz005e04jmtschbw37,天際寒星——義無反顧,1,1992–1992,,要判,
+B 一中一西,cdg-4603,天際寒星：義無反顧,1991,DOS,3,cmt8znyzk002m04jy9af94sym,PLANET'S EDGE,2,1992–1992,,要判,
+B 一中一西,cdg-4606,美國鼠譚,1992,DOS,0,cmta069z1000p04jr3w0hcjuo,美國鼠譚,1,1992–1992,,要判,
+B 一中一西,cdg-4606,美國鼠譚,1992,DOS,0,cmta069zb000q04jrq751s2fv,An American Tail,1,1992–1992,,要判,
+B 一中一西,cdg-4609,戰爭風雲錄：中東戰爭,1991,DOS,4,cmt9rt6je001c04js2srk60mo,戰爭風雲錄：中東戰爭,3,1992–1992,,要判,
+B 一中一西,cdg-4609,戰爭風雲錄：中東戰爭,1991,DOS,4,cmta06a6d001v04jrvben362i,Conflict: Middle East,1,1992–1992,,要判,
+B 一中一西,cdg-4610,香港麻將,1992,DOS,2,cmt9rt6fk000p04jszebwxh40,香港麻將,1,1992–1992,,要判,
+B 一中一西,cdg-4610,香港麻將,1992,DOS,2,cmta06a05000v04jrphaziq9w,Hong Kong Mahjong Pro,1,1992–1992,,要判,
+B 一中一西,cdg-4613,夢幻勇士,1990,DOS,0,cmta1ag5v004h04jwouqakfr5,夢幻勇士,1,1992–1992,,要判,
+B 一中一西,cdg-4613,夢幻勇士,1990,DOS,0,cmtpk135i00en04jvols8ysj9,Unreal,1,1992–1992,,要判,
+B 一中一西,cdg-4625,烏托邦,1991,DOS,1,cmta7yv53002b04kz2j6t5tuc,烏托邦,4,1993–1993,,要判,
+B 一中一西,cdg-4625,烏托邦,1991,DOS,1,cmtpk43gk00qk04jvr7jugb4n,UTOPIA,1,1993–1993,,要判,
+B 一中一西,cdg-4627,太空牛仔,1990,DOS,1,cmtpk43it00r604jv0yquunew,太空牛仔,2,1993–1993,,要判,
+B 一中一西,cdg-4627,太空牛仔,1990,DOS,1,cmtpk43iz00r704jvftd9sqj2,Spaceward Ho!,1,1993–1993,,要判,
+B 一中一西,cdg-4629,橋牌高手,1992,DOS,0,cmta8mf53002p04jrehcuvod4,橋牌高手,3,1993–1993,,要判,
+B 一中一西,cdg-4629,橋牌高手,1992,DOS,0,cmtpjz2kn001y04jvieh7swop,Bridge Master,1,1993–1993,,要判,
+B 一中一西,cdg-4632,多情藥師酷牛仔,1993,DOS,1,cmtpk4xds00zr04jv2kacpi6p,多情藥師酷牛仔,2,1993–1994,,要判,
+B 一中一西,cdg-4632,多情藥師酷牛仔,1993,DOS,1,cmtpk43lg00rt04jvz34q07eo,Freddy Pharkas Frontier Pharmacist,1,1993–1993,,要判,
+B 一中一西,cdg-4642,救世聖主,1993,DOS,1,cmtpkcbgu01iy04jvadx3r54g,救世聖主,2,1994–1994,,要判,
+B 一中一西,cdg-4642,救世聖主,1993,DOS,1,cmtpk6hru01a604jvtb6pnwc1,SHADOW CASTER,1,1993–1993,,要判,
+B 一中一西,cdg-4659,跳跳魔法師,1994,DOS,2,cmtpkg3dq02f604jvjiogiisv,跳跳魔法師,2,1994–1994,,要判,
+B 一中一西,cdg-4659,跳跳魔法師,1994,DOS,2,cmtpkgvbn02it04jvil11i558,HOCUS POCUS,1,1994–1994,,要判,
+B 一中一西,cdg-4661,網路奇兵,1994,DOS,1,cmtpkgvkb02kj04jvija1748m,網路奇兵,2,1994–1995,,要判,
+B 一中一西,cdg-4661,網路奇兵,1994,DOS,1,cmtpkgvkl02kk04jvr6syjbty,SYSTEM SHOCK,1,1994–1994,,要判,
+B 一中一西,cdg-4733,激流浪子,1989,DOS,2,cmswuudoh000104l4cwbxb20v,激流浪子,2,1990–1991,,要判,
+B 一中一西,cdg-4733,激流浪子,1989,DOS,2,cmswuudp0000204l47atvs3zk,TOOBIN,1,1990–1990,,要判,
+B 一中一西,cdg-4734,雪國狄斯奈,1990,DOS,2,cmswuudwd001904l4ruu5jun6,雪國狄斯奈,3,1990–1991,,要判,
+B 一中一西,cdg-4734,雪國狄斯奈,1990,DOS,2,cmswuudwl001a04l471fyveep,SKI OR DIE,1,1990–1990,,要判,
+B 一中一西,cdg-4736,跳跳飛球,1991,DOS,2,cmsx2w9ag005e04ld4tuk991h,跳跳飛球,1,1990–1990,,要判,
+B 一中一西,cdg-4736,跳跳飛球,1991,DOS,2,cmsx2w9am005f04lden9mt7k4,Pop Up,1,1990–1990,,要判,
+B 一中一西,cdg-4737,叢林之神,1989,DOS,2,cmsx2w9e5006a04ldoqkitar1,叢林之神,2,1990–1991,,要判,
+B 一中一西,cdg-4737,叢林之神,1989,DOS,2,cmsx2w9eb006b04ld9vt6w8ky,Livingstone II,1,1990–1990,,要判,
+B 一中一西,cdg-4744,極光勇士,1990,DOS,2,cmsybel4u003e04jvf1hpzlce,極光勇士,3,1990–1991,,要判,
+B 一中一西,cdg-4744,極光勇士,1990,DOS,2,cmsxqcbn4004z04l4zw34nn4y,STARBLADE,1,1990–1990,,要判,
+B 一中一西,cdg-4752,第六感生死關頭,1989,DOS,2,cmsylqo7r001604jilte6dayl,第六感生死關頭,1,1991–1991,,要判,
+B 一中一西,cdg-4752,第六感生死關頭,1989,DOS,2,cmsylqo7y001704jiu1v09hah,Interphase,1,1991–1991,,要判,
+B 一中一西,cdg-4759,緝毒特勤組,1990,DOS,3,cmsysv1pr001k04jocvkdnm9u,緝毒特勤組,2,1991–1991,,要判,
+B 一中一西,cdg-4759,緝毒特勤組,1990,DOS,3,cmsyqnpgz001b04i5fficgd4r,Hoverforce,1,1991–1991,,要判,
+B 一中一西,cdg-4764,火爆鋼球,1990,DOS,2,cmt03mnbf000n04l5gwtses2q,火爆鋼球,4,1992–1992,,要判,
+B 一中一西,cdg-4764,火爆鋼球,1990,DOS,2,cmt03mnbn000o04l51p5p7pkl,Speed Ball 2,1,1992–1992,,要判,
+B 一中一西,cdg-4770,天下第一刀,1991,DOS,0,cmta7yv04001904kz53adhn9y,天下第一刀,1,1993–1993,,要判,
+B 一中一西,cdg-4770,天下第一刀,1991,DOS,0,cmta7yv0b001a04kzzs4ct074,The First Samurai,1,1993–1993,,要判,
+B 一中一西,cdg-4771,玩具兵棋,1992,DOS,1,cmta7yuvg000l04kzkfbmgks7,玩具兵棋,1,1993–1993,,要判,
+B 一中一西,cdg-4771,玩具兵棋,1992,DOS,1,cmta82gdm005m04kzjrtr77al,Theatre Of War,2,1993–1993,,要判,
+B 一中一西,cdg-4780,秘境傳說,1998,Windows,1,cmss8frvm001j04jss6uivsko,秘境傳說,1,1999–1999,,要判,
+B 一中一西,cdg-4780,秘境傳說,1998,Windows,1,cmtplmm6m0cjx04jv3zk3t3sg,Midgard,1,1999–1999,,要判,
+B 一中一西,cdg-4821,神月紀事,2001,Windows,1,cmtplthbx0e4504jvu28ueway,神月紀事,1,2000–2000,,要判,
+B 一中一西,cdg-4821,神月紀事,2001,Windows,1,cmtpln9sc0col04jvx4bgspr6,LUNA SAGA,1,1999–1999,,要判,
+B 一中一西,cdg-4855,時光的羈絆,2004,Windows,0,cmtpnp2js04rb04l6jmgnu3ej,時光的羈絆,2,2003–2004,,要判,
+B 一中一西,cdg-4855,時光的羈絆,2004,Windows,0,cmtpnofbp04l304l6dpgd0ybb,EVER17,2,2003–2011,,要判,
+B 一中一西,cdg-5224,超時空戰機,1995,DOS,1,cmtpks03k04qm04jvbfp2dkmx,超時空戰機,1,1996–1996,,要判,
+B 一中一西,cdg-5224,超時空戰機,1995,DOS,1,cmtpkkt8l039n04jveowh5wyq,BARYON,1,1995–1995,,要判,
+B 一中一西,cdg-5233,鐵甲戰士,1994,DOS,1,cmtpkcbbh01hl04jvdtpfgf2h,鐵甲戰士,1,1994–1994,,要判,
+B 一中一西,cdg-5233,鐵甲戰士,1994,DOS,1,cmtpkhkjp02pl04jvox8rq6lt,Rise of the Robots,1,1994–1994,,要判,
+B 一中一西,cdg-5249,異星特警,1994,DOS,0,cmtpknfsj03k204jvuz234u7h,異星特警,3,1995–1995,,要判,
+B 一中一西,cdg-5249,異星特警,1994,DOS,0,cmtpkk6c9035s04jv7j9yhhjw,Creature Shock,1,1995–1995,,要判,
+B 一中一西,cdg-5387,魔導異元素：精靈戰士篇,2000,Windows,2,cmtplq3g60dav04jvrwdfki6d,魔導異元素,1,2000–2000,,要判,
+B 一中一西,cdg-5387,魔導異元素：精靈戰士篇,2000,Windows,2,cmtpletom0ap504jv4d6n7ebd,Sequence Palladium,1,1998–1998,,要判,
+B 一中一西 ⚠年代分歧,cdg-1420,秋之回憶,2003,Windows,1,cmtpnjwkd03xh04l6kmfkaprm,秋之回憶,2,2003–2004,,要判,
+B 一中一西 ⚠年代分歧,cdg-1420,秋之回憶,2003,Windows,1,cmtxy6a5300an04kwjwj1mzbd,Memories Off,1,2000–2000,,要判,
+B 一中一西 ⚠年代分歧,cdg-2681,雷電,1994,DOS,0,cmtpki0iv02y804jvmompa2wd,雷電,1,1995–1995,,要判,
+B 一中一西 ⚠年代分歧,cdg-2681,雷電,1994,DOS,0,cmu5g93rr001h04ky47nnzmy5,Raiden,1,1998–1998,,要判,
+B 一中一西 ⚠年代分歧,cdg-3673,魔域幻境,1998,Windows,1,cmtpl639808cq04jv08q6hbl8,魔域幻境,5,1997–2002,,要判,
+B 一中一西 ⚠年代分歧,cdg-3673,魔域幻境,1998,Windows,1,cmtpk135i00en04jvols8ysj9,Unreal,1,1992–1992,,要判,
+B 一中一西 ⚠年代分歧,cdg-3758,魔界歷險,1987,DOS,3,cmswuudul000x04l4549cl9ky,魔界歷險,6,1990–1991,,要判,
+B 一中一西 ⚠年代分歧,cdg-3758,魔界歷險,1987,DOS,3,cmtplfdzw0ar304jvyir56s1z,魔域傳說,1,1998–1998,,要判,
+B 一中一西 ⚠年代分歧,cdg-3758,魔界歷險,1987,DOS,3,cmswuudut000y04l4sh4mdmva,SORCERIAN,1,1990–1990,,要判,
+B 一中一西 ⚠年代分歧,cdg-3812,氙星異形,1988,DOS,2,cmtpkk6e9036d04jvcd0y3xmv,XENON,1,1995–1995,,要判,
+B 一中一西 ⚠年代分歧,cdg-3812,氙星異形,1988,DOS,2,cmsx2uneb000d04ldrw5m06zf,氙星異形I,1,1990–1990,,要判,
+C 同語言、字面小異,cdg-0080,GP大賽車,1988,DOS,0,cmsvn87fc005304l8rbt57gb9,GP大賽車,2,1989–1989,,要判,
+C 同語言、字面小異,cdg-0080,GP大賽車,1988,DOS,0,cmswqdmg800dw04l6omtm0ve2,方程式賽車,1,1990–1990,,要判,
+C 同語言、字面小異,cdg-0207,三國孔明傳,2002,Windows,1,cmtpng40z034704l6eg0noo4h,三國孔明傳,4,2003–2003,,要判,
+C 同語言、字面小異,cdg-0207,三國孔明傳,2002,Windows,1,cmtpnc6vj02d704l6heojfl3f,孔明傳,2,2002–2002,,要判,
+C 同語言、字面小異,cdg-0398,大明英雄傳：龍騰天下,1993,DOS,4,cmtpk4j5z00vm04jvx1o8plsb,大明英雄傳 龍騰天下,3,1993–1993,,要判,
+C 同語言、字面小異,cdg-0398,大明英雄傳：龍騰天下,1993,DOS,4,cmtpk5wap017304jvpk8jbeyy,大明英雄傳,1,1993–1993,,要判,
+C 同語言、字面小異,cdg-0425,大逆鱗3,1999,Windows,2,cmsregzzj001104iefirwgpbo,大逆鱗3,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-0425,大逆鱗3,1999,Windows,2,cmtple5eo0ad204jv4dpzjkqb,大逆鱗III,4,1998–1999,,要判,
+C 同語言、字面小異,cdg-0553,工人物語,1994,DOS,0,cmtpkfc5j028t04jvskd6163n,工人物語,1,1994–1994,,要判,
+C 同語言、字面小異,cdg-0553,工人物語,1994,DOS,0,cmtpkgvvc02mv04jv397awwax,工人物語建國篇,2,1994–1995,,要判,
+C 同語言、字面小異,cdg-0588,幻想西遊記,2000,Win9x,1,cmss8fs1l004a04jsvkv4xsq3,幻想西遊記,2,1999–2010,,要判,
+C 同語言、字面小異,cdg-0588,幻想西遊記,2000,Win9x,1,cmtpnd7o702jp04l6ip43noww,新西遊記,3,2002–2003,,要判,
+C 同語言、字面小異,cdg-0624,水滸傳之梁山好漢,1999,Windows,3,cmtpl2ayl07a704jv10tfko6u,水滸傳之梁山好漢,1,1997–1997,,要判,
+C 同語言、字面小異,cdg-0624,水滸傳之梁山好漢,1999,Windows,3,cmsvuqwox000104lepsmjptw7,水滸傳,21,1990–1998,,要判,
+C 同語言、字面小異,cdg-0671,世紀爭霸,2001,Windows,1,cmtpn112b000j04l619na1b2i,世紀爭霸,2,2001–2001,,要判,
+C 同語言、字面小異,cdg-0671,世紀爭霸,2001,Windows,1,cmtplw6vl0enw04jvpq4kp2dg,地球帝國,1,2001–2001,,要判,
+C 同語言、字面小異,cdg-0712,失落大地,1999,Windows,2,cmss8fsbt008f04jsr7rfglz3,失落大地,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-0712,失落大地,1999,Windows,2,cmtplaaye09ev04jvux00icbr,失落的大地,1,1998–1998,,要判,
+C 同語言、字面小異,cdg-0745,玉蒲團之浪史奇觀,1997,DOS,0,cmtpl55c5086p04jv2shtdtnl,玉蒲團之浪史奇觀,1,1997–1997,,要判,
+C 同語言、字面小異,cdg-0745,玉蒲團之浪史奇觀,1997,DOS,0,cmtpl55bm086o04jvt2611a4v,玉蒲團,1,1997–1997,,要判,
+C 同語言、字面小異,cdg-0756,地下創世紀：冥河深淵,1992,DOS,4,cmt9n2o6g000d04jmxazbbt2z,地下創世紀：冥河深淵,3,1992–1992,,要判,
+C 同語言、字面小異,cdg-0756,地下創世紀：冥河深淵,1992,DOS,4,cmtpk4j7f00w404jvc9f2ppdh,地下創世紀,1,1993–1993,,要判,
+C 同語言、字面小異,cdg-0885,裝甲雄師,1989,DOS,4,cmt03mnrd003u04l512bjawz7,裝甲雄師,1,1992–1992,,要判,
+C 同語言、字面小異,cdg-0885,裝甲雄師,1989,DOS,4,cmswq0tcj007404l6etx9t0ob,裝甲雄獅,3,1990–1991,,要判,
+C 同語言、字面小異,cdg-0890,西楚霸王：項羽,1996,DOS,3,cmtpkqejf04bi04jvmr9x7dzi,西楚霸王—項羽,2,1995–1995,,要判,
+C 同語言、字面小異,cdg-0890,西楚霸王：項羽,1996,DOS,3,cmtpktg8s053y04jvhkvkadg9,西楚霸王,3,1996–1996,,要判,
+C 同語言、字面小異,cdg-1029,四川省2,1992,DOS,5,cmta16kxm001404jwi1rx3ig8,四川省2,0,,,要判,
+C 同語言、字面小異,cdg-1029,四川省2,1992,DOS,5,cmt1mvac4005r04juq6h9szpg,四川省II,4,1992–1992,,要判,
+C 同語言、字面小異,cdg-1117,帝國的光榮,1992,DOS,17,cmt1mvalg008b04jusyvoszx0,帝國的光榮,1,1992–1992,,要判,
+C 同語言、字面小異,cdg-1117,帝國的光榮,1992,DOS,17,cmtdmiijn000j04l4maa9tm14,帝國之光榮,1,1992–1992,,要判,
+C 同語言、字面小異,cdg-1189,波斯王子,1990,DOS,6,cmsx2unfz000p04ldsu7kvqky,波斯王子,9,1990–2004,,要判,
+C 同語言、字面小異,cdg-1189,波斯王子,1990,DOS,6,cmsx2xztr00ci04ldfzp1l94g,波斯王子 (Prince of Persia),3,1990–1990,,要判,
+C 同語言、字面小異,cdg-1477,美少女夢工場,1992,DOS,5,cmtpkd3t301ny04jvg13vwhml,美少女夢工場,1,1994–1994,,要判,
+C 同語言、字面小異,cdg-1477,美少女夢工場,1992,DOS,5,cmta16l12001v04jwfc8th1lk,美少女夢工廠,1,1992–1992,,要判,
+C 同語言、字面小異,cdg-1478,美少女夢工場2,1994,DOS,6,cmtpkecer01zt04jv0mioy8sq,美少女夢工場2,1,1994–1994,,要判,
+C 同語言、字面小異,cdg-1478,美少女夢工場2,1994,DOS,6,cmtpkb3x401fu04jvl5l565b7,美少女夢工廠2,2,1994–1994,,要判,
+C 同語言、字面小異,cdg-1531,風色幻想SP：封神之刻,2000,Windows,1,cmtplmm3t0cj504jvih6ib5cm,風色幻想SP～封神之刻,3,1999–2000,,要判,
+C 同語言、字面小異,cdg-1531,風色幻想SP：封神之刻,2000,Windows,1,cmtplnxks0cvg04jvs61oewma,風色幻想SP,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-1565,仙劍奇俠傳2,2003,Windows,0,cmtpn8s8201qm04l6uf7gzbow,仙劍奇俠傳2,3,2002–2003,,要判,
+C 同語言、字面小異,cdg-1565,仙劍奇俠傳2,2003,Windows,0,cmtpnc6jr028z04l6thmxhwl5,仙劍奇俠傳二,7,2002–2003,,要判,
+C 同語言、字面小異,cdg-1566,仙劍奇俠傳3,2003,Windows,0,cmtpnhyev03gc04l6efzv3xtx,仙劍奇俠傳3,3,2003–2003,,要判,
+C 同語言、字面小異,cdg-1566,仙劍奇俠傳3,2003,Windows,0,cmtpn9mtn01yn04l6sfnlnr1x,仙劍奇俠傳三,8,2002–2004,,要判,
+C 同語言、字面小異,cdg-1720,快打旋風（Street Fighter）,1988,DOS,3,cmsvv0lvk002m04jrnf5yoosh,快打旋風 (Street Fighter),1,1990–1990,,要判,
+C 同語言、字面小異,cdg-1720,快打旋風（Street Fighter）,1988,DOS,3,cmsvn61qd000r04l8upsvd9gt,快打旋風,3,1989–1989,,要判,
+C 同語言、字面小異,cdg-1879,笑傲江湖之日月神教,2000,Windows,1,cmss8frw3001r04jsv3kj32m9,笑傲江湖之日月神教,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-1879,笑傲江湖之日月神教,2000,Windows,1,cmsvpbm5o001104jvmclic9g0,笑傲江湖,11,1989–2000,,要判,
+C 同語言、字面小異,cdg-1882,軒轅劍2,1994,DOS,1,cmtpkcbb001hh04jvos70kkop,軒轅劍2,1,1994–1994,,要判,
+C 同語言、字面小異,cdg-1882,軒轅劍2,1994,DOS,1,cmtpkd3q301n104jv9f4czpqo,軒轅劍貳,5,1994–1994,,要判,
+C 同語言、字面小異,cdg-1884,軒轅劍3：雲和山的彼端,1999,Windows,1,cmss8frug001104jsuos063hd,軒轅劍3-雲和山的彼端,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-1884,軒轅劍3：雲和山的彼端,1999,Windows,1,cmtplq3p00ddr04jv6a4q7gmy,軒轅劍參～雲和山的彼端,1,2000–2000,,要判,
+C 同語言、字面小異,cdg-2050,純愛手札,1998,Windows,1,cmtplfdx90aqw04jvklv5bpft,純愛手札,2,1998–1998,,要判,
+C 同語言、字面小異,cdg-2050,純愛手札,1998,Windows,1,cmtplblxo09uk04jvmxecigaw,ときめきメモリアル～Forever With You,1,1998–1998,,要判、名稱含假名,
+C 同語言、字面小異,cdg-2051,純愛手札：交給我你的心,1999,Windows,0,cmtplokdw0cz604jvyad7i2fb,純愛手札～交給我你的心,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-2051,純愛手札：交給我你的心,1999,Windows,0,cmtplfdx90aqw04jvklv5bpft,純愛手札,2,1998–1998,,要判,
+C 同語言、字面小異,cdg-2303,文明帝國,1991,DOS,3,cmtplp0gz0d4t04jvfqhutxef,文明帝國,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-2303,文明帝國,1991,DOS,3,cmtd0z9tk001c04l6cttw3bx1,文明,2,1992–2001,,要判,
+C 同語言、字面小異,cdg-2303,文明帝國,1991,DOS,3,cmt9n2oc3001e04jmjj2zffuq,文明霸業,5,1992–2005,,要判,
+C 同語言、字面小異,cdg-2368,方程式機車賽,1989,DOS,3,cmswq0tj8008t04l6bpyb8ny5,方程式機車賽,1,1990–1990,,要判,
+C 同語言、字面小異,cdg-2368,方程式機車賽,1989,DOS,3,cmswqdmg800dw04l6omtm0ve2,方程式賽車,1,1990–1990,,要判,
+C 同語言、字面小異,cdg-2529,聖少女戰隊2,1995,DOS,9,cmtpknfg803h804jv0tfdb09b,聖少女戰隊 2,3,1995–1995,,要判,
+C 同語言、字面小異,cdg-2529,聖少女戰隊2,1995,DOS,9,cmtpkktah03a704jv3pnovcr5,聖少女戰隊 II,1,1995–1995,,要判,
+C 同語言、字面小異,cdg-2729,夢幻四驅車,1999,Windows,1,cmtpliana0bh204jvey3rxogf,夢幻四驅車,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-2729,夢幻四驅車,1999,Windows,1,cmtplna170cqp04jvq10wdvtg,夢幻遙控車,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-2971,創世紀8：異教徒,1994,DOS,1,cmtpkgvlr02kt04jvv2z9fj0w,創世紀8 異教徒,1,1994–1994,,要判,
+C 同語言、字面小異,cdg-2971,創世紀8：異教徒,1994,DOS,1,cmtpkerbp023h04jv1myebqii,創世紀8,5,1994–1994,,要判,
+C 同語言、字面小異,cdg-2987,劍俠情緣2,2000,Windows,1,cmtplth460e2d04jvjhteor1e,劍俠情緣 2,1,2000–2000,,要判,
+C 同語言、字面小異,cdg-2987,劍俠情緣2,2000,Windows,1,cmtplw6zs0ep804jv82ve0qta,劍俠情緣貳,1,2001–2001,,要判,
+C 同語言、字面小異,cdg-3107,楚漢之爭2：赤龍反撲,1992,DOS,7,cmt9n7myw009w04jm14hy9zco,楚漢之爭2—赤龍反撲,2,1992–1992,,要判,
+C 同語言、字面小異,cdg-3107,楚漢之爭2：赤龍反撲,1992,DOS,7,cmt9n4wl7005o04jm805h4fgq,楚漢之爭2,2,1992–1992,,要判,
+C 同語言、字面小異,cdg-3181,模擬大樓,1997,Windows,2,cmtpkol6j03t304jvdypqahcb,模擬大樓,1,1995–1995,,要判,
+C 同語言、字面小異,cdg-3181,模擬大樓,1997,Windows,2,cmtpl8p3e093l04jv5go9myma,摩天大樓,1,1997–1997,,要判,
+C 同語言、字面小異,cdg-3274,烽火三國,1999,Windows,2,cmtplv15p0ed504jvpp4zpttf,烽火三國,1,2000–2000,,要判,
+C 同語言、字面小異,cdg-3274,烽火三國,1999,Windows,2,cmtplkk670c1c04jv99855zny,縱橫天地之烽火三國,1,1999–1999,,要判,
+C 同語言、字面小異,cdg-3429,英雄傳奇,1989,DOS,3,cmswq0tdi007d04l6dnphtdiv,英雄傳奇,2,1990–1990,,要判,
+C 同語言、字面小異,cdg-3429,英雄傳奇,1989,DOS,3,cmswuue1e002104l4nbpd0t6r,英雄傳奇I,2,1990–1990,,要判,
+C 同語言、字面小異,cdg-3480,藏天神魔傳,2002,Windows,1,cmtpn7cob01e004l6agjyetnl,藏天神魔傳,1,2002–2002,,要判,
+C 同語言、字面小異,cdg-3480,藏天神魔傳,2002,Windows,1,cmtpn2nv500hd04l6ogywoyui,西藏鎮魔曲,1,2001–2001,,要判,
+C 同語言、字面小異,cdg-3528,狩魔獵人：原罪,1993,DOS,1,cmtpkg3fn02fq04jv9j7o0ora,狩魔獵人－原罪,2,1994–1994,,要判,
+C 同語言、字面小異,cdg-3528,狩魔獵人：原罪,1993,DOS,1,cmtpkdzb101vm04jv7ce1b0ri,狩魔獵人,3,1994–1994,,要判,
+C 同語言、字面小異,cdg-3785,魔鬼推銷員,1995,DOS,2,cmtpkpa2q041b04jv71ghgtjc,魔鬼推銷員,2,1995–1995,,要判,
+C 同語言、字面小異,cdg-3785,魔鬼推銷員,1995,DOS,2,cmtpkgvh902jv04jv6tl0ehq7,推銷之王,1,1994–1994,,要判,
+C 同語言、字面小異,cdg-4541,金錢帝國黃金版,1996,Windows,0,cmtpl790608sx04jvqejalk5k,金錢帝國黃金版,1,1997–1997,,要判,
+C 同語言、字面小異,cdg-4541,金錢帝國黃金版,1996,Windows,0,cmtpktgea055n04jv98c59asw,金錢帝國,2,1996–1997,,要判,
+C 同語言、字面小異,cdg-4598,小人物狂想曲2,1991,DOS,0,cmtdmiih0000404l4bno7jj50,小人物狂想曲2,1,1992–1992,,要判,
+C 同語言、字面小異,cdg-4598,小人物狂想曲2,1991,DOS,0,cmt8znyko000904jymh5f1dnd,小人物狂想曲 II,3,1992–1992,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-1194,波斯王子3D,1999,Windows,0,cmtplnxmw0cw204jvw82l9ey4,波斯王子3D,1,1999–1999,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-1194,波斯王子3D,1999,Windows,0,cmtpnyia306tl04l6rsenw2o2,波斯王子3,1,2005–2005,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-2531,聖劍奇兵,1999,Windows,4,cmtplokep0czh04jv8xq7503j,聖劍奇兵,2,1999–1999,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-2531,聖劍奇兵,1999,Windows,4,cmsvoibo0000u04jpahg219xg,聖戰奇兵,6,1989–1990,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-3947,快樂泡泡龍,1989,DOS,2,cmswqdm5400b404l6jme796bb,快樂泡泡龍,1,1990–1990,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-3947,快樂泡泡龍,1989,DOS,2,cmtpl1iof070s04jvabj7dt3d,泡泡龍,1,1997–1997,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-4005,魔界神兵2,1988,DOS,5,cmu84x7ek00np04ih42umxfkg,魔界神兵2,1,1993–1993,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-4005,魔界神兵2,1988,DOS,5,cmsvuqx32002a04lecui5dn81,魔界神兵 II,1,1990–1990,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-4114,戰狗,1993,DOS,0,cmtplth7e0e3304jv80yreyj7,戰狗,1,2000–2000,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-4114,戰狗,1993,DOS,0,cmtpk4j4900v204jvy3ulpy6x,危城爭霸 戰狗,1,1993–1993,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-5313,羅馬帝國AD92,1992,DOS,1,cmtpk43qo00sw04jv8zdw029a,羅馬帝國AD92,1,1993–1993,,要判,
+C 同語言、字面小異 ⚠年代分歧,cdg-5313,羅馬帝國AD92,1992,DOS,1,cmtpnr445058504l63vekw3dk,羅馬帝國,1,2004–2004,,要判,
+D 同語言、字面差很多,cdg-3190,模擬樂園,1999,Windows,4,cmsreh08d004904ieqwybuf37,夢幻遊樂園,1,1999–1999,,要判,
+D 同語言、字面差很多,cdg-3190,模擬樂園,1999,Windows,4,cmtpls2iv0ds904jvka5ffdtv,千禧新樂園,1,2000–2000,,要判,
+D 同語言、字面差很多,cdg-4526,中國貳：永恆帝國,2002,Windows,0,cmtpn7cr301ek04l6vunlppv9,中國2,1,2002–2002,,要判,
+D 同語言、字面差很多,cdg-4526,中國貳：永恆帝國,2002,Windows,0,cmtpn82xh01lp04l6f9kfbnrw,中國貳,2,2002–2003,,要判,
+D 同語言、字面差很多 ⚠年代分歧,cdg-2903,銀河英雄／寒漠風暴,1997,DOS,2,cmsvpx5ap001904ldd264g5gn,銀河英雄,5,1989–1990,,要判,
+D 同語言、字面差很多 ⚠年代分歧,cdg-2903,銀河英雄／寒漠風暴,1997,DOS,2,cmtpl1iwp073504jv5ua0oxoo,寒漠風暴,1,1997–1997,,要判,
