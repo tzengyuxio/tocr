@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { GameBrowseBar } from "@/components/game/GameBrowseBar";
+import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import {
   GAME_FILTERS,
   gameOrderBy,
@@ -158,19 +159,24 @@ export default async function GamesPage({
               <Link key={game.id} href={`/games/${game.slug}`}>
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardContent className="flex items-center gap-3 p-3">
+                    {/* 3:4 and 72px wide, the same shape the game page gives a
+                        cover: a box shot cropped into a square loses its title.
+                        Past 64px the lucide icon is too small a stand-in, so
+                        the missing-cover slot switches to CoverPlaceholder. */}
                     {game.coverImage ? (
                       <Image
                         src={game.coverImage}
                         alt={game.name}
-                        width={56}
-                        height={56}
+                        width={72}
+                        height={96}
                         unoptimized
-                        className="h-14 w-14 shrink-0 rounded-md object-cover"
+                        className="h-24 w-[4.5rem] shrink-0 rounded-md object-cover"
                       />
                     ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-muted">
-                        <Gamepad2 className="h-6 w-6 text-muted-foreground/50" />
-                      </div>
+                      <CoverPlaceholder
+                        kind="game"
+                        className="w-[4.5rem] shrink-0 rounded-md"
+                      />
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="font-medium line-clamp-1">{game.name}</div>
