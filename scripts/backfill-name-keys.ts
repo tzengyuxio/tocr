@@ -6,14 +6,17 @@
  * 永遠比不中、每次辨識都新建一列；後者撞得到任何帶 2 的名字。規則改了，**既存的
  * `nameKeys` 是照舊規則算出來存下來的**，不重算就還是舊的。
  *
- * slug 那邊只補**空名字造成的 fallback**（`game`、`game-2`…`game-20`）。既有可讀的
- * slug 一律不動：遊戲沒有雜誌那套舊代號轉址表，改一個就斷一個網址。
+ * slug 那邊預設只補**空名字造成的 fallback**（`game`、`game-2`…`game-20`）。
+ * `--reslug` 則連含假名／諺文、slug 是照舊規則算出來的那些一起重算——那批的 slug
+ * 是名字被挖掉之後剩的殘骸，`カスタムメイト・2` 的 slug 就是 `2`、`エリア 88` 是
+ * `88`。**改了舊網址會斷**（遊戲沒有雜誌那套舊代號轉址表），yuxio 2026-09-20 的
+ * 判斷是站上的遊戲網址還沒有被貼到站外，可讀優先。撞號的不改、留著回報。
  *
  * 走 API 不走 SQL，`edit_logs` 才有紀錄。冪等：值沒變就跳過。
  *
  * 用法：
  *   npx tsx scripts/backfill-name-keys.ts --prod
- *   npx tsx scripts/backfill-name-keys.ts --prod --base https://tocr.simagame.me --apply
+ *   npx tsx scripts/backfill-name-keys.ts --prod --reslug --base https://tocr.simagame.me --apply
  */
 import { execFileSync } from "node:child_process";
 import { productionToken } from "./prod-token";
@@ -22,11 +25,15 @@ import { slugify } from "../src/lib/slugify";
 
 const args = process.argv.slice(2);
 const apply = args.includes("--apply");
+const reslug = args.includes("--reslug");
 const baseIndex = args.indexOf("--base");
 const base = baseIndex === -1 ? "http://localhost:3000" : args[baseIndex + 1];
 
 /** 名字整段被剝掉時 resolve-relations 用的 fallback，後面接流水號。 */
 const FALLBACK_SLUG = /^game(-\d+)?$/;
+
+/** 舊字元集會整段丟掉的書寫系統。 */
+const WIDENED = /[\u3041-\u309f\u30a0-\u30ff\uac00-\ud7a3]/;
 
 async function main() {
   if (args.includes("--prod")) {
@@ -60,12 +67,18 @@ async function main() {
       const changed = JSON.stringify(next) !== JSON.stringify(game.nameKeys);
       if (changed) patch.nameKeys = next;
 
-      if (FALLBACK_SLUG.test(game.slug)) {
+      const wantsSlug =
+        FALLBACK_SLUG.test(game.slug) || (reslug && WIDENED.test(game.name));
+      if (wantsSlug) {
         const wanted = slugify(game.name);
-        if (wanted && !taken.has(wanted)) {
-          patch.slug = wanted;
-          taken.delete(game.slug);
-          taken.add(wanted);
+        if (wanted && wanted !== game.slug) {
+          if (taken.has(wanted)) {
+            console.error(`  ? ${game.name}：想要的 slug 「${wanted}」已被佔用，不動`);
+          } else {
+            patch.slug = wanted;
+            taken.delete(game.slug);
+            taken.add(wanted);
+          }
         }
       }
 
