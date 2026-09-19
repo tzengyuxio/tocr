@@ -22,11 +22,15 @@
  * `--top=N` 取站上文章數最多的 N 筆（那是「代表性」最直接的量法），
  * `--developer=KOEI` 限定某家開發商——光榮那批單看文章數擠不進前段，
  * 但一個雜誌索引站沒有《信長之野望》與《三國志》說不過去。
+ *
+ * `--foreign-covers` 是另一種取法：**只挑封面來自外站的那幾筆**，並且允許換掉
+ * 那張圖（其他欄位仍然只填空的）。2026-08 從 RAWG 抓的三筆就是這樣進來的，
+ * 其中兩筆是遊戲內截圖。這個模式不吃 `--top`，符合條件的本來就只有個位數。
  */
 import { execFileSync } from "node:child_process";
 import { productionToken } from "./prod-token";
 import { nameKey } from "../src/lib/name-match";
-import { enrichment, pickCover, type CdosEntry } from "../src/lib/cdosgame";
+import { enrichment, isCdosgameImage, pickCover, type CdosEntry } from "../src/lib/cdosgame";
 
 const CDOSGAME = "https://cdosgame.simagame.me";
 
@@ -34,6 +38,7 @@ const args = process.argv.slice(2);
 const apply = args.includes("--apply");
 const top = Number(args.find((a) => a.startsWith("--top="))?.slice(6) ?? 20);
 const developer = args.find((a) => a.startsWith("--developer="))?.slice(12);
+const foreignCovers = args.includes("--foreign-covers");
 const baseIndex = args.indexOf("--base");
 const base = baseIndex === -1 ? "http://localhost:3000" : args[baseIndex + 1];
 
@@ -86,16 +91,24 @@ async function main() {
       perEntry.set(entry.id, (perEntry.get(entry.id) ?? 0) + 1);
     }
 
-    const targets = matches
+    const oneToOne = matches
       .filter(({ entry }) => perEntry.get(entry.id) === 1)
       .filter(({ entry }) => !developer || entry.developer === developer)
-      .sort((a, b) => b.game._count.articleGames - a.game._count.articleGames)
-      .slice(0, top);
+      .sort((a, b) => b.game._count.articleGames - a.game._count.articleGames);
+
+    const targets = foreignCovers
+      ? oneToOne.filter(
+          ({ game }) => !!game.coverImage && !isCdosgameImage(game.coverImage)
+        )
+      : oneToOne.slice(0, top);
 
     console.log(
-      `站上 ${games.length} 筆、上游 ${upstream.length} 筆，雙向一對一 ` +
-        `${matches.filter(({ entry }) => perEntry.get(entry.id) === 1).length} 筆` +
-        (developer ? `，其中 ${developer} 開發的取 ` : `；取文章最多的 `) +
+      `站上 ${games.length} 筆、上游 ${upstream.length} 筆，雙向一對一 ${oneToOne.length} 筆` +
+        (foreignCovers
+          ? `；其中封面來自外站的 `
+          : developer
+            ? `，其中 ${developer} 開發的取 `
+            : `；取文章最多的 `) +
         `${targets.length} 筆\n`
     );
 
@@ -106,7 +119,7 @@ async function main() {
         headers: { "User-Agent": "tocr-enrich" },
       });
       const cover = page.ok ? pickCover(await page.text(), `${CDOSGAME}/games/${entry.id}`) : null;
-      const patch = enrichment(game, entry, cover, game.coverImage);
+      const patch = enrichment(game, entry, cover, game.coverImage, foreignCovers);
 
       if (Object.keys(patch).length === 0) {
         skipped++;
