@@ -118,6 +118,11 @@ export function GameYearBar({
               // 拖曳已經在 pointerup 導航過了，這裡再讓連結跑一次會變成兩次。
               // 但 href 要留著：沒有 JS 的時候它就是這個控制項的全部。
               onClick={(event) => event.preventDefault()}
+              // 26 根長條同時在畫面上，預設的 prefetch 會在載入時把 26 個年份
+              // 各打一次 RSC，而每一個背後是三支聚合查詢加一次 findMany。
+              // 量過：一次 /games 載入送出四十幾個預抓請求。篩選器不是「等一下
+              // 大概會點進去」的連結，省下的那點延遲換不到這個代價。
+              prefetch={false}
               draggable={false}
               // 可點的高度是整欄而不只是那根柱子——1988 年那格只有 10px 高。
               className="group flex h-full flex-1 items-end"

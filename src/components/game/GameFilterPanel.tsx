@@ -73,6 +73,8 @@ export function GameFilterPanel({
                       : "hover:bg-muted"
                   )}
                   aria-pressed={on}
+                  // 與長條同一個理由：篩選器不預抓，見 GameYearBar。
+                  prefetch={false}
                 >
                   {entry.code}
                   <span className="tabular-nums opacity-60">{entry.games}</span>
