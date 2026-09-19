@@ -154,8 +154,28 @@ describe("enrichment", () => {
 });
 
 describe("pickWikipedia", () => {
+  it("skips a reference that points at the publisher, not the game", () => {
+    // cdg-0165《八女神物語》's only wikipedia link is a citation for 天堂鳥資訊.
+    const html = `
+      <li data-key="ttn_wiki"><a class="lk"
+        href="https://zh.wikipedia.org/wiki/%E5%A4%A9%E5%A0%82%E9%B3%A5%E8%B3%87%E8%A8%8A">天堂鳥資訊</a></li>
+    `;
+
+    expect(pickWikipedia(html)).toBeNull();
+  });
+
+  it("takes the game's own reference when both are present", () => {
+    const html = `
+      <li data-key="ttn_wiki"><a class="lk" href="https://zh.wikipedia.org/wiki/X">X</a></li>
+      <li data-key="wikipedia_en"><a class="lk" href="https://en.wikipedia.org/wiki/Heart_of_China">Y</a></li>
+    `;
+
+    expect(pickWikipedia(html)).toBe("https://en.wikipedia.org/wiki/Heart_of_China");
+  });
+
   it("takes the wikipedia link off the entry page", () => {
-    const html = `<a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E5%9C%8B%E5%BF%97III">維基</a>`;
+    const html = `<li data-key="wikipedia_zh"><a class="lk"
+      href="https://zh.wikipedia.org/wiki/%E4%B8%89%E5%9C%8B%E5%BF%97III">維基</a></li>`;
 
     expect(pickWikipedia(html)).toBe("https://zh.wikipedia.org/wiki/三國志III");
   });
@@ -171,8 +191,8 @@ describe("pickWikipedia", () => {
   // 後者沒有中文條目。
   it("takes the first when several language editions are listed", () => {
     const html = `
-      <a href="https://zh.wikipedia.org/wiki/A">中文</a>
-      <a href="https://en.wikipedia.org/wiki/A">English</a>
+      <li data-key="wikipedia_zh"><a class="lk" href="https://zh.wikipedia.org/wiki/A">中文</a></li>
+      <li data-key="wikipedia_en"><a class="lk" href="https://en.wikipedia.org/wiki/A">English</a></li>
     `;
 
     expect(pickWikipedia(html)).toContain("zh.wikipedia.org");

@@ -132,20 +132,34 @@ export function enrichment(
   return patch;
 }
 
-const WIKIPEDIA_HREF = /href="(https:\/\/[a-z-]+\.wikipedia\.org\/[^"]+)"/g;
+/**
+ * 「參考資料」那一列的 `data-key` 是 `wikipedia`／`wikipedia_en`／`wikipedia_zh`
+ * 時才是這款遊戲自己的條目。
+ */
+const WIKIPEDIA_REF =
+  /data-key="wikipedia[^"]*"[^>]*>\s*<a[^>]*href="(https:\/\/[a-z-]+\.wikipedia\.org\/[^"]+)"/g;
 
 /**
  * 條目頁上的維基百科連結，沒有就是 null。
  *
- * cdosgame 自己在「外部連結」那區列了維基條目（也列攻略本、介紹頁），所以抓一次
+ * cdosgame 自己在「參考資料」那區列了維基條目（也列攻略本、介紹頁），所以抓一次
  * 頁面能同時拿到封面與維基網址，不必另外查一輪維基。**不是每個條目都有**——
  * 《仙劍奇俠傳》就沒有，那就不建那條連結，不去猜網址。
  *
- * 只取第一個：條目頁通常只列一條，**語言版本由上游決定**——《三國志III》連的是
- * 中文版，《快打旋風》《光芒之池》連的是英文版，因為那些遊戲沒有中文條目。
+ * **靠 `data-key` 認，不是抓頁面上第一個維基網址。** 參考資料裡也會出現廠商的維基
+ * 條目——《八女神物語》（cdg-0165）整頁只有一條維基連結，`data-key="ttn_wiki"`，
+ * 指的是發行商天堂鳥資訊，那款遊戲本身根本沒有維基條目。2026-09-20 修掉這個之前，
+ * 站上有 34 條維基連結指向廠商而不是遊戲，其中天堂鳥資訊一家就被 12 款遊戲指過去。
+ *
+ * **這道閘擋不完。** 那 34 條裡有 15 條的 `data-key` 本來就是 `wikipedia*`——上游把
+ * 廠商條目當成該款的參考資料列在那裡，從標記上分不出來。要認出那 15 條得比對條目
+ * 標題與廠商名，那是逐筆審的事（見 BACKLOG），不放進這支純函式。
+ *
+ * 只取第一個合格的：**語言版本由上游決定**——《三國志III》連的是中文版，
+ * 《快打旋風》《光芒之池》連的是英文版，因為那些遊戲沒有中文條目。
  * 不去把英文條目換成猜出來的中文網址。
  */
 export function pickWikipedia(html: string): string | null {
-  const first = [...html.matchAll(WIKIPEDIA_HREF)][0];
+  const first = [...html.matchAll(WIKIPEDIA_REF)][0];
   return first ? decodeURI(first[1]) : null;
 }
