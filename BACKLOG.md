@@ -13,6 +13,12 @@
 
 - [ ] **智冠年報大事紀裡還有兩本沒對照** — 2017 年年報記「2008 年 04 月 智冠『電玩 e 週刊』、『電玩雙週刊』雜誌創刊」與「2012 年 04 月 智冠『APP 情報誌』雜誌創刊」（<https://www.soft-world.com/en/pdf/2017AnnualReport.pdf>）。**《電玩e週刊》站上沒有這本刊**，且與既有的《電玩e世代》（銘顯文化、2002-07 創刊）不是同一本，別併；《電玩APP情報誌》的封面在 `~/Downloads/gamexpress-covers`，見下面那條。年報與站上對不上的兩處（level up 記 2006-07、電玩双週刊記 2008-04）已寫進各自的 description（2026-09-12）
 
+- [ ] **代表性遊戲條目還差三條軸線與描述** — 2026-09-20 用 `scripts/enrich-from-cdosgame.ts` 填了 29 筆（開發商、發行商、類型、封面），但 **cdosgame 只收單機 PC**，站上文章數最高的另外三條軸線一個都查不到：台灣自製線上遊戲（三國演義ONLINE 40 篇、金庸群俠傳ONLINE 29 篇、吞食天地ONLINE 19 篇）、DC 時代主機（莎木 18、蘇生 15、魔劍X 15）、韓國線上（仙境傳說 29、新天上碑 26、石器時代 19）。那三條沒有現成資料庫可抓，要人工或另尋來源。`description` 依 yuxio 的決定全部留空（2026-09-20）
+
+- [ ] **`Game.releaseDate` 填不了年份精度** — cdosgame 的 `year` 只有年份，而 `releaseDate` 是 `DateTime`，填 `1992-01-01` 會在遊戲頁顯示成「1992 年 1 月 1 日」——謊稱了精度。所以 enrich 那支腳本刻意不碰這一欄。期刊那邊用 EDTF 加 `publishSort` 解過同樣的問題（見 data-conventions 的出版日期），遊戲這邊要嘛比照、要嘛加一個精度欄位（2026-09-20）
+
+- [ ] **三筆 `coverImage` 是 RAWG 的截圖** — `ULTIMA VI`、`Operation Wolf`、`Eye of the Beholder` 指向 `media.rawg.io/media/screenshots/…`，而 data-conventions 的「遊戲封面」明說遊戲內截圖不算封面。另有「聖眼之翼」的 `developer`／`publisher`／`coverImage` 是空字串不是 null。四筆都該清掉，前三筆若 cdosgame 有對應條目就換成那邊的圖（2026-09-20）
+
 - [ ] **`Game.platforms` 還有 580 筆要人審** — 代號表已定案（存細的、顯示粗的，見 [docs/backlog/game-platforms.md](docs/backlog/game-platforms.md)），2026-09-20 寫入 1,353 / 6,744 筆。剩下的帶著 `risk` 標記在 `data/game-audit/platforms-suggested.csv`：靠別名對上 389、來源同時給了別筆 377、對到多個上游條目 36、名稱含假名 2（可疊加）。**審法是清掉 `risk` 欄**再跑一次 `apply-platforms.ts`，判定不該寫的那列直接刪掉；判斷靠 `shared_with` 與 `sources` 兩欄。還有兩件沒做：`PLATFORM` 標籤照同一張代號表收斂，以及文章標籤這第三個來源（能推到 1,681 筆，但一篇「PS2 大特集」掛的十款遊戲未必都是 PS2，得看比例）（2026-09-20）
 
 - [ ] **cdosgame 的對照關係要接起來** — `scripts/match-cdosgame.ts --prod` 產的對照表在 `data/game-audit/`：全站 2,655 款對上 1,422（其中 192 款要判）。**接法已定**：`ExternalLink`／`Photo` 各加 `gameId`（XOR 約束改成 `num_nonnulls(...) = 1`）、`ExternalSite` 加 `CDOSGAME`；外站的圖一律只存連結不複製。migration 還沒寫，等對照表人審過再動（2026-09-20）
