@@ -81,6 +81,13 @@ describe("externalLinkEntryName", () => {
     ).toBe("模擬螞蟻");
   });
 
+  // 中文維基的連結常帶語言變體：正式站 602 條裡有 41 條走 /zh-tw/ 或 /zh-hant/。
+  it("reads the title from a language-variant path too", () => {
+    expect(wiki("https://zh.wikipedia.org/zh-tw/GO!GO!台北捷運")).toBe("GO!GO!台北捷運");
+    expect(wiki("https://zh.wikipedia.org/zh-hant/AS～天使小夜曲")).toBe("AS～天使小夜曲");
+    expect(wiki("https://zh.wikipedia.org/zh-cn/仙剑奇侠传")).toBe("仙剑奇侠传");
+  });
+
   it("survives a url that is not shaped like an article link", () => {
     expect(wiki("https://en.wikipedia.org/")).toBeNull();
     expect(wiki("https://en.wikipedia.org/wiki/%E0%A4%A")).toBeNull();

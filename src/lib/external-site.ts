@@ -68,9 +68,20 @@ export function externalLinkEntryName(link: {
   return wikipediaTitle(link.url);
 }
 
+/**
+ * 條目名在維基網址的哪一段。
+ *
+ * 一般是 `/wiki/<條目>`，但**中文維基的連結常帶語言變體**，路徑會變成
+ * `/zh-tw/<條目>` 或 `/zh-hant/<條目>`——正式站 602 條裡有 41 條長這樣
+ * （zh-tw 26、zh-hant 15），全部來自整批建立時抄下來的原網址。
+ * 只認 `/wiki/` 的話這 41 條會讀不出條目名、退回只顯示站名。
+ */
+const WIKIPEDIA_PATH_PREFIXES = ["/wiki/", "/zh-tw/", "/zh-hant/", "/zh-cn/", "/zh-hans/", "/zh-hk/", "/zh-mo/", "/zh-sg/", "/zh-my/"];
+
 function wikipediaTitle(url: string): string | null {
   const path = url.split("#")[0].split("?")[0];
-  const segment = path.split("/wiki/")[1];
+  const prefix = WIKIPEDIA_PATH_PREFIXES.find((p) => path.includes(p));
+  const segment = prefix ? path.split(prefix)[1] : undefined;
   if (!segment) return null;
   try {
     const title = decodeURIComponent(segment).replace(/_/g, " ").trim();
