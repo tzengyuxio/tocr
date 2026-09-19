@@ -192,11 +192,14 @@ export default async function HomePage() {
             、<StatLink href="/tags">{tagCount.toLocaleString("en-US")} 個標籤</StatLink>
           </p>
           {issueCount > 0 && (
+            {/* 全形括號前不能斷行：JSX 會把換行塌成一個半形空格，讀出來就變成
+                「期有封面 （50%）」。要斷的話斷在頓號後面。 */}
             <p className="mt-1 text-xs text-muted-foreground">
-              其中 <span className="tabular-nums">{coveredCount.toLocaleString("en-US")}</span> 期有封面
-              （{percent(coveredCount, issueCount)}）、
-              <span className="tabular-nums">{indexedCount.toLocaleString("en-US")}</span> 期已錄入目錄
-              （{percent(indexedCount, issueCount)}）
+              其中{" "}
+              <span className="tabular-nums">{coveredCount.toLocaleString("en-US")}</span>
+              {` 期有封面（${percent(coveredCount, issueCount)}）、`}
+              <span className="tabular-nums">{indexedCount.toLocaleString("en-US")}</span>
+              {` 期已錄入目錄（${percent(indexedCount, issueCount)}）`}
             </p>
           )}
         </section>
