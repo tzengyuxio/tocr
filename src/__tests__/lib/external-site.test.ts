@@ -2,7 +2,11 @@
  * @jest-environment node
  */
 import { ExternalSite as PrismaExternalSite } from "@prisma/client";
-import { EXTERNAL_SITE_VALUES, externalLinkLabel } from "@/lib/external-site";
+import {
+  EXTERNAL_SITE_VALUES,
+  externalLinkEntryName,
+  externalLinkLabel,
+} from "@/lib/external-site";
 
 describe("externalLinkLabel", () => {
   it("names the site when no label is given", () => {
@@ -28,5 +32,57 @@ describe("externalLinkLabel", () => {
     expect([...EXTERNAL_SITE_VALUES].sort()).toEqual(
       Object.values(PrismaExternalSite).sort()
     );
+  });
+});
+
+describe("externalLinkEntryName", () => {
+  const wiki = (url: string) =>
+    externalLinkEntryName({ site: "WIKIPEDIA", url, label: null });
+
+  // 站上 602 條維基連結是整批建的，一條 label 都沒有——條目名只能從網址讀。
+  it("reads the article title out of a wikipedia url", () => {
+    expect(wiki("https://en.wikipedia.org/wiki/SimAnt")).toBe("SimAnt");
+    expect(wiki("https://en.wikipedia.org/wiki/Monkey_Island_2:_LeChuck's_Revenge"))
+      .toBe("Monkey Island 2: LeChuck's Revenge");
+    expect(wiki("https://zh.wikipedia.org/wiki/%E5%B9%BB%E5%BD%B1%E7%89%B9%E6%94%BB"))
+      .toBe("幻影特攻");
+  });
+
+  it("ignores a fragment or query on a wikipedia url", () => {
+    expect(wiki("https://en.wikipedia.org/wiki/SimAnt#Gameplay")).toBe("SimAnt");
+    expect(wiki("https://en.wikipedia.org/wiki/SimAnt?action=raw")).toBe("SimAnt");
+  });
+
+  // 流水號不是條目名。寧可只顯示站名，也不要拿代號充數。
+  it("says nothing for a site whose url carries no title", () => {
+    expect(
+      externalLinkEntryName({
+        site: "CDOSGAME",
+        url: "https://cdosgame.simagame.me/games/cdg-0030",
+        label: null,
+      })
+    ).toBeNull();
+    expect(
+      externalLinkEntryName({
+        site: "INTERNET_ARCHIVE",
+        url: "https://archive.org/details/astro-kuaibao-001",
+        label: null,
+      })
+    ).toBeNull();
+  });
+
+  it("prefers the editor's label over anything read from the url", () => {
+    expect(
+      externalLinkEntryName({
+        site: "WIKIPEDIA",
+        url: "https://en.wikipedia.org/wiki/SimAnt",
+        label: "模擬螞蟻",
+      })
+    ).toBe("模擬螞蟻");
+  });
+
+  it("survives a url that is not shaped like an article link", () => {
+    expect(wiki("https://en.wikipedia.org/")).toBeNull();
+    expect(wiki("https://en.wikipedia.org/wiki/%E0%A4%A")).toBeNull();
   });
 });

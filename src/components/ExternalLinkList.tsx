@@ -1,5 +1,9 @@
 import { ExternalLink as ExternalLinkIcon } from "lucide-react";
-import { externalLinkLabel, type ExternalSite } from "@/lib/external-site";
+import {
+  EXTERNAL_SITE_LABELS,
+  externalLinkEntryName,
+  type ExternalSite,
+} from "@/lib/external-site";
 
 export interface PublicLink {
   id: string;
@@ -29,19 +33,25 @@ export function ExternalLinkList({
     <div className={className}>
       <p className="mb-1.5 text-xs text-muted-foreground">站外資訊</p>
       <ul className="space-y-1">
-        {links.map((link) => (
-          <li key={link.id}>
-            <a
-              href={link.url}
-              target="_blank"
-              rel="nofollow noopener"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-            >
-              <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0" />
-              {externalLinkLabel(link)}
-            </a>
-          </li>
-        ))}
+        {links.map((link) => {
+          const entry = externalLinkEntryName(link);
+          return (
+            <li key={link.id}>
+              <a
+                href={link.url}
+                target="_blank"
+                rel="nofollow noopener"
+                className="inline-flex items-baseline gap-1.5 text-sm text-primary hover:underline"
+              >
+                <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0 self-center" />
+                {/* 站名在前、條目名在後：先說去哪個站，再說看到什麼。條目名取不到
+                    （中文 DOS 遊戲資料庫的網址是流水號）時就只剩站名，跟改版前一樣。 */}
+                <span>{EXTERNAL_SITE_LABELS[link.site]}</span>
+                {entry && <span className="text-muted-foreground">{entry}</span>}
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
