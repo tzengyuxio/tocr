@@ -1,5 +1,5 @@
 ---
-status: open
+status: done
 created: 2026-08-15
 ---
 
