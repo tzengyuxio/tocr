@@ -22,6 +22,7 @@ commit 進來是為了讓「這批清掉了多少」在 git 歷史上看得出�
 | `cdosgame-koei.csv` | 光榮（KOEI）59 款的對照 |
 | `cdosgame-all.csv` | cdosgame 全部 2,655 款的對照 |
 | `platforms-suggested.csv` | `Game.platforms` 的寫入提案，`risk` 空的才會被 `apply-platforms.ts` 寫 |
+| `merge-candidates.csv` | 合併候選：同一個 cdosgame 條目對到站上好幾筆（`--groups`） |
 
 每一列的 `articles_sample` 是該條目掛在哪幾篇文章上（最多三篇）。**撞名的群組要看這一欄
 才判得出來**：同一個中文譯名底下可能是三款不同遊戲——站上的「洪荒帝國」就掛著
@@ -37,6 +38,23 @@ commit 進來是為了讓「這批清掉了多少」在 git 歷史上看得出�
 都標同一個平台是對的；看到 `Age of Empires` 與 `世紀帝國` 共用 `cdg-0666`，那是
 **兩筆該合併的重複條目**——這一欄比 `loose-dup.csv` 的判準強，因為上游的
 `title_aliases` 認得出字面毫無重疊的同一款。
+
+## merge-candidates.csv 怎麼用
+
+同一個上游條目對到站上好幾筆，就是一組候選——**判準比 `loose-dup.csv` 強**，因為
+cdosgame 連 `title_aliases` 一起比，抓得到 `Age of Empires` 與 `世紀帝國`、
+`太平洋空戰英雄` 與 `Aces of the Pacific` 這種字面毫無重疊的同一款。192 組、
+394 筆，182 組是兩筆、10 組是三筆。
+
+**仍然只是候選。** 已知的誤中有兩類：
+
+- **名稱含假名**（status 標了，9 筆）：`nameKey` 把假名整段丟掉，`カスタムメイト・2`
+  正規化後只剩 `2`，於是撞上「七年戰爭2：決戰王朝」那組
+- **總稱被拉進單代**：`三國志`（13 篇）被拉進 `三國志：風雲再起` 那組，那是系列
+  總稱不是同一款
+
+合併會把落選那筆真的刪掉，所以動手前要看文章（見 data-conventions 的
+「重複條目怎麼歸類」）。
 
 ## 2026-09-20 的基準
 
