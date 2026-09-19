@@ -19,6 +19,18 @@
 
 - [ ] **三筆 `coverImage` 是 RAWG 的截圖** — `ULTIMA VI`、`Operation Wolf`、`Eye of the Beholder` 指向 `media.rawg.io/media/screenshots/…`，而 data-conventions 的「遊戲封面」明說遊戲內截圖不算封面。另有「聖眼之翼」的 `developer`／`publisher`／`coverImage` 是空字串不是 null。四筆都該清掉，前三筆若 cdosgame 有對應條目就換成那邊的圖（2026-09-20）
 
+- [ ] **179 組合併候選等人填 `decision`** — 同一個 cdosgame 條目對到站上好幾筆，那是重複條目
+  最強的訊號（比 `loose-dup` 強：後者只剝括號，抓不到 `Age of Empires` 與 `世紀帝國` 是同一款）。
+  清單在 `data/game-audit/merge-candidates.csv`（179 組 / 368 筆），其中**風險最低的 124 組另出
+  一份 `merge-candidates-ab.csv`**（A 正規化後完全相同 3 組、B 一中一西 121 組），那兩堆掃過去
+  就判得出來。**審法是填 `decision` 欄**（`合併`／`不合併`，留空＝還沒判），同一組的 `cdg_id`
+  相同。腳本不讀那一欄——合併是刪除、不可逆，只能由人一組一組按，執行走
+  `POST /api/games/[id]/merge`（`dryRun` 會先說會搬幾篇文章、帶哪些欄位過去）。
+  重跑出表：`npx tsx scripts/match-cdosgame.ts --prod --groups [--bucket=A,B] -o <檔>`。
+  帶 `⚠年代分歧` 的（兩筆文章年份不重疊且差三年以上）一律逐組判，不進 `--bucket`——
+  `聖劍奇兵`(1999)／`聖戰奇兵`(1989–1990) 就是它抓到的，後者是印第安納瓊斯第三集的片名。
+  判準與四堆的說明見 [data/game-audit/README.md](data/game-audit/README.md)（2026-09-20）
+
 - [ ] **`Game.platforms` 還有 580 筆要人審** — 代號表已定案（存細的、顯示粗的，見 [docs/backlog/game-platforms.md](docs/backlog/game-platforms.md)），2026-09-20 寫入 1,353 / 6,744 筆。剩下的帶著 `risk` 標記在 `data/game-audit/platforms-suggested.csv`。**審法是清掉 `risk` 欄**再跑一次 `apply-platforms.ts`（union 不覆蓋、走 API、可重跑），判定不該寫的那列直接刪掉；判斷靠 `shared_with` 與 `sources` 兩欄。旗標分佈（可疊加）：靠別名對上 416、來源同時給了別筆 375、對到多個上游條目 40、名稱含假名 7、兩邊都給 3；其中 335 筆只帶一個旗標，光是「只靠別名對上」就有 172 筆，那是最好清的一批。建議值 553/580 是單一平台（DOS 457、WIN 136），文章數 328 筆只有 1 篇、60 筆 5 篇以上——**從文章多的那 60 筆先審**，錯了影響最大。**先做合併候選再審這批**：「來源同時給了別筆」那 375 筆的根因就是站上同一款有兩筆條目，合併之後會自己少掉一部分。還有兩件沒做：`PLATFORM` 標籤照同一張代號表收斂，以及文章標籤這第三個來源（能推到 1,681 筆，但一篇「PS2 大特集」掛的十款遊戲未必都是 PS2，得看比例）（2026-09-20）
 
 - [ ] **cdosgame 的對照關係要接起來** — `scripts/match-cdosgame.ts --prod` 產的對照表在 `data/game-audit/`：全站 2,655 款對上 1,422（其中 192 款要判）。**接法已定**：`ExternalLink`／`Photo` 各加 `gameId`（XOR 約束改成 `num_nonnulls(...) = 1`）、`ExternalSite` 加 `CDOSGAME`；外站的圖一律只存連結不複製。migration 還沒寫，等對照表人審過再動（2026-09-20）
@@ -41,7 +53,12 @@
   用掉了**，那 1,353 筆 `Game.platforms` 有它一份。原本要它做的事「當 `Game.name` 的基準、
   把站上各種寫法收斂過來」一步都沒走：6,756 款遊戲裡只有 4 筆有 `aliases`。要做的是拿索引名
   對站上的 `Game`，同款不同寫法的併起來、索引的寫法當 `name`、其餘進 `aliases`
-  （合併走 `scripts/merge-game.ts`）（2026-09-12，2026-09-20 改寫）
+  （合併走 `POST /api/games/[id]/merge`）。
+
+  **擋路的那件 2026-09-20 解掉了**：`nameKey()` 以前會把假名與諺文整段丟掉，日文原名填進
+  `nameOriginal`／`aliases` 會製造假碰撞（`三國志リターンズ` 的鍵是 `三國志`，撞上站上 13 篇的
+  《三國志》），所以在修掉之前不能填。字元集已經加上假名與諺文、全庫回填過了（見
+  `docs/backlog/done.md`），現在填得下去（2026-09-12，2026-09-20 改寫）
 
 - [ ] **42 條 `封面：主題 …` 還在 notes 裡** — 封面資訊已於 2026-09-06 整批搬進 `coverGames`／`coverSubjects`／`coverCredit`（219 期），只剩這一族沒搬：值一半是遊戲名、一半帶宣傳語（「暑假超強大作—新絕代雙驕貳」「專訪幻影特攻女主角」），要逐筆判，分佈在軟體世界 15、電腦玩家 14、新遊戲時代 13。見 [docs/data-conventions.md](docs/data-conventions.md) 的「封面資訊」（2026-09-06）
 
