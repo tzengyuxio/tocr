@@ -26,6 +26,12 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "fs";
 import { nameKey } from "../src/lib/name-match";
 import { escapeCsvField } from "../src/lib/csv/escape";
+import {
+  classifyGroup,
+  joinIsOnlyResidue,
+  yearsDiverge,
+  BUCKET_LABELS,
+} from "../src/lib/merge-candidates";
 
 const CDOSGAME_JSON = "https://cdosgame.simagame.me/games.json";
 
@@ -54,6 +60,71 @@ async function loadCdosGames(): Promise<CdosGame[]> {
   return developer ? all.filter((g) => g.developer === developer) : all;
 }
 
+
+/**
+ * 合併候選的分組表：丟掉假陽性、分堆、附上文章年份當交叉證據。
+ *
+ * `decision` 是留給人填的欄位（`合併`／`不合併`／留空表示還沒判），這支腳本不讀它
+ * ——合併是刪除、不可逆，只能由人一組一組按下去。
+ */
+function buildGroups(
+  rows: Record<string, string>[],
+  cdos: CdosGame[],
+  games: { id: string; name: string; aliases: string[]; articleGames: { article: { issue: { publishSort: Date | null } } }[] }[]
+): Record<string, string>[] {
+  const entryById = new Map(cdos.map((c) => [c.id, c]));
+  const gameById = new Map(games.map((g) => [g.id, g]));
+
+  const perEntry = new Map<string, number>();
+  for (const row of rows) {
+    if (row.tocr_id) perEntry.set(row.cdg_id, (perEntry.get(row.cdg_id) ?? 0) + 1);
+  }
+
+  /** 該筆遊戲的文章出版年份區間，沒有文章就回 null。 */
+  const span = (id: string) => {
+    const years = (gameById.get(id)?.articleGames ?? [])
+      .map((l) => l.article.issue.publishSort?.getUTCFullYear())
+      .filter((y): y is number => !!y)
+      .sort();
+    return years.length ? ([years[0], years[years.length - 1]] as const) : null;
+  };
+
+  const candidates = rows
+    .filter((r) => r.tocr_id && (perEntry.get(r.cdg_id) ?? 0) > 1)
+    .sort((a, b) => a.cdg_id.localeCompare(b.cdg_id));
+
+  const byEntry = new Map<string, Record<string, string>[]>();
+  for (const row of candidates) {
+    byEntry.set(row.cdg_id, [...(byEntry.get(row.cdg_id) ?? []), row]);
+  }
+
+  const out: Record<string, string>[] = [];
+  for (const [cdgId, group] of byEntry) {
+    const entry = entryById.get(cdgId);
+    if (!entry) continue;
+    const titles = [entry.title_zh, ...(entry.title_aliases ?? [])];
+
+    // 只靠殘骸湊在一起的先丟掉——留著只會讓每一輪人工複判都要重新排除一次。
+    const kept = group.filter((row) => {
+      const game = gameById.get(row.tocr_id);
+      return game ? !joinIsOnlyResidue(titles, [game.name, ...game.aliases]) : false;
+    });
+    if (kept.length < 2) continue;
+
+    const bucket = classifyGroup(kept.map((r) => r.tocr_name), entry.title_zh);
+    const spans = kept.map((r) => span(r.tocr_id)).filter(Boolean) as (readonly [number, number])[];
+    const diverge = spans.length === kept.length && yearsDiverge(spans);
+    const label = BUCKET_LABELS[bucket] + (diverge ? " ⚠年代分歧" : "");
+
+    for (const row of kept) {
+      const s = span(row.tocr_id);
+      out.push({ ...row, bucket: label, years: s ? `${s[0]}–${s[1]}` : "", decision: "" });
+    }
+  }
+
+  return out.sort((a, b) => a.bucket.localeCompare(b.bucket) || a.cdg_id.localeCompare(b.cdg_id));
+}
+
 async function main() {
   if (args.includes("--prod")) {
     process.env.DATABASE_URL = execFileSync("security", [
@@ -70,8 +141,12 @@ async function main() {
           id: true,
           name: true,
           nameKeys: true,
+          aliases: true,
           platforms: true,
           _count: { select: { articleGames: true } },
+          articleGames: {
+            select: { article: { select: { issue: { select: { publishSort: true } } } } },
+          },
         },
       }),
     ]);
@@ -123,22 +198,18 @@ async function main() {
     });
 
     // --groups：只留撞成一組的，並讓同組相鄰——這份是拿來一組一組判的。
-    const output = args.includes("--groups")
-      ? (() => {
-          const perEntry = new Map<string, number>();
-          for (const row of rows) {
-            if (row.tocr_id) perEntry.set(row.cdg_id, (perEntry.get(row.cdg_id) ?? 0) + 1);
-          }
-          return rows
-            .filter((r) => r.tocr_id && (perEntry.get(r.cdg_id) ?? 0) > 1)
-            .sort((a, b) => a.cdg_id.localeCompare(b.cdg_id));
-        })()
-      : rows;
+    const grouped = args.includes("--groups");
+    const output = grouped ? buildGroups(rows, cdos, games) : rows;
 
-    const header = [
-      "cdg_id", "cdg_title", "year", "cdg_platform", "cdg_images",
-      "tocr_id", "tocr_name", "articles", "tocr_platforms", "status",
-    ];
+    const header = grouped
+      ? [
+          "bucket", "cdg_id", "cdg_title", "year", "cdg_platform", "cdg_images",
+          "tocr_id", "tocr_name", "articles", "years", "tocr_platforms", "status", "decision",
+        ]
+      : [
+          "cdg_id", "cdg_title", "year", "cdg_platform", "cdg_images",
+          "tocr_id", "tocr_name", "articles", "tocr_platforms", "status",
+        ];
     const csv = [
       header.join(","),
       ...output.map((r) =>
@@ -151,10 +222,17 @@ async function main() {
 
     const matched = new Set(output.filter((r) => r.tocr_id).map((r) => r.cdg_id));
     if (args.includes("--groups")) {
-      console.error(
-        `\n合併候選 ${matched.size} 組、${output.length} 筆條目` +
-          (outPath ? `\n→ ${outPath}` : "")
-      );
+      const perBucket = new Map<string, Set<string>>();
+      for (const row of output) {
+        const set = perBucket.get(row.bucket) ?? new Set<string>();
+        set.add(row.cdg_id);
+        perBucket.set(row.bucket, set);
+      }
+      console.error(`\n合併候選 ${matched.size} 組、${output.length} 筆條目`);
+      for (const label of [...perBucket.keys()].sort()) {
+        console.error(`   ${label}：${perBucket.get(label)!.size} 組`);
+      }
+      if (outPath) console.error(`→ ${outPath}`);
     } else {
       const ambiguous = new Set(rows.filter((r) => r.status === "要判").map((r) => r.cdg_id));
       const withPlatform = rows.filter((r) => r.cdg_platform).length;

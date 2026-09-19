@@ -19,7 +19,7 @@
 
 - [ ] **三筆 `coverImage` 是 RAWG 的截圖** — `ULTIMA VI`、`Operation Wolf`、`Eye of the Beholder` 指向 `media.rawg.io/media/screenshots/…`，而 data-conventions 的「遊戲封面」明說遊戲內截圖不算封面。另有「聖眼之翼」的 `developer`／`publisher`／`coverImage` 是空字串不是 null。四筆都該清掉，前三筆若 cdosgame 有對應條目就換成那邊的圖（2026-09-20）
 
-- [ ] **`Game.platforms` 還有 580 筆要人審** — 代號表已定案（存細的、顯示粗的，見 [docs/backlog/game-platforms.md](docs/backlog/game-platforms.md)），2026-09-20 寫入 1,353 / 6,744 筆。剩下的帶著 `risk` 標記在 `data/game-audit/platforms-suggested.csv`：靠別名對上 389、來源同時給了別筆 377、對到多個上游條目 36、名稱含假名 2（可疊加）。**審法是清掉 `risk` 欄**再跑一次 `apply-platforms.ts`，判定不該寫的那列直接刪掉；判斷靠 `shared_with` 與 `sources` 兩欄。還有兩件沒做：`PLATFORM` 標籤照同一張代號表收斂，以及文章標籤這第三個來源（能推到 1,681 筆，但一篇「PS2 大特集」掛的十款遊戲未必都是 PS2，得看比例）（2026-09-20）
+- [ ] **`Game.platforms` 還有 580 筆要人審** — 代號表已定案（存細的、顯示粗的，見 [docs/backlog/game-platforms.md](docs/backlog/game-platforms.md)），2026-09-20 寫入 1,353 / 6,744 筆。剩下的帶著 `risk` 標記在 `data/game-audit/platforms-suggested.csv`。**審法是清掉 `risk` 欄**再跑一次 `apply-platforms.ts`（union 不覆蓋、走 API、可重跑），判定不該寫的那列直接刪掉；判斷靠 `shared_with` 與 `sources` 兩欄。旗標分佈（可疊加）：靠別名對上 416、來源同時給了別筆 375、對到多個上游條目 40、名稱含假名 7、兩邊都給 3；其中 335 筆只帶一個旗標，光是「只靠別名對上」就有 172 筆，那是最好清的一批。建議值 553/580 是單一平台（DOS 457、WIN 136），文章數 328 筆只有 1 篇、60 筆 5 篇以上——**從文章多的那 60 筆先審**，錯了影響最大。**先做合併候選再審這批**：「來源同時給了別筆」那 375 筆的根因就是站上同一款有兩筆條目，合併之後會自己少掉一部分。還有兩件沒做：`PLATFORM` 標籤照同一張代號表收斂，以及文章標籤這第三個來源（能推到 1,681 筆，但一篇「PS2 大特集」掛的十款遊戲未必都是 PS2，得看比例）（2026-09-20）
 
 - [ ] **cdosgame 的對照關係要接起來** — `scripts/match-cdosgame.ts --prod` 產的對照表在 `data/game-audit/`：全站 2,655 款對上 1,422（其中 192 款要判）。**接法已定**：`ExternalLink`／`Photo` 各加 `gameId`（XOR 約束改成 `num_nonnulls(...) = 1`）、`ExternalSite` 加 `CDOSGAME`；外站的圖一律只存連結不複製。migration 還沒寫，等對照表人審過再動（2026-09-20）
 
