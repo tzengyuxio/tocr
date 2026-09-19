@@ -28,6 +28,38 @@ describe("nameKey", () => {
     expect(nameKey("古墓奇兵（1996）")).not.toBe(nameKey("古墓奇兵（2013）"));
   });
 
+  // Kana and Hangul are letters, and stripping them deleted the name: twenty
+  // games were keyed on nothing at all and slugged game-2 … game-20.
+  it("keeps kana, so a kana-only name still has a key", () => {
+    expect(nameKey("ぷりんせすでんじゃあ")).toBe("ぷりんせすでんじゃあ");
+    expect(nameKey("カスタムメイト・2")).toBe("カスタムメイト2");
+    expect(nameKey("ガングリフォンII")).not.toBe(nameKey("コラムスII"));
+  });
+
+  it("keeps hangul, which used to fold the same way", () => {
+    expect(nameKey("임진록2")).toBe("임진록2");
+    expect(nameKey("임진록2")).not.toBe(nameKey("코룸 2"));
+  });
+
+  // 三國志リターンズ used to key as 三國志 and collide with KOEI's own series,
+  // which is why the original names could not be recorded at all.
+  it("no longer folds a kana title onto its chinese stem", () => {
+    expect(nameKey("三國志リターンズ")).not.toBe(nameKey("三國志"));
+  });
+
+  // The long vowel spells the word; the middle dot is punctuation.
+  it("keeps ー and drops ・", () => {
+    expect(nameKey("ムーンドラゴン")).toBe("ムーンドラゴン");
+    expect(nameKey("かえるにょ・ぱにょ")).toBe("かえるにょぱにょ");
+  });
+
+  // A colon is how one table of contents writes what another writes with a
+  // dash. Both spellings are on production for the same game.
+  it("still folds the colon, half-width and full-width alike", () => {
+    expect(nameKey("三國風雲2：風雲再起")).toBe(nameKey("三國風雲2-風雲再起"));
+    expect(nameKey("三國志：風雲再起")).toBe(nameKey("三國志風雲再起"));
+  });
+
   it("is empty for a name with nothing to key on", () => {
     expect(nameKey("---")).toBe("");
   });

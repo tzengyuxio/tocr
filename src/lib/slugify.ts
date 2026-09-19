@@ -1,17 +1,35 @@
 import type { TxClient } from "./resolve-relations";
 
 /**
+ * The characters a name is allowed to keep: letters and digits, in every
+ * script the catalogue actually holds. Everything else is a separator.
+ *
+ * Kana and Hangul are here because they are **letters**, and dropping them
+ * deletes the name rather than tidying it: 「ぷりんせすでんじゃあ」 stripped to
+ * ASCII-plus-CJK is the empty string, which is how twenty games ended up
+ * slugged `game-2` … `game-20` and keyed on nothing at all (2026-09-20).
+ * `・` (U+30FB) is deliberately outside the range -- it is punctuation -- while
+ * `ー` (U+30FC, the long vowel) is inside it, because it spells the word.
+ *
+ * Punctuation stays out, including the colon. A colon is how one table of
+ * contents writes what another writes with a space: 三國風雲2：風雲再起 and
+ * 三國風雲2-風雲再起 are one game, and keeping it would split them.
+ */
+const KEPT = /[^a-z0-9一-鿿\u3041-\u309f\u30a0-\u30fa\u30fc-\u30ff\uac00-\ud7a3]+/g;
+
+/**
  * NFKC first, so the characters that carry meaning survive the strip.
  *
  * 宇宙傳奇Ⅱ and 宇宙傳奇Ⅲ used to produce the same slug: U+2161/U+2162 sit
  * outside the allowed range and were dropped as punctuation. NFKC turns them
- * into plain "II"/"III", and folds full-width forms while it is at it.
+ * into plain "II"/"III", and folds full-width forms while it is at it -- which
+ * is also why the full-width colon needs no rule of its own.
  */
 export function slugify(name: string): string {
   return name
     .normalize("NFKC")
     .toLowerCase()
-    .replace(/[^a-z0-9一-鿿]+/g, "-")
+    .replace(KEPT, "-")
     .replace(/^-|-$/g, "");
 }
 
