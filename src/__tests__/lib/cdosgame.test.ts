@@ -1,6 +1,7 @@
 import {
   CDOSGAME_GENRES,
   enrichment,
+  isCdosgameImage,
   pickCover,
   pickWikipedia,
 } from "@/lib/cdosgame";
@@ -106,6 +107,30 @@ describe("enrichment", () => {
     expect(patch).toEqual({});
   });
 
+  it("leaves a foreign cover alone unless asked to replace it", () => {
+    const rawg = "https://media.rawg.io/media/screenshots/930/9304650c.jpg";
+
+    expect(
+      enrichment(blank, { id: "x" }, "https://cdosgame.simagame.me/c.webp", rawg)
+    ).toEqual({});
+  });
+
+  it("replaces a foreign cover when asked", () => {
+    const rawg = "https://media.rawg.io/media/screenshots/930/9304650c.jpg";
+    const cover = "https://cdosgame.simagame.me/media/games/cdg-2968/box-front.webp";
+
+    expect(enrichment(blank, { id: "x" }, cover, rawg, true)).toEqual({
+      coverImage: cover,
+    });
+  });
+
+  it("does not churn a cover that already comes from cdosgame", () => {
+    const now = "https://cdosgame.simagame.me/media/games/cdg-1/box-front.webp";
+    const next = "https://cdosgame.simagame.me/media/games/cdg-1/box-front-02.webp";
+
+    expect(enrichment(blank, { id: "x" }, next, now, true)).toEqual({});
+  });
+
   it("joins several Taiwanese publishers", () => {
     const patch = enrichment(blank, { id: "x", publisher_tw: ["第三波", "智冠"] }, null, null);
 
@@ -151,5 +176,22 @@ describe("pickWikipedia", () => {
     `;
 
     expect(pickWikipedia(html)).toContain("zh.wikipedia.org");
+  });
+});
+
+describe("isCdosgameImage", () => {
+  it("tells cdosgame's own media from RAWG's", () => {
+    // Both live under /media/games/ -- only the host separates them.
+    expect(
+      isCdosgameImage("https://cdosgame.simagame.me/media/games/cdg-1/box-front.webp")
+    ).toBe(true);
+    expect(
+      isCdosgameImage("https://media.rawg.io/media/games/985/985295de.jpg")
+    ).toBe(false);
+  });
+
+  it("treats anything unparseable as foreign", () => {
+    expect(isCdosgameImage("/media/games/cdg-1/box-front.webp")).toBe(false);
+    expect(isCdosgameImage("")).toBe(false);
   });
 });

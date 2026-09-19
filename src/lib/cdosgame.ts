@@ -46,6 +46,9 @@ export const CDOSGAME_GENRES: Record<string, string> = {
  * 設定圖不算封面」，而取樣二十個條目只看到這四種檔名，不代表沒有第五種；
  * 「找不到就拿第一張」會在遇到它的那天安靜地把截圖擺到遊戲頁頂端。
  */
+/** 站台網域，用來分辨封面是自家的還是外站抓來的。 */
+const CDOSGAME_HOST = "cdosgame.simagame.me";
+
 const COVER_PRIORITY = ["box-front", "key-visual", "ad", "title"] as const;
 
 const MEDIA_SRC = /src="(\/media\/games\/[^"]+\.(?:webp|jpg|png))"/g;
@@ -83,18 +86,33 @@ export interface CdosEntry {
   genre?: string;
 }
 
+/** cdosgame 自己的圖，不是外站的。網址判不出來（相對路徑、壞字串）就當外站。 */
+export function isCdosgameImage(url: string): boolean {
+  try {
+    return new URL(url).hostname === CDOSGAME_HOST;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * 這筆條目能補上站上哪些欄位。
  *
  * **只填空的**，與合併時的規則一致：站上的值是編輯選的，上游的是參考。
  * `publisher_tw` 是台灣代理商——對一個台灣雜誌索引來說，那正是讀者認得的
  * 「發行商」（第三波、智冠），不是日本原廠。
+ *
+ * 封面多一個例外：`replaceForeignCover` 打開時，**外站的圖會被換掉**。站上僅有的
+ * 三筆 `coverImage` 是 2026-08 從 RAWG 抓的，其中兩筆還是遊戲內截圖——
+ * data-conventions 的「遊戲封面」明說截圖不算封面。那三筆不是編輯挑的，是缺料時
+ * 的權宜，所以不受「只填空的」保護。已經是 cdosgame 的圖就不動，重跑不會換來換去。
  */
 export function enrichment(
   current: { developer: string | null; publisher: string | null; genres: string[] },
   entry: CdosEntry,
   cover: string | null,
-  currentCover: string | null
+  currentCover: string | null,
+  replaceForeignCover = false
 ): { developer?: string; publisher?: string; genres?: string[]; coverImage?: string } {
   const patch: { developer?: string; publisher?: string; genres?: string[]; coverImage?: string } = {};
 
@@ -106,7 +124,10 @@ export function enrichment(
     const label = CDOSGAME_GENRES[entry.genre];
     if (label) patch.genres = [label];
   }
-  if (!currentCover && cover) patch.coverImage = cover;
+  const foreign = !!currentCover && !isCdosgameImage(currentCover);
+  if (cover && (!currentCover || (replaceForeignCover && foreign))) {
+    patch.coverImage = cover;
+  }
 
   return patch;
 }
