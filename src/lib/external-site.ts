@@ -8,6 +8,7 @@
 export const EXTERNAL_SITE_VALUES = [
   "INTERNET_ARCHIVE",
   "NOSTALIBRARY",
+  "CDOSGAME",
   "NCL",
   "WIKIPEDIA",
   "OTHER",
@@ -22,6 +23,7 @@ export type ExternalSite = (typeof EXTERNAL_SITE_VALUES)[number];
 export const EXTERNAL_SITE_LABELS: Record<ExternalSite, string> = {
   INTERNET_ARCHIVE: "Internet Archive",
   NOSTALIBRARY: "懷舊圖書館",
+  CDOSGAME: "中文 DOS 遊戲資料庫",
   NCL: "國家圖書館",
   WIKIPEDIA: "維基百科",
   OTHER: "其他",

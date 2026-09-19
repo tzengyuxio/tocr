@@ -8,11 +8,16 @@ import { logEdit } from "@/lib/edit-log";
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const data = externalLinkCreateSchema.parse(await request.json());
 
-  // 排在同一個掛點現有的連結之後，同 /api/photos。
+  // 排在同一個掛點現有的連結之後，同 /api/photos。三擇一已由 schema 保證，
+  // 所以照順序取第一個非空的就是掛點本身。
+  const owner = data.magazineId
+    ? { magazineId: data.magazineId }
+    : data.issueId
+      ? { issueId: data.issueId }
+      : { gameId: data.gameId };
+
   const last = await prisma.externalLink.findFirst({
-    where: data.magazineId
-      ? { magazineId: data.magazineId }
-      : { issueId: data.issueId },
+    where: owner,
     orderBy: { order: "desc" },
     select: { order: true },
   });
@@ -26,6 +31,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     url: link.url,
     magazineId: link.magazineId,
     issueId: link.issueId,
+    gameId: link.gameId,
   });
 
   return NextResponse.json(link, { status: 201 });

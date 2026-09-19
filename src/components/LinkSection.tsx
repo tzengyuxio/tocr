@@ -34,16 +34,23 @@ export interface LinkRow {
 }
 
 interface LinkSectionProps {
-  /** 掛點，二擇一——與 ExternalLink 的資料模型一致。 */
-  owner: { magazineId: string } | { issueId: string };
+  /** 掛點，三擇一——與 ExternalLink 的資料模型一致。 */
+  owner: { magazineId: string } | { issueId: string } | { gameId: string };
   links: LinkRow[];
   description: string;
+  /**
+   * 改完之後怎麼讓畫面跟上。預設 `router.refresh()`——雜誌與單期那兩頁是
+   * server component，重新 render 就會帶到新資料。遊戲後台是 client component、
+   * 資料自己 fetch，refresh 不會重跑那個 effect，所以由它傳一個重取函式進來。
+   */
+  onChanged?: () => void;
 }
 
 /** 下拉選單上的字。與公開頁的顯示名稱同一份表，見 lib/external-site.ts。 */
 const SITE_OPTION_LABEL: Record<ExternalSite, string> = {
   INTERNET_ARCHIVE: "Internet Archive",
   NOSTALIBRARY: "懷舊圖書館",
+  CDOSGAME: "中文 DOS 遊戲資料庫",
   NCL: "國家圖書館",
   WIKIPEDIA: "維基百科",
   OTHER: "其他（自己填名稱）",
@@ -55,8 +62,14 @@ const SITE_OPTION_LABEL: Record<ExternalSite, string> = {
  * 與 PhotoSection 同一個手感——一條一列、改完即存、沒有「取消」。差別是這裡
  * 沒有上傳，新增靠下方那一行表單。
  */
-export function LinkSection({ owner, links, description }: LinkSectionProps) {
+export function LinkSection({
+  owner,
+  links,
+  description,
+  onChanged,
+}: LinkSectionProps) {
   const router = useRouter();
+  const refresh = onChanged ?? (() => router.refresh());
   const [site, setSite] = useState<ExternalSite>("INTERNET_ARCHIVE");
   const [url, setUrl] = useState("");
   const [label, setLabel] = useState("");
@@ -78,7 +91,7 @@ export function LinkSection({ owner, links, description }: LinkSectionProps) {
       }
       setUrl("");
       setLabel("");
-      router.refresh();
+      refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "新增失敗");
     } finally {
@@ -94,7 +107,7 @@ export function LinkSection({ owner, links, description }: LinkSectionProps) {
       setError("刪除失敗");
       return;
     }
-    router.refresh();
+    refresh();
   }
 
   /** 上下移一格。一個掛點通常只有兩三條，拖曳的機械成本換不到什麼。 */
@@ -113,7 +126,7 @@ export function LinkSection({ owner, links, description }: LinkSectionProps) {
       setError("排序失敗");
       return;
     }
-    router.refresh();
+    refresh();
   }
 
   return (
