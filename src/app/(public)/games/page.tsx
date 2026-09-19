@@ -198,7 +198,12 @@ export default async function GamesPage({
           ) : (
             /* Four across, not five: the card is a row, not a tile, and at five
                the text column falls to ~148px -- narrower than "N 篇相關文章"
-               plus two platform badges, so the meta line wraps. */
+               plus two platform badges, so the meta line wraps.
+
+               **卡片刻意比列表少一欄**：列表有「首次報導」，這裡沒有。一張卡的
+               文字區只有約 200px 寬，塞得下的東西本來就比一整列少，硬要兩邊一致
+               只會把卡片擠爆（yuxio 2026-09-20 的決定）。兩種檢視回答的問題不同
+               ——卡片是「掃過去有沒有眼熟的」，列表是「比較與查找」。 */
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {games.map((game) => (
                 <Link key={game.id} href={`/games/${game.slug}`}>
