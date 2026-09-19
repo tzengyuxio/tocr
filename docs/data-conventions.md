@@ -709,6 +709,24 @@ curl -s -X PUT "https://tocr.simagame.me/api/magazines/<magazine id>" \
 
 動手的方式有兩種，判準與寫入的內容相同（邏輯都在 `src/lib/merge-game.ts`）：後台遊戲列表每一列的「合併」按鈕，以及 `scripts/merge-game.ts`。後台那條會先算一遍再讓人確認，落在編輯紀錄上的是操作者本人；腳本預設 dry run，`--apply` 才寫入，記在司書名下。
 
+**要合併的對象怎麼找**：`scripts/audit-games.ts` 唯讀，把幾類髒資料一次數出來——名稱裡
+夾著英文原名、剝掉原名之後撞名、`nameKeys` 已經撞在一起、名稱含假名或過長、沒有任何
+文章引用，以及各欄位的填寫率。存量太大，整理只能分批做，所以判斷規則寫在
+`src/lib/game-audit.ts`（有 jest），每清一批就再量一次看數字有沒有往下走。
+
+```
+npx tsx --env-file=.env.local scripts/audit-games.ts [--only=<check>] [--csv=<dir>]
+npx tsx scripts/audit-games.ts --prod [--only=<check>] [--csv=<dir>]
+```
+
+`--prod` 當場從 Keychain 取正式站的連線字串（`vercel env pull` 拉下來的是字面的
+`[SENSITIVE]`）。存放方式見 [deployment.md](deployment.md) 的「正式站的連線字串也存在這裡」。
+
+**它只報不判**。撞名的那幾組要人看過才知道是哪一種：站上的「洪荒帝國」掛著
+`(The Legacy)`、`(Dune)`、`(Savage Empire)` 三個括號，那是三款不同遊戲共用一個中文
+譯名，照鍵合併會毀資料。`--csv` 落出來的明細因此附上每一筆掛在哪幾篇文章上——分不分
+得開，看的是那幾篇文章實際在講什麼。
+
 ### 標籤
 
 標籤共用上面的寫法與正規化規則，但差別在**它的型別就是消歧義維度**：`SERIES:三國志` 與 `GENERAL:三國志` 是兩個標籤，名稱撞了也不必加後綴。真正要避免的是**同一個概念建成兩個標籤**（`攻略` 與 `遊戲攻略`），那是合併問題，不是命名問題。

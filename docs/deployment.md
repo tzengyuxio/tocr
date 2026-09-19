@@ -136,6 +136,21 @@ per-user token 存法相同，只是換一個 service name（`tocr-prod-token-cl
 **一個用途一支**——不同機器、不同用途各自產一支，撤掉一支不會連累其他的，
 而 `/admin/profile` 的「最後使用」看得出哪支還活著。
 
+#### 正式站的連線字串也存在這裡
+
+唯讀腳本（`scripts/audit-games.ts --prod`）直連資料庫而不走 API，需要正式站的
+`DATABASE_URL`。**`vercel env pull` 拉不到它**：Vercel 把標為 sensitive 的值寫成字面的
+`[SENSITIVE]`，`.env.production.local` 裡有 11 個是這樣，DATABASE_URL 是其中之一。
+所以同樣存 Keychain，理由與上面那段一字不差：
+
+```bash
+security add-generic-password -s tocr-prod-db-url -a "$USER" -w '<connection string>' -U
+```
+
+連線字串比 token 更該留在 Keychain——它撤銷起來要換密碼、重新設 Vercel 環境變數再
+redeploy，而且拿到它就等於拿到整個資料庫的寫入權。**只給唯讀腳本用**；要改資料仍然
+走 API（見 data-conventions 的「改資料走 API」）。
+
 **兩者都不要落成檔案**：除了 `.env.local` 會被 dev server 載入之外，repo 裡的檔案
 讀得到的不只有人——寫給 AI 跑的腳本也讀得到，token 一旦成為檔案就可能被 grep 出來、
 貼進對話、留在某段輸出裡。讓腳本在執行當下自己去 Keychain 取，明碼不必經過任何人的手。
