@@ -22,8 +22,30 @@ export interface MergeLink {
   isPrimary: boolean;
 }
 
+/**
+ * The fields a merge has to carry across, beyond the names.
+ *
+ * The losing row is deleted outright, so anything recorded only there is gone
+ * for good -- and the edit log names the entry, not its contents. That cost
+ * nothing while these columns were empty (platforms was empty on all 6,744
+ * rows until 2026-09-20), which is why the merge never handled them; now that
+ * they are being filled, every merge would quietly drop whichever values the
+ * losing spelling happened to carry.
+ */
+export interface MergeableFields {
+  platforms: string[];
+  genres: string[];
+  nameEn: string | null;
+  nameOriginal: string | null;
+  releaseDate: Date | null;
+  developer: string | null;
+  publisher: string | null;
+  coverImage: string | null;
+  description: string | null;
+}
+
 /** One side of a merge: enough of a Game to decide what the merge would do. */
-export interface MergeCandidate {
+export interface MergeCandidate extends MergeableFields {
   id: string;
   name: string;
   slug: string;
@@ -47,6 +69,91 @@ export interface GameMergePlan {
   promotedArticleIds: string[];
   /** What the keeper's `aliases` becomes. */
   mergedAliases: string[];
+  /**
+   * Fields the keeper gains from the loser. Only what actually changes, so an
+   * editor previewing the merge sees the additions rather than the whole row,
+   * and an empty object means the merge touches nothing but names and links.
+   */
+  carriedFields: Partial<MergeableFields>;
+}
+
+const ARRAY_FIELDS = ["platforms", "genres"] as const;
+const SCALAR_FIELDS = [
+  "nameEn", "nameOriginal", "releaseDate",
+  "developer", "publisher", "coverImage", "description",
+] as const;
+
+/**
+ * What the keeper gains from the loser.
+ *
+ * Arrays union: a game entered twice under two spellings can have had a
+ * platform recorded on either row, and both are true of the same game.
+ * Scalars only fill a blank -- the keeper's value is an editor's choice and
+ * the loser's is the one being discarded, so a conflict resolves towards the
+ * row that survives. Nothing here overwrites.
+ */
+function carryFields(
+  keeper: MergeableFields,
+  loser: MergeableFields
+): Partial<MergeableFields> {
+  const carried: Partial<MergeableFields> = {};
+
+  for (const field of ARRAY_FIELDS) {
+    const missing = loser[field].filter((value) => !keeper[field].includes(value));
+    if (missing.length > 0) carried[field] = [...keeper[field], ...missing];
+  }
+
+  for (const field of SCALAR_FIELDS) {
+    if (keeper[field] === null || keeper[field] === "") {
+      if (loser[field] !== null && loser[field] !== "") {
+        // Each scalar has its own type; the loop is what makes this opaque.
+        (carried as Record<string, unknown>)[field] = loser[field];
+      }
+    }
+  }
+
+  return carried;
+}
+
+/**
+ * What to select to build a `MergeCandidate`.
+ *
+ * Shared by both callers on purpose: the API route and scripts/merge-game.ts
+ * each used to carry their own list, and a field added to MergeableFields but
+ * forgotten in one of them would silently arrive as undefined.
+ */
+export const MERGE_CANDIDATE_SELECT = {
+  id: true,
+  name: true,
+  slug: true,
+  aliases: true,
+  createdAt: true,
+  platforms: true,
+  genres: true,
+  nameEn: true,
+  nameOriginal: true,
+  releaseDate: true,
+  developer: true,
+  publisher: true,
+  coverImage: true,
+  description: true,
+  articleGames: { select: { articleId: true, isPrimary: true } },
+} as const;
+
+/** What `MERGE_CANDIDATE_SELECT` brings back, before `articleGames` is renamed. */
+export type LoadedMergeCandidate = MergeableFields & {
+  id: string;
+  name: string;
+  slug: string;
+  aliases: string[];
+  createdAt: Date;
+  articleGames: MergeLink[];
+};
+
+/** The one place `articleGames` becomes `links`. */
+export function toMergeCandidate(game: LoadedMergeCandidate): MergeCandidate {
+  const { articleGames, ...rest } = game;
+  return { ...rest, links: articleGames };
 }
 
 /**
@@ -85,6 +192,7 @@ export function planGameMerge(
     discardedLinkCount: loser.links.length - movedArticleIds.length,
     promotedArticleIds,
     mergedAliases,
+    carriedFields: carryFields(keeper, loser),
   };
 }
 
@@ -150,6 +258,7 @@ export async function applyGameMerge(
     // searchable but stops being recognisable, and the next issue that prints
     // it creates the row again -- undoing the merge one table of contents later.
     data: {
+      ...plan.carriedFields,
       aliases: plan.mergedAliases,
       nameKeys: gameNameKeys({ ...keeper, aliases: plan.mergedAliases }),
     },
@@ -168,6 +277,9 @@ export async function applyGameMerge(
         mergedInto: plan.keeperId,
         name: { from: loserName, to: null },
         movedArticleLinks: plan.movedArticleIds.length,
+        // Which of the deleted row's values live on, so the log says what was
+        // kept as well as what went.
+        carriedFields: Object.keys(plan.carriedFields),
         discardedDuplicateLinks: plan.discardedLinkCount,
         promotedPrimaryLinks: plan.promotedArticleIds.length,
       },

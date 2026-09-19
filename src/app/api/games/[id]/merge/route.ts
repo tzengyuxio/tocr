@@ -3,36 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { gameMergeSchema } from "@/lib/validators/game";
 import { withErrorHandler } from "@/lib/api-utils";
 import { resolveAuthor } from "@/lib/edit-log";
-import { applyGameMerge, planGameMerge, type MergeCandidate } from "@/lib/merge-game";
-
-const CANDIDATE_SELECT = {
-  id: true,
-  name: true,
-  slug: true,
-  aliases: true,
-  createdAt: true,
-  articleGames: { select: { articleId: true, isPrimary: true } },
-} as const;
-
-type LoadedGame = {
-  id: string;
-  name: string;
-  slug: string;
-  aliases: string[];
-  createdAt: Date;
-  articleGames: { articleId: string; isPrimary: boolean }[];
-};
-
-function toCandidate(game: LoadedGame): MergeCandidate {
-  return {
-    id: game.id,
-    name: game.name,
-    slug: game.slug,
-    aliases: game.aliases,
-    createdAt: game.createdAt,
-    links: game.articleGames,
-  };
-}
+import {
+  applyGameMerge,
+  MERGE_CANDIDATE_SELECT,
+  planGameMerge,
+  toMergeCandidate,
+} from "@/lib/merge-game";
 
 /**
  * POST /api/games/[id]/merge - 把重複的條目併進這一筆
@@ -51,15 +27,15 @@ export const POST = withErrorHandler(async (request: NextRequest, context) => {
   }
 
   const [keeper, loser] = await Promise.all([
-    prisma.game.findUnique({ where: { id: keeperId }, select: CANDIDATE_SELECT }),
-    prisma.game.findUnique({ where: { id: loserId }, select: CANDIDATE_SELECT }),
+    prisma.game.findUnique({ where: { id: keeperId }, select: MERGE_CANDIDATE_SELECT }),
+    prisma.game.findUnique({ where: { id: loserId }, select: MERGE_CANDIDATE_SELECT }),
   ]);
 
   if (!keeper || !loser) {
     return NextResponse.json({ error: "找不到要合併的條目" }, { status: 404 });
   }
 
-  const plan = planGameMerge(toCandidate(keeper), toCandidate(loser));
+  const plan = planGameMerge(toMergeCandidate(keeper), toMergeCandidate(loser));
   // The dialog names both sides, and after the merge the losing name only
   // exists in this response.
   const summary = {

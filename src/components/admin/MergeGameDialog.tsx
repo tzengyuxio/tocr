@@ -42,7 +42,25 @@ interface MergePlan {
   discardedLinkCount: number;
   promotedPrimaryLinks: number;
   mergedAliases: string[];
+  /** 保留方空著、由落選方補上的欄位。只有真的會變的才在裡面。 */
+  carriedFields: Record<string, unknown>;
 }
+
+/**
+ * 欄位的中文名。合併預覽要講人看得懂的話——編輯在畫面上看到的是「平台」，
+ * 不是 `platforms`。
+ */
+const FIELD_LABELS: Record<string, string> = {
+  platforms: "平台",
+  genres: "類型",
+  nameEn: "英文名",
+  nameOriginal: "原文名",
+  releaseDate: "發行日期",
+  developer: "開發商",
+  publisher: "發行商",
+  coverImage: "封面",
+  description: "描述",
+};
 
 /**
  * 開啟合併時預填的關鍵字。
@@ -294,6 +312,14 @@ export function MergeGameDialog({
               <p className="text-muted-foreground">
                 合併後別名：{plan.mergedAliases.join("、") || "（無）"}
               </p>
+              {Object.keys(plan.carriedFields ?? {}).length > 0 && (
+                <p className="text-muted-foreground">
+                  從「{plan.loserName}」補上：
+                  {Object.keys(plan.carriedFields)
+                    .map((field) => FIELD_LABELS[field] ?? field)
+                    .join("、")}
+                </p>
+              )}
               <p className="flex items-start gap-1.5 pt-1 text-destructive">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>「{plan.loserName}」將被刪除，無法復原</span>

@@ -16,7 +16,12 @@
  */
 import { prisma } from "../src/lib/prisma";
 import { API_USER } from "../src/lib/api-token";
-import { applyGameMerge, planGameMerge } from "../src/lib/merge-game";
+import {
+  applyGameMerge,
+  MERGE_CANDIDATE_SELECT,
+  planGameMerge,
+  toMergeCandidate,
+} from "../src/lib/merge-game";
 
 const [keeperId, loserId] = process.argv.slice(2);
 const apply = process.argv.includes("--apply");
@@ -28,14 +33,7 @@ async function main() {
     return;
   }
 
-  const select = {
-    id: true,
-    name: true,
-    slug: true,
-    aliases: true,
-    createdAt: true,
-    articleGames: { select: { articleId: true, isPrimary: true } },
-  } as const;
+  const select = MERGE_CANDIDATE_SELECT;
 
   const [keeper, loser] = await Promise.all([
     prisma.game.findUnique({ where: { id: keeperId }, select }),
@@ -48,12 +46,7 @@ async function main() {
     return;
   }
 
-  const toCandidate = (game: typeof keeper) => ({
-    ...game,
-    links: game.articleGames,
-  });
-
-  const plan = planGameMerge(toCandidate(keeper), toCandidate(loser));
+  const plan = planGameMerge(toMergeCandidate(keeper), toMergeCandidate(loser));
 
   console.log(`保留：${keeper.name} [${keeper.slug}] ${keeper.id}`);
   console.log(`刪除：${loser.name} [${loser.slug}] ${loser.id}`);

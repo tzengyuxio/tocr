@@ -709,6 +709,12 @@ curl -s -X PUT "https://tocr.simagame.me/api/magazines/<magazine id>" \
 
 動手的方式有兩種，判準與寫入的內容相同（邏輯都在 `src/lib/merge-game.ts`）：後台遊戲列表每一列的「合併」按鈕，以及 `scripts/merge-game.ts`。後台那條會先算一遍再讓人確認，落在編輯紀錄上的是操作者本人；腳本預設 dry run，`--apply` 才寫入，記在司書名下。
 
+**落選那筆的欄位會跟著搬過來**，不只名字：`platforms` 與 `genres` 取聯集（同一款
+遊戲在兩種抄法下各記了一個平台，兩個都是真的），`nameEn`／`nameOriginal`／
+`releaseDate`／`developer`／`publisher`／`coverImage`／`description` 則**只填保留方
+空著的**——保留方的值是編輯選的，落選方的是要被丟掉的那個，衝突時往活下來的那筆
+靠。任何情況都不覆蓋。編輯紀錄會記下補了哪幾欄，後台的合併預覽也會先列出來。
+
 **要合併的對象怎麼找**：`scripts/audit-games.ts` 唯讀，把幾類髒資料一次數出來——名稱裡
 夾著英文原名、剝掉原名之後撞名、`nameKeys` 已經撞在一起、名稱含假名或過長、沒有任何
 文章引用，以及各欄位的填寫率。存量太大，整理只能分批做，所以判斷規則寫在
