@@ -31,7 +31,7 @@ import {
   reportingYears,
 } from "@/lib/game-years";
 import { Gamepad2, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { displayPlatforms } from "@/lib/game-platforms";
+import { displayPlatforms, platformColor } from "@/lib/game-platforms";
 
 /**
  * 一頁 40 筆。
@@ -245,8 +245,14 @@ export default async function GamesPage({
                           <span className="text-xs text-muted-foreground">
                             {game._count.articleGames} 篇相關文章
                           </span>
+                          {/* 與列表、篩選籌碼同一組家族色。 */}
                           {displayPlatforms(game.platforms).slice(0, 2).map((p) => (
-                            <Badge key={p} variant="outline" className="text-[10px] px-1 py-0">
+                            <Badge
+                              key={p}
+                              variant="outline"
+                              className="text-[10px] px-1 py-0"
+                              style={{ color: platformColor(p), borderColor: platformColor(p) }}
+                            >
                               {p}
                             </Badge>
                           ))}

@@ -116,6 +116,38 @@ export const PLATFORM_FAMILIES: Record<string, PlatformCode[]> = {
   其他: ["PCE", "NG", "NGP", "ARCADE"],
 };
 
+/**
+ * 每一族一個色相，給遊戲索引的平台籌碼用。
+ *
+ * **上色的單位是家族不是代號**：`PS`／`PS2`／`PSP` 是同一條線上的東西，各給一個
+ * 顏色只會變成一排彩虹，看不出誰跟誰有關。分到家族之後，一排籌碼掃過去就讀得出
+ * 「這幾顆是任天堂、那幾顆是索尼」。
+ *
+ * 明度一律 0.45：籌碼上的字只有 12px，未選取時是彩色字配白底、選取時是白字配
+ * 彩色底，兩個方向都要有 4.5:1 以上，壓在同一個明度最省事。彩度各自調整——紅色
+ * 在同明度下看起來比青色重，全部給同一個值會讓某幾顆特別搶。
+ *
+ * 「其他」刻意留成近乎無彩：它裝的是 PCE／NG／ARCADE 這些湊在一起的代號，
+ * 本來就不是一條產品線，給它一個鮮明的顏色是在宣稱一個不存在的共同點。
+ */
+export const PLATFORM_FAMILY_COLORS: Record<string, string> = {
+  PC: "oklch(0.45 0.12 45)",
+  任天堂: "oklch(0.45 0.17 25)",
+  索尼: "oklch(0.45 0.15 265)",
+  世嘉: "oklch(0.45 0.11 200)",
+  微軟: "oklch(0.45 0.14 145)",
+  隨身裝置: "oklch(0.45 0.12 310)",
+  網頁: "oklch(0.45 0.11 340)",
+  其他: "oklch(0.45 0.02 260)",
+};
+
+/** 這個顯示代號該用什麼顏色。認不得的落到「其他」那個近乎無彩的值。 */
+export function platformColor(code: string): string {
+  const family =
+    code === "PC" ? "PC" : familyOf(code as PlatformCode) ?? "其他";
+  return PLATFORM_FAMILY_COLORS[family] ?? PLATFORM_FAMILY_COLORS.其他;
+}
+
 function normalise(raw: string): string {
   return raw.normalize("NFKC").toLowerCase().replace(/\s+/g, "");
 }

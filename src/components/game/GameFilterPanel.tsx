@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { gameBrowseHref, type GameBrowseState } from "@/lib/game-browse";
+import { platformColor } from "@/lib/game-platforms";
 import type { YearCount } from "@/lib/game-years";
 import { GameYearBar } from "./GameYearBar";
 
@@ -14,9 +15,13 @@ import { GameYearBar } from "./GameYearBar";
  * 六四分。年代是主軸所以拿多的那一份，但不是七三——七三時長條寬得像這一頁的
  * 主體，而它只是個控制項（yuxio 2026-09-20 看過 preview 之後定的）。
  *
- * 兩個軸的已選狀態**刻意不同色**：年代用 `--primary`（藍），平台用
- * `--filter-platform`（暖色）。同色會讓「選了 1995–1999」與「選了 PC」讀成同
- * 一件事，而它們一個是期間、一個是類別。
+ * 兩個軸的已選狀態**刻意不同色**：年代用 `--primary`（藍），平台**每一族各自
+ * 一個色相**（`PLATFORM_FAMILY_COLORS`）。同色會讓「選了 1995–1999」與「選了
+ * PC」讀成同一件事，而它們一個是期間、一個是類別；而平台之間再分色，一排籌碼
+ * 掃過去就讀得出「這幾顆是任天堂、那幾顆是索尼」。
+ *
+ * 同一組顏色也用在列表與卡片的平台欄位上——籌碼與列裡的「PC」是同一件事，
+ * 兩邊不同色就白分了。
  *
  * 長條自己是 client component（要能拖），這一支與平台那半都不是。
  */
@@ -65,6 +70,7 @@ export function GameFilterPanel({
           <div className="flex flex-wrap gap-1.5">
             {platforms.map((entry) => {
               const on = state.platforms.includes(entry.code);
+              const color = platformColor(entry.code);
               return (
                 <Link
                   key={entry.code}
@@ -75,10 +81,12 @@ export function GameFilterPanel({
                   })}
                   className={cn(
                     "flex items-baseline gap-1.5 rounded-full border px-2.5 py-0.5 text-xs transition-colors",
-                    on
-                      ? "border-transparent bg-filter-platform text-filter-platform-foreground"
-                      : "hover:bg-muted"
+                    on ? "border-transparent text-white" : "hover:bg-muted"
                   )}
+                  // 選取才上色：沒選的時候一整排彩色籌碼會蓋過年代長條，而年代
+                  // 才是這一頁的主軸。顏色寫成 inline style 不是 class，因為色值
+                  // 是每一族一個、由資料決定的，Tailwind 的靜態掃描收不到。
+                  style={on ? { backgroundColor: color } : undefined}
                   aria-pressed={on}
                   // 與長條同一個理由：篩選器不預抓，見 GameYearBar。
                   prefetch={false}

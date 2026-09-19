@@ -1,8 +1,10 @@
 import {
-  displayPlatforms,
-  familyOf,
   PLATFORM_CODES,
   PLATFORM_FAMILIES,
+  PLATFORM_FAMILY_COLORS,
+  displayPlatforms,
+  familyOf,
+  platformColor,
   toPlatformCodes,
 } from "@/lib/game-platforms";
 
@@ -108,5 +110,29 @@ describe("displayPlatforms", () => {
 
   it("空的還是空的", () => {
     expect(displayPlatforms([])).toEqual([]);
+  });
+});
+
+describe("platformColor", () => {
+  // 上色的單位是家族：PS／PS2／PSP 是同一條產品線，各給一個顏色只會變成彩虹。
+  it("gives every code in a family the same colour", () => {
+    expect(platformColor("PS2")).toBe(platformColor("PSP"));
+    expect(platformColor("FC")).toBe(platformColor("3DS"));
+  });
+
+  it("gives different families different colours", () => {
+    expect(platformColor("PS2")).not.toBe(platformColor("FC"));
+    expect(platformColor("PC")).not.toBe(platformColor("DC"));
+  });
+
+  // 顯示層的「PC」不是 PLATFORM_CODES 裡任何一族的成員名，得自己對上。
+  it("colours the display-only PC label as the PC family", () => {
+    expect(platformColor("PC")).toBe(platformColor("DOS"));
+    expect(platformColor("PC")).toBe(PLATFORM_FAMILY_COLORS.PC);
+  });
+
+  // 網址或資料裡冒出沒見過的代號時，不要丟例外，落到近乎無彩的那一個。
+  it("falls back to the neutral colour for a code it does not know", () => {
+    expect(platformColor("NEWBOX")).toBe(PLATFORM_FAMILY_COLORS.其他);
   });
 });

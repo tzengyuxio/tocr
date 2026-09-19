@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { displayPlatforms } from "@/lib/game-platforms";
+import { displayPlatforms, platformColor } from "@/lib/game-platforms";
 import { formatYearRange, type ReportingSummaries } from "@/lib/game-years";
 import { formatIssueNumber } from "@/lib/issue-number";
 
@@ -98,8 +98,18 @@ export function GameList({
               {firstSeen ?? "—"}
             </span>
 
-            <span className="hidden w-[110px] truncate text-sm text-muted-foreground sm:inline">
-              {platforms.length > 0 ? platforms.join("、") : "—"}
+            {/* 平台用家族色，與上方篩選籌碼同一組值：讀者在籌碼上認得的顏色，
+                在列裡要指同一件事。用文字顏色不是色塊——一頁 40 列，色塊會讓
+                整張表變成花的，而平台只是這一列的第三順位。 */}
+            <span className="hidden w-[110px] truncate text-sm sm:inline">
+              {platforms.length > 0
+                ? platforms.map((code, i) => (
+                    <span key={code} style={{ color: platformColor(code) }}>
+                      {i > 0 && <span className="text-muted-foreground">、</span>}
+                      {code}
+                    </span>
+                  ))
+                : <span className="text-muted-foreground">—</span>}
             </span>
 
             <span className="hidden w-[120px] text-sm tabular-nums text-muted-foreground lg:inline">
