@@ -8,7 +8,7 @@ export const gameCreateSchema = z.object({
   // Translations that lost, and the bare name when a disambiguating suffix was
   // added -- see docs/data-conventions.md.
   aliases: z.array(z.string()).default([]),
-  slug: z.string().min(1, "Slug 為必填").regex(/^[a-z0-9\u4e00-\u9fff-]+$/, "Slug 只能包含小寫字母、數字、中文和連字號"),
+  slug: z.string().min(1, "Slug 為必填").regex(/^[a-z0-9\u4e00-\u9fff\u3041-\u309f\u30a0-\u30fa\u30fc-\u30ff\uac00-\ud7a3-]+$/, "Slug 只能包含小寫字母、數字、中日韓文字和連字號"),
   releaseDate: z.coerce.date().optional().nullable(),
   platforms: z.array(z.string()).default([]),
   developer: optionalText,
