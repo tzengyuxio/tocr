@@ -26,7 +26,7 @@ export const issueCreateSchema = z.object({
     blankToNull,
     z
       .string()
-      .regex(/^[a-z0-9一-鿿-]+$/, "網址代號只能包含小寫字母、數字、中文和連字號")
+      .regex(/^[a-z0-9一-鿿ぁ-ゟ゠-ヺー-ヿ가-힣-]+$/, "網址代號只能包含小寫字母、數字、中日韓文字和連字號")
       .nullable()
       .optional()
   ),

@@ -5,28 +5,19 @@ import {
 } from "@/lib/merge-candidates";
 
 describe("joinIsOnlyResidue", () => {
-  it("catches a site name that normalises down to a bare numeral", () => {
-    // カスタムメイト・2 -> "2", which collides with any title ending in 2.
-    expect(
-      joinIsOnlyResidue(
-        ["七年戰爭2：決戰王朝", "決戰王朝2", "임진록2"],
-        ["カスタムメイト・2"]
-      )
-    ).toBe(true);
+  it("catches a name left as a bare numeral by a script nameKey drops", () => {
+    // Cyrillic is still outside the kept range, so Аркада2 keys as "2" and
+    // would collide with anything else ending in 2.
+    expect(joinIsOnlyResidue(["七年戰爭2：決戰王朝", "Бой2"], ["Аркада2"])).toBe(true);
   });
 
-  it("catches Hangul too, which nameKey drops the same way", () => {
-    // 코룸 II -> "ii"; the site row is 純片假名 and lands on "ii" as well.
-    expect(joinIsOnlyResidue(["科隆戰記2：闇黑帝降臨", "코룸 II"], ["ガングリフォンII"])).toBe(
-      true
+  // Kana and Hangul were the original motive; slugify keeps them since
+  // 2026-09-20, so these names carry their own weight now.
+  it("no longer fires for kana or hangul, which are kept", () => {
+    expect(joinIsOnlyResidue(["七年戰爭2：決戰王朝", "決戰王朝2"], ["カスタムメイト・2"])).toBe(
+      false
     );
-  });
-
-  it("catches the same bug coming from an upstream alias", () => {
-    // 三國志リターンズ -> "三國志", which collides with KOEI's own series.
-    expect(joinIsOnlyResidue(["三國志：風雲再起", "三國志リターンズ"], ["三國志"])).toBe(
-      true
-    );
+    expect(joinIsOnlyResidue(["三國志：風雲再起", "三國志リターンズ"], ["三國志"])).toBe(false);
   });
 
   it("leaves a join that a kana-free name also makes", () => {

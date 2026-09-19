@@ -3,9 +3,8 @@
  *
  * 三個站的資料要互相關聯，最直接的接點是遊戲（見 BACKLOG 的「與 nostalib /
  * cdosgame 兩站的資料連動」）。但**對照關係要人確認過才算數**：`nameKey()` 只看
- * 名字，同名異作它分不出來，而假名被正規化吃掉的那個已知 bug 會讓純片假名的名稱
- * 互撞（「皇室血裔2」對到「ガングリフォンII」就是這樣來的）。所以這支只出表，
- * 不寫資料庫。
+ * 名字，同名異作它分不出來。（假名被正規化吃掉那個 bug 2026-09-20 已修，`皇室血裔2`
+ * 對到 `ガングリフォンII` 那類誤中不會再出現。）所以這支只出表，不寫資料庫。
  *
  * `cdg_platform` 原樣帶出 cdosgame 的 `platform_note`（DOS／Windows／Apple II），
  * **不寫進 `Game.platforms`**：那要先有一套正規化的平台代號，否則只是把
@@ -16,6 +15,10 @@
  *
  * `--developer` 不給就跑 cdosgame 全部 2,655 筆。上游 JSON 預設從線上抓，
  * `--json=<檔>` 可指定本地快照。
+ *
+ * `--bucket=A,B` 再往下切一刀，只留指定的堆。分堆決定的是要花多少眼力——A 與 B
+ * （正規化後完全相同、一中一西）錯得少，可以整批快速掃過；C 與 D 得看文章。
+ * 帶 ⚠年代分歧的一律不在 `--bucket` 的結果裡，那些無論哪一堆都要逐組判。
  *
  * `--groups` 只留「同一個上游條目對到站上好幾筆」的組，那是**合併候選清單**：
  * 上游連同它的 `title_aliases` 認定這幾筆是同一款，判準比 `loose-dup.csv` 強得多
@@ -39,6 +42,7 @@ const args = process.argv.slice(2);
 const arg = (name: string) =>
   args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
 const developer = arg("developer");
+const buckets = arg("bucket")?.split(",").map((b) => b.trim().toUpperCase());
 const outPath = arg("o") ?? args[args.indexOf("-o") + 1];
 
 interface CdosGame {
@@ -188,9 +192,8 @@ async function main() {
         tocr_name: g.name,
         articles: String(g._count.articleGames),
         tocr_platforms: g.platforms.join("、"),
-        // 假名會被 nameKey 整段丟掉，純片假名的名稱正規化後只剩數字，所以
-        // 「カスタムメイト・2」會撞上任何帶 2 的名字。這類誤中是系統性的，
-        // 標出來免得在合併清單上被當成同一款。
+        // 日文原名常被建成獨立條目，與中文譯名那筆並存。鍵本身 2026-09-20 起
+        // 是對的（假名不再被丟掉），但「這筆是不是該併進譯名那筆」仍要人判。
         status: [status, /[\u3041-\u3096\u30a1-\u30fa]/.test(g.name) ? "名稱含假名" : ""]
           .filter(Boolean)
           .join("、"),
@@ -199,7 +202,12 @@ async function main() {
 
     // --groups：只留撞成一組的，並讓同組相鄰——這份是拿來一組一組判的。
     const grouped = args.includes("--groups");
-    const output = grouped ? buildGroups(rows, cdos, games) : rows;
+    let output = grouped ? buildGroups(rows, cdos, games) : rows;
+    if (grouped && buckets) {
+      output = output.filter(
+        (r) => buckets.includes(r.bucket[0]) && !r.bucket.includes("⚠")
+      );
+    }
 
     const header = grouped
       ? [
