@@ -13,6 +13,15 @@ function candidate(over: Partial<MergeCandidate> & { id: string }): MergeCandida
     aliases: [],
     createdAt: new Date("2026-01-01"),
     links: [],
+    platforms: [],
+    genres: [],
+    nameEn: null,
+    nameOriginal: null,
+    releaseDate: null,
+    developer: null,
+    publisher: null,
+    coverImage: null,
+    description: null,
     ...over,
   };
 }
@@ -102,6 +111,73 @@ describe("planGameMerge", () => {
     expect(plan.promotedArticleIds).toEqual([]);
   });
 
+  describe("carriedFields", () => {
+    it("unions the array fields", () => {
+      const plan = planGameMerge(
+        candidate({ id: "keeper", platforms: ["DOS"], genres: ["SLG"] }),
+        candidate({ id: "loser", platforms: ["WIN", "DOS"], genres: ["RPG"] })
+      );
+
+      expect(plan.carriedFields.platforms).toEqual(["DOS", "WIN"]);
+      expect(plan.carriedFields.genres).toEqual(["SLG", "RPG"]);
+    });
+
+    it("leaves an array alone when the loser adds nothing to it", () => {
+      const plan = planGameMerge(
+        candidate({ id: "keeper", platforms: ["DOS", "WIN"] }),
+        candidate({ id: "loser", platforms: ["DOS"] })
+      );
+
+      expect(plan.carriedFields).not.toHaveProperty("platforms");
+    });
+
+    it("fills a scalar the keeper left blank", () => {
+      const plan = planGameMerge(
+        candidate({ id: "keeper" }),
+        candidate({ id: "loser", nameEn: "Ultima IX", developer: "Origin" })
+      );
+
+      expect(plan.carriedFields.nameEn).toBe("Ultima IX");
+      expect(plan.carriedFields.developer).toBe("Origin");
+    });
+
+    // The keeper's value is an editor's choice; the loser's is the one being
+    // discarded, so a conflict resolves towards the row that survives.
+    it("never overwrites a scalar the keeper already has", () => {
+      const plan = planGameMerge(
+        candidate({ id: "keeper", nameEn: "Ultima IX" }),
+        candidate({ id: "loser", nameEn: "Ultima 9" })
+      );
+
+      expect(plan.carriedFields).not.toHaveProperty("nameEn");
+    });
+
+    it("treats an empty string as blank", () => {
+      const plan = planGameMerge(
+        candidate({ id: "keeper", description: "" }),
+        candidate({ id: "loser", description: "第三波代理" })
+      );
+
+      expect(plan.carriedFields.description).toBe("第三波代理");
+    });
+
+    it("carries a date", () => {
+      const released = new Date("1999-11-23");
+      const plan = planGameMerge(
+        candidate({ id: "keeper" }),
+        candidate({ id: "loser", releaseDate: released })
+      );
+
+      expect(plan.carriedFields.releaseDate).toEqual(released);
+    });
+
+    it("is empty when both sides are blank", () => {
+      const plan = planGameMerge(candidate({ id: "keeper" }), candidate({ id: "loser" }));
+
+      expect(plan.carriedFields).toEqual({});
+    });
+  });
+
   it("refuses to merge an entry into itself", () => {
     const same = candidate({ id: "g1" });
     expect(() => planGameMerge(same, same)).toThrow();
@@ -154,6 +230,7 @@ describe("applyGameMerge", () => {
         discardedLinkCount: 0,
         promotedArticleIds: [],
         mergedAliases: ["P.47"],
+        carriedFields: {},
       },
       { userId: "u1", via: null },
       "P.47"
@@ -162,6 +239,56 @@ describe("applyGameMerge", () => {
     expect(prismaMock.game.update).toHaveBeenCalledWith({
       where: { id: "keeper" },
       data: { aliases: ["P.47"], nameKeys: ["p47"] },
+    });
+  });
+
+  // The losing row is deleted outright, so a value recorded only there is gone
+  // once the transaction commits.
+  it("writes the fields carried over from the row being deleted", async () => {
+    await applyGameMerge(
+      prismaMock as never,
+      {
+        keeperId: "keeper",
+        loserId: "loser",
+        movedArticleIds: [],
+        discardedLinkCount: 0,
+        promotedArticleIds: [],
+        mergedAliases: [],
+        carriedFields: { platforms: ["DOS", "WIN"], nameEn: "Ultima IX" },
+      },
+      { userId: "u1", via: null },
+      "loser"
+    );
+
+    expect(prismaMock.game.update).toHaveBeenCalledWith({
+      where: { id: "keeper" },
+      data: expect.objectContaining({
+        platforms: ["DOS", "WIN"],
+        nameEn: "Ultima IX",
+      }),
+    });
+  });
+
+  it("names the carried fields in the edit log", async () => {
+    await applyGameMerge(
+      prismaMock as never,
+      {
+        keeperId: "keeper",
+        loserId: "loser",
+        movedArticleIds: [],
+        discardedLinkCount: 0,
+        promotedArticleIds: [],
+        mergedAliases: [],
+        carriedFields: { platforms: ["DOS"] },
+      },
+      { userId: "u1", via: null },
+      "loser"
+    );
+
+    expect(prismaMock.editLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        changes: expect.objectContaining({ carriedFields: ["platforms"] }),
+      }),
     });
   });
 });
