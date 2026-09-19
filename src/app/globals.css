@@ -33,6 +33,8 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-filter-platform: var(--filter-platform);
+  --color-filter-platform-foreground: var(--filter-platform-foreground);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -66,6 +68,12 @@
   --border: oklch(0.91 0.01 260);
   --input: oklch(0.91 0.01 260);
   --ring: oklch(0.45 0.18 260);
+  /* 遊戲索引的兩個篩選軸要分得出來：年代選取用 --primary（藍），平台用這一組
+     暖色。同色會讓「選了 1995–1999」與「選了 PC」在畫面上讀成同一件事，而它們
+     一個是期間、一個是類別。色相取自 --accent／--chart-3 那一族，明度壓到 0.48
+     是為了讓白字有 5:1 以上的對比——籌碼上的字只有 12px。 */
+  --filter-platform: oklch(0.48 0.12 45);
+  --filter-platform-foreground: oklch(0.985 0 0);
   --chart-1: oklch(0.55 0.2 260);
   --chart-2: oklch(0.65 0.15 160);
   --chart-3: oklch(0.55 0.12 40);
@@ -100,6 +108,8 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  --filter-platform: oklch(0.72 0.13 45);
+  --filter-platform-foreground: oklch(0.20 0.03 45);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);

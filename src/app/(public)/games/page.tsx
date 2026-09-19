@@ -34,14 +34,14 @@ import { Gamepad2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { displayPlatforms } from "@/lib/game-platforms";
 
 /**
- * 一頁 50 筆。
+ * 一頁 40 筆。
  *
- * 原本是 40（卡片四欄十列）。列表一列 44px，50 列剛好是一個捲得完的畫面，而
- * 6,754 款除下來從 169 頁變成 136 頁——這一頁的實際使用者是翻頁的人（正式站
- * 60 天裡 `/games` 的 203 次瀏覽有 36 次落在 `?page=`，而篩選與排序是 0 次），
- * 少三十頁是有感的。卡片檢視共用同一個值，最後一列會少幾張，沒有關係。
+ * 換成列表檢視時先試過 50——頁數從 169 掉到 136，而這一頁的實際使用者正是翻頁
+ * 的人（正式站 60 天裡 `/games` 的 203 次瀏覽有 36 次落在 `?page=`，而篩選與
+ * 排序是 0 次）。但 50 列捲起來太長（yuxio 2026-09-20 看過 preview），所以收回
+ * 40。再往下就換不划算了：30 筆是 226 頁，省下的捲動還不夠賠上多出來的九十頁。
  */
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 40;
 
 export default async function GamesPage({
   searchParams,
@@ -99,7 +99,7 @@ export default async function GamesPage({
     prisma.game.count({ where: { NOT: { platforms: { isEmpty: true } } } }),
   ]);
 
-  // 報導年代只問這一頁的 50 筆，不是整張表。
+  // 報導年代只問這一頁的那幾筆，不是整張表。
   const spans = await reportingSpans(games.map((game) => game.id));
   const totalPages = Math.ceil(total / PAGE_SIZE);
 

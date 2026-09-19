@@ -11,6 +11,13 @@ import { GameYearBar } from "./GameYearBar";
  * 而它只是個控制項；右邊切一塊給平台之後，兩個軸的份量剛好——年代是主軸所以佔
  * 七成，平台是次要的所以佔三成，而且總高度跟單獨放年代時一樣。
  *
+ * 六四分。年代是主軸所以拿多的那一份，但不是七三——七三時長條寬得像這一頁的
+ * 主體，而它只是個控制項（yuxio 2026-09-20 看過 preview 之後定的）。
+ *
+ * 兩個軸的已選狀態**刻意不同色**：年代用 `--primary`（藍），平台用
+ * `--filter-platform`（暖色）。同色會讓「選了 1995–1999」與「選了 PC」讀成同
+ * 一件事，而它們一個是期間、一個是類別。
+ *
  * 長條自己是 client component（要能拖），這一支與平台那半都不是。
  */
 export function GameFilterPanel({
@@ -34,7 +41,7 @@ export function GameFilterPanel({
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border md:flex-row">
       {years.length > 0 && (
-        <div className="flex min-w-0 flex-1 flex-col gap-2.5 px-5 pb-3 pt-4">
+        <div className="flex min-w-0 flex-col gap-2.5 px-5 pb-3 pt-4 md:basis-3/5">
           <div className="flex items-baseline justify-between gap-3">
             <span className="text-sm font-semibold">報導年代</span>
             <span className="hidden text-xs text-muted-foreground sm:inline">
@@ -47,7 +54,7 @@ export function GameFilterPanel({
       )}
 
       {platforms.length > 0 && (
-        <div className="flex flex-col gap-2.5 border-t bg-muted/30 px-5 pb-3 pt-4 md:w-[328px] md:shrink-0 md:border-l md:border-t-0">
+        <div className="flex flex-col gap-2.5 border-t bg-muted/30 px-5 pb-3 pt-4 md:basis-2/5 md:border-l md:border-t-0">
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-semibold">平台</span>
             <span className="text-xs tabular-nums text-muted-foreground">
@@ -69,7 +76,7 @@ export function GameFilterPanel({
                   className={cn(
                     "flex items-baseline gap-1.5 rounded-full border px-2.5 py-0.5 text-xs transition-colors",
                     on
-                      ? "border-transparent bg-primary text-primary-foreground"
+                      ? "border-transparent bg-filter-platform text-filter-platform-foreground"
                       : "hover:bg-muted"
                   )}
                   aria-pressed={on}
