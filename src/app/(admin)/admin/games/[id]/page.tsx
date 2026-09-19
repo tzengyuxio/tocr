@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-a
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip } from "@/components/chips";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { LinkSection, type LinkRow } from "@/components/LinkSection";
 
 export default function GameDetailPage() {
   const params = useParams<{ id: string }>();
@@ -42,13 +43,15 @@ export default function GameDetailPage() {
     developer: string | null;
     publisher: string | null;
     genres: string[];
+    externalLinks: LinkRow[];
     _count: { articleGames: number };
   } | null>(null);
   const [grouped, setGrouped] = useState<GroupedData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
+  // 抽成 callback 而不是留在 effect 裡：站外連結改完之後要重取，而這頁的資料
+  // 是自己 fetch 的，router.refresh() 帶不動它。
+  const load = useCallback(async () => {
       setIsLoading(true);
       try {
         const res = await fetch(`/api/games/${params.id}?all=true`);
@@ -63,6 +66,7 @@ export default function GameDetailPage() {
           developer: data.developer,
           publisher: data.publisher,
           genres: data.genres,
+          externalLinks: data.externalLinks ?? [],
           _count: data._count,
         });
         const articles = data.articleGames.map(
@@ -74,9 +78,11 @@ export default function GameDetailPage() {
       } finally {
         setIsLoading(false);
       }
-    }
-    load();
   }, [params.id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (isLoading) {
     return (
@@ -128,6 +134,13 @@ export default function GameDetailPage() {
           </div>
         </div>
       </div>
+
+      <LinkSection
+        owner={{ gameId: game.id }}
+        links={game.externalLinks}
+        description="站外關於這款遊戲的資訊：中文 DOS 遊戲資料庫的條目、維基百科"
+        onChanged={load}
+      />
 
       <Card>
         <CardHeader>
