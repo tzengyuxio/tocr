@@ -84,6 +84,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+/**
+ * 「封面資訊」box 裡 credit 那一列的 label 與值。
+ *
+ * `coverCredit` 預設是繪者、直接寫名字（`曾正忠`）；不是繪者時角色詞寫在值裡
+ * （`攝影：陳某`），見 data-conventions 的「封面資訊」。原本 label 一律寫「封面」，
+ * 但整個 box 已經叫「封面資訊」，再說一次封面等於什麼都沒說；自帶角色詞的值還會
+ * 讀成「封面：攝影：陳某」兩個冒號。所以把值裡的角色詞提上來當 label，沒有角色詞
+ * 的那些就是繪者——欄位與寫法都不用動，只有讀法變了。
+ */
+function coverCreditRole(credit: string): string {
+  const i = credit.indexOf("：");
+  return i > 0 ? credit.slice(0, i) : "繪者";
+}
+
+function coverCreditName(credit: string): string {
+  const i = credit.indexOf("：");
+  return i > 0 ? credit.slice(i + 1) : credit;
+}
+
 export default async function IssueDetailPage({ params }: PageProps) {
   const { id: magazineParam, issueId: issueParam } = await params;
 
@@ -295,8 +314,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
             />
             {/* 封面資訊：緊接著封面圖，因為它講的就是上面那張圖。三欄都空就
                 整段不出現——絕大多數期還沒填，空標題比沒有更吵。
-                「封面繪師」的值可能自帶角色詞（「攝影：陳某」），所以標籤寫成
-                「封面」而不是「繪師」，兩種寫法讀起來都通。
+                credit 那一列的 label 讀值決定，見下面的 splitCoverCredit。
                 標籤與值之間用全形冒號而不是空白：《電玩通》封面把日本藝人的姓名
                 分寫成「水樹 奈奈」，值裡本來就有空白，再用空白當分隔就讀不出
                 哪一個是分隔。 */}
@@ -322,8 +340,8 @@ export default async function IssueDetailPage({ params }: PageProps) {
                   )}
                   {issue.coverCredit && (
                     <div className="flex">
-                      <dt className="shrink-0">封面：</dt>
-                      <dd className="min-w-0">{issue.coverCredit}</dd>
+                      <dt className="shrink-0">{coverCreditRole(issue.coverCredit)}：</dt>
+                      <dd className="min-w-0">{coverCreditName(issue.coverCredit)}</dd>
                     </div>
                   )}
                 </dl>
