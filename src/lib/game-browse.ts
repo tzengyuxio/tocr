@@ -131,8 +131,11 @@ function parseYear(value: string | undefined, bounds: YearRange): number | null 
  * 1995–1999 → 點 1997 → 1997–1997   （點在區間內＝重設）
  * ```
  *
- * 全靠網址，不需要任何 client state——每根長條都是一條 `<Link>`，href 由現在的
- * 區間算出來。所以這一頁到現在還是整條伺服器算好的。
+ * 這一段**不需要任何 client state**：每根長條都是一條 `<Link>`，href 由現在的
+ * 區間算出來，所以沒有 JS 或還沒 hydrate 的時候點擊照樣有用。
+ *
+ * （長條本身後來為了「拖著選一段」變成了 client component，見 `GameYearBar`；
+ * 拖曳是加在這條路徑之上的，不是取代它。）
  */
 export function yearRangeAfterClick(
   current: YearRange | null,
