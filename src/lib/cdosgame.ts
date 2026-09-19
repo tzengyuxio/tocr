@@ -110,3 +110,21 @@ export function enrichment(
 
   return patch;
 }
+
+const WIKIPEDIA_HREF = /href="(https:\/\/[a-z-]+\.wikipedia\.org\/[^"]+)"/g;
+
+/**
+ * 條目頁上的維基百科連結，沒有就是 null。
+ *
+ * cdosgame 自己在「外部連結」那區列了維基條目（也列攻略本、介紹頁），所以抓一次
+ * 頁面能同時拿到封面與維基網址，不必另外查一輪維基。**不是每個條目都有**——
+ * 《仙劍奇俠傳》就沒有，那就不建那條連結，不去猜網址。
+ *
+ * 只取第一個：條目頁通常只列一條，**語言版本由上游決定**——《三國志III》連的是
+ * 中文版，《快打旋風》《光芒之池》連的是英文版，因為那些遊戲沒有中文條目。
+ * 不去把英文條目換成猜出來的中文網址。
+ */
+export function pickWikipedia(html: string): string | null {
+  const first = [...html.matchAll(WIKIPEDIA_HREF)][0];
+  return first ? decodeURI(first[1]) : null;
+}

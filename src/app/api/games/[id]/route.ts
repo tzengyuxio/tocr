@@ -43,6 +43,10 @@ export const GET = withErrorHandler(async (
           },
         },
       },
+      externalLinks: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
+      },
       _count: {
         select: { articleGames: true },
       },

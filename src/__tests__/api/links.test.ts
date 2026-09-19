@@ -23,6 +23,8 @@ beforeEach(() => {
   resetPrismaMock();
 });
 
+const CDG = "https://cdosgame.simagame.me/games/cdg-0212";
+
 describe("POST /api/links", () => {
   it("hangs the link off the issue and puts it after the existing ones", async () => {
     prismaMock.externalLink.findFirst.mockResolvedValue({ order: 1 });
@@ -34,6 +36,37 @@ describe("POST /api/links", () => {
     expect(prismaMock.externalLink.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ issueId: "i1", site: "INTERNET_ARCHIVE", order: 2 }),
     });
+  });
+
+  it("hangs the link off a game", async () => {
+    prismaMock.externalLink.findFirst.mockResolvedValue(null);
+    prismaMock.externalLink.create.mockResolvedValue({ id: "l1", url: CDG });
+
+    const res = await post({ gameId: "g1", site: "CDOSGAME", url: CDG });
+
+    expect(res.status).toBe(201);
+    expect(prismaMock.externalLink.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ gameId: "g1", site: "CDOSGAME", order: 0 }),
+    });
+    // The ordering query has to look at that game's links, not every link with
+    // a null magazine and issue.
+    expect(prismaMock.externalLink.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { gameId: "g1" } })
+    );
+  });
+
+  it("refuses a link that hangs off a game and an issue at once", async () => {
+    const res = await post({ gameId: "g1", issueId: "i1", site: "WIKIPEDIA", url: CDG });
+
+    expect(res.status).toBe(400);
+    expect(prismaMock.externalLink.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses a link with no owner at all", async () => {
+    const res = await post({ site: "WIKIPEDIA", url: CDG });
+
+    expect(res.status).toBe(400);
+    expect(prismaMock.externalLink.create).not.toHaveBeenCalled();
   });
 
   it("refuses a link that hangs off both a magazine and an issue", async () => {

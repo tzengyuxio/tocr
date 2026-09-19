@@ -453,22 +453,24 @@ model Photo {
 enum ExternalSite {
   INTERNET_ARCHIVE
   NOSTALIBRARY
+  CDOSGAME // 中文 DOS 遊戲資料庫
   NCL // 國家圖書館
   WIKIPEDIA
   OTHER
 }
 
 /**
- * 站外的雜誌資訊：全本掃描、上游條目、書目紀錄、百科條目。
+ * 站外資訊：全本掃描、上游條目、書目紀錄、百科條目。
  * 不分「延伸」與「出處」——實際上兩種都有，而站點幾乎就決定了它是哪一種，
  * 多存一個維度只會讓每筆連結多一次判斷。畫面上一起列成「站外資訊」。
- * 掛雜誌或掛單期，二擇一，與 Photo 同形（external_links_one_owner 把關）。
+ * 掛雜誌、單期或遊戲，三擇一（external_links_one_owner 把關）。
  * 沒有 isPublic：連結不是還沒確認來路的圖，要藏就直接刪。
  */
 model ExternalLink {
   id         String  @id @default(cuid())
   magazineId String? @map("magazine_id")
   issueId    String? @map("issue_id")
+  gameId     String? @map("game_id")
 
   site  ExternalSite
   url   String
@@ -481,9 +483,11 @@ model ExternalLink {
 
   magazine Magazine? @relation(fields: [magazineId], references: [id], onDelete: Cascade)
   issue    Issue?    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  game     Game?     @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@index([magazineId, order])
   @@index([issueId, order])
+  @@index([gameId, order])
   @@map("external_links")
 }
 
@@ -599,7 +603,8 @@ model Game {
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  articleGames ArticleGame[]
+  articleGames  ArticleGame[]
+  externalLinks ExternalLink[]
 
   @@index([releaseDate])
   @@index([nameKeys], type: Gin, map: "idx_games_name_keys")

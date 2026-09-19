@@ -1,4 +1,9 @@
-import { CDOSGAME_GENRES, enrichment, pickCover } from "@/lib/cdosgame";
+import {
+  CDOSGAME_GENRES,
+  enrichment,
+  pickCover,
+  pickWikipedia,
+} from "@/lib/cdosgame";
 
 const BASE = "https://cdosgame.simagame.me/games/cdg-0212";
 
@@ -120,5 +125,31 @@ describe("enrichment", () => {
     const patch = enrichment(blank, { id: "x", genre: "XYZ" }, null, null);
 
     expect(patch).not.toHaveProperty("genres");
+  });
+});
+
+describe("pickWikipedia", () => {
+  it("takes the wikipedia link off the entry page", () => {
+    const html = `<a href="https://zh.wikipedia.org/wiki/%E4%B8%89%E5%9C%8B%E5%BF%97III">維基</a>`;
+
+    expect(pickWikipedia(html)).toBe("https://zh.wikipedia.org/wiki/三國志III");
+  });
+
+  // 仙劍奇俠傳的條目就沒有。不猜網址。
+  it("returns null when the entry links to no wikipedia article", () => {
+    const html = `<a href="https://chiuinan.github.io/game/intro.htm">青衫之友</a>`;
+
+    expect(pickWikipedia(html)).toBeNull();
+  });
+
+  // 語言版本由上游決定：《三國志III》連中文版，《快打旋風》連英文版，因為
+  // 後者沒有中文條目。
+  it("takes the first when several language editions are listed", () => {
+    const html = `
+      <a href="https://zh.wikipedia.org/wiki/A">中文</a>
+      <a href="https://en.wikipedia.org/wiki/A">English</a>
+    `;
+
+    expect(pickWikipedia(html)).toContain("zh.wikipedia.org");
   });
 });

@@ -26,6 +26,7 @@ import {
   parseArticleSort,
 } from "@/lib/article-listing";
 import { displayPlatforms } from "@/lib/game-platforms";
+import { ExternalLinkList } from "@/components/ExternalLinkList";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -85,6 +86,10 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
   const game = await prisma.game.findUnique({
     where: { id },
     include: {
+      externalLinks: {
+        orderBy: { order: "asc" },
+        select: { id: true, site: true, url: true, label: true },
+      },
       articleGames: {
         orderBy: articleOrderBy(sort, direction),
         include: {
@@ -209,6 +214,8 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
           {game.description && (
             <p className="mt-4 text-muted-foreground">{game.description}</p>
           )}
+
+          <ExternalLinkList links={game.externalLinks} className="mt-4" />
         </div>
       </div>
 
