@@ -17,6 +17,10 @@
  * `--developer` 不給就跑 cdosgame 全部 2,655 筆。上游 JSON 預設從線上抓，
  * `--json=<檔>` 可指定本地快照。
  *
+ * `--bucket=A,B` 再往下切一刀，只留指定的堆。分堆決定的是要花多少眼力——A 與 B
+ * （正規化後完全相同、一中一西）錯得少，可以整批快速掃過；C 與 D 得看文章。
+ * 帶 ⚠年代分歧的一律不在 `--bucket` 的結果裡，那些無論哪一堆都要逐組判。
+ *
  * `--groups` 只留「同一個上游條目對到站上好幾筆」的組，那是**合併候選清單**：
  * 上游連同它的 `title_aliases` 認定這幾筆是同一款，判準比 `loose-dup.csv` 強得多
  * ——後者只剝括號，抓不到 `Age of Empires` 與 `世紀帝國` 是同一款。仍然只是候選：
@@ -39,6 +43,7 @@ const args = process.argv.slice(2);
 const arg = (name: string) =>
   args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
 const developer = arg("developer");
+const buckets = arg("bucket")?.split(",").map((b) => b.trim().toUpperCase());
 const outPath = arg("o") ?? args[args.indexOf("-o") + 1];
 
 interface CdosGame {
@@ -199,7 +204,12 @@ async function main() {
 
     // --groups：只留撞成一組的，並讓同組相鄰——這份是拿來一組一組判的。
     const grouped = args.includes("--groups");
-    const output = grouped ? buildGroups(rows, cdos, games) : rows;
+    let output = grouped ? buildGroups(rows, cdos, games) : rows;
+    if (grouped && buckets) {
+      output = output.filter(
+        (r) => buckets.includes(r.bucket[0]) && !r.bucket.includes("⚠")
+      );
+    }
 
     const header = grouped
       ? [
