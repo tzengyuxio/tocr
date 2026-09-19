@@ -102,11 +102,11 @@ export default async function ExportLogsPage({ searchParams }: PageProps) {
                     </TableCell>
                     <TableCell>{log.user.name || log.user.email}</TableCell>
                     <TableCell>{log.magazineName ?? "全部雜誌"}</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {/* 沒有筆數代表串流沒跑完 -- 中途失敗或使用者取消。 */}
                       {log.rowCount ?? "未完成"}
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
+                    <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
                       {log.ipAddress ?? "—"}
                     </TableCell>
                     <TableCell className="max-w-xs truncate text-xs text-muted-foreground">

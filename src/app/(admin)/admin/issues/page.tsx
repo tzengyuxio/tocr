@@ -196,17 +196,17 @@ export default async function IssueReviewPage({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {issue.publishDate ?? "-"}
                     </TableCell>
-                    <TableCell>{issue.tocImages.length}</TableCell>
-                    <TableCell>{issue._count.articles}</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="whitespace-nowrap">{issue.tocImages.length}</TableCell>
+                    <TableCell className="whitespace-nowrap">{issue._count.articles}</TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {recognisedAt.has(issue.id)
                         ? formatTaipei(recognisedAt.get(issue.id)!, "yyyy/MM/dd")
                         : "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {issue.tocReviewedAt ? (
                         <Badge variant="secondary">
                           {formatTaipei(issue.tocReviewedAt, "yyyy/MM/dd")}

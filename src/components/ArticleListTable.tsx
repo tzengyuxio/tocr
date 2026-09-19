@@ -79,15 +79,13 @@ export function ArticleListTable({
                 <TableCell>
                   <IssueLink issue={row.article.issue} />
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="whitespace-nowrap text-muted-foreground">
                   {formatEdtf(row.article.issue.publishDate)}
                 </TableCell>
-                {/* `TableCell` 預設帶 `whitespace-nowrap`，所以一個長標題（或
-                    像《軟體世界》113 期那種把整串遊戲名寫在副標的條目）會把這一
-                    欄撐到 max-content，整張表跟著超出容器、出現水平捲軸。量到的
-                    是 viewport 820px 時表格 1568px、容器 694px；只要讓這一格恢復
-                    正常換行就剛好收回容器寬度，不必替每一欄訂死寬度。 */}
-                <TableCell className="whitespace-normal">
+                {/* 這一欄是整張表唯一裝自由文字的（標題加副標），也是先前把表格
+                    撐出水平捲軸的那一欄。現在換行是 `TableCell` 的預設，所以這裡
+                    不必宣告什麼——會斷行的欄位不用寫，不能斷的才寫。 */}
+                <TableCell>
                   <div className="font-medium">{row.article.title}</div>
                   {row.article.subtitle && (
                     <div className="text-sm text-muted-foreground">
@@ -102,7 +100,7 @@ export function ArticleListTable({
                     "-"
                   )}
                 </TableCell>
-                <TableCell className="font-mono text-sm">
+                <TableCell className="whitespace-nowrap font-mono text-sm">
                   {row.article.pageStart || "-"}
                 </TableCell>
               </TableRow>

@@ -124,9 +124,9 @@ export function ImportPreviewTable({ result }: ImportPreviewTableProps) {
                     <TableCell className="font-medium">{issue.issueNumber}</TableCell>
                     <TableCell>{issue.altNumbers?.join("、") || "-"}</TableCell>
                     <TableCell>{issue.title || "-"}</TableCell>
-                    <TableCell>{issue.publishDate}</TableCell>
-                    <TableCell>{issue.pageCount ?? "-"}</TableCell>
-                    <TableCell>{issue.price ?? "-"}</TableCell>
+                    <TableCell className="whitespace-nowrap">{issue.publishDate}</TableCell>
+                    <TableCell className="whitespace-nowrap">{issue.pageCount ?? "-"}</TableCell>
+                    <TableCell className="whitespace-nowrap">{issue.price ?? "-"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

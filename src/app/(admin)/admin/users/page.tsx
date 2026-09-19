@@ -249,11 +249,11 @@ export default function UsersPage() {
                         {ROLE_LABELS[user.role]}
                       </Badge>
                     </TableCell>
-                    <TableCell>{user._count.editLogs}</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="whitespace-nowrap">{user._count.editLogs}</TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatTaipei(user.createdAt, "yyyy/MM/dd")}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="whitespace-nowrap text-right">
                       <Button
                         variant="outline"
                         size="sm"

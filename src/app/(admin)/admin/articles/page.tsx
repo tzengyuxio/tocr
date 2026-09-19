@@ -232,7 +232,7 @@ export default function ArticlesPage() {
                           <CategoryChip category={article.category} />
                         )}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
                         {article.pageStart
                           ? `p.${article.pageStart}${
                               article.pageEnd && article.pageEnd !== article.pageStart
@@ -248,7 +248,7 @@ export default function ArticlesPage() {
                             : "-"}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="whitespace-nowrap text-right">
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/admin/articles/${article.id}`}>
                             <Pencil className="mr-2 h-4 w-4" />
