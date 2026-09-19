@@ -3,9 +3,8 @@
  *
  * 三個站的資料要互相關聯，最直接的接點是遊戲（見 BACKLOG 的「與 nostalib /
  * cdosgame 兩站的資料連動」）。但**對照關係要人確認過才算數**：`nameKey()` 只看
- * 名字，同名異作它分不出來，而假名被正規化吃掉的那個已知 bug 會讓純片假名的名稱
- * 互撞（「皇室血裔2」對到「ガングリフォンII」就是這樣來的）。所以這支只出表，
- * 不寫資料庫。
+ * 名字，同名異作它分不出來。（假名被正規化吃掉那個 bug 2026-09-20 已修，`皇室血裔2`
+ * 對到 `ガングリフォンII` 那類誤中不會再出現。）所以這支只出表，不寫資料庫。
  *
  * `cdg_platform` 原樣帶出 cdosgame 的 `platform_note`（DOS／Windows／Apple II），
  * **不寫進 `Game.platforms`**：那要先有一套正規化的平台代號，否則只是把
@@ -193,9 +192,8 @@ async function main() {
         tocr_name: g.name,
         articles: String(g._count.articleGames),
         tocr_platforms: g.platforms.join("、"),
-        // 假名會被 nameKey 整段丟掉，純片假名的名稱正規化後只剩數字，所以
-        // 「カスタムメイト・2」會撞上任何帶 2 的名字。這類誤中是系統性的，
-        // 標出來免得在合併清單上被當成同一款。
+        // 日文原名常被建成獨立條目，與中文譯名那筆並存。鍵本身 2026-09-20 起
+        // 是對的（假名不再被丟掉），但「這筆是不是該併進譯名那筆」仍要人判。
         status: [status, /[\u3041-\u3096\u30a1-\u30fa]/.test(g.name) ? "名稱含假名" : ""]
           .filter(Boolean)
           .join("、"),
