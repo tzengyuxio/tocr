@@ -15,12 +15,36 @@ commit 進來是為了讓「這批清掉了多少」在 git 歷史上看得出�
 | `long.csv` | 名稱超過 25 字，多半是標語被當成遊戲名 |
 | `orphan.csv` | 沒有任何文章引用 |
 
+`scripts/match-cdosgame.ts --prod` 與 `scripts/suggest-platforms.ts --prod` 產的另外三份：
+
+| 檔案 | 裝什麼 |
+| --- | --- |
+| `cdosgame-koei.csv` | 光榮（KOEI）59 款的對照 |
+| `cdosgame-all.csv` | cdosgame 全部 2,655 款的對照 |
+| `platforms-suggested.csv` | `Game.platforms` 的寫入提案，`risk` 空的才會被 `apply-platforms.ts` 寫 |
+
 每一列的 `articles_sample` 是該條目掛在哪幾篇文章上（最多三篇）。**撞名的群組要看這一欄
 才判得出來**：同一個中文譯名底下可能是三款不同遊戲——站上的「洪荒帝國」就掛著
 `(The Legacy)`、`(Dune)`、`(Savage Empire)` 三個括號。`group` 欄相同的是同一組。
+
+## platforms-suggested.csv 怎麼審
+
+`risk` 欄是「這一列的對照本身可能錯」，**看過之後把它清掉就等於核准**，下次跑
+`apply-platforms.ts` 就會寫進去；判定不該寫的那列直接刪掉。
+
+判斷靠兩欄：`shared_with` 列出跟它共用同一個上游條目的其他站上條目，`sources`
+是出處。看到「三國志IV／三國志 IV／三國志4中文版」就知道是同一款的三種抄法、
+都標同一個平台是對的；看到 `Age of Empires` 與 `世紀帝國` 共用 `cdg-0666`，那是
+**兩筆該合併的重複條目**——這一欄比 `loose-dup.csv` 的判準強，因為上游的
+`title_aliases` 認得出字面毫無重疊的同一款。
 
 ## 2026-09-20 的基準
 
 正式站 6,744 筆。`paren-en` 143、`loose-dup` 114 組 243 筆、`key-dup` 19 組 39 筆、
 `kana` 145、`long` 139、`orphan` 19。引用分佈：0 篇 19、1 篇 4,817、2–4 篇 1,637、
 5 篇以上 271。欄位填寫率當時幾乎全空（`nameEn` 0、`platforms` 0、`releaseDate` 0）。
+
+**同日寫入 965 筆 `platforms`**（`apply-platforms.ts --apply`，走 API、零失敗），
+全是單一來源、主名精確對上、一對一的那批。之後修掉「共用來源」的身分粒度
+（《電玩通》那邊原本拿期號當條目身分，同一期的幾十款遊戲會全部算成共用），
+可寫的從 965 升到 1,353，所以還有 388 筆已經沒有 risk、等下一次 apply。
