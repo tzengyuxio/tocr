@@ -76,7 +76,10 @@ export function ArticleListTable({
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>
+                {/* 「軟體世界 第 113 期」是一個標籤不是一句話，斷開來讀不成
+                    句。讓它換行時這一欄縮到 67px、每一列變成三行高，所以這裡
+                    明講不換行——量過在 md 斷點的容器寬度下它仍然塞得進去。 */}
+                <TableCell className="whitespace-nowrap">
                   <IssueLink issue={row.article.issue} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-muted-foreground">
