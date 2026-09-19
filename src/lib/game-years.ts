@@ -66,13 +66,19 @@ export interface ReportingSummary {
   /** 年份兩端。只寫過一次的 `from === to`。 */
   years: YearRange;
   /**
-   * 最早那一期屬於哪一本雜誌，取的是**該刊現在的名字**。
+   * 最早寫它的是哪一本的哪一期。
    *
-   * 改過名的刊物因此會用新名字標一期舊的（刊名沿革在 `MagazineTitle`，這裡沒有
-   * 查）。列表上這一欄要回答的是「去哪一本翻」，而讀者點過去看到的就是現在這個
-   * 名字，所以先這樣；真要標當時的刊名，那是連 `MagazineTitle` 一起查的另一件事。
+   * **刊名要配期號**：光寫「軟體世界」說不出去翻哪一本，而這一欄存在的理由就是
+   * 回答那個問題。組合寫法與 `ArticleListTable` 一致（刊名 ＋
+   * `formatIssueNumber()`），站上講同一件事只有一種寫法。
+   *
+   * 刊名取的是**該刊現在的名字**：改過名的刊物因此會用新名字標一期舊的（刊名
+   * 沿革在 `MagazineTitle`，這裡沒有查）。讀者點過去看到的就是現在這個名字，
+   * 所以先這樣；真要標當時的刊名，那是連 `MagazineTitle` 一起查的另一件事。
    */
   firstMagazine: string;
+  /** 存的是封面上的寫法，顯示前要過 `formatIssueNumber()`。 */
+  firstIssueNumber: string;
 }
 
 export type ReportingSummaries = Map<string, ReportingSummary>;
@@ -97,10 +103,11 @@ export async function reportingSummaries(
       first_year: number;
       last_year: number;
       magazine: string;
+      issue_number: string;
     }[]
   >`
     WITH reported AS (
-      SELECT ag.game_id, i.publish_sort, i.magazine_id
+      SELECT ag.game_id, i.publish_sort, i.magazine_id, i.issue_number
       FROM article_games ag
       JOIN articles a ON a.id = ag.article_id
       JOIN issues i ON i.id = a.issue_id
@@ -115,11 +122,12 @@ export async function reportingSummaries(
       GROUP BY game_id
     ),
     earliest AS (
-      SELECT DISTINCT ON (game_id) game_id, magazine_id
+      SELECT DISTINCT ON (game_id) game_id, magazine_id, issue_number
       FROM reported
       ORDER BY game_id, publish_sort
     )
-    SELECT s.game_id, s.first_year, s.last_year, m.name AS magazine
+    SELECT s.game_id, s.first_year, s.last_year,
+           m.name AS magazine, e.issue_number
     FROM span s
     JOIN earliest e ON e.game_id = s.game_id
     JOIN magazines m ON m.id = e.magazine_id
@@ -131,6 +139,7 @@ export async function reportingSummaries(
       {
         years: { from: row.first_year, to: row.last_year },
         firstMagazine: row.magazine,
+        firstIssueNumber: row.issue_number,
       },
     ])
   );

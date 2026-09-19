@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { displayPlatforms } from "@/lib/game-platforms";
 import { formatYearRange, type ReportingSummaries } from "@/lib/game-years";
+import { formatIssueNumber } from "@/lib/issue-number";
 
 export interface GameListRow {
   id: string;
@@ -27,8 +28,11 @@ export interface GameListRow {
  * 綁同一個斷點是刻意的**——它們兩個也同時是窄螢幕第二行的內容，分開斷的話中間
  * 會有一段寬度把年份印兩次（欄位一次、第二行一次）。
  *
- * **「首次報導」只寫刊名不寫年份**：那個年份就是「報導年代」的起點，同一列裡
- * 印兩次是浪費一整欄的寬度。這一欄回答的是「去哪一本翻」。
+ * **「首次報導」寫刊名加期號，不寫年份**：這一欄回答的是「去哪一本的哪一期
+ * 翻」，光寫刊名說不出那件事；而年份就是「報導年代」的起點，同一列印兩次是浪費
+ * 一整欄的寬度。寫法與 `ArticleListTable` 一致。
+ *
+ * 這一格不是連結——整列已經是通往遊戲頁的 `<a>`，`<a>` 不能套 `<a>`。
  */
 export function GameList({
   rows,
@@ -47,7 +51,7 @@ export function GameList({
         aria-hidden
       >
         <span className="flex-1">遊戲名稱</span>
-        <span className="hidden w-[150px] lg:inline">首次報導</span>
+        <span className="hidden w-[176px] lg:inline">首次報導</span>
         <span className="hidden w-[110px] sm:inline">平台</span>
         <span className="hidden w-[120px] lg:inline">報導年代</span>
         <span className="w-[64px] text-right">文章數</span>
@@ -57,6 +61,9 @@ export function GameList({
         const platforms = displayPlatforms(row.platforms);
         const summary = summaries.get(row.id);
         const years = formatYearRange(summary?.years);
+        const firstSeen = summary
+          ? `${summary.firstMagazine} ${formatIssueNumber(summary.firstIssueNumber)}`
+          : null;
         // 原名現在站上只有三筆，但它會隨著補資料長回來（yuxio 2026-09-20），
         // 所以位置留著，沒有值就不佔高度。
         const secondName = row.nameOriginal || row.nameEn;
@@ -80,15 +87,15 @@ export function GameList({
               )}
               {(secondName || summary) && (
                 <span className="block truncate text-xs text-muted-foreground lg:hidden">
-                  {[secondName, summary?.firstMagazine, years]
+                  {[secondName, firstSeen, years]
                     .filter(Boolean)
                     .join("・")}
                 </span>
               )}
             </span>
 
-            <span className="hidden w-[150px] truncate text-sm text-muted-foreground lg:inline">
-              {summary?.firstMagazine ?? "—"}
+            <span className="hidden w-[176px] truncate text-sm text-muted-foreground lg:inline">
+              {firstSeen ?? "—"}
             </span>
 
             <span className="hidden w-[110px] truncate text-sm text-muted-foreground sm:inline">
