@@ -23,6 +23,11 @@ import { isVerifiedIssue } from "@/lib/issue-complete";
 // Two rows of eight on a wide screen.
 const LATEST_ISSUE_COUNT = 16;
 
+/** 涵蓋率取整數：小數點後那一位說不出更多事，只會讓這行變長。 */
+function percent(part: number, whole: number): string {
+  return `${Math.round((part / whole) * 100)}%`;
+}
+
 export default async function HomePage() {
   const session = await auth();
   const canEdit = session?.user?.role === "ADMIN" || session?.user?.role === "EDITOR";
@@ -48,6 +53,8 @@ export default async function HomePage() {
     articleCount,
     gameCount,
     tagCount,
+    coveredCount,
+    indexedCount,
     withArticles,
   ] = await Promise.all([
     prisma.magazine.count(),
@@ -55,6 +62,11 @@ export default async function HomePage() {
     prisma.article.count(),
     prisma.game.count(),
     prisma.tag.count(),
+    // 五個總數說得出這個站有多大，說不出收到哪裡。這兩個才是涵蓋率：一期的
+    // 封面與目錄是兩件獨立的工作，所以分開數，而且都是相對於 issueCount 講的
+    // ——跟雜誌列表頁那句「收錄 N / 已知 M 期」是同一件事的不同尺度。
+    prisma.issue.count({ where: { coverImage: { not: null } } }),
+    prisma.issue.count({ where: { articles: { some: {} } } }),
     // An issue whose contents are indexed is what the site is for, so those
     // come first and the rest only fill the row out. A cover is required in
     // both tiers: the card is mostly the cover, and one without it reads as a
@@ -132,6 +144,17 @@ export default async function HomePage() {
                 { label: "標籤", value: tagCount, icon: Tags },
               ]}
             />
+            {/* 涵蓋數跟在單期總數後面講，不另外占兩格：它們不是第六、第七個
+                總數，而是「那 N 期裡有多少期收到了東西」。做成一行小字也避開
+                StatGrid 的五欄格線——七格在 sm 以上排不成一列。 */}
+            {issueCount > 0 && (
+              <p className="mt-3 text-center text-sm text-muted-foreground">
+                其中 <strong className="font-semibold text-foreground">{coveredCount}</strong> 期有封面
+                （{percent(coveredCount, issueCount)}）、
+                <strong className="font-semibold text-foreground">{indexedCount}</strong> 期已錄入目錄
+                （{percent(indexedCount, issueCount)}）
+              </p>
+            )}
           </div>
         </div>
       </section>

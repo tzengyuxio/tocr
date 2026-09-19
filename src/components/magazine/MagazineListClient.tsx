@@ -106,10 +106,10 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
               <TableCell>{magazine.publisher || "-"}</TableCell>
               {/* tabular-nums so the digit groups line up down the column --
                   an ISSN is read by comparing it to its neighbours. */}
-              <TableCell className="tabular-nums text-muted-foreground">
+              <TableCell className="whitespace-nowrap tabular-nums text-muted-foreground">
                 {magazine.issn || "-"}
               </TableCell>
-              <TableCell>{magazine._count.issues} 期</TableCell>
+              <TableCell className="whitespace-nowrap">{magazine._count.issues} 期</TableCell>
               <TableCell>
                 <Badge
                   variant={magazine.isActive ? "default" : "secondary"}
@@ -117,7 +117,7 @@ export function MagazineListClient({ magazines }: MagazineListClientProps) {
                   {magazine.isActive ? "發行中" : "已停刊"}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="whitespace-nowrap">
                 {formatTaipei(magazine.createdAt, "yyyy/MM/dd")}
               </TableCell>
               <TableCell>

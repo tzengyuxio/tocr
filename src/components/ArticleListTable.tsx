@@ -76,12 +76,18 @@ export function ArticleListTable({
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>
+                {/* 「軟體世界 第 113 期」是一個標籤不是一句話，斷開來讀不成
+                    句。讓它換行時這一欄縮到 67px、每一列變成三行高，所以這裡
+                    明講不換行——量過在 md 斷點的容器寬度下它仍然塞得進去。 */}
+                <TableCell className="whitespace-nowrap">
                   <IssueLink issue={row.article.issue} />
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="whitespace-nowrap text-muted-foreground">
                   {formatEdtf(row.article.issue.publishDate)}
                 </TableCell>
+                {/* 這一欄是整張表唯一裝自由文字的（標題加副標），也是先前把表格
+                    撐出水平捲軸的那一欄。現在換行是 `TableCell` 的預設，所以這裡
+                    不必宣告什麼——會斷行的欄位不用寫，不能斷的才寫。 */}
                 <TableCell>
                   <div className="font-medium">{row.article.title}</div>
                   {row.article.subtitle && (
@@ -97,7 +103,7 @@ export function ArticleListTable({
                     "-"
                   )}
                 </TableCell>
-                <TableCell className="font-mono text-sm">
+                <TableCell className="whitespace-nowrap font-mono text-sm">
                   {row.article.pageStart || "-"}
                 </TableCell>
               </TableRow>

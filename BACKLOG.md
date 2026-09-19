@@ -33,8 +33,18 @@
 
 - [ ] **《電玩通》VOL.364 的目錄頁要重掃** — 2026-09-13 掃的那張上半是目錄、下半被封底裡的內容蓋掉（索引平台帶、下期預告、版權欄都疊上來了），`徹底攻略` 與 COLUMN 那一格整片沒掃到，OCR 只讀得出 11 筆。同期的索引那張是完整的，所以是單張掃壞不是整本缺頁；**壞檔 yuxio 已刪**，站上該期 `tocImages` 也清空了。**索引已經轉錄進 CSV**，所以重掃之後只要跑一次 `/api/ocr`、對圖校正、`/api/articles/batch` 匯入，再跑 `link_famitsu.py` 就會自動接上遊戲與平台（2026-09-14）
 
-- [ ] **拿《電玩通》封底裡的 Game Index 當遊戲名的權威來源** — 每期封底裡印著「電玩通週刊VOL N遊戲索引」，全期遊戲依平台分列、附頁碼，是編輯部自己統一過的譯名表（該頁還附註「均為編輯部參考各式相關資料後研討做成」）。可以拿它當 `Game.name` 的基準，把站上各種 alias 收斂過來；目前手邊有 VOL.184／185／193 三期的掃描（`~/Pictures/covers/raw/magazines/famitsu-tw/*_c3.jpg`）（2026-09-12）
+- [ ] **《電玩通》的 Game Index 只被拿來當平台來源，命名基準那半還沒做** — 封底裡的
+  「電玩通週刊VOL N遊戲索引」是編輯部自己統一過的譯名表（頁上註明「均為編輯部參考各式
+  相關資料後研討做成」）。**轉錄那半已完成**：`scripts/read-game-index.ts`（不走 `/api/ocr`，
+  索引頁送進目錄提示詞會生出整頁假文章）、`data/famitsu-game-index.csv` 已收 55 期 2,094 列、
+  規格寫在 README。但目前唯一的消費者是 `scripts/suggest-platforms.ts`——**它被當成平台來源
+  用掉了**，那 1,353 筆 `Game.platforms` 有它一份。原本要它做的事「當 `Game.name` 的基準、
+  把站上各種寫法收斂過來」一步都沒走：6,756 款遊戲裡只有 4 筆有 `aliases`。要做的是拿索引名
+  對站上的 `Game`，同款不同寫法的併起來、索引的寫法當 `name`、其餘進 `aliases`
+  （合併走 `scripts/merge-game.ts`）（2026-09-12，2026-09-20 改寫）
+
 - [ ] **42 條 `封面：主題 …` 還在 notes 裡** — 封面資訊已於 2026-09-06 整批搬進 `coverGames`／`coverSubjects`／`coverCredit`（219 期），只剩這一族沒搬：值一半是遊戲名、一半帶宣傳語（「暑假超強大作—新絕代雙驕貳」「專訪幻影特攻女主角」），要逐筆判，分佈在軟體世界 15、電腦玩家 14、新遊戲時代 13。見 [docs/data-conventions.md](docs/data-conventions.md) 的「封面資訊」（2026-09-06）
+
 - [ ] **封底 c4 還沒上傳** — 累積 131 張（2026-09-02 那批 42、2026-09-05 新掃的 29、2026-09-06 電玩通 PS 系那批 22、SG／電視遊樂報導／城市少年 3 與《電玩通》週刊那批 35）。走 `/api/photos` 不是 `/api/upload`，`tocr_upload_covers.py` 不管這條，要另外寫。先擱著，等 Blob 額度確認再動，見 [docs/backlog/covers-missing-issues.md](docs/backlog/covers-missing-issues.md) 與 [docs/backlog/covers-new-scans-tocr.md](docs/backlog/covers-new-scans-tocr.md)（2026-09-05）
 
 - [ ] **《軟體世界》目錄辨識的收尾** — 201 期的目錄掃描 2026-09-06 已整批上站並辨識，剩第 72 期辨識不出來（模型重複輸出、頁碼假造到 780）、第 47 期的 28 篇是舊資料、第 58 期把欄目名當成文章標題，另有 3 筆同標題同頁碼的重複條目要刪；全部 201 期的 `tocReviewedAt` 都還空著，見 [docs/backlog/swm-toc-scans.md](docs/backlog/swm-toc-scans.md)（2026-09-06）
@@ -107,8 +117,6 @@
 
 - [ ] **加入《電玩双週刊》資料** — 匯入《電玩宅速配》的前身《電玩双週刊》，見 [docs/backlog/gamexpress-early-issues.md](docs/backlog/gamexpress-early-issues.md)（2026-08-23）
 
-- [ ] **《攻略月刊》已建檔，還缺期數與刊頭** — 已建到正式站，但一期都沒有、也沒有刊頭圖，見 [docs/backlog/gonglue-yuekan.md](docs/backlog/gonglue-yuekan.md)（2026-08-25）
-
 - [ ] **《遊戲天堂》／《Game天堂EX》待建，缺實體本** — 藏家清單有、站上沒有的一組刊系，見 [docs/backlog/game-paradise-ex.md](docs/backlog/game-paradise-ex.md)（2026-08-23）
 
 - [ ] **《玩家快訊》／《超級玩家》整條刊系沒收** — 尖端電腦類的一本，站上完全沒有（2026-08-24）。
@@ -163,8 +171,6 @@
   **等資料量多了再討論**（yuxio 2026-08-14）。現在 TOCR 正式站只有 4 期有目錄、遊戲條目多半是 OCR 產生的暫時資料，此時定對照規則會用太小的樣本立規矩——與 [#34] 期號格式押後的理由相同（2026-08-14）
 
 - [ ] **把遊戲的 `nameEn` 填起來** — 113 款遊戲裡 nameEn 只有 1 筆有值，見 [docs/backlog/game-name-en.md](docs/backlog/game-name-en.md)（2026-08-16）
-
-- [ ] **「從 RAWG 抓取」的實作檢查** — 優先序押後；讀過一遍後還剩三個問題，見 [docs/backlog/rawg-fetch-review.md](docs/backlog/rawg-fetch-review.md)（2026-08-15）
 
 - [ ] **重複的遊戲條目要合併（持續）** — 同一款遊戲被建成兩筆的來源是不同期的目錄抄寫不同；名稱完全相同的反而不會發生，那在建立時就比對到了。**只有 slug 正規化後撞在一起才看得見**。
 
@@ -245,5 +251,16 @@
 
 - [ ] **考據依據需要一個不顯示的欄位** — 描述與備註是公開欄位，站內的判別依據不該寫在裡面（規則見 docs/data-conventions.md 的「寫給讀者，不是寫給編輯」）。但那些依據有價值，現在只能散在 commit message 與 memory 裡。考慮在 `Magazine` 與 `Issue` 各加一個不對外顯示的考據欄位，後台可編、公開 API 不回。2026-09-20 清描述時被清掉、需要落點的內容：《土星少年》兩期封底標同一組條碼 4714304650170（期刊共用的 EAN-13，不是 ISSN，故未登錄）（2026-09-20）
 
+- [ ] **標籤頁面要重新設計** — 範圍還沒定，先記著（2026-09-20）
+
+- [ ] **《電玩通》有封面但缺封面資訊的期，看圖補** — `coverGames`／`coverSubjects`／`coverCredit` 空著但已有封面圖的那些，翻圖就補得出來。順帶一提封面資訊未必要看封面，有些刊直接印在目錄頁上（見 memory `cover-info-is-printed-on-the-toc-page`）（2026-09-20）
+
+- [ ] **遊戲頁卡片的圖改成長方形** — 現在是正方形，遊戲封面／截圖塞進正方形會被裁掉。站上已有 `CoverPlaceholder` 用 `aspect-[3/4]`，比例要不要一致一起決定。頁面在 `src/app/(public)/games/page.tsx`（2026-09-20）
+
+- [ ] **雜誌列表頁的期數顯示要重新規劃** — 現在只講一個數字，但試刊與特刊不算本刊（見 data-conventions 的「刊種」與「已知總期數」），要想清楚列表上怎麼同時說得出本刊數、試刊／特刊數與已知總數（2026-09-20）
+
+- [ ] **《攻略月刊》NO.7、NO.8 以推定方式建立** — 站上有 3（1994-11）、4（1994-12）、5（1995-01）、6（1995-02）、9（1995-05），中間缺 7、8。月刊節奏推得出 1995-03 與 1995-04，日期標 EDTF `~`、依據寫進備註（2026-09-20）
+
+- [ ] **遊戲索引頁的檢索要整體重想，第一個缺口是平台篩選** — `/games` 現在只有三個維度：名稱關鍵字、「全部／多篇報導」、依名稱或文章數排序（`src/lib/game-browse.ts`）。`game-browse.ts` 的檔頭註解寫得明白：當初不做其他篩選是因為「欄位幾乎都空的，給空的控制項等於沒給」——**那個前提 2026-09-20 起不成立了**，`Game.platforms` 已寫入 1,353 筆、`developer`／`publisher`／`genre`／`coverImage` 也從 cdosgame 補了 29 筆。至少要加平台篩選（用 `displayPlatforms` 的粗代號，見 [docs/backlog/game-platforms.md](docs/backlog/game-platforms.md)），但別一個一個補控制項——連同「有封面／有外部連結／有出現年代」這些面向、以及篩選器堆到四五個之後版面怎麼擺（chip 列還是側欄？要不要顯示已選條件？），一起規劃過再動（2026-09-20）
 
 ---

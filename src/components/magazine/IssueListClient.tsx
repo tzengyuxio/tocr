@@ -153,15 +153,15 @@ function SortableRow({
           {issue.title || "-"}
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="whitespace-nowrap">
         {formatEdtf(issue.publishDate) || "-"}
       </TableCell>
-      <TableCell>{issue._count.articles} 篇</TableCell>
+      <TableCell className="whitespace-nowrap">{issue._count.articles} 篇</TableCell>
       {/* Pinned to the right edge of the scrollport: on a window too narrow for
           the rest of the columns the table still scrolls, and the buttons are
           the one thing that must not scroll away. Opaque, or the cells passing
           underneath show through. */}
-      <TableCell className="sticky right-0 bg-card">
+      <TableCell className="sticky right-0 whitespace-nowrap bg-card">
         <div className="flex gap-1">
           <Button asChild variant="ghost" size="icon" title="編輯單期">
             <Link href={`/admin/magazines/${magazineId}/issues/${issue.id}`}>

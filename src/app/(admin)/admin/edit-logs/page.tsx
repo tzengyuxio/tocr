@@ -202,13 +202,13 @@ export default async function EditLogsPage({
                         )}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <span className="flex items-center gap-1.5">
                         {actionIcon(log.action)}
                         {actionLabel(log.action)}
                       </span>
                     </TableCell>
-                    <TableCell>{entityLabel(log.entityType)}</TableCell>
+                    <TableCell className="whitespace-nowrap">{entityLabel(log.entityType)}</TableCell>
                     <TableCell className="max-w-xs truncate">
                       <EditLogTargetLink target={targetOf(log)} />
                     </TableCell>
