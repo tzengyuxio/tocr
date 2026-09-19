@@ -157,7 +157,11 @@ export default async function GamesPage({
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {games.map((game) => (
               <Link key={game.id} href={`/games/${game.slug}`}>
-                <Card className="h-full transition-shadow hover:shadow-md">
+                {/* py-0：`Card` 預設帶 `py-5`，卡片因此比內容高出 42px。縮圖還是
+                    56px 方框時文字區撐得比較滿、看不太出來，換成 72×96 之後那段
+                    留白就明顯了（量到 Card 162 / 內容 120 / 圖 96 / 文字 44）。
+                    要收的是 Card 自己的 padding，不是圖——圖沒有 margin。 */}
+                <Card className="h-full py-0 transition-shadow hover:shadow-md">
                   <CardContent className="flex items-center gap-3 p-3">
                     {/* 3:4 and 72px wide, the same shape the game page gives a
                         cover: a box shot cropped into a square loses its title.
