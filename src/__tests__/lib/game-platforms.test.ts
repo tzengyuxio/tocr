@@ -1,4 +1,5 @@
 import {
+  displayPlatforms,
   familyOf,
   PLATFORM_CODES,
   PLATFORM_FAMILIES,
@@ -87,5 +88,25 @@ describe("PLATFORM_FAMILIES", () => {
 
   it("PC 家族收得住四種電腦寫法", () => {
     expect(PLATFORM_FAMILIES.PC).toEqual(["DOS", "WIN", "PC98", "APPLE2", "PC"]);
+  });
+});
+
+describe("displayPlatforms", () => {
+  it("把 PC 家族併成一個 PC", () => {
+    expect(displayPlatforms(["DOS", "WIN"])).toEqual(["PC"]);
+    expect(displayPlatforms(["DOS", "WIN", "PC98", "APPLE2", "PC"])).toEqual(["PC"]);
+  });
+
+  // 換成家族名會變成「索尼」「任天堂」，那是廠商不是平台。
+  it("主機代號原樣顯示，不換成家族名", () => {
+    expect(displayPlatforms(["PS3", "X360", "3DS"])).toEqual(["PS3", "X360", "3DS"]);
+  });
+
+  it("混著的時候 PC 出現在第一個 PC 家族代號的位置", () => {
+    expect(displayPlatforms(["PS2", "DOS", "WIN", "SS"])).toEqual(["PS2", "PC", "SS"]);
+  });
+
+  it("空的還是空的", () => {
+    expect(displayPlatforms([])).toEqual([]);
   });
 });

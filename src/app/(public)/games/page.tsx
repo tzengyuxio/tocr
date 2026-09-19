@@ -17,6 +17,7 @@ import {
   parseGameSort,
 } from "@/lib/game-browse";
 import { Gamepad2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { displayPlatforms } from "@/lib/game-platforms";
 
 const PAGE_SIZE = 40;
 
@@ -182,7 +183,7 @@ export default async function GamesPage({
                         <span className="text-xs text-muted-foreground">
                           {game._count.articleGames} 篇相關文章
                         </span>
-                        {game.platforms.slice(0, 2).map((p) => (
+                        {displayPlatforms(game.platforms).slice(0, 2).map((p) => (
                           <Badge key={p} variant="outline" className="text-[10px] px-1 py-0">
                             {p}
                           </Badge>

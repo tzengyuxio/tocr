@@ -157,3 +157,24 @@ export function familyOf(code: PlatformCode): string | undefined {
     (codes as string[]).includes(code)
   )?.[0];
 }
+
+/**
+ * 給人看的平台列表：`DOS`／`WIN`／`PC98`／`APPLE2` 併成一個「PC」。
+ *
+ * 這是「存細的、顯示粗的」的顯示那半。**只收斂 PC 家族**——其餘代號本身就是
+ * 讀者認得的寫法（`PS3`、`3DS`、`DC`），把它們換成家族名會變成「索尼」「任天堂」，
+ * 那是廠商不是平台。家族表的其他分組是給篩選與分類用的，不是拿來顯示的。
+ *
+ * 保持原本的順序，PC 出現在第一個 PC 家族代號的位置。
+ */
+export function displayPlatforms(codes: string[]): string[] {
+  const pcFamily = new Set<string>(PLATFORM_FAMILIES.PC);
+  const shown: string[] = [];
+
+  for (const code of codes) {
+    const label = pcFamily.has(code) ? "PC" : code;
+    if (!shown.includes(label)) shown.push(label);
+  }
+
+  return shown;
+}

@@ -25,6 +25,7 @@ import {
   parseArticleDirection,
   parseArticleSort,
 } from "@/lib/article-listing";
+import { displayPlatforms } from "@/lib/game-platforms";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -183,7 +184,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
             <div className="mt-4">
               <span className="text-sm text-muted-foreground">平台：</span>
               <div className="mt-1 flex flex-wrap gap-1">
-                {game.platforms.map((p) => (
+                {displayPlatforms(game.platforms).map((p) => (
                   <Badge key={p} variant="outline">
                     {p}
                   </Badge>
