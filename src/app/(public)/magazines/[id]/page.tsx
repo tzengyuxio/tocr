@@ -364,7 +364,11 @@ export default async function MagazineDetailPage({
                 ))}
             </div>
           )}
-          <ExternalLinkList links={magazine.links} className="mt-4" />
+          <ExternalLinkList
+            links={magazine.links}
+            subject={magazine.name}
+            className="mt-4"
+          />
         </div>
       </div>
 

@@ -86,3 +86,24 @@ describe("externalLinkEntryName", () => {
     expect(wiki("https://en.wikipedia.org/wiki/%E0%A4%A")).toBeNull();
   });
 });
+
+// 擋重複的比對寫在 ExternalLinkList 裡，但判準屬於這一層：一字不差才算同名。
+describe("entry name against the page's own subject", () => {
+  const cdos = (label: string) =>
+    externalLinkEntryName({
+      site: "CDOSGAME",
+      url: "https://cdosgame.simagame.me/games/cdg-0030",
+      label,
+    });
+
+  // 上游與站上多半同名：2026-09-20 回填的 1,192 條裡約 83% 一字不差。
+  it("gives back the upstream title as stored", () => {
+    expect(cdos("神奇王國")).toBe("神奇王國");
+  });
+
+  // 括號是消歧義用的，剝掉再比會把最該顯示的那幾條擋掉。
+  it("keeps a disambiguating parenthetical distinct from the bare name", () => {
+    expect(cdos("德軍總部（Castle Wolfenstein）")).not.toBe("德軍總部");
+    expect(cdos("異形（Alien Syndrome）")).toBe("異形（Alien Syndrome）");
+  });
+});

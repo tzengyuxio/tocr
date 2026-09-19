@@ -215,7 +215,11 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
             <p className="mt-4 text-muted-foreground">{game.description}</p>
           )}
 
-          <ExternalLinkList links={game.externalLinks} className="mt-4" />
+          <ExternalLinkList
+            links={game.externalLinks}
+            subject={game.name}
+            className="mt-4"
+          />
         </div>
       </div>
 
