@@ -393,6 +393,13 @@ const MAGAZINE: MagazineEventInput[] = [
     source: "Magazine.description（電視遊樂報導）",
   },
   {
+    magazineSlug: "dengeki-oh-tw",
+    at: "2000-12",
+    title: "接手《電擊Dreamcast》",
+    note: "電擊DC 一說 2000-11 停刊，兩刊同屬青文，圖上接在同一欄。",
+    source: "收藏者轉述；Magazine.description（電擊SEGA SATURN）",
+  },
+  {
     magazineSlug: "game-paradise",
     at: "1997-02",
     title: "封面不再標《ファミマガ》授權",
@@ -518,12 +525,6 @@ export interface MagazineLink {
  * 不值得為了三五筆長一張表。
  */
 export const MAGAZINE_LINKS: MagazineLink[] = [
-  {
-    from: "dengeki-ss-tw",
-    to: "dengeki-oh-tw",
-    label: "接手",
-    source: "收藏者轉述：《電擊Dreamcast》2000-11 停刊，同社的《電擊王》2000-12 創刊接上",
-  },
   {
     from: "wolf",
     to: "fashion-game",
