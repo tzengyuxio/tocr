@@ -325,7 +325,8 @@ export default async function IssueDetailPage({ params }: PageProps) {
                 credit 那一列的 label 讀值決定，見下面的 splitCoverCredit。
                 標籤與值之間用全形冒號而不是空白：《電玩通》封面把日本藝人的姓名
                 分寫成「水樹 奈奈」，值裡本來就有空白，再用空白當分隔就讀不出
-                哪一個是分隔。 */}
+                哪一個是分隔。標籤再加粗一階——冒號在窄欄裡不夠分，整列同一個
+                重量讀起來是一串連著的灰字。 */}
             {(issue.coverGames.length > 0 ||
               issue.coverSubjects.length > 0 ||
               issue.coverCredit) && (
@@ -336,19 +337,19 @@ export default async function IssueDetailPage({ params }: PageProps) {
                 <dl className="space-y-0.5 text-sm text-muted-foreground">
                   {issue.coverGames.length > 0 && (
                     <div className="flex">
-                      <dt className="shrink-0">遊戲：</dt>
+                      <dt className="shrink-0 font-semibold">遊戲：</dt>
                       <dd className="min-w-0">{issue.coverGames.join("、")}</dd>
                     </div>
                   )}
                   {issue.coverSubjects.length > 0 && (
                     <div className="flex">
-                      <dt className="shrink-0">人物：</dt>
+                      <dt className="shrink-0 font-semibold">人物：</dt>
                       <dd className="min-w-0">{issue.coverSubjects.join("、")}</dd>
                     </div>
                   )}
                   {issue.coverCredit && (
                     <div className="flex">
-                      <dt className="shrink-0">{coverCreditRole(issue.coverCredit)}：</dt>
+                      <dt className="shrink-0 font-semibold">{coverCreditRole(issue.coverCredit)}：</dt>
                       <dd className="min-w-0">{coverCreditName(issue.coverCredit)}</dd>
                     </div>
                   )}
