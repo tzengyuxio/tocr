@@ -30,15 +30,18 @@ import { formatIssueNumber } from "@/lib/issue-number";
  * 不是另外再畫一次的簡表——對照用的清單跟頁面上的清單長得不一樣，就沒有對照的
  * 意義了。
  *
- * 跟圖有關的三顆（翻頁、原尺寸、雙頁）都貼在圖上，不在上面那條標題列：它們改的
- * 是左欄看到的東西，手要伸過大半個螢幕去按不合理。標題列只留關得掉的那顆。
+ * 所有控制項都貼在圖上，沒有頁首那一列：它們改的是左欄看到的東西，手要伸過大半個
+ * 螢幕去按不合理，而讓出來的那一列全給了掃描。
  */
 export function TocCompare({
   images,
+  magazineName,
   issueNumber,
   children,
 }: {
   images: string[];
+  /** 這一期當時的刊名，不是今天的通行名——呼叫端已經算好了。 */
+  magazineName: string;
   issueNumber: string;
   children: ReactNode;
 }) {
@@ -124,35 +127,21 @@ export function TocCompare({
           showCloseButton={false}
           className="flex h-[100dvh] w-screen max-w-none flex-col gap-0 rounded-none border-0 bg-background p-0 sm:max-w-none"
         >
-          <DialogTitle className="sr-only">
-            {formatIssueNumber(issueNumber)} {openIndex !== null && label(openIndex)}
-          </DialogTitle>
-
-          <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2">
-            <span className="text-sm font-medium">
-              {formatIssueNumber(issueNumber)} 目錄對照
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-auto h-7 w-7"
-              aria-label="關閉"
-              onClick={() => setOpenIndex(null)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
           {/* 窄螢幕上下疊：圖固定在上面一塊，目錄在底下自己捲。min-h-0 是必要的
               ——flex 子項的預設 min-height 是 auto，少了它兩欄都不會捲，整個
               視窗被內容撐長。 */}
           <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-            <div className="relative h-[42dvh] shrink-0 bg-black/90 lg:h-auto lg:w-[62%] lg:shrink">
+            <div className="relative h-[45dvh] shrink-0 bg-black/90 lg:h-auto lg:w-[62%] lg:shrink">
+              {/* 標題也貼在圖上。它與控制項各佔上下一條，換來的是整個視窗少一列
+                  頁首——掃描本來就是這個畫面裡最值得給空間的東西。 */}
+              <DialogTitle className="absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-black/70 px-3 py-1 text-sm font-medium text-white">
+                {magazineName} {formatIssueNumber(issueNumber)} 目錄對照
+              </DialogTitle>
               {/* 捲的是 inset-0 這一層，不是外框：原尺寸時圖比欄寬，而那排控制項
                   得留在原地，不能跟著捲出畫面。 */}
               {/* 底下留給那排控制項的一條，不然貼齊高度時膠囊會壓在掃描的最後
                   一行字上。內距而不是縮圖：置中是在扣掉內距之後算的。 */}
-              <div className="absolute inset-0 flex overflow-auto p-2 pb-14 lg:p-4 lg:pb-16">
+              <div className="absolute inset-0 flex overflow-auto p-2 pt-10 pb-14 lg:p-4 lg:pt-14 lg:pb-16">
                 {/* m-auto 而不是 items/justify-center：置中的 flex 子項一旦比容器
                     大，捲到頭也看不到它的左上角，而原尺寸的掃描正是比容器大。 */}
                 <div className="m-auto flex items-start gap-2">
@@ -172,7 +161,7 @@ export function TocCompare({
                       className={
                         actualSize
                           ? "max-w-none"
-                          : `max-h-[calc(42dvh-5.5rem)] w-auto object-contain lg:max-h-[calc(100dvh-10rem)] ${
+                          : `max-h-[calc(45dvh-6rem)] w-auto object-contain lg:max-h-[calc(100dvh-7.5rem)] ${
                               shown.length > 1
                                 ? "max-w-[46vw] lg:max-w-[29vw]"
                                 : "max-w-full"
@@ -230,6 +219,10 @@ export function TocCompare({
                     ) : (
                       <Maximize2 className="h-4 w-4" />
                     )}
+                  </PillButton>
+                  <span className="mx-1 h-4 w-px bg-white/30" aria-hidden />
+                  <PillButton label="關閉" onClick={() => setOpenIndex(null)}>
+                    <X className="h-4 w-4" />
                   </PillButton>
                 </div>
               </div>

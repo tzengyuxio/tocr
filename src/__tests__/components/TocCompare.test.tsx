@@ -7,7 +7,7 @@ const list = <ul><li>p.12 電玩快打</li></ul>;
 describe("TocCompare", () => {
   it("renders nothing without scans", () => {
     const { container } = render(
-      <TocCompare images={[]} issueNumber="12">
+      <TocCompare images={[]} magazineName="軟體世界" issueNumber="12">
         {list}
       </TocCompare>
     );
@@ -17,7 +17,7 @@ describe("TocCompare", () => {
   it("opens the scan beside the index it describes", async () => {
     const user = userEvent.setup();
     render(
-      <TocCompare images={["/a.jpg", "/b.jpg"]} issueNumber="12">
+      <TocCompare images={["/a.jpg", "/b.jpg"]} magazineName="軟體世界" issueNumber="12">
         {list}
       </TocCompare>
     );
@@ -33,7 +33,7 @@ describe("TocCompare", () => {
   it("pages through the scans without closing", async () => {
     const user = userEvent.setup();
     render(
-      <TocCompare images={["/a.jpg", "/b.jpg"]} issueNumber="12">
+      <TocCompare images={["/a.jpg", "/b.jpg"]} magazineName="軟體世界" issueNumber="12">
         {list}
       </TocCompare>
     );
@@ -50,7 +50,7 @@ describe("TocCompare", () => {
 
   it("names a lone scan without a page number", () => {
     render(
-      <TocCompare images={["/a.jpg"]} issueNumber="12">
+      <TocCompare images={["/a.jpg"]} magazineName="軟體世界" issueNumber="12">
         {list}
       </TocCompare>
     );
@@ -61,7 +61,7 @@ describe("TocCompare", () => {
   it("lays two scans side by side, and pages by two", async () => {
     const user = userEvent.setup();
     render(
-      <TocCompare images={["/a.jpg", "/b.jpg", "/c.jpg", "/d.jpg"]} issueNumber="12">
+      <TocCompare images={["/a.jpg", "/b.jpg", "/c.jpg", "/d.jpg"]} magazineName="軟體世界" issueNumber="12">
         {list}
       </TocCompare>
     );
@@ -80,7 +80,7 @@ describe("TocCompare", () => {
   it("backs up a page rather than opening a spread with nothing on the right", async () => {
     const user = userEvent.setup();
     render(
-      <TocCompare images={["/a.jpg", "/b.jpg"]} issueNumber="12">
+      <TocCompare images={["/a.jpg", "/b.jpg"]} magazineName="軟體世界" issueNumber="12">
         {list}
       </TocCompare>
     );

@@ -26,6 +26,7 @@ interface IssueImagesProps {
   coverImage: string | null;
   tocImages: string[];
   photos: IssuePhoto[];
+  magazineName: string;
   issueNumber: string;
   /** 這一期的目錄，交給掃描對照視窗當右欄用。見 `TocCompare`。 */
   tocList: ReactNode;
@@ -40,6 +41,7 @@ export function IssueImages({
   coverImage,
   tocImages,
   photos,
+  magazineName,
   issueNumber,
   tocList,
 }: IssueImagesProps) {
@@ -95,7 +97,11 @@ export function IssueImages({
           />
         )}
 
-        <TocCompare images={tocImages} issueNumber={issueNumber}>
+        <TocCompare
+          images={tocImages}
+          magazineName={magazineName}
+          issueNumber={issueNumber}
+        >
           {tocList}
         </TocCompare>
 

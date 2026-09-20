@@ -316,6 +316,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
               coverImage={issue.coverImage}
               tocImages={issue.tocImages}
               photos={withPublicSourceUrls(issue.photos)}
+              magazineName={magazineName}
               issueNumber={issue.issueNumber}
               tocList={tocList}
             />
