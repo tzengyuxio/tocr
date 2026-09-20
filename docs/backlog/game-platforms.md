@@ -44,10 +44,21 @@ created: 2026-09-20
 | `GC` | GameCube | `GC` |
 | `WII` | Wii | `Wii` |
 | `WIIU` | Wii U | `Wii U`、`WiiU` |
+| `NS` | Nintendo Switch | 三份來源都沒有，見下 |
 | `GB` | Game Boy | `GB` |
 | `GBA` | Game Boy Advance | `GBA` |
 | `NDS` | Nintendo DS | `NDS`、`NINTENDO DS` |
 | `3DS` | Nintendo 3DS | `3DS`、`NINTENDO 3DS` |
+
+`NS` 是這張表上唯一**沒有現有值可抄**的一條（yuxio 2026-09-20 要求補上）。站上 49 個
+`PLATFORM` 標籤最新只到 `Wii U`，famitsu 索引的 `platform_tag` 也停在 `Xbox One`，
+cdosgame 只在內文寫過「Nintendo Switch」、`platform_note` 從沒出現過。所以代號是照
+這張表自己的慣例定的，不是從來源歸納的。
+
+取 `NS` 而不是 `SWITCH`：中文遊戲媒體通稱就是 NS，長度也與同族的 `FC`／`GC`／`NDS`
+一致。`WII`／`WIIU` 那兩條是產品名直接大寫，與 `N64`／`NDS`／`3DS` 的簡寫本來就並存，
+兩種寫法都有先例，所以這裡取讀者認得的那個。**目前沒有任何一筆資料用到 `NS`**，
+真要改成別的寫法只要改這張表，不必動資料。
 
 ### 索尼
 
@@ -137,7 +148,7 @@ HTML5 都算，不細分——載體的世代差異對雜誌索引沒有意義�
 代號存細的，**顯示與篩選時收斂**。一張常數表就夠，不需要欄位：
 
     PC 家族    DOS, WIN, PC98, APPLE2, PC
-    任天堂      FC, SFC, N64, GC, WII, WIIU, GB, GBA, NDS, 3DS
+    任天堂      FC, SFC, N64, GC, WII, WIIU, NS, GB, GBA, NDS, 3DS
     隨身裝置    IOS, ANDROID, PALM
     網頁        WEB
     ...
