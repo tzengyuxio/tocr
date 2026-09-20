@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -23,17 +21,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit, Trash2, Loader2, Tags, Eye, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -41,6 +31,7 @@ import { TAG_TYPES } from "@/lib/tag-colors";
 import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip, TagTypeChip } from "@/components/chips";
 import { ListPager } from "@/components/admin/ListPager";
+import { TagForm } from "@/components/tag/TagForm";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Tag {
@@ -65,14 +56,6 @@ export default function TagsPage() {
   const [total, setTotal] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    type: "GENERAL",
-    description: "",
-  });
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [expandedTagId, setExpandedTagId] = useState<string | null>(null);
   const [expandedData, setExpandedData] = useState<{
     articleTags: {
@@ -139,58 +122,6 @@ export default function TagsPage() {
     fetchTags();
   }, [fetchTags]);
 
-  const handleOpenCreate = () => {
-    setEditingTag(null);
-    setFormData({ name: "", slug: "", type: "GENERAL", description: "" });
-    setError(null);
-    setIsDialogOpen(true);
-  };
-
-  const handleOpenEdit = (tag: Tag) => {
-    setEditingTag(tag);
-    setFormData({
-      name: tag.name,
-      slug: tag.slug,
-      type: tag.type,
-      description: tag.description || "",
-    });
-    setError(null);
-    setIsDialogOpen(true);
-  };
-
-  const handleSave = async () => {
-    if (!formData.name.trim() || !formData.slug.trim()) {
-      setError("名稱和 Slug 為必填");
-      return;
-    }
-
-    setIsSaving(true);
-    setError(null);
-
-    try {
-      const url = editingTag ? `/api/tags/${editingTag.id}` : "/api/tags";
-      const method = editingTag ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "操作失敗");
-      }
-
-      setIsDialogOpen(false);
-      fetchTags();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "發生未知錯誤");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm("確定要刪除此標籤嗎？")) return;
 
@@ -209,12 +140,6 @@ export default function TagsPage() {
     }
   };
 
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-      .replace(/^-|-$/g, "");
-  };
 
 
   return (
@@ -224,7 +149,12 @@ export default function TagsPage() {
           <h2 className="text-2xl font-bold tracking-tight">標籤管理</h2>
           <p className="text-muted-foreground">管理文章標籤（人物、活動、系列等）</p>
         </div>
-        <Button onClick={handleOpenCreate}>
+        <Button
+          onClick={() => {
+            setEditingTag(null);
+            setIsDialogOpen(true);
+          }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           新增標籤
         </Button>
@@ -307,7 +237,10 @@ export default function TagsPage() {
                               variant="ghost"
                               size="icon"
                               title="編輯標籤"
-                              onClick={() => handleOpenEdit(tag)}
+                              onClick={() => {
+                                setEditingTag(tag);
+                                setIsDialogOpen(true);
+                              }}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -386,6 +319,8 @@ export default function TagsPage() {
       </Card>
 
       {/* 新增/編輯對話框 */}
+      {/* 新增／編輯對話框。表單是 <TagForm>，與 /admin/tags/[id] 同一個元件。
+          key 讓每次換一筆就重新掛載——欄位值是 useState 初始化的。 */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -394,89 +329,27 @@ export default function TagsPage() {
               {editingTag ? "修改標籤資訊" : "建立新的標籤"}
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label>名稱 *</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    name: e.target.value,
-                    slug: editingTag ? formData.slug : generateSlug(e.target.value),
-                  });
-                }}
-                placeholder="標籤名稱"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Slug *</Label>
-              <Input
-                value={formData.slug}
-                onChange={(e) =>
-                  setFormData({ ...formData, slug: e.target.value })
-                }
-                placeholder="url-friendly-slug"
-              />
-              <p className="text-xs text-muted-foreground">
-                用於 URL，只能包含小寫字母、數字、中文和連字號
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>類型</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, type: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TAG_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>描述</Label>
-              <Input
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="標籤描述（選填）"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-              disabled={isSaving}
-            >
-              取消
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editingTag ? "儲存" : "建立"}
-            </Button>
-          </DialogFooter>
+          <TagForm
+            key={editingTag?.id ?? "new"}
+            mode={editingTag ? "edit" : "create"}
+            tagId={editingTag?.id}
+            initialData={
+              editingTag
+                ? {
+                    name: editingTag.name,
+                    slug: editingTag.slug,
+                    type: editingTag.type,
+                    description: editingTag.description ?? "",
+                  }
+                : undefined
+            }
+            variant="dialog"
+            onSaved={() => {
+              setIsDialogOpen(false);
+              fetchTags();
+            }}
+            onCancel={() => setIsDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>

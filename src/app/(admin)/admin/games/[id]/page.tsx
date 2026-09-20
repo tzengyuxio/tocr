@@ -30,6 +30,40 @@ import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip } from "@/components/chips";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { LinkSection, type LinkRow } from "@/components/LinkSection";
+import { GameForm, type GameFormValues } from "@/components/game/GameForm";
+import { toast } from "sonner";
+
+/** 這一筆 → 表單的欄位值。與列表頁那支同一件事，各自靠著自己的型別。 */
+function toFormValues(game: {
+  name: string;
+  nameOriginal: string | null;
+  nameEn: string | null;
+  aliases: string[];
+  slug: string;
+  releaseDate: string | null;
+  platforms: string[];
+  developer: string | null;
+  publisher: string | null;
+  genres: string[];
+  description: string | null;
+  coverImage: string | null;
+}): GameFormValues {
+  return {
+    name: game.name,
+    nameOriginal: game.nameOriginal ?? "",
+    nameEn: game.nameEn ?? "",
+    aliases: game.aliases,
+    slug: game.slug,
+    // <input type="date"> 只吃 yyyy-mm-dd，API 回的是 ISO 時刻。
+    releaseDate: game.releaseDate ? game.releaseDate.split("T")[0] : "",
+    platforms: game.platforms,
+    developer: game.developer ?? "",
+    publisher: game.publisher ?? "",
+    genres: game.genres,
+    description: game.description ?? "",
+    coverImage: game.coverImage ?? "",
+  };
+}
 
 export default function GameDetailPage() {
   const params = useParams<{ id: string }>();
@@ -39,10 +73,14 @@ export default function GameDetailPage() {
     nameOriginal: string | null;
     nameEn: string | null;
     slug: string;
+    aliases: string[];
+    releaseDate: string | null;
     platforms: string[];
     developer: string | null;
     publisher: string | null;
     genres: string[];
+    description: string | null;
+    coverImage: string | null;
     externalLinks: LinkRow[];
     _count: { articleGames: number };
   } | null>(null);
@@ -62,10 +100,14 @@ export default function GameDetailPage() {
           nameOriginal: data.nameOriginal,
           nameEn: data.nameEn,
           slug: data.slug,
+          aliases: data.aliases ?? [],
+          releaseDate: data.releaseDate,
           platforms: data.platforms,
           developer: data.developer,
           publisher: data.publisher,
           genres: data.genres,
+          description: data.description,
+          coverImage: data.coverImage,
           externalLinks: data.externalLinks ?? [],
           _count: data._count,
         });
@@ -134,6 +176,27 @@ export default function GameDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 編輯就在這一頁，與雜誌、單期、文章同一個做法：表單在上、關聯內容在下。
+          先前這頁只能看，要改得回列表頁重新搜尋一次同一款遊戲。 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>編輯遊戲</CardTitle>
+          <CardDescription>修改遊戲資訊</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <GameForm
+            mode="edit"
+            gameId={game.id}
+            initialData={toFormValues(game)}
+            onSaved={() => {
+              toast.success("已儲存");
+              // 站外連結與相關文章也在這一頁，所以重取整筆而不是只更新表單。
+              load();
+            }}
+          />
+        </CardContent>
+      </Card>
 
       <LinkSection
         owner={{ gameId: game.id }}

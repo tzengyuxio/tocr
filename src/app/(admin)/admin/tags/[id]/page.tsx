@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ import { groupArticles, type ArticleData, type GroupedData } from "@/lib/group-a
 import { formatEdtf } from "@/lib/edtf";
 import { CategoryChip, TagTypeChip } from "@/components/chips";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { TagForm } from "@/components/tag/TagForm";
+import { toast } from "sonner";
 
 export default function TagDetailPage() {
   const params = useParams<{ id: string }>();
@@ -42,32 +44,35 @@ export default function TagDetailPage() {
   const [grouped, setGrouped] = useState<GroupedData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`/api/tags/${params.id}?all=true`);
-        const data = await res.json();
-        setTag({
-          id: data.id,
-          name: data.name,
-          slug: data.slug,
-          type: data.type,
-          description: data.description,
-          _count: data._count,
-        });
-        const articles = data.articleTags.map(
-          (at: { article: ArticleData }) => at.article
-        );
-        setGrouped(groupArticles(articles));
-      } catch (err) {
-        console.error("Failed to load tag:", err);
-      } finally {
-        setIsLoading(false);
-      }
+  // 抽成 callback 而不是留在 effect 裡：存檔之後要重取，而這頁的資料是自己
+  // fetch 的，router.refresh() 帶不動它。（與遊戲詳情頁同一個理由。）
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/tags/${params.id}?all=true`);
+      const data = await res.json();
+      setTag({
+        id: data.id,
+        name: data.name,
+        slug: data.slug,
+        type: data.type,
+        description: data.description,
+        _count: data._count,
+      });
+      const articles = data.articleTags.map(
+        (at: { article: ArticleData }) => at.article
+      );
+      setGrouped(groupArticles(articles));
+    } catch (err) {
+      console.error("Failed to load tag:", err);
+    } finally {
+      setIsLoading(false);
     }
-    load();
   }, [params.id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (isLoading) {
     return (
@@ -103,6 +108,30 @@ export default function TagDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 編輯就在這一頁，與雜誌、單期、文章同一個做法：表單在上、關聯內容在下。 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>編輯標籤</CardTitle>
+          <CardDescription>修改標籤資訊</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TagForm
+            mode="edit"
+            tagId={tag.id}
+            initialData={{
+              name: tag.name,
+              slug: tag.slug,
+              type: tag.type,
+              description: tag.description ?? "",
+            }}
+            onSaved={() => {
+              toast.success("已儲存");
+              load();
+            }}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
