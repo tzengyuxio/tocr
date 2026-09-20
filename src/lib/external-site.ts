@@ -11,6 +11,7 @@ export const EXTERNAL_SITE_VALUES = [
   "CDOSGAME",
   "NCL",
   "WIKIPEDIA",
+  "BAHAMUT",
   "OTHER",
 ] as const;
 
@@ -26,6 +27,7 @@ export const EXTERNAL_SITE_LABELS: Record<ExternalSite, string> = {
   CDOSGAME: "中文 DOS 遊戲資料庫",
   NCL: "國家圖書館",
   WIKIPEDIA: "維基百科",
+  BAHAMUT: "巴哈姆特",
   OTHER: "其他",
 };
 
