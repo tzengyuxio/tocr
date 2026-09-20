@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import {
   BookOpen,
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useLightboxKeys } from "@/components/ui/lightbox";
+import { useImagePan, useLightboxKeys } from "@/components/ui/lightbox";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 /**
@@ -54,43 +54,8 @@ export function TocCompare({
   const [spread, setSpread] = useState(false);
   const open = openIndex !== null;
 
-  // 原尺寸時圖比欄大，左欄成了一個捲動區。捲軸還在，但看著一張圖的人第一個動作是
-  // 抓住它拖——所以按住拖曳直接改 scrollLeft/Top。
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ x: number; y: number; left: number; top: number } | null>(
-    null
-  );
-
-  const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    const el = scrollRef.current;
-    // 觸控與筆不接手：手指本來就能捲，插進來只會跟原生的慣性捲動打架。
-    if (!el || event.pointerType !== "mouse" || event.button !== 0) return;
-    if (el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight) {
-      return;
-    }
-    drag.current = {
-      x: event.clientX,
-      y: event.clientY,
-      left: el.scrollLeft,
-      top: el.scrollTop,
-    };
-    el.setPointerCapture(event.pointerId);
-  };
-
-  const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    const el = scrollRef.current;
-    const from = drag.current;
-    if (!el || !from) return;
-    // 拖的是圖不是捲軸，所以位移是反過來的：往左拖＝往右看。
-    el.scrollLeft = from.left - (event.clientX - from.x);
-    el.scrollTop = from.top - (event.clientY - from.y);
-  };
-
-  const endDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag.current) return;
-    drag.current = null;
-    scrollRef.current?.releasePointerCapture(event.pointerId);
-  };
+  // 原尺寸時圖比欄大，左欄成了一個捲動區；抓住圖拖著看跟公開頁的燈箱同一套。
+  const { ref: panRef, panProps } = useImagePan();
 
   // 雙頁時翻的是兩頁，而且 `openIndex` 一律是左邊那一張。
   const pageStep = spread ? 2 : 1;
@@ -180,11 +145,8 @@ export function TocCompare({
               {/* 底下留給那排控制項的一條，不然貼齊高度時膠囊會壓在掃描的最後
                   一行字上。內距而不是縮圖：置中是在扣掉內距之後算的。 */}
               <div
-                ref={scrollRef}
-                onPointerDown={startDrag}
-                onPointerMove={moveDrag}
-                onPointerUp={endDrag}
-                onPointerCancel={endDrag}
+                ref={panRef}
+                {...panProps}
                 className={`absolute inset-0 flex overflow-auto p-2 pt-10 pb-14 lg:p-4 lg:pt-14 lg:pb-16 ${
                   actualSize ? "cursor-grab select-none active:cursor-grabbing" : ""
                 }`}
