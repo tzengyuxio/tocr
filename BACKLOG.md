@@ -222,7 +222,14 @@
 
 - [ ] **nostalibrary 把電玩通 PS 系列三本併成一筆，要拆開對齊** — 上游三本共用一個 slug，這裡是三筆獨立的期刊，見 [docs/backlog/famitsu-ps-series-split.md](docs/backlog/famitsu-ps-series-split.md)（2026-08-20）
 
-- [ ] [#39] **兩個檔案超過 650 行** — `src/app/(admin)/admin/games/page.tsx` 848、`src/components/article/ArticleForm.tsx` 663（`src/app/(public)/search/page.tsx` 615 在門檻邊上）。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構。
+- [ ] [#39] **超過 650 行的檔** — 現在只剩 `src/components/article/ArticleForm.tsx` 663（`src/app/(public)/search/page.tsx` 615 在門檻邊上）。不急，也不建議為了拆而拆；列著是為了下次動到它們時順手處理，不是排一個專門的重構。
+
+  **2026-09-20 `games/page.tsx` 解決了**：931 → 555 行。抽出的是這條一直點名的
+  「新增／編輯表單那個 `<Dialog>`」——變成 `src/components/game/GameForm.tsx`，
+  而且不只是搬走：`/admin/games/[id]` 這頁原本只能看不能改，現在用同一個元件
+  當編輯表單，對話框與詳情頁共用一份。同一支 PR 用同樣的做法處理了標籤
+  （`TagForm`，tags/page.tsx 484 → 358）。剩下的 `ArticleForm.tsx` 沒有同型的
+  抽離對象——它本來就是一個表單元件，663 行是欄位多，不是混了別的職責。
 
   **2026-09-20 覆核：條件到了，而且檔案還在長。**`games/page.tsx` 從 848 漲到 **931 行**
   ——一天之內多出來的是 #162 的站外連結與 #163 的卡片改版。而這條一直在等的「一次真的要
