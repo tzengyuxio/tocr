@@ -99,9 +99,8 @@ export function GameList({
               {firstSeen ?? "—"}
             </span>
 
-            {/* 平台用家族色的外框籌碼，與遊戲卡片、上方的篩選籌碼同一組值：讀者
-                在籌碼上認得的顏色，在列裡要指同一件事。外框不是實心色塊——一頁
-                40 列，實心會讓整張表變成花的，而平台只是這一列的第三順位。
+            {/* 平台用家族色的實心籌碼，與上方篩選列選取中的籌碼同一個樣子：讀者
+                在那裡按下去認得的顏色與形狀，在列裡要指同一件事。
 
                 一列只畫三顆，多的收成 `+N`。籌碼不像文字能靠 truncate 切，切一半
                 的框看起來像畫壞了。 */}
@@ -112,8 +111,8 @@ export function GameList({
                     <Badge
                       key={code}
                       variant="outline"
-                      className="shrink-0 px-1 py-0 text-[10px] font-normal"
-                      style={{ color: platformColor(code), borderColor: platformColor(code) }}
+                      className="shrink-0 border-transparent px-1 py-0 text-[10px] font-normal text-white"
+                      style={{ backgroundColor: platformColor(code) }}
                     >
                       {code}
                     </Badge>
