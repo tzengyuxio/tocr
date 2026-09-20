@@ -127,7 +127,11 @@ function SortableRow({
           </div>
         )}
       </TableCell>
-      <TableCell className="font-medium">
+      {/* 期號不斷行。隔壁的「特輯標題」欄是 w-full max-w-0，會把寬度全吃走，
+          其他欄因此縮到 min-content——而「第 11 期」的 min-content 是一個字，
+          於是斷成三行，掛著「完備」時更明顯。出版日期與文章數兩欄早就寫了
+          whitespace-nowrap，這欄是漏的。 */}
+      <TableCell className="whitespace-nowrap font-medium">
         <div className="flex items-center gap-2">
           <Link
             href={`/admin/magazines/${magazineId}/issues/${issue.id}`}

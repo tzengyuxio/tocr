@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowDown,
   ArrowUp,
@@ -352,15 +351,19 @@ export function EditableArticleRow({
               {article.subtitle}
             </span>
           )}
+          {/* 作者跟著標題走，不進下面那排 chip。那一排裝的是分類、遊戲、標籤
+              ——站上查得到的東西，點得動、可以拿來篩；作者只是目錄上印的一段
+              文字，做成同樣的形狀等於承諾了它沒有的功能。公開單期頁早就是這個
+              寫法，兩邊看起來才是同一筆資料。 */}
+          {article.authors.length > 0 && (
+            <span className="shrink-0 text-sm text-muted-foreground">
+              ／{article.authors.join("、")}
+            </span>
+          )}
         </div>
         <div className="flex flex-wrap gap-1 mt-1">
           {article.category && (
             <CategoryChip category={article.category} className="text-xs" />
-          )}
-          {article.authors.length > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              {article.authors.join(", ")}
-            </Badge>
           )}
           {article.articleGames.map((ag) => (
             <GameChip key={ag.game.id} name={ag.game.name} className="text-xs" />
