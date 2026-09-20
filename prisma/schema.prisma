@@ -456,6 +456,7 @@ enum ExternalSite {
   CDOSGAME // 中文 DOS 遊戲資料庫
   NCL // 國家圖書館
   WIKIPEDIA
+  BAHAMUT // 巴哈姆特
   OTHER
 }
 
