@@ -134,7 +134,9 @@
 
 - [ ] **加入《電玩双週刊》資料** — 匯入《電玩宅速配》的前身《電玩双週刊》，見 [docs/backlog/gamexpress-early-issues.md](docs/backlog/gamexpress-early-issues.md)（2026-08-23）
 
-- [ ] **《遊戲天堂》／《Game天堂EX》待建，缺實體本** — 藏家清單有、站上沒有的一組刊系，見 [docs/backlog/game-paradise-ex.md](docs/backlog/game-paradise-ex.md)（2026-08-23）
+- [ ] **「Game天堂!」是刊頭美術寫法還是並列刊名** — 這決定 slug 走 `youxi-tiantang`（規則 3）還是 `game-tiantang`（規則 1），判準是那一段印在哪裡，要看封面與版權頁怎麼並排。刊本身 2026-09-21 已整成一條刊系（EX 併成刊名時期），只剩這一題，見 [docs/backlog/game-paradise-ex.md](docs/backlog/game-paradise-ex.md)（2026-08-23，2026-09-21 收斂）
+
+- [ ] **《Game天堂EX》的書稿資料卡要併回 16 號還是留成一節** — `docs/book/magazines/21-game-paradise-ex.md` 指著一筆 2026-09-21 併掉的刊，站上已經沒有 `game-paradise-ex` 這本。併回 `16-game-paradise.md` 會動到後面所有刊的 `order`，留成一節則要決定 tier 與頁數怎麼算——兩本都還是「未撰稿」，寫的時候一起決定（2026-09-21）
 
 - [ ] **《玩家快訊》／《超級玩家》整條刊系沒收** — 尖端電腦類的一本，站上完全沒有（2026-08-24）。
 

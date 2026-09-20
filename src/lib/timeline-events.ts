@@ -393,11 +393,11 @@ const MAGAZINE: MagazineEventInput[] = [
     source: "Magazine.description（電視遊樂報導）",
   },
   {
-    magazineSlug: "game-paradise-ex",
+    magazineSlug: "game-paradise",
     at: "1997-02",
-    title: "改版，封面不再標《ファミマガ》授權",
-    note: "《Game天堂!》的改版，期號從創刊號重編，刊期由雙週改月刊。授權關係的改變可能正是改版的原因。",
-    source: "Magazine.description（Game天堂EX）",
+    title: "封面不再標《ファミマガ》授權",
+    note: "改名為《Game天堂EX》的同時，期號從創刊號重編、刊期由雙週改月刊。授權關係的改變可能正是改版的原因。",
+    source: "MagazineTitle.note（Game天堂EX）",
   },
   {
     magazineSlug: "next-tw",
@@ -487,13 +487,18 @@ export const LANE_GROUPS: string[][] = [
   // 《新遊戲時代》擺在《電腦玩家》右邊：九〇年代中期兩本並存的 PC 遊戲刊，
   // 讀者當年是拿它們互相比較的，分開排就看不出這件事。兩段重疊，佔相鄰兩欄。
   ["ace", "sgm", "retro-game-time"],
-  // 智冠的兩本 PC 刊，最後一本併進另一本（2004-09）。並存十三年，佔相鄰兩欄。
-  ["swm", "cgw-tw"],
+  // 智冠的三本刊。《電腦遊戲世界》2004-09 併進《軟體世界》，兩本並存十三年、
+  // 佔相鄰兩欄；《電玩双週刊》晚兩年才創，接在《軟體世界》停刊後的同一欄。
+  ["swm", "cgw-tw", "gamexpress"],
   // 分家：1998 年部分疾風人員出走另創飛訊。兩者並存，會落在相鄰兩欄，
   // 中間由 MAGAZINE_LINKS 那條線接起來。
   ["wolf", "fashion-game"],
   // 青文的電擊系（日本 Media Works 一整個雜誌家族）。三本互相重疊，佔三欄。
   ["dengeki-ss-tw", "dengeki-ps-tw", "dengeki-oh-tw"],
+  // 數碼戲胞同一年創的兩本。
+  ["gameq", "machiq"],
+  // 星際遊樂雜誌社（《星際遊樂雜誌》掛的是發行的新文行）的三本，年代相接。
+  ["astro", "astro-kuaibao", "city-boy"],
 ];
 
 export interface MagazineLink {

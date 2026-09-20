@@ -4,6 +4,8 @@ import {
   makeScale,
   packCallouts,
   packLanes,
+  fitTwoSides,
+  packSqueezed,
   stackLabels,
   YEAR_HEIGHT,
   type TimelineMagazineInput,
@@ -396,5 +398,98 @@ describe("activeCountByYear", () => {
     expect(counts.get(1996)).toBe(2);
     expect(counts.get(1997)).toBe(2);
     expect(counts.get(1998)).toBe(1);
+  });
+});
+
+describe("packSqueezed / fitTwoSides", () => {
+  const t = (slug: string, start: string, end: string) => ({
+    slug,
+    start: new Date(start),
+    solidEnd: new Date(end),
+    tail: null as TimelineTail,
+  });
+  const isRight = (x: { slug: string }) => x.slug.startsWith("r");
+
+  it("兩側各自從外側往中間挑欄", () => {
+    const placed = packSqueezed(
+      [t("l1", "1990-01-01", "2020-01-01"), t("r1", "1990-01-01", "2020-01-01")],
+      isRight,
+      4,
+      0,
+      TODAY
+    )!;
+    const lane = (slug: string) => placed.find((p) => p.slug === slug)!.lane;
+    expect(lane("l1")).toBe(0);
+    expect(lane("r1")).toBe(3);
+  });
+
+  it("欄數不夠就回 null，不會自己多開一欄", () => {
+    const placed = packSqueezed(
+      [t("l1", "1990-01-01", "2020-01-01"), t("l2", "1990-01-01", "2020-01-01")],
+      isRight,
+      1,
+      0,
+      TODAY
+    );
+    expect(placed).toBeNull();
+  });
+
+  it("時間錯開的兩側可以住同一欄", () => {
+    const { laneCount, placed } = fitTwoSides(
+      [t("l1", "1990-01-01", "1995-01-01"), t("r1", "2010-01-01", "2015-01-01")],
+      isRight,
+      0,
+      TODAY
+    );
+    expect(laneCount).toBe(1);
+    expect(placed.every((p) => p.lane === 0)).toBe(true);
+  });
+
+  it("壓到同時在架的條數", () => {
+    const { laneCount } = fitTwoSides(
+      [
+        t("l1", "1990-01-01", "2020-01-01"),
+        t("l2", "1990-01-01", "2020-01-01"),
+        t("r1", "1990-01-01", "2020-01-01"),
+      ],
+      isRight,
+      0,
+      TODAY
+    );
+    expect(laneCount).toBe(3);
+  });
+
+  it("關聯組的成員仍然佔連續的欄", () => {
+    const { placed } = fitTwoSides(
+      [
+        t("l1", "1990-01-01", "2020-01-01"),
+        t("l2", "1990-01-01", "2020-01-01"),
+        t("l3", "1990-01-01", "2020-01-01"),
+      ],
+      isRight,
+      0,
+      TODAY,
+      [["l1", "l3"]]
+    );
+    const lane = (slug: string) => placed.find((p) => p.slug === slug)!.lane;
+    expect(Math.abs(lane("l1") - lane("l3"))).toBe(1);
+  });
+
+  it("組內後來的那本接在結束最晚的欄後面", () => {
+    // 《電視遊樂雜誌》《電視遊樂報導》並存佔兩欄，晚十年的《電玩通》兩欄都放得
+    // 下——該接的是結束較晚的報導那一欄，不是最左邊那一欄。
+    const { placed } = fitTwoSides(
+      [
+        t("l1", "1990-01-01", "1995-01-01"),
+        t("l2", "1990-01-01", "2000-01-01"),
+        t("l3", "2010-01-01", "2015-01-01"),
+      ],
+      isRight,
+      0,
+      TODAY,
+      [["l1", "l2", "l3"]]
+    );
+    const lane = (slug: string) => placed.find((p) => p.slug === slug)!.lane;
+    expect(lane("l3")).toBe(lane("l2"));
   });
 });

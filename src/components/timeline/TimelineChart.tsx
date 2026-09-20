@@ -57,6 +57,8 @@ const COVER_WIDTH = 38;
 const COVER_HEIGHT = 51;
 const COVER_COLUMNS = 3;
 const COVER_GAP = 6;
+/** 引線最後斜過去的長度。斜的部分越短，欄位區裡越乾淨。封面與右欄標註共用。 */
+const LEADER_SLANT = 36;
 const COVER_COL_WIDTH = COVER_WIDTH + COVER_GAP;
 const COVER_ZONE_WIDTH = COVER_COLUMNS * COVER_COL_WIDTH + 16;
 
@@ -269,7 +271,7 @@ export function TimelineChart({
               key={year}
               // 橫條排在年份下方而不是右邊：擺右邊時軸要 96px 寬，而這張圖在
               // 1440 的視窗下放不下。年距有 96px，疊一條 6px 的橫條綽綽有餘。
-              className="absolute flex flex-col items-start"
+              className="absolute flex flex-col items-end pr-4"
               style={{
                 top: y(new Date(Date.UTC(year, 0, 1))) + 3,
                 left: LEFT_WIDTH,
@@ -279,8 +281,8 @@ export function TimelineChart({
               <span
                 className={
                   year % 5 === 0
-                    ? "w-10 shrink-0 text-xs font-medium tabular-nums"
-                    : "w-10 shrink-0 text-xs tabular-nums text-muted-foreground"
+                    ? "w-10 shrink-0 text-right text-xs font-medium tabular-nums"
+                    : "w-10 shrink-0 text-right text-xs tabular-nums text-muted-foreground"
                 }
               >
                 {year}
@@ -289,7 +291,9 @@ export function TimelineChart({
                   1998 那個高峰。形狀看得出高峰，但看不出高峰是幾本——滑上去才給
                   數字，跟封面的說明同一套做法（`z-50` 的小標籤，不是 `title`）。
                   外面那層 `py-1 -my-1` 只是把 1.5px 高的橫條變得指得到。 */}
-              <span className="group relative -mt-0.5 flex w-10 items-center py-1">
+              {/* 靠右、由右往左長：右邊就是季與月的刻度線，長度有一條基準線可以
+                  對，靠左長的話每一年的起點雖然齊，但量的是往空白處延伸。 */}
+              <span className="group relative -mt-0.5 flex w-10 items-center justify-end py-1">
                 <span
                   className="h-1.5 rounded-sm bg-primary/25 transition-colors group-hover:bg-primary/70"
                   style={{ width: Math.max(1, (count / peak) * 36) }}
@@ -573,8 +577,9 @@ function Marker({
 /**
  * 一張封面：擺在線右側的封面欄裡，用該刊顏色的引線接回節點。
  *
- * 引線走「先橫後斜」而不是直接連兩點：橫的那一段貼著節點出發，讀者一眼看得出
- * 它是從哪一條線拉出來的；88 張封面的引線疊在一起時，這件事比路徑短更重要。
+ * 引線先水平穿過欄位區，貼著封面才斜過去：水平的那一段從節點出發，讀者一眼看得
+ * 出它是從哪一條線拉出來的；88 張封面的引線疊在一起時，這件事比路徑短更重要。
+ * 斜的部分只留最後一小段，欄位區裡因此只有互相平行的水平線。
  */
 function CoverCallout({
   track,
@@ -602,6 +607,8 @@ function CoverCallout({
   const svgHeight = Math.abs(centerY - anchorY) + 2;
   const fromY = anchorY - svgTop + 1;
   const toY = centerY - svgTop + 1;
+  /** 開始斜過去的位置。留給斜線的那一小段貼著封面，跨欄位的一律是水平段。 */
+  const turnX = Math.max(1, width - LEADER_SLANT);
 
   return (
     // 滑到封面時，這一組（引線、線上的節點、封面）一起亮起來。分不出一張封面
@@ -613,8 +620,12 @@ function CoverCallout({
         style={{ left: anchorX, top: svgTop - 1, width, height: svgHeight }}
         aria-hidden
       >
+        {/* 先水平、貼著封面才斜過去。整條斜著走的話，八十幾條各種斜率的線疊在
+            欄位區裡會變成一團毛；改成水平段穿越、只在最後 36px 斜，斜的部分就
+            都擠在封面欄那一側，欄位區裡只剩互相平行的水平線。
+            也不走直角：垂直段會在封面欄左緣排成一叢，而且看起來像刊物的線。 */}
         <path
-          d={`M 0 ${fromY} L 12 ${fromY} L ${width} ${toY}`}
+          d={`M 0 ${fromY} L ${turnX} ${fromY} L ${width} ${toY}`}
           fill="none"
           stroke={color}
           className="[stroke-width:1] transition-[stroke-width] group-hover:[stroke-width:2.5]"
@@ -740,6 +751,12 @@ function ExternalEventLabel({
 /**
  * 右欄的一則標註（改名或雜誌事件）：引線從線本身拉出來，用該刊的顏色，
  * 才認得出是哪一條。
+ *
+ * 路徑與封面引線同一套：先水平穿過欄位區，貼著右欄才斜過去，末端再收一小段
+ * 水平。整條斜著走的話，幾十條各種斜率的線會在欄位區裡糊成一片。
+ *
+ * 滑過時整組（引線與文字）一起亮：引線加粗、文字外面浮出一個框。右欄的標註
+ * 上下挨得很近，光靠顏色分不出哪一條引線接的是哪一行。
  */
 function MagazineEventLabel({
   item,
@@ -757,32 +774,35 @@ function MagazineEventLabel({
   const track = item.track;
   const color = trackColor(track.colorIndex);
   const width = columnLeft + 14 - anchorX;
+  const svgTop = Math.min(anchorY, labelY);
+  const fromY = anchorY - svgTop + 1;
+  const toY = labelY - svgTop + 1;
+  /** 開始斜的位置，以及斜完之後那一小段水平的起點。 */
+  const turnX = Math.max(1, width - LEADER_SLANT - 8);
+  const endX = Math.max(turnX, width - 8);
 
   return (
-    <>
+    <div className="group">
       <svg
-        className="pointer-events-none absolute"
+        className="pointer-events-none absolute opacity-45 transition-opacity group-hover:opacity-100"
         style={{
           left: anchorX,
-          top: Math.min(anchorY, labelY) - 1,
+          top: svgTop - 1,
           width,
           height: Math.abs(labelY - anchorY) + 2,
-          opacity: 0.45,
         }}
         aria-hidden
       >
         <path
-          d={`M 0 ${anchorY < labelY ? 1 : Math.abs(labelY - anchorY) + 1} L ${width - 16} ${
-            anchorY < labelY ? Math.abs(labelY - anchorY) + 1 : 1
-          } L ${width} ${anchorY < labelY ? Math.abs(labelY - anchorY) + 1 : 1}`}
+          d={`M 0 ${fromY} L ${turnX} ${fromY} L ${endX} ${toY} L ${width} ${toY}`}
           fill="none"
           stroke={color}
-          strokeWidth={1.25}
+          className="[stroke-width:1.25] transition-[stroke-width] group-hover:[stroke-width:2.5]"
         />
       </svg>
 
       <div
-        className="absolute pl-4"
+        className="absolute rounded-sm border border-transparent pl-4 transition-colors group-hover:border-border group-hover:bg-background/95 group-hover:shadow-sm"
         style={{ left: columnLeft, top: labelY - 8, width: RIGHT_WIDTH }}
       >
         <div className="text-[11px] leading-tight">
@@ -800,7 +820,7 @@ function MagazineEventLabel({
           <div className="text-[10px] leading-tight text-muted-foreground">{item.note}</div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

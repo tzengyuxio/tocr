@@ -4,13 +4,19 @@ name: Game天堂EX
 order: 21
 tier: C
 pages: 1 頁（或與鄰刊共頁）
-status: 資料整理完成，未撰稿
-data_snapshot: 2026-09-08 正式站
+status: 資料整理完成，未撰稿；刊本身已併入 16
+data_snapshot: 2026-09-08 正式站（2026-09-21 併刊後未重抓）
+merged_into: 16-game-paradise.md
 ---
 
 # 21　《Game天堂EX》
 
-站上頁面：<https://tocr.simagame.me/magazines/game-paradise-ex>
+> **2026-09-21：站上已經沒有這本刊。** 《Game天堂EX》併成《Game天堂!》的第二個
+> 刊名時期（ISSN 同為 1023-8840），單期改用「EX 創刊號」「EX 2」…的期號掛在
+> `game-paradise` 之下。這張卡要併回 16 號還是留成一節還沒決定——併回去會動到後面
+> 每一刊的 `order`，見 BACKLOG。下面的資料卡是併刊前的快照。
+
+站上頁面：<https://tocr.simagame.me/magazines/game-paradise>（舊網址 `/magazines/game-paradise-ex` 會轉址過去）
 
 ## 資料卡
 
@@ -36,7 +42,9 @@ data_snapshot: 2026-09-08 正式站
 
 **站上的解說（可作為 200–400 字解說的底稿）**
 
-> 《Game天堂!》1997 年 2 月的改版，期號從創刊號重編，刊期由雙週改月刊，每月 15 日出版（創刊號 17 日），期次另標「N 月訊」。封面已無《ファミリーコンピュータMagazine》授權中文版字樣，授權關係的改變可能正是改版的原因之一，故不與《Game天堂!》併為同一筆。共 8 期。
+> 1997 年 2 月的改版：期號從創刊號重編，刊期由雙週改月刊，每月 15 日出版（創刊號 17 日），期次另標「N 月訊」。封面已無《ファミリーコンピュータMagazine》授權中文版字樣。ISSN 與前一段相同（1023-8840）。共 8 期。
+>
+> （2026-09-21 起這段文字住在 `MagazineTitle.note`，不再是 `Magazine.description`）
 
 ## 收錄狀況
 
