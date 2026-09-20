@@ -72,12 +72,15 @@ export function IssueTocList({
                     {article.subtitle}
                   </span>
                 )}
-                {article.authors.length > 0 && (
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    ／{article.authors.join("、")}
-                  </span>
-                )}
               </div>
+              {/* 作者靠右，貼著分類籌碼。副標題與作者同樣大小、同樣的灰，接在
+                  標題後面連成一串時分不出哪一段是誰寫的——靠位置分，比再調一次
+                  字級或顏色可靠。標題那一格是 flex-1，把作者推到右邊的是它。 */}
+              {article.authors.length > 0 && (
+                <span className="shrink-0 text-sm text-muted-foreground">
+                  ／{article.authors.join("、")}
+                </span>
+              )}
               <div className="flex shrink-0 items-center gap-1">
                 {article.category && (
                   <CategoryChip category={article.category} className="text-xs" />
