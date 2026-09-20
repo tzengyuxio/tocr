@@ -28,7 +28,7 @@ import type { ExternalEvent, MagazineEvent, MagazineLink } from "@/lib/timeline-
 // （20 條線），比多數筆電的可視寬度還寬，所以兩側各收 60px、線距收 8px，
 // 換到約 1408px。再要瘦下去就得動到「一本刊一條線」這個前提了。
 const LEFT_WIDTH = 240;
-const AXIS_WIDTH = 96;
+const AXIS_WIDTH = 56;
 const LANE_WIDTH = 32;
 const RIGHT_WIDTH = 240;
 
@@ -55,7 +55,7 @@ const LEADER_END = TICK_RIGHT - TICK_LONG - 6;
 const COVER_WIDTH = 38;
 /** 掃描比例不一，取 3:4 這個常見值當估計。 */
 const COVER_HEIGHT = 51;
-const COVER_COLUMNS = 4;
+const COVER_COLUMNS = 3;
 const COVER_GAP = 6;
 const COVER_COL_WIDTH = COVER_WIDTH + COVER_GAP;
 const COVER_ZONE_WIDTH = COVER_COLUMNS * COVER_COL_WIDTH + 16;
@@ -267,7 +267,9 @@ export function TimelineChart({
           return (
             <div
               key={year}
-              className="absolute flex items-start gap-1.5"
+              // 橫條排在年份下方而不是右邊：擺右邊時軸要 96px 寬，而這張圖在
+              // 1440 的視窗下放不下。年距有 96px，疊一條 6px 的橫條綽綽有餘。
+              className="absolute flex flex-col items-start"
               style={{
                 top: y(new Date(Date.UTC(year, 0, 1))) + 3,
                 left: LEFT_WIDTH,
@@ -277,8 +279,8 @@ export function TimelineChart({
               <span
                 className={
                   year % 5 === 0
-                    ? "w-10 shrink-0 text-right text-xs font-medium tabular-nums"
-                    : "w-10 shrink-0 text-right text-xs tabular-nums text-muted-foreground"
+                    ? "w-10 shrink-0 text-xs font-medium tabular-nums"
+                    : "w-10 shrink-0 text-xs tabular-nums text-muted-foreground"
                 }
               >
                 {year}
@@ -287,7 +289,7 @@ export function TimelineChart({
                   1998 那個高峰。形狀看得出高峰，但看不出高峰是幾本——滑上去才給
                   數字，跟封面的說明同一套做法（`z-50` 的小標籤，不是 `title`）。
                   外面那層 `py-1 -my-1` 只是把 1.5px 高的橫條變得指得到。 */}
-              <span className="group relative -my-1 mt-0.5 flex items-center py-1">
+              <span className="group relative -mt-0.5 flex w-10 items-center py-1">
                 <span
                   className="h-1.5 rounded-sm bg-primary/25 transition-colors group-hover:bg-primary/70"
                   style={{ width: Math.max(1, (count / peak) * 36) }}
@@ -547,11 +549,16 @@ function Marker({
   // 改名節點畫成橫槓而不是圓點：它切開的是同一條線的兩段，橫槓看起來就像一道
   // 接縫，圓點會被讀成「這裡有一期」。
   const isRename = marker.kind === "rename";
+  // 報導範圍靠形狀分：圓點是電腦／線上遊戲刊，方點是家用主機刊。改名的橫槓不分，
+  // 它講的是另一件事，分了只會讓兩種意思擠在同一個記號上。
+  const isTv = track.categories.includes("TV_GAME");
   return (
     <Link
       href={href}
       title={caption}
-      className="absolute z-10 block rounded-full ring-1 ring-background"
+      className={`absolute z-10 block ring-1 ring-background ${
+        isRename || !isTv ? "rounded-full" : "rounded-[1px]"
+      }`}
       style={{
         left: x - (isRename ? 6 : 3.5),
         top: top - (isRename ? 1.5 : 3.5),

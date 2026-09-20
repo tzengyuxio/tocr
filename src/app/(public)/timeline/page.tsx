@@ -88,28 +88,15 @@ export default async function TimelinePage() {
   const undated = built.filter((b) => !b.track).map((b) => b.magazine);
   const drawable = built.flatMap((b) => (b.track ? [b.track] : []));
 
-  // 電腦／線上遊戲刊排左半，家用主機刊排右半，兩群各自向中間長。混在一起排的
-  // 話，同一欄裡上下相接的常常是兩種完全不同的刊，讀者沿著某一欄往下看會不斷
-  // 換頻道；分邊之後，圖的左右本身就答得出「這幾年是哪一邊熱鬧」。
+  // 所有刊排進同一組欄位。2026-09-21 之前是電腦／線上刊排左半、家用主機刊排右半，
+  // 兩群各自向中間長；那個排法讓「這幾年是哪一邊熱鬧」一眼看得出來，代價是兩邊
+  // 各自留白——實測 54 本刊要 24 欄，合成一池只要 19 欄，光欄位就差 160px，而整張
+  // 圖在 1440 的視窗下本來就放不下、右欄的標註被切掉。
   //
-  // **同時報導兩者的刊歸右邊**（categories 含 TV_GAME 就算），沒有分類的歸左。
-  // 這是個武斷但可預測的規則——真正的雙棲刊只有幾本，讓它們每次都落在同一側，
-  // 比按某種「主要類別」猜一次好。
-  const isTvSide = (t: (typeof drawable)[number]) => t.categories.includes("TV_GAME");
-  const leftPacked = packLanes(
-    drawable.filter((t) => !isTvSide(t)),
-    LANE_GAP_MS,
-    today,
-    LANE_GROUPS
-  );
-  const rightPacked = packLanes(drawable.filter(isTvSide), LANE_GAP_MS, today, LANE_GROUPS);
-  const leftLanes = leftPacked.reduce((n, t) => Math.max(n, t.lane + 1), 0);
-  const rightLanes = rightPacked.reduce((n, t) => Math.max(n, t.lane + 1), 0);
-  // 右半從最右邊往內排，兩群才會各自靠著自己那一側。
-  const packed = [
-    ...leftPacked,
-    ...rightPacked.map((t) => ({ ...t, lane: leftLanes + (rightLanes - 1 - t.lane) })),
-  ];
+  // 報導範圍改用節點的形狀講：圓點是電腦／線上遊戲刊，方點是家用主機刊
+  // （categories 含 TV_GAME 就算，同時報導兩者的算方點）。形狀比位置弱，這是
+  // 換寬度換來的；但被切掉的那一欄是讀得到內容的字，留白不是。
+  const packed = packLanes(drawable, LANE_GAP_MS, today, LANE_GROUPS);
 
   // 配色索引按創刊順序給，與排欄無關：同一欄裡前後接續的兩本刊在這個序列上
   // 隔得很遠，黃金角因此會把它們分到差很多的色相。
@@ -134,8 +121,9 @@ export default async function TimelinePage() {
         <h1 className="text-3xl font-bold tracking-tight">年代軸</h1>
         <p className="mt-2 text-muted-foreground">
           {startYear}–{endYear} 年，站上收錄的 {tracks.length} 本雜誌各是一條線，由上而下
-          走。線分兩群：電腦與線上遊戲刊靠左、家用主機刊靠右。最左邊是影響這個行業的
-          外部事件，線的右側是各刊的封面與自己的改名、授權與刊期變動。
+          走，依創刊先後由左而右排。節點的形狀是報導範圍：圓點是電腦與線上遊戲刊，
+          方點是家用主機刊。最左邊是影響這個行業的外部事件，線的右側是各刊的封面與
+          自己的改名、授權與刊期變動。
         </p>
       </header>
 
@@ -208,8 +196,9 @@ export default async function TimelinePage() {
             兩本刊之間的虛線箭頭是它們的關係，例如 1998 年飛訊自疾風快報分家。
           </li>
           <li>
-            線的<strong className="text-foreground">左右</strong>是報導範圍：
-            電腦與線上遊戲刊排在左半，家用主機刊排在右半，兩群各自向中間長。
+            <strong className="text-foreground">節點的形狀</strong>是報導範圍：
+            圓點是電腦與線上遊戲刊，方點是家用主機刊；同時報導兩者的算方點。
+            欄位本身只按創刊先後排，不帶分類的意思。
             兩者都報導的刊歸在右半。
           </li>
         </ul>
@@ -251,6 +240,14 @@ function Legend({
       <span className="flex items-center gap-1.5">
         <span className="inline-block h-1 w-3 rounded-full bg-foreground/70" />
         改名
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-[7px] w-[7px] rounded-full bg-foreground/70" />
+        電腦／線上遊戲刊
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-[7px] w-[7px] rounded-[1px] bg-foreground/70" />
+        家用主機刊
       </span>
       <span>仍在發行 {activeCount} 本</span>
       <span>停刊時間未定 {unknownCount} 本</span>
