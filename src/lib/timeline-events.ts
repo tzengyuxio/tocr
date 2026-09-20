@@ -519,6 +519,12 @@ export interface MagazineLink {
  */
 export const MAGAZINE_LINKS: MagazineLink[] = [
   {
+    from: "dengeki-ss-tw",
+    to: "dengeki-oh-tw",
+    label: "接手",
+    source: "收藏者轉述：《電擊Dreamcast》2000-11 停刊，同社的《電擊王》2000-12 創刊接上",
+  },
+  {
     from: "wolf",
     to: "fashion-game",
     label: "分家",
