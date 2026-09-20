@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { displayPlatforms, platformColor } from "@/lib/game-platforms";
 import { formatYearRange, type ReportingSummaries } from "@/lib/game-years";
 import { formatIssueNumber } from "@/lib/issue-number";
@@ -52,7 +53,7 @@ export function GameList({
       >
         <span className="flex-1">遊戲名稱</span>
         <span className="hidden w-[176px] lg:inline">首次報導</span>
-        <span className="hidden w-[110px] sm:inline">平台</span>
+        <span className="hidden w-[150px] sm:inline">平台</span>
         <span className="hidden w-[120px] lg:inline">報導年代</span>
         <span className="w-[64px] text-right">文章數</span>
       </div>
@@ -98,18 +99,33 @@ export function GameList({
               {firstSeen ?? "—"}
             </span>
 
-            {/* 平台用家族色，與上方篩選籌碼同一組值：讀者在籌碼上認得的顏色，
-                在列裡要指同一件事。用文字顏色不是色塊——一頁 40 列，色塊會讓
-                整張表變成花的，而平台只是這一列的第三順位。 */}
-            <span className="hidden w-[110px] truncate text-sm sm:inline">
-              {platforms.length > 0
-                ? platforms.map((code, i) => (
-                    <span key={code} style={{ color: platformColor(code) }}>
-                      {i > 0 && <span className="text-muted-foreground">、</span>}
+            {/* 平台用家族色的實心籌碼，與上方篩選列選取中的籌碼同一個樣子：讀者
+                在那裡按下去認得的顏色與形狀，在列裡要指同一件事。
+
+                一列只畫三顆，多的收成 `+N`。籌碼不像文字能靠 truncate 切，切一半
+                的框看起來像畫壞了。 */}
+            <span className="hidden w-[150px] items-center gap-1 overflow-hidden sm:flex">
+              {platforms.length > 0 ? (
+                <>
+                  {platforms.slice(0, 3).map((code) => (
+                    <Badge
+                      key={code}
+                      variant="outline"
+                      className="shrink-0 border-transparent px-1 py-0 text-[10px] font-normal text-white"
+                      style={{ backgroundColor: platformColor(code) }}
+                    >
                       {code}
+                    </Badge>
+                  ))}
+                  {platforms.length > 3 && (
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                      +{platforms.length - 3}
                     </span>
-                  ))
-                : <span className="text-muted-foreground">—</span>}
+                  )}
+                </>
+              ) : (
+                <span className="text-sm text-muted-foreground">—</span>
+              )}
             </span>
 
             <span className="hidden w-[120px] text-sm tabular-nums text-muted-foreground lg:inline">
