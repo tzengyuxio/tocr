@@ -8,8 +8,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { LightboxArrow, useLightboxKeys } from "@/components/ui/lightbox";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, X } from "lucide-react";
+import { LightboxArrow, useImagePan, useLightboxKeys } from "@/components/ui/lightbox";
+import { cn } from "@/lib/utils";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
 import { TocCompare } from "@/components/issue/TocCompare";
 import { formatIssueNumber } from "@/lib/issue-number";
@@ -58,11 +59,23 @@ export function IssueImages({
   const photoOffset = coverImage ? 1 : 0;
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
   const zoomed = zoomedIndex === null ? null : images[zoomedIndex];
+  // 貼齊視窗只看得出這是什麼，看不清印了什麼。封面上的日期、書條上的定價、拍賣
+  // 照片裡的刊名都在原尺寸那一邊，而一張比視窗大的圖要拖得動才有用。
+  const [actualSize, setActualSize] = useState(false);
+  const { ref: panRef, panProps, didPan } = useImagePan();
 
-  const step = (by: number) =>
+  const close = () => {
+    setZoomedIndex(null);
+    setActualSize(false);
+  };
+
+  const step = (by: number) => {
+    // 換一張就回到貼齊視窗：上一張捲到哪裡，跟下一張沒有關係。
+    setActualSize(false);
     setZoomedIndex((i) =>
       i === null ? i : Math.min(images.length - 1, Math.max(0, i + by)),
     );
+  };
 
   // Only while enlarged: on the page itself the arrow keys scroll.
   useLightboxKeys(zoomed !== null && images.length > 1, step);
@@ -157,26 +170,61 @@ export function IssueImages({
         )}
       </div>
 
-      <Dialog
-        open={zoomed !== null}
-        onOpenChange={(open) => !open && setZoomedIndex(null)}
-      >
+      <Dialog open={zoomed !== null} onOpenChange={(open) => !open && close()}>
         {/* A lightbox, not a panel: transparent content so the dim overlay
             shows the page behind, and a click anywhere off the image closes
-            it. Same shape as the OCR review screen's viewer. */}
+            it. */}
         <DialogContent
           showCloseButton={false}
-          className="flex h-screen w-screen max-w-none items-center justify-center border-0 bg-black/[0.64] p-0 shadow-none sm:max-w-none"
-          onClick={() => setZoomedIndex(null)}
+          className="h-screen w-screen max-w-none border-0 bg-black/[0.64] p-0 shadow-none sm:max-w-none"
         >
           <DialogTitle className="sr-only">
             {formatIssueNumber(issueNumber)} {zoomed?.label}
           </DialogTitle>
+
+          {zoomed && (
+            /* 捲動的那一層自己鋪滿整個燈箱，圖用 m-auto 在裡面置中——置中的 flex
+               子項一旦比容器大，捲到頭也看不到它的左上角，而原尺寸的封面正是比
+               容器大。點在圖以外的地方關掉，但**拖過就不算點**：原尺寸下拖到一半
+               放開手，那是在看圖不是要關掉它。 */
+            <div
+              ref={panRef}
+              {...panProps}
+              onClick={() => {
+                if (!didPan()) close();
+              }}
+              className={cn(
+                "absolute inset-0 flex overflow-auto p-4",
+                actualSize && "cursor-grab select-none active:cursor-grabbing"
+              )}
+            >
+              <div className="m-auto">
+                {/* eslint-disable-next-line @next/next/no-img-element -- the
+                    lightbox sizes itself to the viewport, which next/image
+                    cannot do without fixed dimensions or fill. */}
+                <img
+                  src={zoomed.src}
+                  alt={zoomed.label}
+                  draggable={false}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (!didPan()) setActualSize((it) => !it);
+                  }}
+                  className={
+                    actualSize
+                      ? "max-w-none"
+                      : "max-h-[86vh] w-auto max-w-[92vw] cursor-zoom-in object-contain"
+                  }
+                />
+              </div>
+            </div>
+          )}
+
           <button
             type="button"
             aria-label="關閉"
             className="absolute right-4 top-4 rounded-full bg-black/60 p-2 text-white transition-colors hover:bg-black/80"
-            onClick={() => setZoomedIndex(null)}
+            onClick={close}
           >
             <X className="h-5 w-5" />
           </button>
@@ -196,18 +244,13 @@ export function IssueImages({
               />
             </>
           )}
+
+          {/* 控制項不在圖上而在燈箱上：原尺寸時圖比框大、還會被拖著走，擺在圖上
+              的東西會跟著捲出畫面。 */}
           {zoomed && (
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- the
-                  lightbox sizes itself to the viewport, which next/image
-                  cannot do without fixed dimensions or fill. */}
-              <img
-                src={zoomed.src}
-                alt={zoomed.label}
-                className="max-h-[94vh] w-auto max-w-[94vw] object-contain"
-              />
-              {images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-4 rounded-full bg-black/60 px-4 py-2 text-white">
+            <div className="absolute inset-x-0 bottom-4 flex justify-center px-4">
+              <div className="flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full bg-black/60 px-4 py-2 text-white">
+                {images.length > 1 && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -218,7 +261,9 @@ export function IssueImages({
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
-                  <span className="text-sm">{zoomed.label}</span>
+                )}
+                <span className="max-w-[50vw] truncate text-sm">{zoomed.label}</span>
+                {images.length > 1 && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -229,8 +274,23 @@ export function IssueImages({
                   >
                     <ChevronRight className="h-5 w-5" />
                   </Button>
-                </div>
-              )}
+                )}
+                <span className="mx-1 h-4 w-px bg-white/30" aria-hidden />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-white hover:bg-white/20 hover:text-white"
+                  aria-label={actualSize ? "貼齊視窗" : "原尺寸"}
+                  title={actualSize ? "貼齊視窗" : "原尺寸"}
+                  onClick={() => setActualSize((it) => !it)}
+                >
+                  {actualSize ? (
+                    <Minimize2 className="h-5 w-5" />
+                  ) : (
+                    <Maximize2 className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
