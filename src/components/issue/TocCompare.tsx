@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { PillButton, TocScanPane } from "@/components/issue/TocScanPane";
+import { TocScanPane } from "@/components/issue/TocScanPane";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 /**
@@ -98,18 +98,23 @@ export function TocCompare({
                 title={
                   /* 標題也貼在圖上。它與控制項各佔上下一條，換來的是整個視窗少一
                      列頁首——掃描本來就是這個畫面裡最值得給空間的東西。 */
-                  <DialogTitle className="absolute left-3 top-3 z-10 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-black/70 px-3 py-1 text-sm font-medium text-white">
+                  <DialogTitle className="absolute left-3 top-3 z-10 max-w-[calc(100%-4.5rem)] truncate rounded-full bg-black/70 px-3 py-1 text-sm font-medium text-white">
                     {magazineName} {formatIssueNumber(issueNumber)} 目錄對照
                   </DialogTitle>
                 }
-                actions={
-                  <>
-                    <span className="mx-1 h-4 w-px bg-white/30" aria-hidden />
-                    <PillButton label="關閉" onClick={() => setOpenIndex(null)}>
-                      <X className="h-4 w-4" />
-                    </PillButton>
-                  </>
+                corner={
+                  /* 關閉在右上角，不在底下那排：那排是「怎麼看這張圖」，關掉不是
+                     其中一種看法，而右上角是關窗本來就會去找的地方。 */
+                  <button
+                    type="button"
+                    aria-label="關閉"
+                    className="absolute right-3 top-3 z-10 rounded-full bg-black/60 p-2 text-white transition-colors hover:bg-black/80"
+                    onClick={() => setOpenIndex(null)}
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 }
+                onBackgroundClick={() => setOpenIndex(null)}
               />
 
               <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2 lg:border-l">

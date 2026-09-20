@@ -33,7 +33,9 @@ export function TocScanPane({
   onIndexChange,
   keyboard = false,
   title,
+  corner,
   actions,
+  onBackgroundClick,
   className,
 }: {
   images: string[];
@@ -43,8 +45,12 @@ export function TocScanPane({
   keyboard?: boolean;
   /** 疊在左上角的一行，通常是刊名期號。 */
   title?: ReactNode;
-  /** 接在膠囊右端的按鈕，例如關閉或全螢幕。 */
+  /** 疊在右上角的一顆，通常是關閉。 */
+  corner?: ReactNode;
+  /** 接在膠囊右端的按鈕，例如全螢幕。 */
   actions?: ReactNode;
+  /** 點在圖以外的地方。給關得掉的呼叫端用；拖過就不算點。 */
+  onBackgroundClick?: () => void;
   className?: string;
 }) {
   // 整頁塞進半個視窗的掃描，字大概只剩原尺寸的一半——看得出哪一列，讀不清是什麼
@@ -53,7 +59,7 @@ export function TocScanPane({
   // 一份目錄印成跨頁的時候，兩張掃描本來就是連著讀的。預設仍是單頁——按下去的是
   // 某一張縮圖，點了第 2 頁卻跳出 2、3 兩頁會嚇到人。
   const [spread, setSpread] = useState(false);
-  const { ref: panRef, panProps } = useImagePan();
+  const { ref: panRef, panProps, didPan } = useImagePan();
 
   // 雙頁時翻的是兩頁，而且 `index` 一律是左邊那一張。
   const shown =
@@ -82,12 +88,17 @@ export function TocScanPane({
   return (
     <div className={cn("relative bg-black/90", className)}>
       {title}
+      {corner}
 
       {/* 捲的是 inset-0 這一層，不是外框：原尺寸時圖比框寬，而那排控制項得留在
           原地，不能跟著捲出畫面。 */}
       <div
         ref={panRef}
         {...panProps}
+        onClick={() => {
+          // 拖到一半放開手，那是在看圖不是要關掉它。
+          if (!didPan()) onBackgroundClick?.();
+        }}
         className={cn(
           // 底下留給控制項的一條，上面留給標題的一條，不然它們會壓在掃描的字上。
           "absolute inset-0 flex overflow-auto p-2 pt-10 pb-14 lg:p-4 lg:pt-14 lg:pb-16",
@@ -118,11 +129,16 @@ export function TocScanPane({
               // 不然按住拖會變成瀏覽器原生的「拖曳圖片」，pointermove 就再也收不
               // 到了。
               draggable={false}
+              // 點圖是放大，不是關掉——關掉是點圖以外的地方。
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!didPan()) setActualSize((it) => !it);
+              }}
               className={
                 actualSize
                   ? "max-w-none"
                   : cn(
-                      "max-h-full w-auto object-contain",
+                      "max-h-full w-auto cursor-zoom-in object-contain",
                       shown.length > 1 ? "max-w-[calc(50%-0.25rem)]" : "max-w-full"
                     )
               }
