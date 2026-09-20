@@ -4,7 +4,8 @@ import {
   makeScale,
   packCallouts,
   packLanes,
-  packTwoSides,
+  fitTwoSides,
+  packSqueezed,
   stackLabels,
   YEAR_HEIGHT,
   type TimelineMagazineInput,
@@ -400,54 +401,77 @@ describe("activeCountByYear", () => {
   });
 });
 
-describe("packTwoSides", () => {
+describe("packSqueezed / fitTwoSides", () => {
   const t = (slug: string, start: string, end: string) => ({
     slug,
     start: new Date(start),
     solidEnd: new Date(end),
     tail: null as TimelineTail,
   });
+  const isRight = (x: { slug: string }) => x.slug.startsWith("r");
 
-  it("兩側時間都撞的時候各佔各的欄", () => {
-    const { laneCount, shared } = packTwoSides(
-      [t("l1", "1990-01-01", "2000-01-01"), t("l2", "1990-01-01", "2000-01-01")],
-      [t("r1", "1990-01-01", "2000-01-01")],
+  it("兩側各自從外側往中間挑欄", () => {
+    const placed = packSqueezed(
+      [t("l1", "1990-01-01", "2020-01-01"), t("r1", "1990-01-01", "2020-01-01")],
+      isRight,
+      4,
+      0,
+      TODAY
+    )!;
+    const lane = (slug: string) => placed.find((p) => p.slug === slug)!.lane;
+    expect(lane("l1")).toBe(0);
+    expect(lane("r1")).toBe(3);
+  });
+
+  it("欄數不夠就回 null，不會自己多開一欄", () => {
+    const placed = packSqueezed(
+      [t("l1", "1990-01-01", "2020-01-01"), t("l2", "1990-01-01", "2020-01-01")],
+      isRight,
+      1,
       0,
       TODAY
     );
-    expect([laneCount, shared]).toEqual([3, 0]);
+    expect(placed).toBeNull();
   });
 
-  it("邊界那一欄時間不撞就共用", () => {
-    // 左群兩欄（兩條都在 1990 年代），右群一欄（2010 年代）——右群推得進左群
-    // 最右邊那一欄，總欄數因此是 2 不是 3。
-    const { placed, laneCount, shared } = packTwoSides(
-      [t("l1", "1990-01-01", "1999-01-01"), t("l2", "1990-01-01", "1999-01-01")],
-      [t("r1", "2010-01-01", "2015-01-01")],
+  it("時間錯開的兩側可以住同一欄", () => {
+    const { laneCount, placed } = fitTwoSides(
+      [t("l1", "1990-01-01", "1995-01-01"), t("r1", "2010-01-01", "2015-01-01")],
+      isRight,
       0,
       TODAY
     );
-    expect([laneCount, shared]).toEqual([2, 1]);
-    expect(placed.find((p) => p.slug === "r1")!.lane).toBe(1);
+    expect(laneCount).toBe(1);
+    expect(placed.every((p) => p.lane === 0)).toBe(true);
   });
 
-  it("右群仍然由右往左依創刊排", () => {
-    const { placed, laneCount } = packTwoSides(
-      [t("l1", "1990-01-01", "2020-01-01")],
-      [t("r1", "1991-01-01", "2020-01-01"), t("r2", "1992-01-01", "2020-01-01")],
+  it("壓到同時在架的條數", () => {
+    const { laneCount } = fitTwoSides(
+      [
+        t("l1", "1990-01-01", "2020-01-01"),
+        t("l2", "1990-01-01", "2020-01-01"),
+        t("r1", "1990-01-01", "2020-01-01"),
+      ],
+      isRight,
       0,
       TODAY
+    );
+    expect(laneCount).toBe(3);
+  });
+
+  it("關聯組的成員仍然佔連續的欄", () => {
+    const { placed } = fitTwoSides(
+      [
+        t("l1", "1990-01-01", "2020-01-01"),
+        t("l2", "1990-01-01", "2020-01-01"),
+        t("l3", "1990-01-01", "2020-01-01"),
+      ],
+      isRight,
+      0,
+      TODAY,
+      [["l1", "l3"]]
     );
     const lane = (slug: string) => placed.find((p) => p.slug === slug)!.lane;
-    expect(laneCount).toBe(3);
-    // 先創刊的靠外側：r1 在最右邊
-    expect(lane("r1")).toBe(2);
-    expect(lane("r2")).toBe(1);
-    expect(lane("l1")).toBe(0);
-  });
-
-  it("有一側是空的時候不會多算欄位", () => {
-    const { laneCount, shared } = packTwoSides([t("l1", "1990-01-01", "1999-01-01")], [], 0, TODAY);
-    expect([laneCount, shared]).toEqual([1, 0]);
+    expect(Math.abs(lane("l1") - lane("l3"))).toBe(1);
   });
 });

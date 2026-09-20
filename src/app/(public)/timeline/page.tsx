@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import {
   buildTrack,
   makeScale,
-  packTwoSides,
+  fitTwoSides,
   YEAR_HEIGHT,
   type TimelineMagazineInput,
   type TimelineTrack,
@@ -96,17 +96,14 @@ export default async function TimelinePage() {
   // 這是個武斷但可預測的規則——真正的雙棲刊只有幾本，讓它們每次都落在同一側，
   // 比按某種「主要類別」猜一次好。
   //
-  // 邊界那幾欄由兩群共用，見 packTwoSides：分邊留下的空白多半就在中間，讓右群
-  // 往左推到快撞期為止可以省下 3 欄。共用的那幾欄裡上下相接的正是一本 PC 刊與
-  // 一本 TV 刊——節點的形狀（圓點／方點）就是補在這個缺口上。
+  // 分邊是偏好不是硬牆，見 fitTwoSides：欄數壓到排得下的最小值，每一條再挑自己
+  // 那一側最外面的空欄。兩群因此各自往中間擠，中間幾欄由短命刊混住——實測 54 條
+  // 線只要 18 欄，正好是同時在架的最大條數，再少就真的排不下了。
+  //
+  // 混住的那幾欄裡上下相接的是一本 PC 刊與一本 TV 刊，也就是原本分邊要避開的
+  // 「換頻道」。節點的形狀（圓點／方點）就是補在這個缺口上。
   const isTvSide = (t: (typeof drawable)[number]) => t.categories.includes("TV_GAME");
-  const { placed: packed } = packTwoSides(
-    drawable.filter((t) => !isTvSide(t)),
-    drawable.filter(isTvSide),
-    LANE_GAP_MS,
-    today,
-    LANE_GROUPS
-  );
+  const { placed: packed } = fitTwoSides(drawable, isTvSide, LANE_GAP_MS, today, LANE_GROUPS);
 
   // 配色索引按創刊順序給，與排欄無關：同一欄裡前後接續的兩本刊在這個序列上
   // 隔得很遠，黃金角因此會把它們分到差很多的色相。
@@ -132,10 +129,10 @@ export default async function TimelinePage() {
         <h1 className="text-3xl font-bold tracking-tight">年代軸</h1>
         <p className="mt-2 text-muted-foreground">
           {startYear}–{endYear} 年，站上收錄的 {tracks.length} 本雜誌各是一條線，由上而下
-          走。線分兩群：電腦與線上遊戲刊靠左、家用主機刊靠右，中間幾欄兩群共用，
-          節點的形狀因此也標著報導範圍——圓點是電腦與線上遊戲刊，方點是家用主機刊。
-          最左邊是影響這個行業的外部事件，線的右側是各刊的封面與自己的改名、授權與
-          刊期變動。
+          走。線分兩群：電腦與線上遊戲刊靠左、家用主機刊靠右，兩群各自往中間擠，
+          中間幾欄由短命的刊混住，節點的形狀因此也標著報導範圍——圓點是電腦與線上
+          遊戲刊，方點是家用主機刊。最左邊是影響這個行業的外部事件，線的右側是各刊
+          的封面與自己的改名、授權與刊期變動。
         </p>
       </header>
 
@@ -217,7 +214,7 @@ export default async function TimelinePage() {
           <li>
             線的<strong className="text-foreground">左右</strong>是報導範圍：
             電腦與線上遊戲刊排在左半，家用主機刊排在右半，兩群各自向中間長。
-            中間幾欄由兩群共用，所以<strong className="text-foreground">節點的形狀</strong>
+            中間幾欄由短命的刊混住，所以<strong className="text-foreground">節點的形狀</strong>
             也標著同一件事：圓點是電腦與線上遊戲刊，方點是家用主機刊；同時報導兩者的算方點。
             兩者都報導的刊歸在右半。
           </li>

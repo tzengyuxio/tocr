@@ -415,54 +415,110 @@ export function packLanes<
  *
  * 回傳的 `lane` 已經是合併後的絕對欄號，左群不動、右群反排在後面。
  */
-export function packTwoSides<
+/**
+ * 兩群各自往中間擠，欄數壓到排得下的最小值。
+ *
+ * 分邊是為了讓「這幾年是哪一邊熱鬧」一眼看得出來，但真的把兩群切開排，中間會
+ * 留下一片誰也沒用到的空白：左群最右那幾欄是 1990 年代、右群最左那幾欄是 2010
+ * 年代。所以**欄數先定死，再讓每一條自己挑空欄**——電腦刊挑最左邊的空欄、家用
+ * 主機刊挑最右邊的，兩群自然往中間擠，短命刊則填進中間那幾欄。
+ *
+ * 欄數由 `laneCount` 指定；`fitTwoSides` 負責從理論下界往上找第一個排得下的值。
+ * 排不下時回 `null`，讓呼叫端加一欄再試，而不是自己悄悄多開一欄——欄數是這張圖
+ * 最貴的資源，多開一欄要是算出來的，不是撞到就補。
+ *
+ * `groups` 的成員仍然佔連續的欄位（見 `LANE_GROUPS`），整組一起找位置。
+ */
+export function packSqueezed<
   T extends { start: Date; solidEnd: Date; tail: TimelineTail; slug?: string },
 >(
-  leftTracks: T[],
-  rightTracks: T[],
+  tracks: T[],
+  isRightSide: (track: T) => boolean,
+  laneCount: number,
   gapMs: number,
   today: Date,
   groups: string[][] = []
-): { placed: (T & { lane: number })[]; laneCount: number; shared: number } {
-  const left = packLanes(leftTracks, gapMs, today, groups);
-  const right = packLanes(rightTracks, gapMs, today, groups);
-  const lanesIn = (packed: { lane: number }[]) =>
-    packed.reduce((n, t) => Math.max(n, t.lane + 1), 0);
-  const L = lanesIn(left);
-  const R = lanesIn(right);
-
-  // 與 packLanes 同一套佔用判準，否則「能不能共用」會跟排欄的結果對不起來。
-  const busyUntil = (t: T) =>
+): (T & { lane: number })[] | null {
+  const occupiedUntil = (t: T) =>
     (t.tail?.kind === "active"
       ? Math.max(t.solidEnd.getTime(), today.getTime())
       : t.solidEnd.getTime()) + gapMs;
-  const spansOf = (packed: (T & { lane: number })[], lane: number) =>
-    packed.filter((t) => t.lane === lane).map((t) => [t.start.getTime(), busyUntil(t)] as const);
-  const overlaps = (
-    a: readonly (readonly [number, number])[],
-    b: readonly (readonly [number, number])[]
-  ) => a.some(([s1, e1]) => b.some(([s2, e2]) => s1 < e2 && s2 < e1));
+  const byStart = (a: T, b: T) =>
+    a.start.getTime() - b.start.getTime() || a.solidEnd.getTime() - b.solidEnd.getTime();
 
-  // 由大往小找第一個可行的重疊量。不能找到第一個不可行就停——可行與否不保證
-  // 隨 k 單調，中途撞一次不代表推得更多也一定撞。
-  let shared = 0;
-  for (let k = Math.min(L, R); k >= 1; k--) {
-    let ok = true;
-    for (let i = 0; i < k && ok; i++) {
-      if (overlaps(spansOf(left, L - k + i), spansOf(right, R - 1 - i))) ok = false;
-    }
-    if (ok) {
-      shared = k;
-      break;
+  // 關聯組先成塊，與 packLanes 同一套：組內先自己排一次得到相對欄位，整組再
+  // 當成一塊去找位置。
+  const bySlug = new Map(tracks.flatMap((t) => (t.slug ? [[t.slug, t] as const] : [])));
+  const grouped = new Set<T>();
+  const units: T[][] = [];
+  for (const slugs of groups) {
+    const members = slugs
+      .flatMap((slug) => {
+        const track = bySlug.get(slug);
+        return track && !grouped.has(track) ? [track] : [];
+      })
+      .sort(byStart);
+    if (members.length < 2) continue;
+    members.forEach((m) => grouped.add(m));
+    units.push(members);
+  }
+  for (const track of tracks.filter((t) => !grouped.has(t))) units.push([track]);
+  units.sort((a, b) => byStart(a[0], b[0]));
+
+  const laneEnds = new Array<number>(laneCount).fill(-Infinity);
+  const placed: (T & { lane: number })[] = [];
+
+  for (const members of units) {
+    // 組內相對欄位
+    const ends: number[] = [];
+    const local = members.map((track) => {
+      let l = ends.findIndex((end) => end <= track.start.getTime());
+      if (l === -1) l = ends.length;
+      ends[l] = occupiedUntil(track);
+      return { track, local: l };
+    });
+    const span = ends.length;
+
+    // 這一塊該偏哪一側，由成員多數決；平手歸左，與「沒有分類歸左」一致。
+    const right = members.filter(isRightSide).length;
+    const preferRight = right * 2 > members.length;
+
+    const fits = (base: number) =>
+      local.every(
+        ({ track, local: l }) => (laneEnds[base + l] ?? Infinity) <= track.start.getTime()
+      );
+    const bases = Array.from({ length: laneCount - span + 1 }, (_, i) => i);
+    const base = (preferRight ? bases.reverse() : bases).find(fits);
+    if (base === undefined) return null;
+
+    for (const { track, local: l } of local) {
+      laneEnds[base + l] = occupiedUntil(track);
+      placed.push({ ...track, lane: base + l });
     }
   }
 
-  const base = L - shared;
-  return {
-    placed: [...left, ...right.map((t) => ({ ...t, lane: base + (R - 1 - t.lane) }))],
-    laneCount: L + R - shared,
-    shared,
-  };
+  return placed;
+}
+
+/**
+ * 從 `min` 開始往上找第一個排得下的欄數。`min` 給理論下界（同時在架的最大條
+ * 數）就會停在真正的最小值——關聯組與分邊偏好通常會讓它比下界多一兩欄。
+ */
+export function fitTwoSides<
+  T extends { start: Date; solidEnd: Date; tail: TimelineTail; slug?: string },
+>(
+  tracks: T[],
+  isRightSide: (track: T) => boolean,
+  gapMs: number,
+  today: Date,
+  groups: string[][] = []
+): { placed: (T & { lane: number })[]; laneCount: number } {
+  for (let n = 1; n <= tracks.length; n++) {
+    const placed = packSqueezed(tracks, isRightSide, n, gapMs, today, groups);
+    if (placed) return { placed, laneCount: n };
+  }
+  // 到不了：n === tracks.length 時每條線都有自己的欄。
+  return { placed: tracks.map((t, i) => ({ ...t, lane: i })), laneCount: tracks.length };
 }
 
 // ==================== 標籤避讓 ====================

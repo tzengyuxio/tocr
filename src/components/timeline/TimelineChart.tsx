@@ -57,8 +57,8 @@ const COVER_WIDTH = 38;
 const COVER_HEIGHT = 51;
 const COVER_COLUMNS = 3;
 const COVER_GAP = 6;
-/** 封面引線最後斜過去的長度。斜的部分越短，欄位區裡越乾淨。 */
-const COVER_LEADER_SLANT = 36;
+/** 引線最後斜過去的長度。斜的部分越短，欄位區裡越乾淨。封面與右欄標註共用。 */
+const LEADER_SLANT = 36;
 const COVER_COL_WIDTH = COVER_WIDTH + COVER_GAP;
 const COVER_ZONE_WIDTH = COVER_COLUMNS * COVER_COL_WIDTH + 16;
 
@@ -608,7 +608,7 @@ function CoverCallout({
   const fromY = anchorY - svgTop + 1;
   const toY = centerY - svgTop + 1;
   /** 開始斜過去的位置。留給斜線的那一小段貼著封面，跨欄位的一律是水平段。 */
-  const turnX = Math.max(1, width - COVER_LEADER_SLANT);
+  const turnX = Math.max(1, width - LEADER_SLANT);
 
   return (
     // 滑到封面時，這一組（引線、線上的節點、封面）一起亮起來。分不出一張封面
@@ -751,6 +751,12 @@ function ExternalEventLabel({
 /**
  * 右欄的一則標註（改名或雜誌事件）：引線從線本身拉出來，用該刊的顏色，
  * 才認得出是哪一條。
+ *
+ * 路徑與封面引線同一套：先水平穿過欄位區，貼著右欄才斜過去，末端再收一小段
+ * 水平。整條斜著走的話，幾十條各種斜率的線會在欄位區裡糊成一片。
+ *
+ * 滑過時整組（引線與文字）一起亮：引線加粗、文字外面浮出一個框。右欄的標註
+ * 上下挨得很近，光靠顏色分不出哪一條引線接的是哪一行。
  */
 function MagazineEventLabel({
   item,
@@ -768,32 +774,35 @@ function MagazineEventLabel({
   const track = item.track;
   const color = trackColor(track.colorIndex);
   const width = columnLeft + 14 - anchorX;
+  const svgTop = Math.min(anchorY, labelY);
+  const fromY = anchorY - svgTop + 1;
+  const toY = labelY - svgTop + 1;
+  /** 開始斜的位置，以及斜完之後那一小段水平的起點。 */
+  const turnX = Math.max(1, width - LEADER_SLANT - 8);
+  const endX = Math.max(turnX, width - 8);
 
   return (
-    <>
+    <div className="group">
       <svg
-        className="pointer-events-none absolute"
+        className="pointer-events-none absolute opacity-45 transition-opacity group-hover:opacity-100"
         style={{
           left: anchorX,
-          top: Math.min(anchorY, labelY) - 1,
+          top: svgTop - 1,
           width,
           height: Math.abs(labelY - anchorY) + 2,
-          opacity: 0.45,
         }}
         aria-hidden
       >
         <path
-          d={`M 0 ${anchorY < labelY ? 1 : Math.abs(labelY - anchorY) + 1} L ${width - 16} ${
-            anchorY < labelY ? Math.abs(labelY - anchorY) + 1 : 1
-          } L ${width} ${anchorY < labelY ? Math.abs(labelY - anchorY) + 1 : 1}`}
+          d={`M 0 ${fromY} L ${turnX} ${fromY} L ${endX} ${toY} L ${width} ${toY}`}
           fill="none"
           stroke={color}
-          strokeWidth={1.25}
+          className="[stroke-width:1.25] transition-[stroke-width] group-hover:[stroke-width:2.5]"
         />
       </svg>
 
       <div
-        className="absolute pl-4"
+        className="absolute rounded-sm border border-transparent pl-4 transition-colors group-hover:border-border group-hover:bg-background/95 group-hover:shadow-sm"
         style={{ left: columnLeft, top: labelY - 8, width: RIGHT_WIDTH }}
       >
         <div className="text-[11px] leading-tight">
@@ -811,7 +820,7 @@ function MagazineEventLabel({
           <div className="text-[10px] leading-tight text-muted-foreground">{item.note}</div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
