@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import {
   BookOpen,
@@ -53,6 +53,44 @@ export function TocCompare({
   // 某一張縮圖，點了第 2 頁卻跳出 2、3 兩頁會嚇到人。
   const [spread, setSpread] = useState(false);
   const open = openIndex !== null;
+
+  // 原尺寸時圖比欄大，左欄成了一個捲動區。捲軸還在，但看著一張圖的人第一個動作是
+  // 抓住它拖——所以按住拖曳直接改 scrollLeft/Top。
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ x: number; y: number; left: number; top: number } | null>(
+    null
+  );
+
+  const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const el = scrollRef.current;
+    // 觸控與筆不接手：手指本來就能捲，插進來只會跟原生的慣性捲動打架。
+    if (!el || event.pointerType !== "mouse" || event.button !== 0) return;
+    if (el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight) {
+      return;
+    }
+    drag.current = {
+      x: event.clientX,
+      y: event.clientY,
+      left: el.scrollLeft,
+      top: el.scrollTop,
+    };
+    el.setPointerCapture(event.pointerId);
+  };
+
+  const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const el = scrollRef.current;
+    const from = drag.current;
+    if (!el || !from) return;
+    // 拖的是圖不是捲軸，所以位移是反過來的：往左拖＝往右看。
+    el.scrollLeft = from.left - (event.clientX - from.x);
+    el.scrollTop = from.top - (event.clientY - from.y);
+  };
+
+  const endDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!drag.current) return;
+    drag.current = null;
+    scrollRef.current?.releasePointerCapture(event.pointerId);
+  };
 
   // 雙頁時翻的是兩頁，而且 `openIndex` 一律是左邊那一張。
   const pageStep = spread ? 2 : 1;
@@ -141,7 +179,16 @@ export function TocCompare({
                   得留在原地，不能跟著捲出畫面。 */}
               {/* 底下留給那排控制項的一條，不然貼齊高度時膠囊會壓在掃描的最後
                   一行字上。內距而不是縮圖：置中是在扣掉內距之後算的。 */}
-              <div className="absolute inset-0 flex overflow-auto p-2 pt-10 pb-14 lg:p-4 lg:pt-14 lg:pb-16">
+              <div
+                ref={scrollRef}
+                onPointerDown={startDrag}
+                onPointerMove={moveDrag}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                className={`absolute inset-0 flex overflow-auto p-2 pt-10 pb-14 lg:p-4 lg:pt-14 lg:pb-16 ${
+                  actualSize ? "cursor-grab select-none active:cursor-grabbing" : ""
+                }`}
+              >
                 {/* m-auto 而不是 items/justify-center：置中的 flex 子項一旦比容器
                     大，捲到頭也看不到它的左上角，而原尺寸的掃描正是比容器大。 */}
                 <div className="m-auto flex items-start gap-2">
@@ -152,6 +199,9 @@ export function TocCompare({
                       key={images[i]}
                       src={images[i]}
                       alt={label(i)}
+                      // 不然按住拖會變成瀏覽器原生的「拖曳圖片」，pointermove
+                      // 就再也收不到了。
+                      draggable={false}
                       /* 貼齊高度那一邊用視窗算，不用 max-h-full：百分比高度要對得
                          上一個確定的父高，而這個 m-auto 的外框是內容撐出來的，高度
                          不確定，`full` 會靜靜地解成沒有上限然後整張圖爆出去。扣掉
