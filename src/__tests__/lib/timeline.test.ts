@@ -474,4 +474,22 @@ describe("packSqueezed / fitTwoSides", () => {
     const lane = (slug: string) => placed.find((p) => p.slug === slug)!.lane;
     expect(Math.abs(lane("l1") - lane("l3"))).toBe(1);
   });
+
+  it("組內後來的那本接在結束最晚的欄後面", () => {
+    // 《電視遊樂雜誌》《電視遊樂報導》並存佔兩欄，晚十年的《電玩通》兩欄都放得
+    // 下——該接的是結束較晚的報導那一欄，不是最左邊那一欄。
+    const { placed } = fitTwoSides(
+      [
+        t("l1", "1990-01-01", "1995-01-01"),
+        t("l2", "1990-01-01", "2000-01-01"),
+        t("l3", "2010-01-01", "2015-01-01"),
+      ],
+      isRight,
+      0,
+      TODAY,
+      [["l1", "l2", "l3"]]
+    );
+    const lane = (slug: string) => placed.find((p) => p.slug === slug)!.lane;
+    expect(lane("l3")).toBe(lane("l2"));
+  });
 });

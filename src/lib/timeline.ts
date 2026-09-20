@@ -403,19 +403,6 @@ export function packLanes<
 }
 
 /**
- * 兩群各自往中間長，邊界上時間不撞的欄位共用。
- *
- * 兩群分邊是為了讓「這幾年是哪一邊熱鬧」一眼看得出來，代價是兩側各自留白：
- * 左群最右邊那幾欄與右群最左邊那幾欄常常一邊是 1990 年代、另一邊是 2010 年代，
- * 各佔一欄卻誰也沒擋到誰。把右群整體往左推到「再推一欄就會撞期」為止，推掉的
- * 就是那段留白——實測 54 條線省下 3 欄（96px），而分邊的讀法完全沒變。
- *
- * **推的是整群不是個別的線。** 個別搬會把右群的欄序打亂，那一群就不再是由右
- * 往左依創刊排；整群平移則保住兩邊各自的順序，只是中間那幾欄住了兩戶。
- *
- * 回傳的 `lane` 已經是合併後的絕對欄號，左群不動、右群反排在後面。
- */
-/**
  * 兩群各自往中間擠，欄數壓到排得下的最小值。
  *
  * 分邊是為了讓「這幾年是哪一邊熱鬧」一眼看得出來，但真的把兩群切開排，中間會
@@ -469,10 +456,20 @@ export function packSqueezed<
   const placed: (T & { lane: number })[] = [];
 
   for (const members of units) {
-    // 組內相對欄位
+    // 組內相對欄位。用 best-fit（放得下的欄位裡挑結束最晚的那一欄）而不是
+    // first-fit，與 packLanes 同一套：《電視遊樂雜誌》《電視遊樂報導》並存佔
+    // 兩欄，晚十年的《電玩通》兩欄都放得下，而它該接的是報導那一欄——ファミ通
+    // 系是同一條脈絡。《軟體世界》與《電玩双週刊》也是這樣接上的。
     const ends: number[] = [];
     const local = members.map((track) => {
-      let l = ends.findIndex((end) => end <= track.start.getTime());
+      let l = -1;
+      let bestEnd = -Infinity;
+      ends.forEach((end, i) => {
+        if (end <= track.start.getTime() && end > bestEnd) {
+          l = i;
+          bestEnd = end;
+        }
+      });
       if (l === -1) l = ends.length;
       ends[l] = occupiedUntil(track);
       return { track, local: l };
