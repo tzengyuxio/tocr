@@ -393,6 +393,13 @@ const MAGAZINE: MagazineEventInput[] = [
     source: "Magazine.description（電視遊樂報導）",
   },
   {
+    magazineSlug: "dengeki-oh-tw",
+    at: "2000-12",
+    title: "接手《電擊Dreamcast》",
+    note: "電擊DC 一說 2000-11 停刊，兩刊同屬青文，圖上接在同一欄。",
+    source: "收藏者轉述；Magazine.description（電擊SEGA SATURN）",
+  },
+  {
     magazineSlug: "game-paradise",
     at: "1997-02",
     title: "封面不再標《ファミマガ》授權",
@@ -493,8 +500,15 @@ export const LANE_GROUPS: string[][] = [
   // 分家：1998 年部分疾風人員出走另創飛訊。兩者並存，會落在相鄰兩欄，
   // 中間由 MAGAZINE_LINKS 那條線接起來。
   ["wolf", "fashion-game"],
-  // 青文的電擊系（日本 Media Works 一整個雜誌家族）。三本互相重疊，佔三欄。
+  // 青文的電擊系（日本 Media Works 一整個雜誌家族）。《電擊PlayStation》與另外
+  // 兩本重疊，佔一欄；《電擊王》接在《電擊SEGA SATURN》停刊後，共用另一欄。
   ["dengeki-ss-tw", "dengeki-ps-tw", "dengeki-oh-tw"],
+  // 《土星少年》第 47 期起與《勝利少年》合併為《勝利土星少年》（收藏者轉述）。
+  // **兩本應該是並存的**：合併發生在 1998 年，那之前兩本都在出。圖上目前接成
+  // 同一欄是資料的缺口——站上《勝利少年》的已知最後一期停在 1997-10-30，而
+  // 《土星少年》最早的一期是 1998-08-20，兩段因此不重疊。補進 1998 年的期之後
+  // 它們會重疊，這一組會讓它們落在相鄰兩欄。
+  ["victory-boy", "saturn-boy"],
   // 數碼戲胞同一年創的兩本。
   ["gameq", "machiq"],
   // 星際遊樂雜誌社（《星際遊樂雜誌》掛的是發行的新文行）的三本，年代相接。
