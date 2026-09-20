@@ -25,6 +25,12 @@ ISSN 刻意不設唯一性、日期採 EDTF 等建檔準則見 [data-conventions
 
 不帶 `replaceExisting` 時仍是單純附加，匯入腳本（API token）靠的是這個行為。
 
+**整本刊一次掛完**：一批命名好的掃描圖用
+[`scripts/upload-toc-scans.ts`](../scripts/upload-toc-scans.ts) 上傳、掛上對應的期並辨識，
+一期一次請求（跨頁的目錄分開送等於要模型憑半張圖猜）。已經有圖的期跳過——`tocImages`
+是整組覆蓋，重跑不該洗掉人工調整過的順序。它只寫到 `ocr_records` 為止，文章仍然要在
+`/admin/ocr` 或單期編輯頁複查後才落地。
+
 ### 複查編輯器
 
 複查就是編輯該期的文章，沒有另一套介面：單期編輯頁的文章列表左側是目錄圖預覽（可切換、放大），右側逐篇 inline 編輯，改的是真正的 `articles`。
