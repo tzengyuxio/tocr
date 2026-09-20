@@ -37,6 +37,13 @@ describe("toPlatformCodes", () => {
     expect(toPlatformCodes("Xbox 360").codes).toEqual(["X360"]);
   });
 
+  // 表上唯一沒有現有值可抄的代號，所以寫法是先備著的，測試把它們釘住。
+  it("Switch 的幾種寫法都對到 NS", () => {
+    for (const raw of ["NS", "Switch", "Nintendo Switch", "NSW"]) {
+      expect(toPlatformCodes(raw).codes).toEqual(["NS"]);
+    }
+  });
+
   it("帶空白或斜線的寫法整串認，不會被拆成兩半誤中", () => {
     // PS Vita 拆開之後前半會誤中 PS，吐出兩個代號。
     expect(toPlatformCodes("PS Vita").codes).toEqual(["PSV"]);

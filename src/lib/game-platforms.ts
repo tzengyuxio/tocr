@@ -13,7 +13,7 @@
 
 export const PLATFORM_CODES = [
   // 任天堂
-  "FC", "SFC", "N64", "GC", "WII", "WIIU", "GB", "GBA", "NDS", "3DS",
+  "FC", "SFC", "N64", "GC", "WII", "WIIU", "NS", "GB", "GBA", "NDS", "3DS",
   // 索尼
   "PS", "PS2", "PS3", "PS4", "PSP", "PSV",
   // 世嘉
@@ -48,6 +48,9 @@ const FROM_SOURCE: Record<string, PlatformCode[]> = {
   "gba": ["GBA"],
   "nds": ["NDS"], "nintendods": ["NDS"], "ds": ["NDS"],
   "3ds": ["3DS"], "nintendo3ds": ["3DS"],
+  // 三份來源都還沒出現過 Switch（站上最新的 PLATFORM 標籤是 Wii U），所以這幾條
+  // 是為了日後的來源先備著，不是從既有值歸納出來的。
+  "ns": ["NS"], "switch": ["NS"], "nintendoswitch": ["NS"], "nsw": ["NS"],
 
   // ---- 索尼
   "ps": ["PS"], "playstation": ["PS"],
@@ -107,7 +110,7 @@ const NOT_A_PLATFORM = new Set([
 /** 顯示與篩選用。存的是細代號，給人看的是這一層。 */
 export const PLATFORM_FAMILIES: Record<string, PlatformCode[]> = {
   PC: ["DOS", "WIN", "PC98", "APPLE2", "PC"],
-  任天堂: ["FC", "SFC", "N64", "GC", "WII", "WIIU", "GB", "GBA", "NDS", "3DS"],
+  任天堂: ["FC", "SFC", "N64", "GC", "WII", "WIIU", "NS", "GB", "GBA", "NDS", "3DS"],
   索尼: ["PS", "PS2", "PS3", "PS4", "PSP", "PSV"],
   世嘉: ["MD", "MCD", "SS", "DC", "SMS", "GG"],
   微軟: ["XBOX", "X360", "XONE"],
