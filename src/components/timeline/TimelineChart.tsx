@@ -269,7 +269,7 @@ export function TimelineChart({
               key={year}
               // 橫條排在年份下方而不是右邊：擺右邊時軸要 96px 寬，而這張圖在
               // 1440 的視窗下放不下。年距有 96px，疊一條 6px 的橫條綽綽有餘。
-              className="absolute flex flex-col items-start"
+              className="absolute flex flex-col items-end pr-4"
               style={{
                 top: y(new Date(Date.UTC(year, 0, 1))) + 3,
                 left: LEFT_WIDTH,
@@ -279,8 +279,8 @@ export function TimelineChart({
               <span
                 className={
                   year % 5 === 0
-                    ? "w-10 shrink-0 text-xs font-medium tabular-nums"
-                    : "w-10 shrink-0 text-xs tabular-nums text-muted-foreground"
+                    ? "w-10 shrink-0 text-right text-xs font-medium tabular-nums"
+                    : "w-10 shrink-0 text-right text-xs tabular-nums text-muted-foreground"
                 }
               >
                 {year}
@@ -289,7 +289,9 @@ export function TimelineChart({
                   1998 那個高峰。形狀看得出高峰，但看不出高峰是幾本——滑上去才給
                   數字，跟封面的說明同一套做法（`z-50` 的小標籤，不是 `title`）。
                   外面那層 `py-1 -my-1` 只是把 1.5px 高的橫條變得指得到。 */}
-              <span className="group relative -mt-0.5 flex w-10 items-center py-1">
+              {/* 靠右、由右往左長：右邊就是季與月的刻度線，長度有一條基準線可以
+                  對，靠左長的話每一年的起點雖然齊，但量的是往空白處延伸。 */}
+              <span className="group relative -mt-0.5 flex w-10 items-center justify-end py-1">
                 <span
                   className="h-1.5 rounded-sm bg-primary/25 transition-colors group-hover:bg-primary/70"
                   style={{ width: Math.max(1, (count / peak) * 36) }}
@@ -573,8 +575,9 @@ function Marker({
 /**
  * 一張封面：擺在線右側的封面欄裡，用該刊顏色的引線接回節點。
  *
- * 引線走「先橫後斜」而不是直接連兩點：橫的那一段貼著節點出發，讀者一眼看得出
- * 它是從哪一條線拉出來的；88 張封面的引線疊在一起時，這件事比路徑短更重要。
+ * 引線走折線而不是直接連兩點：水平的那一段貼著節點出發，讀者一眼看得出它是從
+ * 哪一條線拉出來的；88 張封面的引線疊在一起時，這件事比路徑短更重要。轉折擺在
+ * 封面那一端，跨過欄位的因此一律是水平段——垂直段會跟刊物的線搞混。
  */
 function CoverCallout({
   track,
@@ -602,6 +605,8 @@ function CoverCallout({
   const svgHeight = Math.abs(centerY - anchorY) + 2;
   const fromY = anchorY - svgTop + 1;
   const toY = centerY - svgTop + 1;
+  /** 轉折點。貼著封面轉，跨欄位的那一段才會是水平的。 */
+  const elbowX = Math.max(1, width - 12);
 
   return (
     // 滑到封面時，這一組（引線、線上的節點、封面）一起亮起來。分不出一張封面
@@ -613,8 +618,13 @@ function CoverCallout({
         style={{ left: anchorX, top: svgTop - 1, width, height: svgHeight }}
         aria-hidden
       >
+        {/* 折線而不是斜線：轉折擺在封面前 12px，所以跨過欄位的那一段一定是水平
+            的。斜線會以各種角度穿過刊物的線，八十幾條疊起來像一團毛；水平段不會
+            跟垂直的刊物線搞混，而且它從節點出發的那一端就貼著節點，一眼看得出是
+            從哪一條線拉出來的。轉折不放在節點旁邊，是因為那一段垂直線會落在欄位
+            區裡，看起來就像多了一條刊物。 */}
         <path
-          d={`M 0 ${fromY} L 12 ${fromY} L ${width} ${toY}`}
+          d={`M 0 ${fromY} L ${elbowX} ${fromY} L ${elbowX} ${toY} L ${width} ${toY}`}
           fill="none"
           stroke={color}
           className="[stroke-width:1] transition-[stroke-width] group-hover:[stroke-width:2.5]"

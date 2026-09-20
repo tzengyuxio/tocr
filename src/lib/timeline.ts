@@ -402,6 +402,69 @@ export function packLanes<
   return placed;
 }
 
+/**
+ * 兩群各自往中間長，邊界上時間不撞的欄位共用。
+ *
+ * 兩群分邊是為了讓「這幾年是哪一邊熱鬧」一眼看得出來，代價是兩側各自留白：
+ * 左群最右邊那幾欄與右群最左邊那幾欄常常一邊是 1990 年代、另一邊是 2010 年代，
+ * 各佔一欄卻誰也沒擋到誰。把右群整體往左推到「再推一欄就會撞期」為止，推掉的
+ * 就是那段留白——實測 54 條線省下 3 欄（96px），而分邊的讀法完全沒變。
+ *
+ * **推的是整群不是個別的線。** 個別搬會把右群的欄序打亂，那一群就不再是由右
+ * 往左依創刊排；整群平移則保住兩邊各自的順序，只是中間那幾欄住了兩戶。
+ *
+ * 回傳的 `lane` 已經是合併後的絕對欄號，左群不動、右群反排在後面。
+ */
+export function packTwoSides<
+  T extends { start: Date; solidEnd: Date; tail: TimelineTail; slug?: string },
+>(
+  leftTracks: T[],
+  rightTracks: T[],
+  gapMs: number,
+  today: Date,
+  groups: string[][] = []
+): { placed: (T & { lane: number })[]; laneCount: number; shared: number } {
+  const left = packLanes(leftTracks, gapMs, today, groups);
+  const right = packLanes(rightTracks, gapMs, today, groups);
+  const lanesIn = (packed: { lane: number }[]) =>
+    packed.reduce((n, t) => Math.max(n, t.lane + 1), 0);
+  const L = lanesIn(left);
+  const R = lanesIn(right);
+
+  // 與 packLanes 同一套佔用判準，否則「能不能共用」會跟排欄的結果對不起來。
+  const busyUntil = (t: T) =>
+    (t.tail?.kind === "active"
+      ? Math.max(t.solidEnd.getTime(), today.getTime())
+      : t.solidEnd.getTime()) + gapMs;
+  const spansOf = (packed: (T & { lane: number })[], lane: number) =>
+    packed.filter((t) => t.lane === lane).map((t) => [t.start.getTime(), busyUntil(t)] as const);
+  const overlaps = (
+    a: readonly (readonly [number, number])[],
+    b: readonly (readonly [number, number])[]
+  ) => a.some(([s1, e1]) => b.some(([s2, e2]) => s1 < e2 && s2 < e1));
+
+  // 由大往小找第一個可行的重疊量。不能找到第一個不可行就停——可行與否不保證
+  // 隨 k 單調，中途撞一次不代表推得更多也一定撞。
+  let shared = 0;
+  for (let k = Math.min(L, R); k >= 1; k--) {
+    let ok = true;
+    for (let i = 0; i < k && ok; i++) {
+      if (overlaps(spansOf(left, L - k + i), spansOf(right, R - 1 - i))) ok = false;
+    }
+    if (ok) {
+      shared = k;
+      break;
+    }
+  }
+
+  const base = L - shared;
+  return {
+    placed: [...left, ...right.map((t) => ({ ...t, lane: base + (R - 1 - t.lane) }))],
+    laneCount: L + R - shared,
+    shared,
+  };
+}
+
 // ==================== 標籤避讓 ====================
 
 export interface StackedLabel<T> {
