@@ -72,12 +72,22 @@ export function IssueTocList({
                     {article.subtitle}
                   </span>
                 )}
+                {/* 窄螢幕上作者仍然接在標題後面：右邊那一格要不縮，一個像
+                    「Maarten Kraaijvanger、東華GAME Lab」的作者欄會把標題擠成
+                    一行一個字，還會把分類籌碼推出畫面。手機上沒有那個寬度可以
+                    分欄，就讓它排回文字裡。 */}
+                {article.authors.length > 0 && (
+                  <span className="ml-2 text-sm text-muted-foreground sm:hidden">
+                    ／{article.authors.join("、")}
+                  </span>
+                )}
               </div>
-              {/* 作者靠右，貼著分類籌碼。副標題與作者同樣大小、同樣的灰，接在
-                  標題後面連成一串時分不出哪一段是誰寫的——靠位置分，比再調一次
-                  字級或顏色可靠。標題那一格是 flex-1，把作者推到右邊的是它。 */}
+              {/* 寬螢幕上作者靠右，貼著分類籌碼。副標題與作者同樣大小、同樣的
+                  灰，接在標題後面連成一串時分不出哪一段是誰寫的——靠位置分，比
+                  再調一次字級或顏色可靠。標題那一格是 flex-1，把作者推到右邊的
+                  是它。 */}
               {article.authors.length > 0 && (
-                <span className="shrink-0 text-sm text-muted-foreground">
+                <span className="hidden shrink-0 text-sm text-muted-foreground sm:inline">
                   ／{article.authors.join("、")}
                 </span>
               )}
