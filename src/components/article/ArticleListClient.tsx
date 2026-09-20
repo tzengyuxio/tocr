@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, FileText, ListPlus, GripVertical, ArrowDownNarrowWide } from "lucide-react";
 import { byPageNumber } from "@/lib/article-sort";
+import { cn } from "@/lib/utils";
 import { TocImageViewer } from "@/components/issue/TocImageViewer";
 import { BatchArticleForm } from "./BatchArticleForm";
 import {
@@ -104,6 +105,9 @@ export function ArticleListClient({
   const [articles, setArticles] = useState(initialArticles);
   const [showBatchForm, setShowBatchForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // 掃描與列表一起撐滿畫面。這一格在這裡而不是在 TocImageViewer 裡，因為它改的是
+  // 兩欄的外框，而外框是這一層的。
+  const [compare, setCompare] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ArticleItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
@@ -197,6 +201,17 @@ export function ArticleListClient({
   };
 
   /** A missed entry belongs next to its neighbours, not at the end of 61 rows. */
+  useEffect(() => {
+    if (!compare) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      // 正在改某一列時，Esc 是那一列的取消，不是這裡的離開。
+      if (event.key !== "Escape" || editingId !== null) return;
+      setCompare(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [compare, editingId]);
+
   const handleInsert = async (index: number, position: "before" | "after") => {
     const at = position === "before" ? index : index + 1;
     // 標題必填，所以先給一個看得出是待填的暫名。
@@ -286,14 +301,26 @@ export function ArticleListClient({
 
           {/* The scan on the left, the list it is being checked against on the
               right. Without a scan there is nothing to compare, so the list
-              takes the full width. */}
-          <div className="flex gap-6">
+              takes the full width.
+
+              全螢幕對照只是**同一棵樹換一組 class**：撐滿畫面的是這個外框，裡面
+              的列表沒有搬家，所以切進切出的時候正在改的那一列不會被切掉。 */}
+          <div
+            className={cn(
+              "flex gap-6",
+              compare && "fixed inset-0 z-50 gap-4 bg-background p-4"
+            )}
+          >
             {tocImages.length > 0 && (
-              <div className="w-2/5 shrink-0">
-                <TocImageViewer images={tocImages} />
+              <div className={cn("shrink-0", compare ? "w-[62%]" : "w-2/5")}>
+                <TocImageViewer
+                  images={tocImages}
+                  fullscreen={compare}
+                  onToggleFullscreen={() => setCompare((it) => !it)}
+                />
               </div>
             )}
-            <div className="min-w-0 flex-1">
+            <div className={cn("min-w-0 flex-1", compare && "overflow-y-auto")}>
           {articles.length === 0 && !showBatchForm ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/50" />

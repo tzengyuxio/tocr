@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TocImageViewer } from "@/components/issue/TocImageViewer";
 
@@ -11,7 +11,7 @@ describe("TocImageViewer", () => {
   it("shows the first page and no pager for a single image", () => {
     render(<TocImageViewer images={["/a.jpg"]} />);
 
-    expect(screen.getByAltText("目錄頁 1")).toHaveAttribute("src", "/a.jpg");
+    expect(screen.getByAltText("目錄頁")).toHaveAttribute("src", "/a.jpg");
     expect(screen.queryByText("1 / 1")).not.toBeInTheDocument();
   });
 
@@ -26,48 +26,41 @@ describe("TocImageViewer", () => {
     expect(screen.getByText("2 / 2")).toBeInTheDocument();
   });
 
-  describe("the enlarged view", () => {
-    const openLightbox = async (user: ReturnType<typeof userEvent.setup>) => {
-      render(<TocImageViewer images={["/a.jpg", "/b.jpg"]} />);
-      await user.click(screen.getByRole("button", { name: "全螢幕檢視" }));
-      return screen.getByRole("dialog");
-    };
+  it("lays two scans side by side", async () => {
+    const user = userEvent.setup();
+    render(<TocImageViewer images={["/a.jpg", "/b.jpg"]} />);
 
-    it("pages with the arrows flanking the image", async () => {
-      const user = userEvent.setup();
-      const dialog = await openLightbox(user);
+    await user.click(screen.getByRole("button", { name: "改為雙頁並列" }));
 
-      // 兩側的大箭頭與底部膠囊各一組，所以名字相同的按鈕會有兩個。
-      const [sideNext] = within(dialog).getAllByRole("button", {
-        name: "下一頁",
-      });
-      await user.click(sideNext);
+    expect(screen.getByText("1–2 / 2")).toBeInTheDocument();
+    expect(screen.getByAltText("目錄頁 2")).toBeInTheDocument();
+  });
 
-      expect(within(dialog).getByText("2 / 2")).toBeInTheDocument();
-      // 切換不等於關閉：點圖片以外的地方會收掉 lightbox，箭頭不該跟著收。
-      expect(dialog).toBeInTheDocument();
+  describe("全螢幕對照", () => {
+    it("is offered only when the caller can lay out the whole screen", () => {
+      render(<TocImageViewer images={["/a.jpg"]} />);
+
+      expect(
+        screen.queryByRole("button", { name: "全螢幕對照" })
+      ).not.toBeInTheDocument();
     });
 
-    it("pages with the left and right keys", async () => {
+    it("asks its caller to switch, and says how to get back", async () => {
       const user = userEvent.setup();
-      const dialog = await openLightbox(user);
+      const onToggle = jest.fn();
+      const { rerender } = render(
+        <TocImageViewer images={["/a.jpg"]} onToggleFullscreen={onToggle} />
+      );
 
-      await user.keyboard("{ArrowRight}");
-      expect(within(dialog).getByText("2 / 2")).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "全螢幕對照" }));
+      expect(onToggle).toHaveBeenCalledTimes(1);
 
-      await user.keyboard("{ArrowLeft}");
-      expect(within(dialog).getByText("1 / 2")).toBeInTheDocument();
-    });
-
-    it("stops at both ends", async () => {
-      const user = userEvent.setup();
-      const dialog = await openLightbox(user);
-
-      await user.keyboard("{ArrowLeft}");
-      expect(within(dialog).getByText("1 / 2")).toBeInTheDocument();
-
-      await user.keyboard("{ArrowRight}{ArrowRight}");
-      expect(within(dialog).getByText("2 / 2")).toBeInTheDocument();
+      rerender(
+        <TocImageViewer images={["/a.jpg"]} fullscreen onToggleFullscreen={onToggle} />
+      );
+      expect(
+        screen.getByRole("button", { name: "離開全螢幕對照" })
+      ).toBeInTheDocument();
     });
   });
 });

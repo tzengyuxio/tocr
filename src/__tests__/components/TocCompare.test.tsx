@@ -92,4 +92,48 @@ describe("TocCompare", () => {
     expect(within(dialog).getByText("1–2 / 2")).toBeInTheDocument();
   });
 
+
+  describe("關掉它", () => {
+    const openFirst = async (user: ReturnType<typeof userEvent.setup>) => {
+      render(
+        <TocCompare images={["/a.jpg", "/b.jpg"]} magazineName="軟體世界" issueNumber="12">
+          {list}
+        </TocCompare>
+      );
+      await user.click(screen.getByRole("button", { name: "對照目錄頁 1" }));
+      return screen.getByRole("dialog");
+    };
+
+    it("has a close button in the corner of the scan", async () => {
+      const user = userEvent.setup();
+      const dialog = await openFirst(user);
+
+      await user.click(within(dialog).getByRole("button", { name: "關閉" }));
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("closes on a click beside the scan, for whoever missed the button", async () => {
+      const user = userEvent.setup();
+      const dialog = await openFirst(user);
+      const scan = within(dialog).getByAltText("目錄頁 1");
+
+      await user.click(scan.parentElement!.parentElement!);
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("does not close when the scan itself is clicked -- that is zooming", async () => {
+      const user = userEvent.setup();
+      const dialog = await openFirst(user);
+
+      await user.click(within(dialog).getByAltText("目錄頁 1"));
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(
+        within(dialog).getByRole("button", { name: "貼齊高度" })
+      ).toBeInTheDocument();
+    });
+  });
+
 });
