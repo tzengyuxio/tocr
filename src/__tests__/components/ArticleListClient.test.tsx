@@ -37,13 +37,13 @@ describe("ArticleListClient", () => {
   it("shows the scan beside the list when the issue has TOC images", () => {
     renderList({ tocImages: ["/toc.jpg"] });
 
-    expect(screen.getByAltText("目錄頁 1")).toBeInTheDocument();
+    expect(screen.getByAltText("目錄頁")).toBeInTheDocument();
   });
 
   it("renders the list alone when there is no scan", () => {
     renderList();
 
-    expect(screen.queryByAltText("目錄頁 1")).not.toBeInTheDocument();
+    expect(screen.queryByAltText("目錄頁")).not.toBeInTheDocument();
   });
 
   it("offers to mark an unreviewed issue as reviewed", () => {
