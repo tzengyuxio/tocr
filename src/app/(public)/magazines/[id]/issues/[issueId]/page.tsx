@@ -15,8 +15,8 @@ import {
 import { FileText, SquarePen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { IssueImages } from "@/components/issue/IssueImages";
+import { IssueTocList } from "@/components/issue/IssueTocList";
 import { VerifiedMark } from "@/components/magazine/VerifiedMark";
 import { ExternalLinkList } from "@/components/ExternalLinkList";
 import { formatEdtf } from "@/lib/edtf";
@@ -207,6 +207,12 @@ export default async function IssueDetailPage({ params }: PageProps) {
   const issueHref = (slug: string) =>
     `/magazines/${issue.magazine.slug}/issues/${encodeURIComponent(slug)}`;
 
+  // 同一份目錄畫兩個地方：頁面上那張，以及掃描對照視窗的右欄。同一個 element
+  // 傳給兩邊，兩邊看到的條目才保證是同一批。代價是 RSC payload 裡這段出現兩次
+  // ——視窗關著的時候它不在 DOM 裡（Radix 的 portal 開了才掛），所以只是幾 KB
+  // 的傳輸，不是兩份畫面。
+  const tocList = <IssueTocList articles={issue.articles} canEdit={canEdit} />;
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* 這一份目錄多半只有這裡有，所以要讓抓取端讀得到它，而不只是人眼看得到。 */}
@@ -310,7 +316,9 @@ export default async function IssueDetailPage({ params }: PageProps) {
               coverImage={issue.coverImage}
               tocImages={issue.tocImages}
               photos={withPublicSourceUrls(issue.photos)}
+              magazineName={magazineName}
               issueNumber={issue.issueNumber}
+              tocList={tocList}
             />
             {/* 封面資訊：緊接著封面圖，因為它講的就是上面那張圖。三欄都空就
                 整段不出現——絕大多數期還沒填，空標題比沒有更吵。
@@ -400,91 +408,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4">
-              {issue.articles.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  尚無文章資料
-                </div>
-              ) : (
-                /* One responsive list rather than a table and a card list. Every
-                   column but the page number and the title was empty on most rows
-                   -- this issue has no author at all on any of its 14 articles --
-                   and the empty cells were what made the list so tall. Chips drop
-                   to a second line only when there are any. */
-                <ul className="divide-y">
-                  {issue.articles.map((article) => {
-                    const chips = [
-                      ...article.articleGames.map((ag) => ({
-                        key: `g-${ag.game.id}`,
-                        href: `/games/${ag.game.slug}`,
-                        chip: <GameChip name={ag.game.name} />,
-                      })),
-                      ...article.articleTags.map((at) => ({
-                        key: `t-${at.tag.id}`,
-                        href: `/tags/${at.tag.slug}`,
-                        chip: <TagChip tag={at.tag} />,
-                      })),
-                    ];
-                    const page = article.pageStart
-                      ? article.pageEnd && article.pageEnd !== article.pageStart
-                        ? `${article.pageStart}-${article.pageEnd}`
-                        : `${article.pageStart}`
-                      : null;
-
-                    return (
-                      <li key={article.id} className="py-2">
-                        <div className="flex items-baseline gap-3">
-                          <span className="w-14 shrink-0 text-right font-mono text-sm text-muted-foreground">
-                            {page ? `p.${page}` : ""}
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <span className="font-medium">{article.title}</span>
-                            {article.subtitle && (
-                              <span className="ml-2 text-sm text-muted-foreground">
-                                {article.subtitle}
-                              </span>
-                            )}
-                            {article.authors.length > 0 && (
-                              <span className="ml-2 text-sm text-muted-foreground">
-                                ／{article.authors.join("、")}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex shrink-0 items-center gap-1">
-                            {article.category && (
-                              <CategoryChip
-                                category={article.category}
-                                className="text-xs"
-                              />
-                            )}
-                            {canEdit && (
-                              <Link
-                                href={`/admin/articles/${article.id}`}
-                                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                title="編輯文章"
-                              >
-                                <SquarePen className="h-3.5 w-3.5" />
-                              </Link>
-                            )}
-                          </div>
-                        </div>
-                        {chips.length > 0 && (
-                          <div className="ml-[4.25rem] mt-1 flex flex-wrap gap-1">
-                            {chips.map(({ key, href, chip }) => (
-                              <Link
-                                key={key}
-                                href={href}
-                                className="transition-opacity hover:opacity-80"
-                              >
-                                {chip}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+              <IssueTocList articles={issue.articles} canEdit={canEdit} />
             </CardContent>
           </Card>
         </div>
