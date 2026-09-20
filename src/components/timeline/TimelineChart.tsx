@@ -57,6 +57,8 @@ const COVER_WIDTH = 38;
 const COVER_HEIGHT = 51;
 const COVER_COLUMNS = 3;
 const COVER_GAP = 6;
+/** 封面引線最後斜過去的長度。斜的部分越短，欄位區裡越乾淨。 */
+const COVER_LEADER_SLANT = 36;
 const COVER_COL_WIDTH = COVER_WIDTH + COVER_GAP;
 const COVER_ZONE_WIDTH = COVER_COLUMNS * COVER_COL_WIDTH + 16;
 
@@ -575,9 +577,9 @@ function Marker({
 /**
  * 一張封面：擺在線右側的封面欄裡，用該刊顏色的引線接回節點。
  *
- * 引線走折線而不是直接連兩點：水平的那一段貼著節點出發，讀者一眼看得出它是從
- * 哪一條線拉出來的；88 張封面的引線疊在一起時，這件事比路徑短更重要。轉折擺在
- * 封面那一端，跨過欄位的因此一律是水平段——垂直段會跟刊物的線搞混。
+ * 引線先水平穿過欄位區，貼著封面才斜過去：水平的那一段從節點出發，讀者一眼看得
+ * 出它是從哪一條線拉出來的；88 張封面的引線疊在一起時，這件事比路徑短更重要。
+ * 斜的部分只留最後一小段，欄位區裡因此只有互相平行的水平線。
  */
 function CoverCallout({
   track,
@@ -605,8 +607,8 @@ function CoverCallout({
   const svgHeight = Math.abs(centerY - anchorY) + 2;
   const fromY = anchorY - svgTop + 1;
   const toY = centerY - svgTop + 1;
-  /** 轉折點。貼著封面轉，跨欄位的那一段才會是水平的。 */
-  const elbowX = Math.max(1, width - 12);
+  /** 開始斜過去的位置。留給斜線的那一小段貼著封面，跨欄位的一律是水平段。 */
+  const turnX = Math.max(1, width - COVER_LEADER_SLANT);
 
   return (
     // 滑到封面時，這一組（引線、線上的節點、封面）一起亮起來。分不出一張封面
@@ -618,13 +620,12 @@ function CoverCallout({
         style={{ left: anchorX, top: svgTop - 1, width, height: svgHeight }}
         aria-hidden
       >
-        {/* 折線而不是斜線：轉折擺在封面前 12px，所以跨過欄位的那一段一定是水平
-            的。斜線會以各種角度穿過刊物的線，八十幾條疊起來像一團毛；水平段不會
-            跟垂直的刊物線搞混，而且它從節點出發的那一端就貼著節點，一眼看得出是
-            從哪一條線拉出來的。轉折不放在節點旁邊，是因為那一段垂直線會落在欄位
-            區裡，看起來就像多了一條刊物。 */}
+        {/* 先水平、貼著封面才斜過去。整條斜著走的話，八十幾條各種斜率的線疊在
+            欄位區裡會變成一團毛；改成水平段穿越、只在最後 36px 斜，斜的部分就
+            都擠在封面欄那一側，欄位區裡只剩互相平行的水平線。
+            也不走直角：垂直段會在封面欄左緣排成一叢，而且看起來像刊物的線。 */}
         <path
-          d={`M 0 ${fromY} L ${elbowX} ${fromY} L ${elbowX} ${toY} L ${width} ${toY}`}
+          d={`M 0 ${fromY} L ${turnX} ${fromY} L ${width} ${toY}`}
           fill="none"
           stroke={color}
           className="[stroke-width:1] transition-[stroke-width] group-hover:[stroke-width:2.5]"
