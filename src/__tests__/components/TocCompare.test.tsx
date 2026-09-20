@@ -57,4 +57,39 @@ describe("TocCompare", () => {
 
     expect(screen.getByRole("button", { name: "對照目錄頁" })).toBeInTheDocument();
   });
+
+  it("lays two scans side by side, and pages by two", async () => {
+    const user = userEvent.setup();
+    render(
+      <TocCompare images={["/a.jpg", "/b.jpg", "/c.jpg", "/d.jpg"]} issueNumber="12">
+        {list}
+      </TocCompare>
+    );
+
+    await user.click(screen.getByRole("button", { name: "對照目錄頁 1" }));
+    const dialog = screen.getByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "改為雙頁並列" }));
+
+    expect(within(dialog).getByText("1–2 / 4")).toBeInTheDocument();
+    expect(within(dialog).getByAltText("目錄頁 2")).toHaveAttribute("src", "/b.jpg");
+
+    await user.click(within(dialog).getByRole("button", { name: "下一頁" }));
+    expect(within(dialog).getByText("3–4 / 4")).toBeInTheDocument();
+  });
+
+  it("backs up a page rather than opening a spread with nothing on the right", async () => {
+    const user = userEvent.setup();
+    render(
+      <TocCompare images={["/a.jpg", "/b.jpg"]} issueNumber="12">
+        {list}
+      </TocCompare>
+    );
+
+    await user.click(screen.getByRole("button", { name: "對照目錄頁 2" }));
+    const dialog = screen.getByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: "改為雙頁並列" }));
+
+    expect(within(dialog).getByText("1–2 / 2")).toBeInTheDocument();
+  });
+
 });

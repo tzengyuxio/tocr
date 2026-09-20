@@ -2,7 +2,15 @@
 
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, X } from "lucide-react";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  Minimize2,
+  Square,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useLightboxKeys } from "@/components/ui/lightbox";
@@ -21,6 +29,9 @@ import { formatIssueNumber } from "@/lib/issue-number";
  * 右邊那一欄是**呼叫端算好的同一份目錄**（server component 傳進來的 children），
  * 不是另外再畫一次的簡表——對照用的清單跟頁面上的清單長得不一樣，就沒有對照的
  * 意義了。
+ *
+ * 跟圖有關的三顆（翻頁、原尺寸、雙頁）都貼在圖上，不在上面那條標題列：它們改的
+ * 是左欄看到的東西，手要伸過大半個螢幕去按不合理。標題列只留關得掉的那顆。
  */
 export function TocCompare({
   images,
@@ -35,20 +46,43 @@ export function TocCompare({
   // 整頁塞進半個視窗的掃描，字大概只剩原尺寸的一半——看得出哪一列，讀不清是什麼
   // 字。所以留一顆切換：貼齊高度是找位置用的，原尺寸是讀字用的，左欄自己捲。
   const [actualSize, setActualSize] = useState(false);
+  // 一份目錄印成跨頁的時候，兩張掃描本來就是連著讀的。預設仍是單頁——按下去的是
+  // 某一張縮圖，點了第 2 頁卻跳出 2、3 兩頁會嚇到人。
+  const [spread, setSpread] = useState(false);
   const open = openIndex !== null;
+
+  // 雙頁時翻的是兩頁，而且 `openIndex` 一律是左邊那一張。
+  const pageStep = spread ? 2 : 1;
+  const shown =
+    openIndex === null
+      ? []
+      : spread && openIndex + 1 < images.length
+        ? [openIndex, openIndex + 1]
+        : [openIndex];
+  const last = shown.length > 0 ? shown[shown.length - 1] : 0;
 
   const step = (by: number) =>
     setOpenIndex((i) =>
-      i === null ? i : Math.min(images.length - 1, Math.max(0, i + by))
+      i === null
+        ? i
+        : Math.min(images.length - 1, Math.max(0, i + by * pageStep))
     );
+
+  const toggleSpread = () =>
+    setSpread((it) => {
+      // 在最後一張上開雙頁，右邊沒有東西可擺；退一張，兩頁才都看得到。
+      if (!it && openIndex === images.length - 1 && images.length > 1) {
+        setOpenIndex(images.length - 2);
+      }
+      return !it;
+    });
 
   // 只在開著的時候接手左右鍵：頁面上那兩顆鍵是捲動。這裡不綁上下鍵，右欄才捲得動。
   useLightboxKeys(open && images.length > 1, step);
 
   if (images.length === 0) return null;
 
-  const label = (i: number) =>
-    images.length > 1 ? `目錄頁 ${i + 1}` : "目錄頁";
+  const label = (i: number) => (images.length > 1 ? `目錄頁 ${i + 1}` : "目錄頁");
 
   return (
     <>
@@ -98,50 +132,10 @@ export function TocCompare({
             <span className="text-sm font-medium">
               {formatIssueNumber(issueNumber)} 目錄對照
             </span>
-            {images.length > 1 && openIndex !== null && (
-              <div className="ml-2 flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  aria-label="上一頁"
-                  disabled={openIndex === 0}
-                  onClick={() => step(-1)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm tabular-nums text-muted-foreground">
-                  {openIndex + 1} / {images.length}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  aria-label="下一頁"
-                  disabled={openIndex === images.length - 1}
-                  onClick={() => step(1)}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-auto h-7"
-              onClick={() => setActualSize((it) => !it)}
-            >
-              {actualSize ? (
-                <Minimize2 className="mr-1.5 h-3.5 w-3.5" />
-              ) : (
-                <Maximize2 className="mr-1.5 h-3.5 w-3.5" />
-              )}
-              {actualSize ? "貼齊高度" : "原尺寸"}
-            </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="ml-auto h-7 w-7"
               aria-label="關閉"
               onClick={() => setOpenIndex(null)}
             >
@@ -153,28 +147,90 @@ export function TocCompare({
               ——flex 子項的預設 min-height 是 auto，少了它兩欄都不會捲，整個
               視窗被內容撐長。 */}
           <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-            <div className="flex h-[42dvh] shrink-0 overflow-auto bg-black/90 p-2 lg:h-auto lg:w-[62%] lg:shrink lg:p-4">
-              {openIndex !== null && (
-                /* m-auto 而不是 items/justify-center：置中的 flex 子項一旦比容器
-                   大，捲到頭也看不到它的左上角，而原尺寸的掃描正是比容器大。 */
-                <div className="m-auto">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- 高度
-                      是視窗算出來的，next/image 沒有固定尺寸或 fill 做不到。 */}
-                  <img
-                    src={images[openIndex]}
-                    alt={label(openIndex)}
-                    /* 貼齊高度那一邊用視窗算，不用 max-h-full：百分比高度要對得上
-                       一個確定的父高，而這個 m-auto 的外框是內容撐出來的，高度
-                       不確定，`full` 會靜靜地解成沒有上限然後整張圖爆出去。
-                       扣掉的是上面那條工具列與左欄自己的內距。 */
-                    className={
-                      actualSize
-                        ? "max-w-none"
-                        : "max-h-[calc(42dvh-1rem)] w-auto max-w-full object-contain lg:max-h-[calc(100dvh-5rem)]"
-                    }
-                  />
+            <div className="relative h-[42dvh] shrink-0 bg-black/90 lg:h-auto lg:w-[62%] lg:shrink">
+              {/* 捲的是 inset-0 這一層，不是外框：原尺寸時圖比欄寬，而那排控制項
+                  得留在原地，不能跟著捲出畫面。 */}
+              <div className="absolute inset-0 flex overflow-auto p-2 lg:p-4">
+                {/* m-auto 而不是 items/justify-center：置中的 flex 子項一旦比容器
+                    大，捲到頭也看不到它的左上角，而原尺寸的掃描正是比容器大。 */}
+                <div className="m-auto flex items-start gap-2">
+                  {shown.map((i) => (
+                    /* eslint-disable-next-line @next/next/no-img-element -- 尺寸
+                       是視窗算出來的，next/image 沒有固定尺寸或 fill 做不到。 */
+                    <img
+                      key={images[i]}
+                      src={images[i]}
+                      alt={label(i)}
+                      /* 貼齊高度那一邊用視窗算，不用 max-h-full：百分比高度要對得
+                         上一個確定的父高，而這個 m-auto 的外框是內容撐出來的，高度
+                         不確定，`full` 會靜靜地解成沒有上限然後整張圖爆出去。扣掉
+                         的是標題列、左欄的內距，以及圖底下那排控制項。
+                         寬度同理：雙頁時兩張各佔一半，也只能用視窗寬度去算，因為
+                         外框的寬度是它們自己撐出來的。 */
+                      className={
+                        actualSize
+                          ? "max-w-none"
+                          : `max-h-[calc(42dvh-4rem)] w-auto object-contain lg:max-h-[calc(100dvh-8rem)] ${
+                              shown.length > 1
+                                ? "max-w-[46vw] lg:max-w-[29vw]"
+                                : "max-w-full"
+                            }`
+                      }
+                    />
+                  ))}
                 </div>
-              )}
+              </div>
+
+              {/* 跟圖有關的都在這裡，就在圖的下緣。 */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center px-2">
+                <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-1 rounded-full bg-black/70 px-2 py-1 text-white">
+                  {images.length > 1 && (
+                    <>
+                      <PillButton
+                        label="上一頁"
+                        disabled={openIndex === 0}
+                        onClick={() => step(-1)}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </PillButton>
+                      <span className="px-1 text-sm tabular-nums">
+                        {shown.length > 1
+                          ? `${shown[0] + 1}–${last + 1}`
+                          : `${last + 1}`}{" "}
+                        / {images.length}
+                      </span>
+                      <PillButton
+                        label="下一頁"
+                        disabled={last === images.length - 1}
+                        onClick={() => step(1)}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </PillButton>
+                      <span className="mx-1 h-4 w-px bg-white/30" aria-hidden />
+                      <PillButton
+                        label={spread ? "改為單頁" : "改為雙頁並列"}
+                        onClick={toggleSpread}
+                      >
+                        {spread ? (
+                          <Square className="h-4 w-4" />
+                        ) : (
+                          <BookOpen className="h-4 w-4" />
+                        )}
+                      </PillButton>
+                    </>
+                  )}
+                  <PillButton
+                    label={actualSize ? "貼齊高度" : "原尺寸"}
+                    onClick={() => setActualSize((it) => !it)}
+                  >
+                    {actualSize ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize2 className="h-4 w-4" />
+                    )}
+                  </PillButton>
+                </div>
+              </div>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2 lg:border-l">
@@ -184,5 +240,32 @@ export function TocCompare({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/** 深色膠囊上的一顆。名字只在 tooltip 與讀螢幕上，圖示要自己說得清楚。 */
+function PillButton({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 text-white hover:bg-white/20 hover:text-white disabled:opacity-30"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {children}
+    </Button>
   );
 }
