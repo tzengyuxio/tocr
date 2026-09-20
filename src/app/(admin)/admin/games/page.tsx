@@ -39,7 +39,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -50,6 +52,7 @@ import { CategoryChip } from "@/components/chips";
 import { ListPager } from "@/components/admin/ListPager";
 import { MergeGameDialog } from "@/components/admin/MergeGameDialog";
 import { GAME_SORTS, type GameDirection } from "@/lib/game-browse";
+import { PLATFORM_FAMILIES } from "@/lib/game-platforms";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 interface Game {
@@ -75,7 +78,18 @@ interface Game {
 // ever fail. next.config.ts derives this from RAWG_API_KEY.
 const RAWG_ENABLED = process.env.NEXT_PUBLIC_RAWG_ENABLED === "true";
 
-const COMMON_PLATFORMS = ["PC", "PS5", "PS4", "Switch", "Xbox Series", "Xbox One", "iOS", "Android"];
+/**
+ * 平台清單取自 `game-platforms.ts` 的正本代號表，不在這裡另寫一份。
+ *
+ * 這裡本來是 `["PC", "PS5", "PS4", "Switch", …]`——一份現代主機的清單，而這個站
+ * 收的是 1987 年起的雜誌，FC、SFC、MD、PC Engine 一個都選不到。更麻煩的是那幾個
+ * 值連代號表裡都沒有（`Switch`、`Xbox Series`），選下去寫進欄位的就是清單外的值。
+ *
+ * 照家族分組排，是因為代號有四十個：一整片沒有分隔的籌碼要一顆一顆讀，分了組
+ * 之後「先找廠商、再找機型」兩步就到。分組沿用同一份檔案裡的 `PLATFORM_FAMILIES`。
+ */
+const PLATFORM_GROUPS = Object.entries(PLATFORM_FAMILIES);
+
 const COMMON_GENRES = ["RPG", "動作", "冒險", "射擊", "模擬", "策略", "格鬥", "運動", "賽車", "音樂"];
 
 const PAGE_SIZE = 20;
@@ -419,10 +433,15 @@ export default function GamesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全部平台</SelectItem>
-                  {COMMON_PLATFORMS.map((platform) => (
-                    <SelectItem key={platform} value={platform}>
-                      {platform}
-                    </SelectItem>
+                  {PLATFORM_GROUPS.map(([family, codes]) => (
+                    <SelectGroup key={family}>
+                      <SelectLabel>{family}</SelectLabel>
+                      {codes.map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {code}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
                   ))}
                 </SelectContent>
               </Select>
@@ -760,20 +779,31 @@ export default function GamesPage() {
 
             <div className="space-y-2">
               <Label>平台</Label>
-              <div className="flex flex-wrap gap-2">
-                {COMMON_PLATFORMS.map((platform) => (
-                  <Badge
-                    key={platform}
-                    variant={
-                      formData.platforms.includes(platform)
-                        ? "default"
-                        : "outline"
-                    }
-                    className="cursor-pointer"
-                    onClick={() => togglePlatform(platform)}
-                  >
-                    {platform}
-                  </Badge>
+              <div className="space-y-2">
+                {/* 籌碼自己一個容器，換行的那幾顆才會停在縮排裡，而不是跑回
+                    家族名底下。任天堂有十個代號，一定會換行。 */}
+                {PLATFORM_GROUPS.map(([family, codes]) => (
+                  <div key={family} className="flex gap-2">
+                    <span className="w-16 shrink-0 pt-0.5 text-xs text-muted-foreground">
+                      {family}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {codes.map((code) => (
+                        <Badge
+                          key={code}
+                          variant={
+                            formData.platforms.includes(code)
+                              ? "default"
+                              : "outline"
+                          }
+                          className="cursor-pointer"
+                          onClick={() => togglePlatform(code)}
+                        >
+                          {code}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

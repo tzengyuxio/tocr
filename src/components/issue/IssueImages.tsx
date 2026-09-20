@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import {
   Dialog,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { LightboxArrow, useLightboxKeys } from "@/components/ui/lightbox";
 import { CoverPlaceholder } from "@/components/CoverPlaceholder";
+import { TocCompare } from "@/components/issue/TocCompare";
 import { formatIssueNumber } from "@/lib/issue-number";
 
 /** 掛在這一期的額外圖片，公開的那些。 */
@@ -25,7 +26,10 @@ interface IssueImagesProps {
   coverImage: string | null;
   tocImages: string[];
   photos: IssuePhoto[];
+  magazineName: string;
   issueNumber: string;
+  /** 這一期的目錄，交給掃描對照視窗當右欄用。見 `TocCompare`。 */
+  tocList: ReactNode;
 }
 
 /**
@@ -37,21 +41,21 @@ export function IssueImages({
   coverImage,
   tocImages,
   photos,
+  magazineName,
   issueNumber,
+  tocList,
 }: IssueImagesProps) {
-  // One list so the lightbox can page through cover and scans together.
+  // 封面與其他圖片同一串，燈箱因此翻得過去。**目錄頁不在裡面**：它點開的是左圖
+  // 右目錄的對照視窗（`TocCompare`），同一張圖有兩種點法只會讓人搞不清楚自己會
+  // 看到什麼。
   const images = [
     ...(coverImage ? [{ src: coverImage, label: "封面" }] : []),
-    ...tocImages.map((src, i) => ({
-      src,
-      label: tocImages.length > 1 ? `目錄頁 ${i + 1}` : "目錄頁",
-    })),
     ...photos.map((photo, i) => ({
       src: photo.url,
       label: photo.caption ?? photo.sourceName ?? `其他圖片 ${i + 1}`,
     })),
   ];
-  const photoOffset = (coverImage ? 1 : 0) + tocImages.length;
+  const photoOffset = coverImage ? 1 : 0;
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null);
   const zoomed = zoomedIndex === null ? null : images[zoomedIndex];
 
@@ -93,33 +97,13 @@ export function IssueImages({
           />
         )}
 
-        {tocImages.length > 0 && (
-          <div>
-            <p className="mb-1.5 text-xs text-muted-foreground">
-              目錄頁掃描（點擊放大）
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {tocImages.map((src, i) => (
-                <button
-                  key={src}
-                  type="button"
-                  className="cursor-zoom-in overflow-hidden rounded border transition-colors hover:border-primary"
-                  onClick={() => setZoomedIndex((coverImage ? 1 : 0) + i)}
-                  title={`放大目錄頁 ${i + 1}`}
-                >
-                  <Image
-                    src={src}
-                    alt={`目錄頁 ${i + 1}`}
-                    width={120}
-                    height={160}
-                    unoptimized
-                    className="h-24 w-auto"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        <TocCompare
+          images={tocImages}
+          magazineName={magazineName}
+          issueNumber={issueNumber}
+        >
+          {tocList}
+        </TocCompare>
 
         {photos.length > 0 && (
           <div>
