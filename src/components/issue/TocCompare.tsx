@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useLightboxKeys } from "@/components/ui/lightbox";
@@ -32,6 +32,9 @@ export function TocCompare({
   children: ReactNode;
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // 整頁塞進半個視窗的掃描，字大概只剩原尺寸的一半——看得出哪一列，讀不清是什麼
+  // 字。所以留一顆切換：貼齊高度是找位置用的，原尺寸是讀字用的，左欄自己捲。
+  const [actualSize, setActualSize] = useState(false);
   const open = openIndex !== null;
 
   const step = (by: number) =>
@@ -123,9 +126,22 @@ export function TocCompare({
               </div>
             )}
             <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto h-7"
+              onClick={() => setActualSize((it) => !it)}
+            >
+              {actualSize ? (
+                <Minimize2 className="mr-1.5 h-3.5 w-3.5" />
+              ) : (
+                <Maximize2 className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              {actualSize ? "貼齊高度" : "原尺寸"}
+            </Button>
+            <Button
               variant="ghost"
               size="icon"
-              className="ml-auto h-7 w-7"
+              className="h-7 w-7"
               aria-label="關閉"
               onClick={() => setOpenIndex(null)}
             >
@@ -137,15 +153,27 @@ export function TocCompare({
               ——flex 子項的預設 min-height 是 auto，少了它兩欄都不會捲，整個
               視窗被內容撐長。 */}
           <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-            <div className="flex h-[42dvh] shrink-0 items-center justify-center overflow-auto bg-black/90 p-2 lg:h-auto lg:w-[62%] lg:shrink lg:p-4">
+            <div className="flex h-[42dvh] shrink-0 overflow-auto bg-black/90 p-2 lg:h-auto lg:w-[62%] lg:shrink lg:p-4">
               {openIndex !== null && (
-                /* eslint-disable-next-line @next/next/no-img-element -- 高度是
-                   視窗算出來的，next/image 沒有固定尺寸或 fill 做不到。 */
-                <img
-                  src={images[openIndex]}
-                  alt={label(openIndex)}
-                  className="max-h-full w-auto max-w-full object-contain"
-                />
+                /* m-auto 而不是 items/justify-center：置中的 flex 子項一旦比容器
+                   大，捲到頭也看不到它的左上角，而原尺寸的掃描正是比容器大。 */
+                <div className="m-auto">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- 高度
+                      是視窗算出來的，next/image 沒有固定尺寸或 fill 做不到。 */}
+                  <img
+                    src={images[openIndex]}
+                    alt={label(openIndex)}
+                    /* 貼齊高度那一邊用視窗算，不用 max-h-full：百分比高度要對得上
+                       一個確定的父高，而這個 m-auto 的外框是內容撐出來的，高度
+                       不確定，`full` 會靜靜地解成沒有上限然後整張圖爆出去。
+                       扣掉的是上面那條工具列與左欄自己的內距。 */
+                    className={
+                      actualSize
+                        ? "max-w-none"
+                        : "max-h-[calc(42dvh-1rem)] w-auto max-w-full object-contain lg:max-h-[calc(100dvh-5rem)]"
+                    }
+                  />
+                </div>
               )}
             </div>
 
