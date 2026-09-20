@@ -150,7 +150,9 @@ export function TocCompare({
             <div className="relative h-[42dvh] shrink-0 bg-black/90 lg:h-auto lg:w-[62%] lg:shrink">
               {/* 捲的是 inset-0 這一層，不是外框：原尺寸時圖比欄寬，而那排控制項
                   得留在原地，不能跟著捲出畫面。 */}
-              <div className="absolute inset-0 flex overflow-auto p-2 lg:p-4">
+              {/* 底下留給那排控制項的一條，不然貼齊高度時膠囊會壓在掃描的最後
+                  一行字上。內距而不是縮圖：置中是在扣掉內距之後算的。 */}
+              <div className="absolute inset-0 flex overflow-auto p-2 pb-14 lg:p-4 lg:pb-16">
                 {/* m-auto 而不是 items/justify-center：置中的 flex 子項一旦比容器
                     大，捲到頭也看不到它的左上角，而原尺寸的掃描正是比容器大。 */}
                 <div className="m-auto flex items-start gap-2">
@@ -170,7 +172,7 @@ export function TocCompare({
                       className={
                         actualSize
                           ? "max-w-none"
-                          : `max-h-[calc(42dvh-4rem)] w-auto object-contain lg:max-h-[calc(100dvh-8rem)] ${
+                          : `max-h-[calc(42dvh-5.5rem)] w-auto object-contain lg:max-h-[calc(100dvh-10rem)] ${
                               shown.length > 1
                                 ? "max-w-[46vw] lg:max-w-[29vw]"
                                 : "max-w-full"
