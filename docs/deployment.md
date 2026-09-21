@@ -281,6 +281,36 @@ All migrations have been successfully applied.
 
 自動清理是跟著 **git branch 被刪掉**走的，而且**要等下一次 preview 部署才會執行**，所以 branch 數不會即時回落。
 
+### 純文件的 PR 不建 preview（2026-09-21）
+
+Neon branch 是 **Vercel↔Neon 整合在 preview deployment 發生時建的**（branch 的
+`creation_source` 是 `vercel`），所以沒有 build 就沒有 branch。純文件的 PR 照樣會跑
+`prisma migrate deploy` 再 `next build` 預先產生會查庫的 ISR 頁，等於為了沒人會點的
+preview 站把資料庫叫醒兩次——而這個專案的 Neon 成本是由喚醒頻率決定的。參考值：
+`preview/docs/book-snapshot-0914` 一條文件分支用掉 95 CPU 秒、376 秒 active time。
+
+`vercel.json` 因此加了 `ignoreCommand`。Vercel 的規則是**退出碼 0 代表跳過建置**，而
+`git diff --quiet` 剛好在「沒有差異」時回 0：
+
+```json
+"ignoreCommand": "git diff --quiet HEAD^ HEAD -- ':(exclude)docs/**' ':(exclude)*.md'"
+```
+
+**排除清單要窄不要寬，因為誤判的方向不對稱。** 把純文件誤判成要建置只是多花一次；把
+程式誤判成純文件卻會靜靜少掉一次驗收，而且沒有任何提示。所以這裡只排除 `docs/**` 與
+根目錄的 `*.md`，`src/`、`prisma/`、`package.json` 與設定檔任一有動都照建。
+
+**已知限制：`HEAD^ HEAD` 只看最後一個 commit。** 一個 PR 如果前面的 commit 改程式、
+最後一個 commit 補文件，會被誤判成純文件而跳過建置。正確的比法是跟 `main` 的
+merge-base 比（`git diff --quiet origin/main...HEAD`），但 Vercel 的 clone 是淺的，
+`origin/main` 未必在——所以沒有這樣寫。**收尾 commit 只動文件的 PR 要留意**，真的需要
+preview 時在 Vercel 後台手動 redeploy 即可。
+
+**驗法**：開一個只動 `docs/**` 的 PR，去 Neon Console → Branches 看有沒有多出
+`preview/<分支名>`。沒有多，就是生效了。這是事件驅動不是時間驅動——下一個純文件 PR
+就看得到，不必等。
+
+
 **三個會把它弄壞的動作**（官方文件明列）：
 
 - **不要改 branch 名**——git 或 Neon 任一邊改了，name-matching 就對不上，可能誤刪
