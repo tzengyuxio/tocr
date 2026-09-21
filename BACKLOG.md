@@ -9,6 +9,10 @@
 筆記長在裡面會讓每次讀它的成本跟著漲（2026-08-30 拆分，當時 602 行）。
 做完的打勾後移到 [docs/backlog/done.md](docs/backlog/done.md)。
 
+- [ ] **轉橘雲之後有四件事沒驗** — 2026-09-21 `tocr.simagame.me` 改成 proxied 走 Cloudflare（已確認生效）。OCR 會不會撞上 Cloudflare 那個不可調的 100 秒上限、Bot Fight Mode 有沒有被開起來（開了會靜默擋掉 `robots.ts` 刻意放行的 AI 爬蟲）、帶 Bearer token 的批次腳本還通不通、WAF 規則有沒有誤傷真人。四件的失敗樣態都是安靜的，驗法與判讀見 [docs/backlog/cloudflare-proxy-verification.md](docs/backlog/cloudflare-proxy-verification.md)（2026-09-21）
+
+- [ ] **`/admin` 的 GA 排除還沒在正式站驗過** — PR #160 把前台連進後台的三處 `<Link>` 改成 `<a>`，逼出整頁重載，這樣 gtag 才不會被 soft navigation 帶進後台。要在正式站點一次「後台管理」確認是整頁重載，再看 GA4 即時報表不再出現 `/admin`。**用 Safari 驗**（見 memory：後台平常就是用 Safari，Chrome 驗不到 WebKit 專屬的問題）。另外報表裡既有的 138 次 `/admin` 瀏覽改不掉，要乾淨得在 GA4 後台加資料篩選器（2026-09-21）
+
 - [ ] **《電擊SEGA SATURN》創刊號的出版節奏對不上** — 創刊1號 1998-10-02、創刊2號 1998-10-16 是雙週節奏，往後推創刊5號應落在 11-27，但站上創刊5號的封面標 12-11，中間多出一個出版週期。創刊3／4 號 2026-09-12 只建了空殼、日期留空，等封面或版權頁出現再補，不從節奏往後推（2026-09-12）
 
 - [ ] **智冠年報大事紀裡還有兩本沒對照** — 2017 年年報記「2008 年 04 月 智冠『電玩 e 週刊』、『電玩雙週刊』雜誌創刊」與「2012 年 04 月 智冠『APP 情報誌』雜誌創刊」（<https://www.soft-world.com/en/pdf/2017AnnualReport.pdf>）。**《電玩e週刊》站上沒有這本刊**，且與既有的《電玩e世代》（銘顯文化、2002-07 創刊）不是同一本，別併；《電玩APP情報誌》的封面在 `~/Downloads/gamexpress-covers`，見下面那條。年報與站上對不上的兩處（level up 記 2006-07、電玩双週刊記 2008-04）已寫進各自的 description（2026-09-12）
@@ -199,6 +203,13 @@
   最直接的接點是**遊戲**：TOCR 的 `Game` 與 cdosgame 的條目、以及雜誌書目與 nostalibrary 的館藏（見 [[nostalibrary-data-sources]] 的來源比較）。但關聯要怎麼建立（外部 id 欄位？slug 對照表？單向連結或雙向？）沒有討論過。
 
   **等資料量多了再討論**（yuxio 2026-08-14）。現在 TOCR 正式站只有 4 期有目錄、遊戲條目多半是 OCR 產生的暫時資料，此時定對照規則會用太小的樣本立規矩——與 [#34] 期號格式押後的理由相同（2026-08-14）
+
+  **2026-09-21 討論過了，方向轉向：不做關聯，做合併。** 見 Obsidian vault 的
+  `Decisions/adr-005-simagame-unified-data-platform.md`。理由是聯邦式連結會把
+  `match-cdosgame.ts` 跑出的 192 筆待判與 179 組合併候選變成**永久性經常成本**——
+  只要資料庫分開，每次任一邊新增條目就再長一次。改採單一資料庫、分四階段推進，
+  第一階段是「結構化資料進 Postgres、前台完全不動」。ADR 仍是 tentative，
+  兩件事未決：平台基底要擴充 TOCR 還是採 Payload、開放程度是帳號審核制還是匿名編輯（2026-09-21）
 
 - [ ] **把遊戲的 `nameEn` 填起來** — 113 款遊戲裡 nameEn 只有 1 筆有值，見 [docs/backlog/game-name-en.md](docs/backlog/game-name-en.md)（2026-08-16）
 
