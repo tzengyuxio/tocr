@@ -56,6 +56,8 @@ export const CSV_HEADERS = [
   "cover_games",
   "cover_subjects",
   "cover_credit",
+  "cover_source_name",
+  "cover_source_url",
   "toc_images",
   "toc_reviewed_at",
   "complete_at",
@@ -73,7 +75,7 @@ export const CSV_HEADERS = [
 ];
 
 const MAGAZINE_FIELD_COUNT = 16;
-const ISSUE_FIELD_COUNT = 19;
+const ISSUE_FIELD_COUNT = 21;
 const ARTICLE_FIELD_COUNT = 9;
 
 // Prisma returns Decimal for price; anything with toString will do here.
@@ -125,6 +127,8 @@ export interface ExportIssue {
   coverGames: string[];
   coverSubjects: string[];
   coverCredit: string | null;
+  coverSourceName: string | null;
+  coverSourceUrl: string | null;
   tocImages: string[];
   tocReviewedAt: Date | null;
   completeAt: Date | null;
@@ -213,6 +217,8 @@ export function rowsFor(
       list(issue.coverGames),
       list(issue.coverSubjects),
       issue.coverCredit ?? "",
+      issue.coverSourceName ?? "",
+      issue.coverSourceUrl ?? "",
       list(issue.tocImages),
       timestamp(issue.tocReviewedAt),
       timestamp(issue.completeAt),

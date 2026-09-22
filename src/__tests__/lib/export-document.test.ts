@@ -49,10 +49,10 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
     ];
 
     if (mag.issues.length === 0) {
-      // 16 magazine fields + 28 blanks against a 44-column header. The
+      // 16 magazine fields + 30 blanks against a 46-column header. The
       // original emitted a short row here, which a strict parser rejects or
       // misaligns; see the column-count assertions in export-rows.test.ts.
-      rows.push([...magFields, ...Array(28).fill("")]);
+      rows.push([...magFields, ...Array(30).fill("")]);
       continue;
     }
 
@@ -72,6 +72,8 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
         issue.coverGames.join(";"),
         issue.coverSubjects.join(";"),
         issue.coverCredit ?? "",
+        issue.coverSourceName ?? "",
+        issue.coverSourceUrl ?? "",
         issue.tocImages.join(";"),
         issue.tocReviewedAt ? issue.tocReviewedAt.toISOString() : "",
         issue.completeAt ? issue.completeAt.toISOString() : "",
@@ -151,6 +153,8 @@ function issue(n: number, articleCount: number): ExportIssue {
     coverGames: [],
     coverSubjects: [],
     coverCredit: null,
+    coverSourceName: null,
+    coverSourceUrl: null,
     tocImages: n % 4 === 0 ? [] : [`https://blob.test/toc-${n}-1.webp`],
     tocReviewedAt: n % 5 === 0 ? new Date("2026-08-20T04:05:06.000Z") : null,
     completeAt: n % 7 === 0 ? new Date("2026-08-22T01:02:03.000Z") : null,

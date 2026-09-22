@@ -152,6 +152,8 @@ export function IssueForm({
       coverGames: initialData?.coverGames || [],
       coverSubjects: initialData?.coverSubjects || [],
       coverCredit: initialData?.coverCredit || "",
+      coverSourceName: initialData?.coverSourceName || "",
+      coverSourceUrl: initialData?.coverSourceUrl || "",
       tocImages: initialData?.tocImages || [],
       pageCount: initialData?.pageCount || null,
       price: initialData?.price || null,
@@ -410,6 +412,19 @@ export function IssueForm({
                     description="本期封面圖片"
                   />
                 )}
+              />
+              {/* 出處跟著圖走：它講的是上面那張圖從哪裡來。 */}
+              <Label htmlFor="coverSourceName">封面來源</Label>
+              <Input
+                id="coverSourceName"
+                placeholder="本站掃描不必填"
+                {...register("coverSourceName")}
+              />
+              <Input
+                id="coverSourceUrl"
+                aria-label="封面來源網址"
+                placeholder="來源網址（選填）"
+                {...register("coverSourceUrl")}
               />
             </div>
 
