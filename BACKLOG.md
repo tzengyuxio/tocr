@@ -9,6 +9,8 @@
 筆記長在裡面會讓每次讀它的成本跟著漲（2026-08-30 拆分，當時 602 行）。
 做完的打勾後移到 [docs/backlog/done.md](docs/backlog/done.md)。
 
+- [ ] **Neon 已升付費方案，剩三件事沒做** — 2026-09-23 升級，停機風險解除（原本 9/23 前後會用完免費額度，直接停 compute）。剩下：把 `suspend_timeout_seconds` 從 300 改成 60（升級前是多買兩天，**升級後省的是真金白銀**，約每月 $20 → $10）、修 `auth()` 讓五個公開頁 ISR 全失效（為的是延遲與 DB 查詢量，不是省錢）、查爬蟲身分。量化數據與對策比較見 [docs/backlog/neon-compute-quota.md](docs/backlog/neon-compute-quota.md)。**「靠 idle 省錢」是低用量期的權宜不是設計**——用量長起來、或三站共用同一個庫之後要重問方案層級的問題（2026-09-21，2026-09-23 更新）
+
 - [ ] **轉橘雲之後有四件事沒驗** — 2026-09-21 `tocr.simagame.me` 改成 proxied 走 Cloudflare（已確認生效）。OCR 會不會撞上 Cloudflare 那個不可調的 100 秒上限、Bot Fight Mode 有沒有被開起來（開了會靜默擋掉 `robots.ts` 刻意放行的 AI 爬蟲）、帶 Bearer token 的批次腳本還通不通、WAF 規則有沒有誤傷真人。四件的失敗樣態都是安靜的，驗法與判讀見 [docs/backlog/cloudflare-proxy-verification.md](docs/backlog/cloudflare-proxy-verification.md)（2026-09-21）
 
 - [ ] **`/admin` 的 GA 排除還沒在正式站驗過** — PR #160 把前台連進後台的三處 `<Link>` 改成 `<a>`，逼出整頁重載，這樣 gtag 才不會被 soft navigation 帶進後台。要在正式站點一次「後台管理」確認是整頁重載，再看 GA4 即時報表不再出現 `/admin`。**用 Safari 驗**（見 memory：後台平常就是用 Safari，Chrome 驗不到 WebKit 專屬的問題）。另外報表裡既有的 138 次 `/admin` 瀏覽改不掉，要乾淨得在 GA4 後台加資料篩選器（2026-09-21）
