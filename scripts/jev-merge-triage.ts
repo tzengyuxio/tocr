@@ -18,6 +18,10 @@
  * 需要 `.env.local` 的 `JEV_API_KEY`（TypeSafe AI 的 `apikey_…`，
  * 見 <https://console.typesafe.ai/keys>）。約 1,350 input token／對，199 對約 $0.11。
  *
+ * 有一類錯 jev 看不見，因為它一次只看一對：站上同一筆條目被兩個上游條目認領時，
+ * 兩組裡必有一組是錯的。這個數一下就知道，所以 `multi_claim` 欄不問模型，直接標出來
+ * 並一律送人工——2026-09-22 抽驗 20 對，唯一的那個錯就是這麼來的。
+ *
  * **這支不寫資料庫，也不填 `decision`。** 合併是刪除、不可逆，判決留給人；
  * 這裡只出 `triage` 與三個 jev 欄位，決定人該往哪幾對花眼力。門檻怎麼來的、
  * 有多不牢靠，見 data/game-audit/README.md 的「jev 初判怎麼讀」。
@@ -224,17 +228,51 @@ async function ask(a: Candidate, b: Candidate, upstream: Upstream, apiKey: strin
   }
 }
 
-function triage(same: number, era: number): string {
+function triage(same: number, era: number, multiClaim: string): string {
+  if (multiClaim) return "送人工";
   if (era >= ERA_MISMATCH_FLAG) return "送人工";
   if (same >= SAME_GAME_MERGE) return "建議合併";
   if (same < SAME_GAME_REJECT) return "建議不合";
   return "逐對看";
 }
 
+/**
+ * 站上每一筆條目被哪幾個上游條目認領。認領超過一個就是 jev 看不見的錯。
+ *
+ * jev 一次只看一對，不知道同一筆條目在別組也出現。站上的《方程式賽車》同時被
+ * cdg-2368《方程式機車賽》（The Cycles，機車競速）與 cdg-0080《GP大賽車》
+ * （Grand Prix Circuit，賽車）認領——兩款是共用引擎的姊妹作，別名互相污染，
+ * 而它只能是其中一個，所以兩組裡必有一組是錯的。2026-09-22 抽驗 20 對時，
+ * 唯一的那個錯就是這麼來的。
+ *
+ * 這件事純粹數一下就看得出來，不必問模型，所以不管分數多高一律送人工。
+ */
+function claimsByEntry(rows: Candidate[]): Map<string, Set<string>> {
+  const claims = new Map<string, Set<string>>();
+  for (const row of rows) {
+    const set = claims.get(row.tocr_id) ?? new Set<string>();
+    set.add(row.cdg_id);
+    claims.set(row.tocr_id, set);
+  }
+  return claims;
+}
+
+/** 這一對的兩筆條目裡，被別組也認領的那些上游 id。空字串表示沒有。 */
+function multiClaimOf(a: Candidate, b: Candidate, claims: Map<string, Set<string>>): string {
+  const others = new Set<string>();
+  for (const side of [a, b]) {
+    for (const cdgId of claims.get(side.tocr_id) ?? []) {
+      if (cdgId !== a.cdg_id) others.add(cdgId);
+    }
+  }
+  return [...others].sort().join("、");
+}
+
 const TRIAGE_ORDER = ["建議合併", "逐對看", "送人工", "建議不合", "缺上游"];
 
 const COLUMNS = [
   "triage",
+  "multi_claim",
   "cdg_id",
   "bucket",
   "cdg_title",
@@ -302,13 +340,17 @@ async function main() {
   }
   console.error(`${groups.size} 組 / ${pairs.length} 對`);
 
+  const claims = claimsByEntry(rows);
+
   const output = await mapLimit(pairs, CONCURRENCY, async ([a, b]) => {
     const upstream = readUpstream(a.cdg_id);
     const answers = upstream ? await ask(a, b, upstream, apiKey) : null;
     const same = answers?.same_game.noul;
     const era = answers?.era_mismatch.noul;
+    const multiClaim = multiClaimOf(a, b, claims);
     return {
-      triage: answers ? triage(same!, era!) : "缺上游",
+      triage: answers ? triage(same!, era!, multiClaim) : "缺上游",
+      multi_claim: multiClaim,
       cdg_id: a.cdg_id,
       bucket: a.bucket,
       cdg_title: a.cdg_title,
