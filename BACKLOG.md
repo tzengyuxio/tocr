@@ -155,8 +155,6 @@
 
 - [ ] **「Game天堂!」是刊頭美術寫法還是並列刊名** — 這決定 slug 走 `youxi-tiantang`（規則 3）還是 `game-tiantang`（規則 1），判準是那一段印在哪裡，要看封面與版權頁怎麼並排。刊本身 2026-09-21 已整成一條刊系（EX 併成刊名時期），只剩這一題，見 [docs/backlog/game-paradise-ex.md](docs/backlog/game-paradise-ex.md)（2026-08-23，2026-09-21 收斂）
 
-- [ ] **《Game天堂EX》的書稿資料卡要併回 16 號還是留成一節** — `docs/book/magazines/21-game-paradise-ex.md` 指著一筆 2026-09-21 併掉的刊，站上已經沒有 `game-paradise-ex` 這本。併回 `16-game-paradise.md` 會動到後面所有刊的 `order`，留成一節則要決定 tier 與頁數怎麼算——兩本都還是「未撰稿」，寫的時候一起決定（2026-09-21）
-
 - [ ] **《e-JOY RO×RO》整本沒收** — 台灣唯一的 RO 專門誌，封面自稱「全國唯一RO專門誌」。二手市場見得到第 36 期（2006 年 7 月號）、第 22–26、31、37 期，另有「約 67 期完結」的說法（來源都是拍賣與 PTT RO 板，出版社查不到）。金萬字書店有 `ejoy-roxro-24`／`31` 兩筆條目可再查（2026-09-21）
 
 - [ ] **《電腦美少女天堂》整本沒收** — 目前只有刊名，出版社、年代、期數全無；網路上搜不到（2026-09-21）
@@ -281,8 +279,6 @@
 
 - [ ] **創刊日與停刊日補齊** — 43 本裡 36 本沒有停刊日、4 本沒有創刊日，跨刊的年代軸做不出來；動工前要先定 `endedDate` 記什麼，見 [docs/backlog/publication-dates.md](docs/backlog/publication-dates.md)（2026-09-04）
 
-
-- [ ] **出一本台灣遊戲雜誌圖鑑** — 工具書定位、按年代分六卷、200 頁上下的內容規劃，見 [docs/backlog/book.md](docs/backlog/book.md)（2026-09-04）
 
 
 - [ ] **`~/Downloads/gamexpress-covers` 裡還有沒建的刊與期** — 該資料夾 212 張封面，
