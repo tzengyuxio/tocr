@@ -24,6 +24,7 @@ commit 進來是為了讓「這批清掉了多少」在 git 歷史上看得出�
 | `platforms-suggested.csv` | `Game.platforms` 的寫入提案，`risk` 空的才會被 `apply-platforms.ts` 寫 |
 | `merge-candidates.csv` | 合併候選：同一個 cdosgame 條目對到站上好幾筆（`--groups`），180 組 |
 | `merge-candidates-ab.csv` | 上一份裡風險最低的兩堆（`--groups --bucket=A,B`），124 組 |
+| `merge-candidates-jev.csv` | 合併候選的 jev 初判（`scripts/jev-merge-triage.ts`），199 對 |
 
 每一列的 `articles_sample` 是該條目掛在哪幾篇文章上（最多三篇）。**撞名的群組要看這一欄
 才判得出來**：同一個中文譯名底下可能是三款不同遊戲——站上的「洪荒帝國」就掛著
@@ -91,3 +92,55 @@ cdosgame 連 `title_aliases` 一起比，抓得到 `Age of Empires` 與 `世紀�
 審法是填 `decision` 欄（`合併`／`不合併`，留空表示還沒判）。**腳本不讀這一欄**——合併是
 刪除、不可逆，只能由人一組一組按下去。同一組的每一列 `cdg_id` 相同，要保留的那筆與要
 併掉的那筆都在組內。
+
+## jev 初判怎麼讀
+
+`merge-candidates-jev.csv` 是 `scripts/jev-merge-triage.ts` 把上面那份候選表送給
+[Jev](https://docs.typesafe.ai/)（TypeSafe AI 的 System One，回傳型別固定的判斷）跑出來的
+**初判**，2026-09-22 第一次產。一列一「對」而不是一筆條目：組內兩兩比，所以 179 組
+出 199 對（169 組兩筆、10 組三筆）。
+
+上游的資料**取自本地的 `~/works/cdosgame/content/games/<id>.md`，不是線上的
+`games.json`**。差別是正文：那幾段人工考證常常直接把代理商改名史寫出來，而那正是
+名字裡沒有、光靠比對推不出來的東西。cdg-3190 的第二段就寫著「最初由第三波以
+《夢幻遊樂園》之名代理引進…其後改由光譜接手，先後以《千禧新樂園》及《模擬樂園2002》
+的名義重新包裝發行」——同一組候選，只給標題時 jev 判 0.34（不是同一款），給了正文
+之後 0.96。
+
+| 欄 | 裝什麼 |
+| --- | --- |
+| `triage` | 分流結果，見下表 |
+| `jev_same_game` | 0–1，這兩筆是不是同一款遊戲 |
+| `jev_relation` | `same_writing`／`translation_pair`／`same_game_variant`／`series_vs_entry`／`different_game`／`unclear` |
+| `jev_relation_conf` | 上一欄的信心 |
+| `jev_era_mismatch` | 0–1，另一筆被雜誌提到的年份跟正文描述的那款遊戲對不對得上 |
+| `decision` | **一律留空**，由人填 |
+
+`triage` 的四個值：
+
+| 值 | 條件 | 意思 |
+| --- | --- | --- |
+| 建議合併 | `same_game ≥ 0.85` 且年代無衝突 | 掃過去 |
+| 逐對看 | `same_game` 在 0.50–0.85 | `jev_relation` 已經給了理由，比從零判快 |
+| 送人工 | `era_mismatch ≥ 0.80` | 不管 `same_game` 多高，年代對不上就叫人來看 |
+| 建議不合 | `same_game < 0.50` | 多半是 `series_vs_entry` 或本篇對資料片 |
+
+### 三件不要照單全收的事
+
+**門檻是在 16 組已知答案上配的**，等於用兩三個點定線。0.80 這個值就是為了同時擋住
+`羅馬帝國AD92`／`羅馬帝國`（era 0.81）又放過 `雷電`／`Raiden`（era 0.73）挑的。
+那 16 組的命中率從 10/16 進步到 15/16，但 16 個樣本說明不了 199 對的準確率。
+
+**jev 不是決定性的。** 同一份輸入連跑兩次，5/199 對的 `triage` 不一樣，全都卡在門檻
+上下 0.01–0.02（`羅馬帝國AD92` 的 era 0.81→0.79 就從「送人工」掉成「逐對看」）。
+重跑出來的數字對不起來是正常的，不是腳本壞了。**邊界那幾對本來就該人看。**
+
+**`era_mismatch` 是旗標不是否決。** `article_year_range` 是雜誌提到的年份不是發行年，
+1998 年的雜誌提 1994 年的《雷電》完全正常，這種良性落差也會讓它亮燈。曾經把
+「年份對不上就不是同一款」寫進 `same_game` 的 criteria，16 組難題從 10 對掉到 6 對
+——那批本來就是照年代分歧篩出來的，等於全部否決。所以年代要獨立成一題。
+
+### 三筆一組的判決不一致是對的
+
+10 組三筆的候選裡有幾組組內判決不同，那不是矛盾：`極道梟雄`／`SYNDICATE` 該合，
+但同組的資料片《美洲風暴》不該併進去。**整組一起判，別逐對分開按。**

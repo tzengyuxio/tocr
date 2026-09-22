@@ -35,6 +35,14 @@
   `聖劍奇兵`(1999)／`聖戰奇兵`(1989–1990) 就是它抓到的，後者是印第安納瓊斯第三集的片名。
   判準與四堆的說明見 [data/game-audit/README.md](data/game-audit/README.md)（2026-09-20）
 
+  **2026-09-22 跑了 jev 初判**，結果在 `data/game-audit/merge-candidates-jev.csv`
+  （`scripts/jev-merge-triage.ts`，一列一對、199 對）：建議合併 172、逐對看 17、
+  建議不合 7、送人工 3。上游的考證正文（本地 `~/works/cdosgame/content/games/`）
+  是關鍵——只給標題判不出 `夢幻遊樂園`／`千禧新樂園` 是同一款，給了正文從 0.34
+  變 0.96。**`decision` 仍然全空**，門檻只在 16 組已知答案上配過、而且 jev 不是
+  決定性的（重跑有 5/199 對會跳堆），怎麼讀見 README 的「jev 初判怎麼讀」。
+  下一步是先抽 20 對驗命中率，再決定「建議合併」那批能不能整批信
+
 - [ ] **`Game.platforms` 還有 580 筆要人審** — 代號表已定案（存細的、顯示粗的，見 [docs/backlog/game-platforms.md](docs/backlog/game-platforms.md)），2026-09-20 寫入 1,353 / 6,744 筆。剩下的帶著 `risk` 標記在 `data/game-audit/platforms-suggested.csv`。**審法是清掉 `risk` 欄**再跑一次 `apply-platforms.ts`（union 不覆蓋、走 API、可重跑），判定不該寫的那列直接刪掉；判斷靠 `shared_with` 與 `sources` 兩欄。旗標分佈（可疊加）：靠別名對上 416、來源同時給了別筆 375、對到多個上游條目 40、名稱含假名 7、兩邊都給 3；其中 335 筆只帶一個旗標，光是「只靠別名對上」就有 172 筆，那是最好清的一批。建議值 553/580 是單一平台（DOS 457、WIN 136），文章數 328 筆只有 1 篇、60 筆 5 篇以上——**從文章多的那 60 筆先審**，錯了影響最大。**先做合併候選再審這批**：「來源同時給了別筆」那 375 筆的根因就是站上同一款有兩筆條目，合併之後會自己少掉一部分。還有兩件沒做：`PLATFORM` 標籤照同一張代號表收斂，以及文章標籤這第三個來源（能推到 1,681 筆，但一篇「PS2 大特集」掛的十款遊戲未必都是 PS2，得看比例）（2026-09-20）
 
 - [ ] **cdosgame 的對照關係要接起來** — `scripts/match-cdosgame.ts --prod` 產的對照表在 `data/game-audit/`：全站 2,655 款對上 1,422（其中 192 款要判）。**接法已定**：`ExternalLink`／`Photo` 各加 `gameId`（XOR 約束改成 `num_nonnulls(...) = 1`）、`ExternalSite` 加 `CDOSGAME`；外站的圖一律只存連結不複製。migration 還沒寫，等對照表人審過再動（2026-09-20）
