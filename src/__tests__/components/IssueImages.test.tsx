@@ -4,6 +4,7 @@ import { IssueImages } from "@/components/issue/IssueImages";
 
 const props = {
   coverImage: "/cover.jpg",
+  coverSource: { name: null, url: null },
   tocImages: [],
   photos: [],
   magazineName: "軟體世界",
@@ -58,5 +59,21 @@ describe("IssueImages", () => {
 
     expect(within(dialog).getByAltText("書條")).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "原尺寸" })).toBeInTheDocument();
+  });
+
+  it("credits the cover's source under it, and says nothing for our own scans", () => {
+    const { rerender } = render(<IssueImages {...props} />);
+    expect(screen.queryByText(/來源：/)).not.toBeInTheDocument();
+
+    rerender(
+      <IssueImages
+        {...props}
+        coverSource={{ name: "懷舊次元組", url: "https://www.facebook.com/groups/1" }}
+      />
+    );
+    expect(screen.getByRole("link", { name: "懷舊次元組" })).toHaveAttribute(
+      "href",
+      "https://www.facebook.com/groups/1"
+    );
   });
 });

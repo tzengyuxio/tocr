@@ -25,6 +25,8 @@ export interface IssuePhoto {
 
 interface IssueImagesProps {
   coverImage: string | null;
+  /** 封面圖的出處；本站自己的掃描兩欄都是 null。網址已經過 `publicSourceUrl`。 */
+  coverSource: { name: string | null; url: string | null };
   tocImages: string[];
   photos: IssuePhoto[];
   magazineName: string;
@@ -40,6 +42,7 @@ interface IssueImagesProps {
  */
 export function IssueImages({
   coverImage,
+  coverSource,
   tocImages,
   photos,
   magazineName,
@@ -86,23 +89,30 @@ export function IssueImages({
           screenful before the index started. */}
       <div className="flex gap-3 lg:block lg:space-y-3">
         {coverImage ? (
-          <button
-            type="button"
-            // Narrow screens stack the columns, where a full-width cover would
-            // be a screenful on its own before the index starts.
-            className="block w-32 shrink-0 cursor-zoom-in self-start overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-lg sm:w-40 lg:w-full"
-            onClick={() => setZoomedIndex(0)}
-            title="放大封面"
-          >
-            <Image
-              src={coverImage}
-              alt={`${formatIssueNumber(issueNumber)} 封面`}
-              width={400}
-              height={560}
-              unoptimized
-              className="w-full"
+          // Narrow screens stack the columns, where a full-width cover would
+          // be a screenful on its own before the index starts.
+          <div className="w-32 shrink-0 self-start sm:w-40 lg:w-full">
+            <button
+              type="button"
+              className="block w-full cursor-zoom-in overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-lg"
+              onClick={() => setZoomedIndex(0)}
+              title="放大封面"
+            >
+              <Image
+                src={coverImage}
+                alt={`${formatIssueNumber(issueNumber)} 封面`}
+                width={400}
+                height={560}
+                unoptimized
+                className="w-full"
+              />
+            </button>
+            <SourceLine
+              name={coverSource.name}
+              url={coverSource.url}
+              className="mt-1.5 text-xs text-muted-foreground"
             />
-          </button>
+          </div>
         ) : (
           <CoverPlaceholder
             kind="issue"
@@ -143,25 +153,7 @@ export function IssueImages({
                   </button>
                   <div className="min-w-0 text-xs text-muted-foreground">
                     {photo.caption && <p>{photo.caption}</p>}
-                    {/* 沒填來源就什麼都不標——標得出出處的圖與標不出的，
-                        在畫面上因此分得開。 */}
-                    {photo.sourceName && (
-                      <p>
-                        來源：
-                        {photo.sourceUrl ? (
-                          <a
-                            href={photo.sourceUrl}
-                            target="_blank"
-                            rel="nofollow noopener"
-                            className="underline underline-offset-2 hover:text-foreground"
-                          >
-                            {photo.sourceName}
-                          </a>
-                        ) : (
-                          photo.sourceName
-                        )}
-                      </p>
-                    )}
+                    <SourceLine name={photo.sourceName} url={photo.sourceUrl} />
                   </div>
                 </li>
               ))}
@@ -296,5 +288,38 @@ export function IssueImages({
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/**
+ * 「來源：某某」一行。沒填名字就什麼都不標——標得出出處的圖與標不出的，在畫面上
+ * 因此分得開。
+ */
+function SourceLine({
+  name,
+  url,
+  className,
+}: {
+  name: string | null;
+  url: string | null;
+  className?: string;
+}) {
+  if (!name) return null;
+  return (
+    <p className={className}>
+      來源：
+      {url ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="nofollow noopener"
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          {name}
+        </a>
+      ) : (
+        name
+      )}
+    </p>
   );
 }

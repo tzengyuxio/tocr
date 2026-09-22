@@ -53,6 +53,9 @@ export const issueCreateSchema = z.object({
   coverGames: z.array(z.string()).default([]),
   coverSubjects: z.array(z.string()).default([]),
   coverCredit: optionalText,
+  // 封面圖的出處，本站自己的掃描留空。見 Issue.coverSourceName。
+  coverSourceName: optionalText,
+  coverSourceUrl: optionalText,
   tocImages: z.array(z.string()).default([]),
   pageCount: optionalInt,
   price: optionalDecimal,
