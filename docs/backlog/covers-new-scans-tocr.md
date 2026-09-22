@@ -53,7 +53,7 @@ completed: 2026-09-05
 `MagazineTitle`（電擊王 → DengekiGAMES）也早在 2026-08-30 就建好了，
 見 [magazine-title-periods.md](magazine-title-periods.md)。
 
-**還沒做的**：封底 c4（這批 29 張，連同舊的 42 張）仍等 `/api/photos` 那條。
+**不做了**：封底 c4（這批 29 張，連同舊的 42 張）原本等 `/api/photos` 那條，2026-09-23 決定不上站，見 [done.md](done.md)。
 
 ## 現況
 
@@ -246,4 +246,4 @@ dev DB 的《電擊王》(`dengeki-oh-tw`) 底下有 `DengekiGAMES Vol.N` 這些
 - **82 張非期刊書籍封面**（`raw/game-books/` 60、`raw/koei-books/` 22）——
   攻略本、遊戲手冊、事典，tocr 是期刊索引，這些不進站；它們的 `jisui_id`
   要接回 `nostalib-toolkit/docs/books/meta/`，是另一邊的事
-- **c4 封底上傳**——走 `/api/photos`，見 covers-missing-issues.md
+- ~~**c4 封底上傳**~~——2026-09-23 決定不做，見 [done.md](done.md)
