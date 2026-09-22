@@ -86,6 +86,8 @@ export default async function EditIssuePage({ params }: PageProps) {
     coverGames: issue.coverGames,
     coverSubjects: issue.coverSubjects,
     coverCredit: issue.coverCredit,
+    coverSourceName: issue.coverSourceName,
+    coverSourceUrl: issue.coverSourceUrl,
     tocImages: issue.tocImages,
     pageCount: issue.pageCount,
     price: issue.price ? Number(issue.price) : null,

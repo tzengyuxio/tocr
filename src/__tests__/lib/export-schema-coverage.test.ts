@@ -48,6 +48,8 @@ const EXPORTED: Record<string, Record<string, string>> = {
     coverGames: "cover_games",
     coverSubjects: "cover_subjects",
     coverCredit: "cover_credit",
+    coverSourceName: "cover_source_name",
+    coverSourceUrl: "cover_source_url",
     tocImages: "toc_images",
     tocReviewedAt: "toc_reviewed_at",
     completeAt: "complete_at",

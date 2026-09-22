@@ -321,6 +321,11 @@ model Issue {
   coverGames      String[]  @default([]) @map("cover_games")
   coverSubjects   String[]  @default([]) @map("cover_subjects")
   coverCredit     String?   @map("cover_credit")
+  // 封面圖從哪裡來。空的時候就是本站自己的掃描；網路上取得的封面（社團分享、
+  // 別站的掃描）填這兩欄，單期頁在封面底下標出來。與 Photo.sourceName/sourceUrl
+  // 同形，公開頁同樣經過 lib/photo-source 的過濾——賣場只留名字。
+  coverSourceName String?   @map("cover_source_name")
+  coverSourceUrl  String?   @map("cover_source_url")
   tocImages       String[]  @default([]) @map("toc_images") // 目錄頁掃描圖（可多張）
   // When a person confirmed the table of contents. OCR run through the API
   // token leaves this null, so unreviewed issues can be found and checked.

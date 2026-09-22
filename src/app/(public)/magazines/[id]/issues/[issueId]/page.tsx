@@ -27,7 +27,7 @@ import { titleForIssue } from "@/lib/magazine-title";
 import { getSiteOrigin } from "@/lib/site-origin";
 import { pageOpenGraph } from "@/lib/og";
 import { splitLinks, shortenUrl } from "@/lib/linkify";
-import { withPublicSourceUrls } from "@/lib/photo-source";
+import { publicSourceUrl, withPublicSourceUrls } from "@/lib/photo-source";
 
 interface PageProps {
   params: Promise<{ id: string; issueId: string }>;
@@ -311,9 +311,13 @@ export default async function IssueDetailPage({ params }: PageProps) {
               and an overlay scrollbar (the macOS default) is drawn *over* the
               content, so scrollbar-gutter reserves nothing for it. */}
           <div className="space-y-4 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-3">
-            {/* photos 的出處網址先過濾：拍賣站只留名字，見 lib/photo-source。 */}
+            {/* 封面與 photos 的出處網址先過濾：拍賣站只留名字，見 lib/photo-source。 */}
             <IssueImages
               coverImage={issue.coverImage}
+              coverSource={{
+                name: issue.coverSourceName,
+                url: publicSourceUrl(issue.coverSourceUrl),
+              }}
               tocImages={issue.tocImages}
               photos={withPublicSourceUrls(issue.photos)}
               magazineName={magazineName}
