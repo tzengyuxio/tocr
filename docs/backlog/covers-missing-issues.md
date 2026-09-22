@@ -27,7 +27,7 @@ completed: 2026-09-02
 > **同日也把這 25 期的封面（c1）上傳了**，走
 > `~/lab/nostalib-toolkit/scripts/tocr_upload_covers.py`（新寫的，上傳前在本機縮到
 > 長邊 1600px 的 JPEG，否則 600dpi 原檔 11MB 過不了 Vercel 4.5MB 的 body 上限）。
-> 封底 c4 那 24 張**還沒傳**——那是 `/api/photos` 的額外圖片，不是封面。
+> 封底 c4 那 24 張**不傳**（2026-09-23 決定，見 [done.md](done.md)）——那是 `/api/photos` 的額外圖片，不是封面。
 > 注意 `covers_vs_tocr.py` 是按「期有沒有封面」分類的，c4 的列會跟著該期一起
 > 記進「已有封面」。
 >

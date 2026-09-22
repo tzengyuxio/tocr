@@ -256,6 +256,13 @@
   因為表格容器是 `overflow-x-auto`，CSS 規範下 `overflow-y: visible` 會被算成 `auto`，
   浮出去的東西會被裁掉。細節見 [games-tags-table.md](games-tags-table.md)
 
+- [x] **封底 c4 還沒上傳**（2026-09-23 決定不做） — 累積 131 張（2026-09-02 那批 42、
+  2026-09-05 新掃的 29、2026-09-06 電玩通 PS 系那批 22、SG／電視遊樂報導／城市少年 3
+  與《電玩通》週刊那批 35）。要走 `/api/photos` 而不是 `/api/upload`，
+  `tocr_upload_covers.py` 不涵蓋，得另外寫一支。**持有者決定不做**——
+  封底不進站，掃描檔仍保存在 `~/Pictures/covers/raw/magazines/` 的各刊子目錄裡。
+  原本卡著的 Blob 額度因此也不再是問題（2026-09-05 提出，2026-09-23 結案）
+
 - [x] **掃好的封面對不到站上的期次，補建 25 期**（2026-09-02 建完） — 電玩e世代 24 期
   （No.33–No.112，發行日取自封底右側資訊帶，逐本判讀）＋ 電腦玩家「即時戰爭遊戲特刊」1 期。
   用 `~/lab/nostalib-toolkit/scripts/tocr_create_issues.py` 打正式站，

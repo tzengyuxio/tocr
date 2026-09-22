@@ -35,6 +35,23 @@
   `聖劍奇兵`(1999)／`聖戰奇兵`(1989–1990) 就是它抓到的，後者是印第安納瓊斯第三集的片名。
   判準與四堆的說明見 [data/game-audit/README.md](data/game-audit/README.md)（2026-09-20）
 
+  **2026-09-22 跑了 jev 初判**，結果在 `data/game-audit/merge-candidates-jev.csv`
+  （`scripts/jev-merge-triage.ts`，一列一對、199 對）：建議合併 172、逐對看 17、
+  建議不合 7、送人工 3。上游的考證正文（本地 `~/works/cdosgame/content/games/`）
+  是關鍵——只給標題判不出 `夢幻遊樂園`／`千禧新樂園` 是同一款，給了正文從 0.34
+  變 0.96。**`decision` 仍然全空**，門檻只在 16 組已知答案上配過、而且 jev 不是
+  決定性的（重跑有 5/199 對會跳堆），怎麼讀見 README 的「jev 初判怎麼讀」。
+  **2026-09-23 抽驗 20 對，命中 19/20**，錯的那對是站上《方程式賽車》同時被兩筆
+  上游條目認領（The Cycles 與 Grand Prix Circuit 是共用引擎的姊妹作）。那類錯 jev
+  看不見——它一次只看一對——所以改成出表時直接數出來標 `multi_claim` 並一律送人工，
+  目前 3 筆條目 6 對。分流因此變成建議合併 169、逐對看 15、送人工 8、建議不合 7。
+  **同日再抽 40 對，40/40 全對**，累計 59/59（現行母體），Wilson 區間從 76%–99%
+  收到 93.9%–100%，169 對的錯誤上界從 41 對降到 10 對。**可以開始按了**，照 `triage`
+  由高分往下，後台的合併對話框每次都會先 dry-run；`送人工` 8 對與 `建議不合` 7 對
+  照舊逐對判。但這個 100% 有一層測不到：核對時大量靠上游的 `title_aliases`，而那正是
+  jev 看過的資料，所以殘餘風險在「上游紀錄本身把台灣譯名對錯」，那只有去看站上那幾篇
+  文章的內容才驗得出來（我讀不到正式站，被 Production Reads 擋著）
+
 - [ ] **`Game.platforms` 還有 580 筆要人審** — 代號表已定案（存細的、顯示粗的，見 [docs/backlog/game-platforms.md](docs/backlog/game-platforms.md)），2026-09-20 寫入 1,353 / 6,744 筆。剩下的帶著 `risk` 標記在 `data/game-audit/platforms-suggested.csv`。**審法是清掉 `risk` 欄**再跑一次 `apply-platforms.ts`（union 不覆蓋、走 API、可重跑），判定不該寫的那列直接刪掉；判斷靠 `shared_with` 與 `sources` 兩欄。旗標分佈（可疊加）：靠別名對上 416、來源同時給了別筆 375、對到多個上游條目 40、名稱含假名 7、兩邊都給 3；其中 335 筆只帶一個旗標，光是「只靠別名對上」就有 172 筆，那是最好清的一批。建議值 553/580 是單一平台（DOS 457、WIN 136），文章數 328 筆只有 1 篇、60 筆 5 篇以上——**從文章多的那 60 筆先審**，錯了影響最大。**先做合併候選再審這批**：「來源同時給了別筆」那 375 筆的根因就是站上同一款有兩筆條目，合併之後會自己少掉一部分。還有兩件沒做：`PLATFORM` 標籤照同一張代號表收斂，以及文章標籤這第三個來源（能推到 1,681 筆，但一篇「PS2 大特集」掛的十款遊戲未必都是 PS2，得看比例）（2026-09-20）
 
 - [ ] **cdosgame 的對照關係要接起來** — `scripts/match-cdosgame.ts --prod` 產的對照表在 `data/game-audit/`：全站 2,655 款對上 1,422（其中 192 款要判）。**接法已定**：`ExternalLink`／`Photo` 各加 `gameId`（XOR 約束改成 `num_nonnulls(...) = 1`）、`ExternalSite` 加 `CDOSGAME`；外站的圖一律只存連結不複製。migration 還沒寫，等對照表人審過再動（2026-09-20）
@@ -65,8 +82,6 @@
   `docs/backlog/done.md`），現在填得下去（2026-09-12，2026-09-20 改寫）
 
 - [ ] **42 條 `封面：主題 …` 還在 notes 裡** — 封面資訊已於 2026-09-06 整批搬進 `coverGames`／`coverSubjects`／`coverCredit`（219 期），只剩這一族沒搬：值一半是遊戲名、一半帶宣傳語（「暑假超強大作—新絕代雙驕貳」「專訪幻影特攻女主角」），要逐筆判，分佈在軟體世界 15、電腦玩家 14、新遊戲時代 13。見 [docs/data-conventions.md](docs/data-conventions.md) 的「封面資訊」（2026-09-06）
-
-- [ ] **封底 c4 還沒上傳** — 累積 131 張（2026-09-02 那批 42、2026-09-05 新掃的 29、2026-09-06 電玩通 PS 系那批 22、SG／電視遊樂報導／城市少年 3 與《電玩通》週刊那批 35）。走 `/api/photos` 不是 `/api/upload`，`tocr_upload_covers.py` 不管這條，要另外寫。先擱著，等 Blob 額度確認再動，見 [docs/backlog/covers-missing-issues.md](docs/backlog/covers-missing-issues.md) 與 [docs/backlog/covers-new-scans-tocr.md](docs/backlog/covers-new-scans-tocr.md)（2026-09-05）
 
 - [ ] **《軟體世界》目錄辨識的收尾** — 201 期的目錄掃描 2026-09-06 已整批上站並辨識，剩第 72 期辨識不出來（模型重複輸出、頁碼假造到 780）、第 47 期的 28 篇是舊資料、第 58 期把欄目名當成文章標題，另有 3 筆同標題同頁碼的重複條目要刪；全部 201 期的 `tocReviewedAt` 都還空著，見 [docs/backlog/swm-toc-scans.md](docs/backlog/swm-toc-scans.md)（2026-09-06）
 
@@ -318,3 +333,4 @@
 
 - [ ] **`MagazineTitle.titleSource` 的 null 分不出「沿用」與「沒有原刊」** — 欄位註解說 null 表示原刊沒換、沿用 `Magazine.sourceTitle`。但《電玩攻略》→《攻略快報》是授權**中止**：電玩攻略時期是《月刊ファミコン通信 攻略スペシャル》授權中文版，攻略快報時期封面已無授權標示。這種「這一段不是翻譯刊」現在只能寫進 `note`，查不了也統計不了。要不要加一個明確的「無原刊」值，看之後還會不會遇到第二本（2026-09-20）
 
+- [ ] **用站上資料回頭改善維基〈臺灣電玩雜誌列表〉** — 2026-08-24 比對出頁內矛盾、可用逐期資料校正的數字與整節漏收（「電遊出版」是空的）。卡的是維基規範不是工具：不得原創研究、自己的站有利益衝突，要引實體本的期與頁。不需要 API，由 Claude 起草、yuxio 對照後手動送出；動手前先重新比對，當時的差異有些可能已不成立，見 [docs/backlog/wikipedia-magazine-list.md](docs/backlog/wikipedia-magazine-list.md)（2026-09-23）
