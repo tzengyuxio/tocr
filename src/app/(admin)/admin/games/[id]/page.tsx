@@ -32,6 +32,7 @@ import { formatIssueNumber } from "@/lib/issue-number";
 import { LinkSection, type LinkRow } from "@/components/LinkSection";
 import { GameForm, type GameFormValues } from "@/components/game/GameForm";
 import { toast } from "sonner";
+import { formatPages } from "@/lib/page-label";
 
 /** 這一筆 → 表單的欄位值。與列表頁那支同一件事，各自靠著自己的型別。 */
 function toFormValues(game: {
@@ -259,9 +260,7 @@ export default function GameDetailPage() {
                                   className="flex items-center gap-3 rounded px-3 py-2 text-sm hover:bg-muted transition-colors"
                                 >
                                   <span className="w-16 shrink-0 text-right font-mono text-xs text-muted-foreground">
-                                    {article.pageStart
-                                      ? `p.${article.pageStart}${article.pageEnd && article.pageEnd !== article.pageStart ? `-${article.pageEnd}` : ""}`
-                                      : ""}
+                                    {formatPages(article) ?? ""}
                                   </span>
                                   <span className="flex-1 truncate">
                                     {article.title}

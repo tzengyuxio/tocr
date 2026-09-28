@@ -38,6 +38,7 @@ export const CSV_HEADERS = [
   "known_issue_count_source",
   "description",
   "categories",
+  "adult",
   "founded_date",
   "ended_date",
   "is_active",
@@ -67,6 +68,7 @@ export const CSV_HEADERS = [
   "article_subtitle",
   "authors",
   "category",
+  "page_section",
   "page_start",
   "page_end",
   "summary",
@@ -74,9 +76,9 @@ export const CSV_HEADERS = [
   "games",
 ];
 
-const MAGAZINE_FIELD_COUNT = 16;
+const MAGAZINE_FIELD_COUNT = 17;
 const ISSUE_FIELD_COUNT = 21;
-const ARTICLE_FIELD_COUNT = 9;
+const ARTICLE_FIELD_COUNT = 10;
 
 // Prisma returns Decimal for price; anything with toString will do here.
 type Numeric = number | string | { toString(): string };
@@ -94,6 +96,7 @@ export interface ExportMagazine {
   knownIssueCountSource: string | null;
   description: string | null;
   categories: string[];
+  adult: boolean;
   foundedDate: string | null;
   endedDate: string | null;
   isActive: boolean;
@@ -105,6 +108,7 @@ export interface ExportArticle {
   subtitle: string | null;
   authors: string[];
   category: string | null;
+  pageSection: string | null;
   pageStart: number | null;
   pageEnd: number | null;
   summary: string | null;
@@ -189,6 +193,7 @@ export function rowsFor(
     magazine.knownIssueCountSource ?? "",
     magazine.description ?? "",
     list(magazine.categories),
+    magazine.adult ? "true" : "false",
     magazine.foundedDate ?? "",
     magazine.endedDate ?? "",
     magazine.isActive ? "true" : "false",
@@ -246,6 +251,7 @@ export function rowsFor(
           article.subtitle ?? "",
           list(article.authors),
           article.category ?? "",
+          article.pageSection ?? "",
           article.pageStart != null ? String(article.pageStart) : "",
           article.pageEnd != null ? String(article.pageEnd) : "",
           article.summary ?? "",

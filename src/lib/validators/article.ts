@@ -8,6 +8,8 @@ export const articleCreateSchema = z.object({
   subtitle: optionalText,
   authors: z.array(z.string()).default([]),
   category: z.enum(ARTICLE_CATEGORY_VALUES).optional().nullable(),
+  // 頁碼屬於哪一段（「別冊」「附錄」），本刊留空。見 lib/page-label.ts
+  pageSection: optionalText,
   pageStart: z.coerce.number().int().positive().optional().nullable(),
   pageEnd: z.coerce.number().int().positive().optional().nullable(),
   summary: optionalText,
@@ -36,6 +38,7 @@ export const articleBatchCreateSchema = z.object({
       subtitle: optionalText,
       authors: z.array(z.string()).default([]),
       category: z.enum(ARTICLE_CATEGORY_VALUES).optional().nullable(),
+      pageSection: optionalText,
       pageStart: z.coerce.number().int().positive().optional().nullable(),
       pageEnd: z.coerce.number().int().positive().optional().nullable(),
       summary: optionalText,

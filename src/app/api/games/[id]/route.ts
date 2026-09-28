@@ -27,6 +27,7 @@ export const GET = withErrorHandler(async (
               id: true,
               title: true,
               category: true,
+              pageSection: true,
               pageStart: true,
               pageEnd: true,
               issue: {

@@ -49,6 +49,26 @@ describe("POST /api/articles/batch", () => {
     expect(json.count).toBe(1);
   });
 
+  it("stores the page section of a supplement's own page numbers", async () => {
+    prismaMock.issue.findUnique.mockResolvedValue({ id: "iss-1" });
+    prismaMock.article.create.mockResolvedValue({ id: "art-1", issueId: "iss-1" });
+
+    await POST(
+      makeRequest({
+        issueId: "iss-1",
+        articles: [
+          { title: "別冊的一篇", pageSection: "別冊", pageStart: 6, pageEnd: 8 },
+          { title: "本刊的一篇", pageSection: "", pageStart: 4 },
+        ],
+      })
+    );
+
+    const sections = prismaMock.article.create.mock.calls.map(
+      ([args]: [{ data: { pageSection?: string | null } }]) => args.data.pageSection
+    );
+    expect(sections).toEqual(["別冊", null]);
+  });
+
   it("logs every article it created, not just the first", async () => {
     prismaMock.issue.findUnique.mockResolvedValue({ id: "iss-1" });
     prismaMock.article.create

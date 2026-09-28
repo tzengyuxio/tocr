@@ -48,6 +48,8 @@ export const magazineCreateSchema = z.object({
   logoImage: optionalText,
   // 報導哪一類遊戲。一本可以跨多類，見 prisma/schema.prisma 的 MagazineCategory
   categories: z.array(z.enum(MAGAZINE_CATEGORY_VALUES)).default([]),
+  // 成人向。分級軸，與上面的平台軸分開，見 prisma/schema.prisma 的 Magazine.adult
+  adult: z.boolean().default(false),
   foundedDate: optionalEdtf,
   endedDate: optionalEdtf,
   isActive: z.boolean().default(true),
@@ -59,6 +61,7 @@ export const magazineCreateSchema = z.object({
 export const magazineUpdateSchema = magazineCreateSchema.partial().extend({
   aliases: z.array(z.string()).optional(),
   categories: z.array(z.enum(MAGAZINE_CATEGORY_VALUES)).optional(),
+  adult: z.boolean().optional(),
   isActive: z.boolean().optional(),
 });
 

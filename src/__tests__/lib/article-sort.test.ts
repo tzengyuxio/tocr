@@ -24,4 +24,19 @@ describe("byPageNumber", () => {
   it("treats two unpaginated articles as equal", () => {
     expect(byPageNumber(page(null), page(null))).toBe(0);
   });
+
+  it("puts the main magazine before a supplement with its own page numbers", () => {
+    const sorted = [
+      { pageSection: "別冊", ...page(2) },
+      { pageSection: null, ...page(4) },
+      { pageSection: "別冊", ...page(1) },
+      { pageSection: null, ...page(120) },
+    ].sort(byPageNumber);
+    expect(sorted.map((a) => `${a.pageSection ?? ""}${a.pageStart}`)).toEqual([
+      "4",
+      "120",
+      "別冊1",
+      "別冊2",
+    ]);
+  });
 });

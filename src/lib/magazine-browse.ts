@@ -116,6 +116,43 @@ export function parseMagazineFilter(value: string | undefined): MagazineFilter {
 }
 
 /**
+ * 分級篩選，與上面的分類（平台軸）分開一排。
+ *
+ * 分級是另一條軸（見 prisma/schema.prisma 的 Magazine.adult），混進平台 chip
+ * 會讓「TV Game」與「成人向」看起來是同一種選擇、還得互斥。預設全部顯示：
+ * 這裡是索引，收了什麼就列什麼；要篩掉的讀者按「一般」。
+ */
+export const MAGAZINE_RATINGS = [
+  { value: "all", label: "全部", adult: null },
+  { value: "general", label: "一般", adult: false },
+  { value: "adult", label: "成人向", adult: true },
+] as const satisfies ReadonlyArray<{
+  value: string;
+  label: string;
+  adult: boolean | null;
+}>;
+
+export const DEFAULT_MAGAZINE_RATING = "all";
+
+export type MagazineRating = (typeof MAGAZINE_RATINGS)[number];
+
+/** 手改網址帶進未知值時讀成預設，與 parseMagazineFilter 同一個態度。 */
+export function parseMagazineRating(value: string | undefined): MagazineRating {
+  return (
+    MAGAZINE_RATINGS.find((r) => r.value === value) ??
+    MAGAZINE_RATINGS.find((r) => r.value === DEFAULT_MAGAZINE_RATING)!
+  );
+}
+
+/** 這張卡在不在這個分級裡。 */
+export function matchesRating(
+  unit: { adult: boolean },
+  rating: MagazineRating
+): boolean {
+  return rating.adult === null || unit.adult === rating.adult;
+}
+
+/**
  * 兩種呈現方式。列表是預設：把出版社、期數、發行期間排成欄，一眼掃得完整個書架，
  * 也比得出誰辦得久。後台的雜誌管理一直是這個形狀，前台只是把同一種讀法給讀者。
  *
@@ -246,6 +283,8 @@ export interface MagazineDisplayUnit {
   publisher: string | null;
   logoImage: string | null;
   categories: MagazineCategory[];
+  /** 成人向。掛在刊系上，同一本刊的各時期卡都帶一樣的值。 */
+  adult: boolean;
   /**
    * 刊號。與 knownIssueCount 不同，**改過名的刊每一列都帶得到值**：ISSN 是識別
    * 資訊不是統計量，而且改名時本來就可能沿用同一組（電擊王與電玩通同為
@@ -290,6 +329,7 @@ interface DisplayMagazine {
   publisher: string | null;
   logoImage: string | null;
   categories: MagazineCategory[];
+  adult: boolean;
   foundedDate: string | null;
   endedDate: string | null;
   foundedSort: Date | null;
@@ -384,6 +424,7 @@ export function magazineDisplayUnits(
     magazineId: magazine.id,
     publisher: magazine.publisher,
     categories: magazine.categories,
+    adult: magazine.adult,
     issn: magazine.issn,
   };
 

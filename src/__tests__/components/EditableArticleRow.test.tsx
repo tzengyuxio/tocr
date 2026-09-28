@@ -8,6 +8,7 @@ const article = {
   subtitle: null,
   authors: ["王大明"],
   category: null,
+  pageSection: null,
   pageStart: 68,
   pageEnd: null,
   summary: "一篇攻略",

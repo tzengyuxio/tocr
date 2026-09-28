@@ -63,6 +63,7 @@ export default function TagsPage() {
         id: string;
         title: string;
         category: ArticleCategory | null;
+        pageSection: string | null;
         pageStart: number | null;
         pageEnd: number | null;
         issue: {

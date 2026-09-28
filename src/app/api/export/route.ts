@@ -45,6 +45,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       knownIssueCountSource: true,
       description: true,
       categories: true,
+      adult: true,
       foundedDate: true,
       endedDate: true,
       isActive: true,

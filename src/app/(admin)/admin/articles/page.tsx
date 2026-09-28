@@ -32,6 +32,7 @@ import type { ArticleCategory } from "@/lib/article-categories";
 import { CategoryChip } from "@/components/chips";
 import { ListPager } from "@/components/admin/ListPager";
 import { formatIssueNumber } from "@/lib/issue-number";
+import { formatPages } from "@/lib/page-label";
 
 interface Article {
   id: string;
@@ -39,6 +40,7 @@ interface Article {
   subtitle: string | null;
   authors: string[];
   category: ArticleCategory | null;
+  pageSection: string | null;
   pageStart: number | null;
   pageEnd: number | null;
   sortOrder: number;
@@ -233,13 +235,7 @@ export default function ArticlesPage() {
                         )}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-muted-foreground">
-                        {article.pageStart
-                          ? `p.${article.pageStart}${
-                              article.pageEnd && article.pageEnd !== article.pageStart
-                                ? `-${article.pageEnd}`
-                                : ""
-                            }`
-                          : "-"}
+                        {formatPages(article) ?? "-"}
                       </TableCell>
                       <TableCell>
                         <div className="max-w-[150px] truncate text-sm text-muted-foreground">

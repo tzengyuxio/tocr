@@ -76,6 +76,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
       description: initialData?.description || "",
       logoImage: initialData?.logoImage || "",
       categories: initialData?.categories || [],
+      adult: initialData?.adult ?? false,
       foundedDate: initialData?.foundedDate || "",
       endedDate: initialData?.endedDate || "",
       isActive: initialData?.isActive ?? true,
@@ -381,6 +382,24 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                   </div>
                 )}
               />
+            </div>
+
+            {/* 分級：與上面的平台分類是兩條軸，所以不做成第五顆 chip */}
+            <div className="space-y-1 @md:col-span-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="adult"
+                  className="h-4 w-4 rounded border-gray-300"
+                  {...register("adult")}
+                />
+                <Label htmlFor="adult" className="font-normal">
+                  成人向（18禁）
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                整本刊的定位，不是單期內容。列表上可以篩掉
+              </p>
             </div>
 
             {/* Logo 圖片 */}

@@ -3,6 +3,8 @@ import {
   DEFAULT_MAGAZINE_FILTER,
   DEFAULT_MAGAZINE_SORT,
   magazineOrderBy,
+  matchesRating,
+  parseMagazineRating,
   parseMagazineDirection,
   parseMagazineSort,
   MAGAZINE_CATEGORY_VALUES,
@@ -156,6 +158,7 @@ describe("magazineDisplayUnits 的沿革標記", () => {
     publisher: null,
     logoImage: null,
     categories: [],
+    adult: false,
     foundedDate: null,
     endedDate: null,
     foundedSort: null,
@@ -313,6 +316,7 @@ describe("magazineDisplayUnits 的逐時期副標", () => {
     publisher: null,
     logoImage: null,
     categories: [],
+    adult: false,
     foundedDate: null,
     endedDate: null,
     foundedSort: null,
@@ -442,5 +446,26 @@ describe("magazineCountTitle", () => {
         knownIssueCountSource: null,
       })
     ).toBe("站上收錄本刊 216 期；已知共 200 期；本刊數已多於該來源，這個數字待更新");
+  });
+});
+
+describe("parseMagazineRating", () => {
+  it("reads a known value and falls back to showing everything", () => {
+    expect(parseMagazineRating("adult").adult).toBe(true);
+    expect(parseMagazineRating("general").adult).toBe(false);
+    expect(parseMagazineRating(undefined).value).toBe("all");
+    expect(parseMagazineRating("hgame").value).toBe("all");
+  });
+});
+
+describe("matchesRating", () => {
+  it("keeps everything under all, and splits on adult otherwise", () => {
+    const adult = { adult: true };
+    const general = { adult: false };
+    const all = parseMagazineRating("all");
+    expect([adult, general].filter((u) => matchesRating(u, all))).toHaveLength(2);
+    expect(matchesRating(adult, parseMagazineRating("adult"))).toBe(true);
+    expect(matchesRating(general, parseMagazineRating("adult"))).toBe(false);
+    expect(matchesRating(adult, parseMagazineRating("general"))).toBe(false);
   });
 });

@@ -56,6 +56,7 @@ export default async function ArticleEditPage({ params }: ArticleEditPageProps) 
           subtitle: article.subtitle,
           authors: article.authors,
           category: article.category,
+          pageSection: article.pageSection,
           pageStart: article.pageStart,
           pageEnd: article.pageEnd,
           summary: article.summary,

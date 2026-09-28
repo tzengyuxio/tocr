@@ -212,6 +212,13 @@ model Magazine {
   // can list its own options: Game.platforms is free text, and the chips there
   // would have to be derived from data that is not filled in yet.
   categories            MagazineCategory[] @default([])
+  // 成人向（18禁）刊物。這是**內容分級軸**，與上面的 categories（平台軸：
+  // TV／PC／OLG／Mobile）是兩件事，所以不併進那個 enum——一欄扛兩個職責在
+  // 這個 model 上已經錯過三次（nameOriginal、slug、nameParallel）。
+  //
+  // 掛刊不掛期：分級是刊物的定位，不會一期成人一期不是。用 Boolean 而不是
+  // 分級 enum：目前要分的只有這一刀，年齡確認、封面模糊日後讀的也是它。
+  adult                 Boolean            @default(false)
   // EDTF (ISO 8601-2) so month-, year- and season-level precision can be
   // recorded without inventing a day: "1999-05", "1994", "1994-22".
   foundedDate           String?            @map("founded_date")
@@ -498,21 +505,25 @@ model ExternalLink {
 }
 
 model Article {
-  id        String           @id @default(cuid())
-  issueId   String           @map("issue_id")
-  title     String
-  subtitle  String?
-  authors   String[] // 作者可能有多位
+  id          String           @id @default(cuid())
+  issueId     String           @map("issue_id")
+  title       String
+  subtitle    String?
+  authors     String[] // 作者可能有多位
   // Stored as a stable key so the Chinese label can be reworded without a
   // data migration -- it was reworded twice before this existed.
-  category  ArticleCategory?
-  pageStart Int?             @map("page_start")
-  pageEnd   Int?             @map("page_end")
-  summary   String?          @db.Text
-  content   String?          @db.Text // 可選的全文內容
-  sortOrder Int              @default(0) @map("sort_order")
-  createdAt DateTime         @default(now()) @map("created_at")
-  updatedAt DateTime         @updatedAt @map("updated_at")
+  category    ArticleCategory?
+  // 頁碼屬於哪一段，自由填寫（「別冊」「附錄」「C-mate」）；本刊留空。附冊有
+  // 自己一套頁碼時，pageStart／pageEnd 照印的填，由這欄說明是哪一套——頁碼
+  // 仍是 Int，排序與 structured data 都靠它。不從 subtitle 推：那一欄是副題。
+  pageSection String?          @map("page_section")
+  pageStart   Int?             @map("page_start")
+  pageEnd     Int?             @map("page_end")
+  summary     String?          @db.Text
+  content     String?          @db.Text // 可選的全文內容
+  sortOrder   Int              @default(0) @map("sort_order")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
 
   // Relations
   issue        Issue         @relation(fields: [issueId], references: [id], onDelete: Cascade)

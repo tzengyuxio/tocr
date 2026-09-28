@@ -13,6 +13,7 @@ import { IssueCoverHover } from "@/components/IssueCoverHover";
 import { formatEdtf } from "@/lib/edtf";
 import { formatIssueNumber } from "@/lib/issue-number";
 import type { ArticleCategory } from "@/lib/article-categories";
+import { formatPages } from "@/lib/page-label";
 import {
   ARTICLE_SORTS,
   nextDirection,
@@ -26,7 +27,9 @@ export interface ArticleListRow {
     title: string;
     subtitle: string | null;
     category: ArticleCategory | null;
+    pageSection: string | null;
     pageStart: number | null;
+    pageEnd: number | null;
     issue: {
       slug: string;
       issueNumber: string;
@@ -104,7 +107,7 @@ export function ArticleListTable({
                   )}
                 </TableCell>
                 <TableCell className="whitespace-nowrap font-mono text-sm">
-                  {row.article.pageStart || "-"}
+                  {formatPages(row.article) ?? "-"}
                 </TableCell>
               </TableRow>
             ))}
@@ -131,7 +134,7 @@ export function ArticleListTable({
               </Link>
               <span>·</span>
               <span>{formatEdtf(row.article.issue.publishDate)}</span>
-              {row.article.pageStart && <span>· p.{row.article.pageStart}</span>}
+              {formatPages(row.article) && <span>· {formatPages(row.article)}</span>}
             </div>
             {row.article.category && (
               <CategoryChip category={row.article.category} className="mt-1 text-xs" />
