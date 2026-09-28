@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/comma-list-input";
 import { ARTICLE_CATEGORIES } from "@/lib/article-categories";
 import type { ArticleCategory } from "@/lib/article-categories";
+import { formatPages } from "@/lib/page-label";
 import { formatTagInput, parseTagInput, type TagInput } from "@/lib/tag-input";
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 
@@ -32,6 +33,7 @@ interface ArticleItem {
   subtitle: string | null;
   authors: string[];
   category: ArticleCategory | null;
+  pageSection: string | null;
   pageStart: number | null;
   pageEnd: number | null;
   summary: string | null;
@@ -47,6 +49,7 @@ interface ArticleUpdatePayload {
   title: string;
   subtitle: string | null;
   category: ArticleCategory | null;
+  pageSection: string | null;
   pageStart: number | null;
   pageEnd: number | null;
   authors: string[];
@@ -88,6 +91,7 @@ export function EditableArticleRow({
     title: article.title,
     subtitle: article.subtitle,
     category: article.category,
+    pageSection: article.pageSection,
     pageStart: article.pageStart,
     pageEnd: article.pageEnd,
     authors: article.authors,
@@ -103,6 +107,7 @@ export function EditableArticleRow({
       title: article.title,
       subtitle: article.subtitle,
       category: article.category,
+      pageSection: article.pageSection,
       pageStart: article.pageStart,
       pageEnd: article.pageEnd,
       authors: article.authors,
@@ -135,11 +140,7 @@ export function EditableArticleRow({
     }
   };
 
-  const pageDisplay = article.pageStart
-    ? article.pageEnd && article.pageEnd !== article.pageStart
-      ? `${article.pageStart}-${article.pageEnd}`
-      : `${article.pageStart}`
-    : null;
+  const pageDisplay = formatPages(article);
 
   if (isEditing) {
     return (
@@ -172,8 +173,23 @@ export function EditableArticleRow({
           </div>
         </div>
 
-        {/* Row 2: pageStart + pageEnd + category + authors */}
-        <div className="grid gap-3 md:grid-cols-4">
+        {/* Row 2: pageSection + pageStart + pageEnd + category + authors */}
+        <div className="grid gap-3 md:grid-cols-5">
+          <div className="space-y-1">
+            <Label className="text-xs">頁碼分段</Label>
+            <Input
+              value={formData.pageSection || ""}
+              placeholder="本刊留空"
+              title="附冊有自己的頁碼時填，如「別冊」"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  pageSection: e.target.value || null,
+                })
+              }
+              onKeyDown={handleKeyDown}
+            />
+          </div>
           <div className="space-y-1">
             <Label className="text-xs">起始頁碼</Label>
             <Input
@@ -338,7 +354,7 @@ export function EditableArticleRow({
       {/* Page number */}
       {pageDisplay && (
         <span className="shrink-0 font-mono text-sm text-muted-foreground w-12 text-right">
-          p.{pageDisplay}
+          {pageDisplay}
         </span>
       )}
 

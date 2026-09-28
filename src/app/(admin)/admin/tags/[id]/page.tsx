@@ -30,6 +30,7 @@ import { CategoryChip, TagTypeChip } from "@/components/chips";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { TagForm } from "@/components/tag/TagForm";
 import { toast } from "sonner";
+import { formatPages } from "@/lib/page-label";
 
 export default function TagDetailPage() {
   const params = useParams<{ id: string }>();
@@ -187,9 +188,7 @@ export default function TagDetailPage() {
                                   className="flex items-center gap-3 rounded px-3 py-2 text-sm hover:bg-muted transition-colors"
                                 >
                                   <span className="w-16 shrink-0 text-right font-mono text-xs text-muted-foreground">
-                                    {article.pageStart
-                                      ? `p.${article.pageStart}${article.pageEnd && article.pageEnd !== article.pageStart ? `-${article.pageEnd}` : ""}`
-                                      : ""}
+                                    {formatPages(article) ?? ""}
                                   </span>
                                   <span className="flex-1 truncate">
                                     {article.title}

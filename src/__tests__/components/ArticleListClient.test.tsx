@@ -13,6 +13,7 @@ const articles = [
     subtitle: null,
     authors: [],
     category: null,
+    pageSection: null,
     pageStart: 68,
     pageEnd: null,
     summary: null,

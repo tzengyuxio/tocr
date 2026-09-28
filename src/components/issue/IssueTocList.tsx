@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SquarePen } from "lucide-react";
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import type { ArticleCategory } from "@/lib/article-categories";
+import { formatPages } from "@/lib/page-label";
 
 /** 一期目錄裡的一列。只收畫得出來的欄位，不吃整個 Prisma 型別。 */
 export interface TocListArticle {
@@ -10,6 +11,7 @@ export interface TocListArticle {
   subtitle: string | null;
   authors: string[];
   category: ArticleCategory | null;
+  pageSection: string | null;
   pageStart: number | null;
   pageEnd: number | null;
   articleGames: { game: { id: string; name: string; slug: string } }[];
@@ -53,17 +55,14 @@ export function IssueTocList({
             chip: <TagChip tag={at.tag} />,
           })),
         ];
-        const page = article.pageStart
-          ? article.pageEnd && article.pageEnd !== article.pageStart
-            ? `${article.pageStart}-${article.pageEnd}`
-            : `${article.pageStart}`
-          : null;
+        // 附冊的「別冊 p.6-8」在這一欄放不下，從空白處折成兩行。
+        const page = formatPages(article);
 
         return (
           <li key={article.id} className="py-2">
             <div className="flex items-baseline gap-3">
               <span className="w-14 shrink-0 text-right font-mono text-sm text-muted-foreground">
-                {page ? `p.${page}` : ""}
+                {page ?? ""}
               </span>
               <div className="min-w-0 flex-1">
                 <span className="font-medium">{article.title}</span>

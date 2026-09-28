@@ -1,14 +1,25 @@
 import Link from "next/link";
-import { ArrowDown, ArrowUp, ArrowDownUp, Filter, LayoutGrid, Rows3 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowDownUp,
+  Filter,
+  LayoutGrid,
+  Rows3,
+  ShieldAlert,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_MAGAZINE_FILTER,
+  DEFAULT_MAGAZINE_RATING,
   DEFAULT_MAGAZINE_SORT,
   DEFAULT_MAGAZINE_VIEW,
   MAGAZINE_FILTERS,
+  MAGAZINE_RATINGS,
   MAGAZINE_SORTS,
   type MagazineDirection,
   type MagazineFilter,
+  type MagazineRating,
   type MagazineSort,
   type MagazineView,
 } from "@/lib/magazine-browse";
@@ -36,15 +47,19 @@ const VIEW_OPTIONS = [
 export function MagazineBrowseBar({
   basePath,
   filter,
+  rating,
   sort,
   sorts = MAGAZINE_SORTS,
   direction,
   view,
   counts,
+  ratingCounts,
 }: {
   basePath: string;
   /** 省略即不顯示分類那一組。 */
   filter?: MagazineFilter;
+  /** 省略即不顯示分級那一組。 */
+  rating?: MagazineRating;
   sort: MagazineSort;
   /** 可選的排序，後台傳 ADMIN_MAGAZINE_SORTS 多一種「建立日期」。 */
   sorts?: ReadonlyArray<MagazineSort>;
@@ -53,16 +68,20 @@ export function MagazineBrowseBar({
   view?: MagazineView;
   /** 以 filter 的 value 為 key，讓讀者看得出每個選擇涵蓋多少。 */
   counts?: Record<string, number>;
+  /** 以 rating 的 value 為 key，同 counts。 */
+  ratingCounts?: Record<string, number>;
 }) {
   // 每一維的預設值都不寫進網址，所以未篩選未排序的頁面保持原本那條乾淨網址。
   const hrefFor = (
     nextFilter: string,
     nextSort: string,
     nextDirection: MagazineDirection,
-    nextView: MagazineView | undefined = view
+    nextView: MagazineView | undefined = view,
+    nextRating: string = rating?.value ?? DEFAULT_MAGAZINE_RATING
   ) => {
     const params = new URLSearchParams();
     if (filter && nextFilter !== DEFAULT_MAGAZINE_FILTER) params.set("filter", nextFilter);
+    if (rating && nextRating !== DEFAULT_MAGAZINE_RATING) params.set("rating", nextRating);
     if (nextSort !== DEFAULT_MAGAZINE_SORT) params.set("sort", nextSort);
     const sortDefault = sorts.find(
       (option) => option.value === nextSort
@@ -95,6 +114,12 @@ export function MagazineBrowseBar({
       )
     : [];
 
+  // 分級那一組只在有成人向刊物時出現，理由同上：沒有東西可分的時候，
+  // 「一般／成人向」只是兩顆按了沒差別的按鈕。
+  const showRatings =
+    rating &&
+    ((ratingCounts?.adult ?? 0) > 0 || rating.value !== DEFAULT_MAGAZINE_RATING);
+
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
       {filter && (
@@ -113,6 +138,34 @@ export function MagazineBrowseBar({
               {option.label}
               <span className="tabular-nums opacity-70">
                 {counts?.[option.value]}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {showRatings && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="flex items-center gap-1 text-sm text-muted-foreground">
+            <ShieldAlert className="h-3.5 w-3.5" />
+            分級
+          </span>
+          {MAGAZINE_RATINGS.map((option) => (
+            <Link
+              key={option.value}
+              href={hrefFor(
+                filter?.value ?? DEFAULT_MAGAZINE_FILTER,
+                sort.value,
+                direction,
+                view,
+                option.value
+              )}
+              className={chip(option.value === rating.value)}
+              aria-current={option.value === rating.value ? "page" : undefined}
+            >
+              {option.label}
+              <span className="tabular-nums opacity-70">
+                {ratingCounts?.[option.value]}
               </span>
             </Link>
           ))}

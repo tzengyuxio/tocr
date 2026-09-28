@@ -37,6 +37,7 @@ import {
 import { CategoryChip, GameChip, TagChip } from "@/components/chips";
 import { formatIssueNumber } from "@/lib/issue-number";
 import { magazineSubtitle } from "@/lib/magazine-browse";
+import { formatPages } from "@/lib/page-label";
 
 const PAGE_SIZE = 20;
 
@@ -500,12 +501,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       </p>
                     )}
                   </div>
-                  {article.pageStart && (
+                  {formatPages(article) && (
                     <div className="ml-4 text-sm text-muted-foreground">
-                      p.{article.pageStart}
-                      {article.pageEnd && article.pageEnd !== article.pageStart
-                        ? `-${article.pageEnd}`
-                        : ""}
+                      {formatPages(article)}
                     </div>
                   )}
                 </div>

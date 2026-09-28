@@ -24,6 +24,18 @@ import { cn } from "@/lib/utils";
  * 都是編輯才需要的東西；這邊要的是發行期間與分類。共用會變成一個到處都是
  * `isAdmin` 判斷的元件。
  */
+/**
+ * 成人向刊物在刊名旁的標記。預設全部顯示，所以「全部」底下要看得出哪幾本是；
+ * 不用分類 chip 的樣式——那是平台軸，這是分級軸。
+ */
+export function AdultMark() {
+  return (
+    <span className="ml-1.5 rounded border border-red-300 px-1 align-middle text-[10px] font-normal text-red-700">
+      成人向
+    </span>
+  );
+}
+
 export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
   return (
     <div className="divide-y rounded-lg border">
@@ -53,6 +65,7 @@ export function MagazineList({ units }: { units: MagazineDisplayUnit[] }) {
           <div className="min-w-0 flex-1">
             <div className="truncate font-medium">
               {unit.name}
+              {unit.adult && <AdultMark />}
               {unit.previousTitle && (
                 <span className="ml-1.5 text-xs font-normal text-muted-foreground">
                   （原 {unit.previousTitle}）

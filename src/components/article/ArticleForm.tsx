@@ -62,6 +62,7 @@ interface ArticleFormProps {
     subtitle?: string | null;
     authors: string[];
     category?: ArticleCategory | null;
+    pageSection?: string | null;
     pageStart?: number | null;
     pageEnd?: number | null;
     summary?: string | null;
@@ -117,6 +118,7 @@ export function ArticleForm({
       title: initialData.title,
       subtitle: initialData.subtitle || "",
       category: initialData.category ?? null,
+      pageSection: initialData.pageSection || "",
       pageStart: initialData.pageStart,
       pageEnd: initialData.pageEnd,
       summary: initialData.summary || "",
@@ -366,6 +368,16 @@ export function ArticleForm({
                 id="sortOrder"
                 type="number"
                 {...register("sortOrder")}
+              />
+            </div>
+
+            {/* 頁碼分段：附冊有自己一套頁碼時才填 */}
+            <div className="space-y-2">
+              <Label htmlFor="pageSection">頁碼分段</Label>
+              <Input
+                id="pageSection"
+                placeholder="本刊留空；附冊填「別冊」「附錄」"
+                {...register("pageSection")}
               />
             </div>
 

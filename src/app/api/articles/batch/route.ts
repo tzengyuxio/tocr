@@ -42,6 +42,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
           subtitle: articleData.subtitle,
           authors: articleData.authors,
           category: articleData.category,
+          pageSection: articleData.pageSection,
           pageStart: articleData.pageStart,
           pageEnd: articleData.pageEnd,
           summary: articleData.summary,

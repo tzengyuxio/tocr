@@ -14,8 +14,9 @@ import {
  *
  * It began as the pre-streaming implementation, kept verbatim to prove the
  * rewrite changed not one byte. The format has deliberately changed twice
- * since -- a short row was fixed, 2026-08-20 added the backup columns, and
- * 2026-08-30 added the rest of the admin-only ones -- so the baseline is now
+ * since -- a short row was fixed, 2026-08-20 added the backup columns,
+ * 2026-08-30 added the rest of the admin-only ones, and 2026-09-28 added
+ * adult and page_section -- so the baseline is now
  * maintained alongside rowsFor rather than frozen.
  *
  * When the CSV format is deliberately changed, this test is expected to fail --
@@ -42,6 +43,7 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
       mag.knownIssueCountSource ?? "",
       mag.description ?? "",
       mag.categories.join(";"),
+      mag.adult ? "true" : "false",
       mag.foundedDate ?? "",
       mag.endedDate ?? "",
       mag.isActive ? "true" : "false",
@@ -49,10 +51,10 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
     ];
 
     if (mag.issues.length === 0) {
-      // 16 magazine fields + 30 blanks against a 46-column header. The
+      // 17 magazine fields + 31 blanks against a 48-column header. The
       // original emitted a short row here, which a strict parser rejects or
       // misaligns; see the column-count assertions in export-rows.test.ts.
-      rows.push([...magFields, ...Array(30).fill("")]);
+      rows.push([...magFields, ...Array(31).fill("")]);
       continue;
     }
 
@@ -82,7 +84,7 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
       ];
 
       if (issue.articles.length === 0) {
-        rows.push([...magFields, ...issueFields, "", "", "", "", "", "", "", "", ""]);
+        rows.push([...magFields, ...issueFields, ...Array(10).fill("")]);
         continue;
       }
 
@@ -98,6 +100,7 @@ function buildCsvTheOldWay(magazines: Magazine[]): string {
           article.subtitle ?? "",
           article.authors.join(";"),
           article.category ?? "",
+          article.pageSection ?? "",
           article.pageStart != null ? String(article.pageStart) : "",
           article.pageEnd != null ? String(article.pageEnd) : "",
           article.summary ?? "",
@@ -165,6 +168,7 @@ function issue(n: number, articleCount: number): ExportIssue {
       subtitle: i % 2 === 0 ? null : "副標，含逗號",
       authors: i % 3 === 0 ? [] : ["甲", "乙"],
       category: i % 2 === 0 ? "REVIEW" : null,
+      pageSection: i === 2 ? "別冊" : null,
       pageStart: i,
       pageEnd: null,
       summary: i % 7 === 0 ? '含"引號"與\n換行' : null,
@@ -188,6 +192,7 @@ const FIXTURE: Magazine[] = [
     knownIssueCountSource: "國圖臺灣期刊論文索引",
     description: "含,逗號的描述",
     categories: ["PC"],
+    adult: true,
     foundedDate: "1991-08",
     endedDate: "2006-01",
     isActive: false,
@@ -208,6 +213,7 @@ const FIXTURE: Magazine[] = [
     knownIssueCountSource: null,
     description: null,
     categories: [],
+    adult: false,
     foundedDate: null,
     endedDate: null,
     isActive: true,
@@ -227,6 +233,7 @@ const FIXTURE: Magazine[] = [
     knownIssueCountSource: null,
     description: null,
     categories: ["CONSOLE", "PC"],
+    adult: false,
     foundedDate: "1998",
     endedDate: null,
     isActive: true,

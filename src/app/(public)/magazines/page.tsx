@@ -18,13 +18,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
 import { MagazineBrowseBar } from "@/components/magazine/MagazineBrowseBar";
-import { MagazineList } from "@/components/magazine/MagazineList";
+import { AdultMark, MagazineList } from "@/components/magazine/MagazineList";
 import {
   MAGAZINE_FILTERS,
+  MAGAZINE_RATINGS,
   magazineCountTitle,
+  matchesRating,
   magazineDisplayUnits,
   parseMagazineDirection,
   parseMagazineFilter,
+  parseMagazineRating,
   parseMagazineSort,
   parseMagazineView,
   sortMagazineDisplayUnits,
@@ -36,6 +39,7 @@ export default async function MagazinesPage({
 }: {
   searchParams: Promise<{
     filter?: string;
+    rating?: string;
     sort?: string;
     dir?: string;
     view?: string;
@@ -43,6 +47,7 @@ export default async function MagazinesPage({
 }) {
   const params = await searchParams;
   const filter = parseMagazineFilter(params.filter);
+  const rating = parseMagazineRating(params.rating);
   const sort = parseMagazineSort(params.sort);
   const direction = parseMagazineDirection(params.dir, sort);
   const view = parseMagazineView(params.view);
@@ -109,10 +114,14 @@ export default async function MagazinesPage({
     )
   );
 
+  // 分類與分級是兩條軸，各自的 chip 數字按另一條軸已選的範圍來數：選了
+  // 「一般」之後，TV Game 旁邊的數字就是一般向的 TV Game 有幾張卡。
+  const inCategory = (unit: (typeof allUnits)[number]) =>
+    !filter.category || unit.categories.includes(filter.category);
+  const inRating = allUnits.filter((unit) => matchesRating(unit, rating));
+
   const units = sortMagazineDisplayUnits(
-    filter.category
-      ? allUnits.filter((unit) => unit.categories.includes(filter.category!))
-      : allUnits,
+    inRating.filter(inCategory),
     sort,
     direction
   );
@@ -125,9 +134,17 @@ export default async function MagazinesPage({
     MAGAZINE_FILTERS.map((option) => [
       option.value,
       option.category
-        ? allUnits.filter((unit) => unit.categories.includes(option.category))
+        ? inRating.filter((unit) => unit.categories.includes(option.category))
             .length
-        : allUnits.length,
+        : inRating.length,
+    ])
+  );
+
+  const ratingCounts = Object.fromEntries(
+    MAGAZINE_RATINGS.map((option) => [
+      option.value,
+      allUnits.filter((unit) => inCategory(unit) && matchesRating(unit, option))
+        .length,
     ])
   );
 
@@ -151,6 +168,8 @@ export default async function MagazinesPage({
         <MagazineBrowseBar
           basePath="/magazines"
           filter={filter}
+          rating={rating}
+          ratingCounts={ratingCounts}
           sort={sort}
           direction={direction}
           view={view}
@@ -162,10 +181,14 @@ export default async function MagazinesPage({
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <BookOpen className="h-16 w-16 text-muted-foreground/50" />
           <h2 className="mt-4 text-xl font-semibold">
-            {filter.value === "all" ? "尚無雜誌資料" : "這個分類還沒有刊物"}
+            {filter.value === "all" && rating.value === "all"
+              ? "尚無雜誌資料"
+              : "這個分類還沒有刊物"}
           </h2>
           <p className="mt-2 text-muted-foreground">
-            {filter.value === "all" ? "資料建置中，敬請期待" : "試試其他分類"}
+            {filter.value === "all" && rating.value === "all"
+              ? "資料建置中，敬請期待"
+              : "試試其他分類"}
           </p>
         </div>
       ) : view === "list" ? (
@@ -192,6 +215,7 @@ export default async function MagazinesPage({
                   </div>
                   <CardTitle className="line-clamp-1 text-base">
                     {unit.name}
+                    {unit.adult && <AdultMark />}
                     {unit.previousTitle && (
                       <span className="ml-1.5 text-xs font-normal text-muted-foreground">
                         （原 {unit.previousTitle}）
