@@ -114,7 +114,11 @@ export function ArticleListClient({
   const [isMarking, setIsMarking] = useState(false);
 
   // A save or a delete re-renders the page, and the fresh list arrives as a prop.
-  useEffect(() => setArticles(initialArticles), [initialArticles]);
+  const [prevInitialArticles, setPrevInitialArticles] = useState(initialArticles);
+  if (initialArticles !== prevInitialArticles) {
+    setPrevInitialArticles(initialArticles);
+    setArticles(initialArticles);
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -138,7 +142,8 @@ export function ArticleListClient({
       if (!res.ok) throw new Error("Reorder failed");
       toast.success("排序已更新");
       router.refresh();
-    } catch {
+    } catch (err) {
+      console.error("Failed to reorder articles:", err);
       setArticles(previous); // rollback
       toast.error("排序更新失敗");
     }
@@ -193,7 +198,8 @@ export function ArticleListClient({
       if (!res.ok) throw new Error("Mark reviewed failed");
       toast.success("已標記為完成複查");
       router.refresh();
-    } catch {
+    } catch (err) {
+      console.error("Failed to mark TOC reviewed:", err);
       toast.error("標記失敗");
     } finally {
       setIsMarking(false);

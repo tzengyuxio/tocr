@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
@@ -57,9 +58,8 @@ function NewArticleForm() {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<ArticleCreateInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(articleCreateSchema) as any,
+  } = useForm<z.input<typeof articleCreateSchema>, unknown, ArticleCreateInput>({
+    resolver: zodResolver(articleCreateSchema),
     defaultValues: {
       issueId: preselectedIssueId,
       title: "",

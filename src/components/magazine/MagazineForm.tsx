@@ -2,6 +2,7 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -59,9 +60,8 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<MagazineCreateInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(magazineCreateSchema) as any,
+  } = useForm<z.input<typeof magazineCreateSchema>, unknown, MagazineCreateInput>({
+    resolver: zodResolver(magazineCreateSchema),
     defaultValues: {
       name: initialData?.name || "",
       slug: initialData?.slug || "",
@@ -216,7 +216,11 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                     {/* Radix 的 SelectItem 不收空字串當 value，所以「未填」用
                         FREQUENCY_NONE 這個哨兵值代打，寫回表單時再轉成 null。 */}
                     <Select
-                      value={field.value ?? FREQUENCY_NONE}
+                      value={
+                        typeof field.value === "string"
+                          ? field.value
+                          : FREQUENCY_NONE
+                      }
                       onValueChange={(value) =>
                         field.onChange(value === FREQUENCY_NONE ? null : value)
                       }
@@ -410,7 +414,7 @@ export function MagazineForm({ initialData, mode }: MagazineFormProps) {
                 render={({ field }) => (
                   <ImageUpload
                     label="Logo 圖片"
-                    value={field.value || ""}
+                    value={typeof field.value === "string" ? field.value : ""}
                     onChange={field.onChange}
                     folder="magazines"
                     description="封面上的刊名字樣，一本一張。改版過的刊選最認得出來的那一版"

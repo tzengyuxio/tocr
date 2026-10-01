@@ -295,7 +295,7 @@ const COLUMNS = [
 
 /** 同時最多 CONCURRENCY 個請求，保持輸入順序。 */
 async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results = new Array<R>(items.length);
+  const results: R[] = [];
   let next = 0;
   await Promise.all(
     Array.from({ length: Math.min(limit, items.length) }, async () => {

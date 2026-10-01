@@ -10,11 +10,11 @@ export type TxClient = Prisma.TransactionClient;
  * Ids in input order, so the caller can treat the first as the primary game.
  *
  * A name off a table of contents is whatever that issue printed, and the next
- * issue prints it differently. Matching used to be exact equality on the three
- * name columns, which meant 蝙蝠俠。電影版 and 蝙蝠俠·電影版 became two games,
- * and a name that had been merged away came back as a new row the moment
- * another issue used it. `nameKeys` is the normalised form of every name a
- * game answers to, aliases included -- one ruler, shared with the search box.
+ * issue prints it differently. Exact equality on the three name columns would
+ * make 蝙蝠俠。電影版 and 蝙蝠俠·電影版 two games, and bring a name that had
+ * been merged away back as a new row the moment another issue used it.
+ * `nameKeys` is the normalised form of every name a game answers to, aliases
+ * included -- one ruler, shared with the search box.
  */
 export async function resolveGameIds(
   tx: TxClient,

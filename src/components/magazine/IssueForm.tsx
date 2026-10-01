@@ -2,6 +2,7 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -82,7 +83,8 @@ function CopyButton({ code }: { code: string }) {
       setCopied(true);
       toast.success("已複製永久連結");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } catch (err) {
+      console.error("Failed to copy permalink:", err);
       toast.error("複製失敗，請手動選取");
     }
   };
@@ -132,9 +134,8 @@ export function IssueForm({
     control,
     setValue,
     formState: { errors },
-  } = useForm<IssueCreateInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(issueCreateSchema) as any,
+  } = useForm<z.input<typeof issueCreateSchema>, unknown, IssueCreateInput>({
+    resolver: zodResolver(issueCreateSchema),
     defaultValues: {
       magazineId,
       issueNumber: initialData?.issueNumber || "",
@@ -406,7 +407,7 @@ export function IssueForm({
                 render={({ field }) => (
                   <ImageUpload
                     label="封面圖片"
-                    value={field.value || ""}
+                    value={typeof field.value === "string" ? field.value : ""}
                     onChange={field.onChange}
                     folder="issues/covers"
                     description="本期封面圖片"

@@ -57,7 +57,6 @@ export function Combobox({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          role="combobox"
           aria-expanded={open}
           disabled={disabled}
           className={cn(

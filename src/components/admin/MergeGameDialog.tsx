@@ -84,8 +84,11 @@ export function MergeGameDialog({
   onMerged: () => void;
 }) {
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState<MergeCandidate[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  // 結果連同它回答的關鍵字一起存：關鍵字一換，舊結果自然不算數，不必另外清。
+  const [found, setFound] = useState<{
+    keyword: string;
+    items: MergeCandidate[];
+  }>({ keyword: "", items: [] });
   const [partner, setPartner] = useState<MergeCandidate | null>(null);
   const [keeperId, setKeeperId] = useState<string | null>(null);
   const [plan, setPlan] = useState<MergePlan | null>(null);
@@ -93,15 +96,33 @@ export function MergeGameDialog({
   const [error, setError] = useState<string | null>(null);
 
   // 換一筆來源等於重問一次，上一輪的候選與預覽都不再作數。
-  useEffect(() => {
-    if (!source) return;
-    setSearch(mergeSeed(source.name));
-    setResults([]);
-    setPartner(null);
-    setKeeperId(null);
-    setPlan(null);
-    setError(null);
-  }, [source]);
+  const [prevSource, setPrevSource] = useState(source);
+  if (source !== prevSource) {
+    setPrevSource(source);
+    if (source) {
+      setSearch(mergeSeed(source.name));
+      setFound({ keyword: "", items: [] });
+      setPartner(null);
+      setKeeperId(null);
+      setPlan(null);
+      setError(null);
+    }
+  }
+
+  const keyword = search.trim();
+  const results = found.keyword === keyword ? found.items : [];
+  const isSearching = keyword !== "" && found.keyword !== keyword;
+  const loserId =
+    source && partner && keeperId
+      ? keeperId === source.id
+        ? partner.id
+        : source.id
+      : null;
+  // 預覽也一樣：只有算的正是眼前這一組保留／刪除，才拿出來給人看。
+  const currentPlan =
+    plan && plan.keeperId === keeperId && plan.loserId === loserId
+      ? plan
+      : null;
 
   const requestMerge = useCallback(
     async (keeper: string, loser: string, dryRun: boolean) => {
@@ -121,44 +142,34 @@ export function MergeGameDialog({
 
   // 候選清單。合併對象可能在別的分頁上，所以這裡查的是整個資料庫，不是目前這頁。
   useEffect(() => {
-    if (!source) return;
-    const keyword = search.trim();
-    if (!keyword) {
-      setResults([]);
-      return;
-    }
+    if (!source || !keyword) return;
     let cancelled = false;
-    setIsSearching(true);
     const timer = setTimeout(async () => {
       try {
         const params = new URLSearchParams({ search: keyword, limit: "10" });
         const response = await fetch(`/api/games?${params}`);
         const data = await response.json();
         if (cancelled) return;
-        setResults(
-          (data.data as MergeCandidate[]).filter(
+        setFound({
+          keyword,
+          items: (data.data as MergeCandidate[]).filter(
             (candidate) => candidate.id !== source.id
-          )
-        );
-      } catch {
-        if (!cancelled) setResults([]);
-      } finally {
-        if (!cancelled) setIsSearching(false);
+          ),
+        });
+      } catch (err) {
+        console.error("Failed to search merge candidates:", err);
+        if (!cancelled) setFound({ keyword, items: [] });
       }
     }, 300);
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [search, source]);
+  }, [keyword, source]);
 
   // 刪掉的那筆救不回來，所以確認之前先讓伺服器算一遍會發生什麼事。
   useEffect(() => {
-    if (!source || !partner || !keeperId) {
-      setPlan(null);
-      return;
-    }
-    const loserId = keeperId === source.id ? partner.id : source.id;
+    if (!keeperId || !loserId) return;
     let cancelled = false;
     requestMerge(keeperId, loserId, true)
       .then((dryRun) => {
@@ -173,7 +184,7 @@ export function MergeGameDialog({
     return () => {
       cancelled = true;
     };
-  }, [source, partner, keeperId, requestMerge]);
+  }, [keeperId, loserId, requestMerge]);
 
   const handlePickPartner = (candidate: MergeCandidate) => {
     if (!source) return;
@@ -196,8 +207,7 @@ export function MergeGameDialog({
   };
 
   const handleConfirm = async () => {
-    if (!source || !partner || !keeperId) return;
-    const loserId = keeperId === source.id ? partner.id : source.id;
+    if (!keeperId || !loserId) return;
 
     setIsMerging(true);
     setError(null);
@@ -249,7 +259,7 @@ export function MergeGameDialog({
               </div>
             ) : results.length === 0 ? (
               <p className="py-2 text-sm text-muted-foreground">
-                {search.trim() ? "沒有其他符合的條目" : "輸入關鍵字開始搜尋"}
+                {keyword ? "沒有其他符合的條目" : "輸入關鍵字開始搜尋"}
               </p>
             ) : (
               <div className="divide-y rounded-md border">
@@ -297,32 +307,32 @@ export function MergeGameDialog({
             </div>
           )}
 
-          {plan && (
+          {currentPlan && (
             <div className="space-y-1 rounded-md border bg-muted/30 p-3 text-sm">
               <p>
-                搬移 {plan.movedArticleLinks} 筆文章關聯
-                {plan.discardedLinkCount > 0 &&
-                  `，${plan.discardedLinkCount} 筆重複丟棄`}
+                搬移 {currentPlan.movedArticleLinks} 筆文章關聯
+                {currentPlan.discardedLinkCount > 0 &&
+                  `，${currentPlan.discardedLinkCount} 筆重複丟棄`}
               </p>
-              {plan.promotedPrimaryLinks > 0 && (
+              {currentPlan.promotedPrimaryLinks > 0 && (
                 <p>
-                  {plan.promotedPrimaryLinks} 篇文章的主要遊戲改記在保留方
+                  {currentPlan.promotedPrimaryLinks} 篇文章的主要遊戲改記在保留方
                 </p>
               )}
               <p className="text-muted-foreground">
-                合併後別名：{plan.mergedAliases.join("、") || "（無）"}
+                合併後別名：{currentPlan.mergedAliases.join("、") || "（無）"}
               </p>
-              {Object.keys(plan.carriedFields ?? {}).length > 0 && (
+              {Object.keys(currentPlan.carriedFields ?? {}).length > 0 && (
                 <p className="text-muted-foreground">
-                  從「{plan.loserName}」補上：
-                  {Object.keys(plan.carriedFields)
+                  從「{currentPlan.loserName}」補上：
+                  {Object.keys(currentPlan.carriedFields)
                     .map((field) => FIELD_LABELS[field] ?? field)
                     .join("、")}
                 </p>
               )}
               <p className="flex items-start gap-1.5 pt-1 text-destructive">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>「{plan.loserName}」將被刪除，無法復原</span>
+                <span>「{currentPlan.loserName}」將被刪除，無法復原</span>
               </p>
             </div>
           )}
@@ -334,7 +344,7 @@ export function MergeGameDialog({
           <Button variant="outline" onClick={onClose} disabled={isMerging}>
             取消
           </Button>
-          <Button onClick={handleConfirm} disabled={isMerging || !plan}>
+          <Button onClick={handleConfirm} disabled={isMerging || !currentPlan}>
             {isMerging && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             確認合併
           </Button>

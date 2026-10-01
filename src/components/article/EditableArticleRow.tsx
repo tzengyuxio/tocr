@@ -346,8 +346,18 @@ export function EditableArticleRow({
   // Read mode
   return (
     <div
+      role="button"
+      tabIndex={0}
       className="group flex items-center gap-3 rounded-lg border px-4 py-3 hover:bg-muted/50 cursor-pointer transition-colors"
       onClick={handleStartEdit}
+      onKeyDown={(e) => {
+        // Only the row itself: Enter on a button inside it means that button.
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleStartEdit();
+        }
+      }}
     >
       {dragHandle}
 
@@ -399,36 +409,28 @@ export function EditableArticleRow({
       <div className="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {/* Insert where the gap actually is: a missed entry belongs next to
             its neighbours, not appended to the end of 61 rows. */}
-        {onInsert && (
-          <>
+        {onInsert &&
+          (
+            [
+              ["before", "上方", ArrowUp],
+              ["after", "下方", ArrowDown],
+            ] as const
+          ).map(([position, label, Arrow]) => (
             <Button
+              key={position}
               variant="ghost"
               size="icon"
               className="h-7 w-auto gap-0 px-1.5"
-              title="在此列上方新增文章"
+              title={`在此列${label}新增文章`}
               onClick={(e) => {
                 e.stopPropagation();
-                onInsert("before");
+                onInsert(position);
               }}
             >
               <BetweenHorizontalStart className="h-4 w-4" />
-              <ArrowUp className="-ml-0.5 h-2.5 w-2.5" />
+              <Arrow className="-ml-0.5 h-2.5 w-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-auto gap-0 px-1.5"
-              title="在此列下方新增文章"
-              onClick={(e) => {
-                e.stopPropagation();
-                onInsert("after");
-              }}
-            >
-              <BetweenHorizontalStart className="h-4 w-4" />
-              <ArrowDown className="-ml-0.5 h-2.5 w-2.5" />
-            </Button>
-          </>
-        )}
+          ))}
         <Button
           asChild
           variant="ghost"

@@ -88,9 +88,13 @@ export default function GameDetailPage() {
   const [grouped, setGrouped] = useState<GroupedData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 抽成 callback 而不是留在 effect 裡：站外連結改完之後要重取，而這頁的資料
-  // 是自己 fetch 的，router.refresh() 帶不動它。
-  const load = useCallback(async () => {
+  // 站外連結改完之後要重取，而這頁的資料是自己 fetch 的，router.refresh() 帶不動
+  // 它；所以改動時遞增 reloadKey，讓 effect 再跑一次。
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  useEffect(() => {
+    const load = async () => {
       setIsLoading(true);
       try {
         const res = await fetch(`/api/games/${params.id}?all=true`);
@@ -121,11 +125,9 @@ export default function GameDetailPage() {
       } finally {
         setIsLoading(false);
       }
-  }, [params.id]);
-
-  useEffect(() => {
+    };
     load();
-  }, [load]);
+  }, [params.id, reloadKey]);
 
   if (isLoading) {
     return (
@@ -193,7 +195,7 @@ export default function GameDetailPage() {
             onSaved={() => {
               toast.success("已儲存");
               // 站外連結與相關文章也在這一頁，所以重取整筆而不是只更新表單。
-              load();
+              reload();
             }}
           />
         </CardContent>
@@ -203,7 +205,7 @@ export default function GameDetailPage() {
         owner={{ gameId: game.id }}
         links={game.externalLinks}
         description="站外關於這款遊戲的資訊：中文 DOS 遊戲資料庫的條目、維基百科"
-        onChanged={load}
+        onChanged={reload}
       />
 
       <Card>

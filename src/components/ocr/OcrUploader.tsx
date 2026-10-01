@@ -56,7 +56,6 @@ export function OcrUploader({
   // elapsed time counter during processing
   useEffect(() => {
     if (isProcessing) {
-      setElapsedSeconds(0);
       timerRef.current = setInterval(() => {
         setElapsedSeconds((s) => s + 1);
       }, 1000);
@@ -72,13 +71,16 @@ export function OcrUploader({
   }, [isProcessing]);
 
   // 同步 initialImageUrls 變化（解決切換單期後 prop 變化但 state 不更新的問題）
-  useEffect(() => {
+  const [prevInitialImageUrls, setPrevInitialImageUrls] =
+    useState(initialImageUrls);
+  if (initialImageUrls !== prevInitialImageUrls) {
+    setPrevInitialImageUrls(initialImageUrls);
     const urls = initialImageUrls || [];
     setImagePreviews(urls);
     setImageUrls(urls);
     setImageFiles([]);
     setError(null);
-  }, [initialImageUrls]);
+  }
 
   useEffect(() => {
     fetch("/api/ocr")
@@ -149,6 +151,7 @@ export function OcrUploader({
     }
 
     setIsProcessing(true);
+    setElapsedSeconds(0);
     setError(null);
 
     try {

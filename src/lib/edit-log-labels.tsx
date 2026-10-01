@@ -1,6 +1,5 @@
 import { Plus, FileEdit, Trash2 } from "lucide-react";
 
-export type EditAction = "CREATE" | "UPDATE" | "DELETE";
 export type EntityType = "Magazine" | "Issue" | "Article" | "Tag" | "Game" | "User";
 
 export function actionIcon(action: string) {

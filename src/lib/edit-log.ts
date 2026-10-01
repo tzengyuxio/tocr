@@ -172,7 +172,7 @@ export async function ensureUserRow(userId: string): Promise<void> {
  * for is already saved, and refusing to acknowledge that would be worse than
  * a gap in the history. The write is awaited rather than left running, so on
  * a serverless platform it finishes before the response ends -- and so does
- * its error reporting, which used to be lost with it.
+ * its error reporting.
  */
 async function writeLog(write: () => Promise<unknown>) {
   try {

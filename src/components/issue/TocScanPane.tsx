@@ -95,6 +95,8 @@ export function TocScanPane({
       <div
         ref={panRef}
         {...panProps}
+        // Pointer shortcut only; the controls below are the keyboard route.
+        role="presentation"
         onClick={() => {
           // 拖到一半放開手，那是在看圖不是要關掉它。
           if (!didPan()) onBackgroundClick?.();

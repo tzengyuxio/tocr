@@ -302,6 +302,81 @@ export function buildTrack(
 
 // ==================== 排欄 ====================
 
+type LaneTrack = {
+  start: Date;
+  solidEnd: Date;
+  tail: TimelineTail;
+  slug?: string;
+};
+
+/** 這條線佔住它那一欄到什麼時候，含與下一條之間的間距。 */
+function occupancy(gapMs: number, today: Date) {
+  return (t: LaneTrack) =>
+    (t.tail?.kind === "active"
+      ? Math.max(t.solidEnd.getTime(), today.getTime())
+      : t.solidEnd.getTime()) + gapMs;
+}
+
+function byStart(a: LaneTrack, b: LaneTrack) {
+  return (
+    a.start.getTime() - b.start.getTime() ||
+    a.solidEnd.getTime() - b.solidEnd.getTime()
+  );
+}
+
+/** 關聯組（見 `LANE_GROUPS`）裡實際出現的成員，一組一塊，組內依起點排序。 */
+function groupUnits<T extends LaneTrack>(
+  tracks: T[],
+  groups: string[][]
+): { units: T[][]; grouped: Set<T> } {
+  const bySlug = new Map(tracks.flatMap((t) => (t.slug ? [[t.slug, t] as const] : [])));
+  const grouped = new Set<T>();
+  const units: T[][] = [];
+  for (const slugs of groups) {
+    const members = slugs
+      .flatMap((slug) => {
+        const track = bySlug.get(slug);
+        return track && !grouped.has(track) ? [track] : [];
+      })
+      .sort(byStart);
+    // 剩不到兩本的組沒有意義（該側沒有、或成員已經被前一組收走），整組放掉
+    // ——**這時候才登記 grouped**，否則落單的那本會連帶被當成已排好而消失。
+    if (members.length < 2) continue;
+    members.forEach((m) => grouped.add(m));
+    units.push(members);
+  }
+  return { units, grouped };
+}
+
+/**
+ * 一組內部先自己排一次，得到組內的相對欄位；整組再當成一塊放進全域的欄位。
+ *
+ * 組內用 best-fit（挑放得下的欄位裡結束最晚的那一欄），不是 first-fit：
+ * 《電視遊樂雜誌》《電視遊樂報導》並存佔兩欄，晚十年的《電玩通》兩欄都放得下，
+ * 而它該接的是報導那一欄——ファミ通系是同一條脈絡。first-fit 會把它塞回最左邊
+ * 那欄，接到不相干的刊後面。《軟體世界》與《電玩双週刊》也是這樣接上的。
+ */
+function localLanes<T extends LaneTrack>(
+  members: T[],
+  occupiedUntil: (t: T) => number
+): { local: { track: T; local: number }[]; span: number } {
+  const ends: number[] = [];
+  const local = members.map((track) => {
+    let l = -1;
+    let bestEnd = -Infinity;
+    ends.forEach((end, i) => {
+      if (end <= track.start.getTime() && end > bestEnd) {
+        l = i;
+        bestEnd = end;
+      }
+    });
+    if (l === -1) l = ends.length;
+    ends[l] = occupiedUntil(track);
+    return { track, local: l };
+  });
+  return { local, span: ends.length };
+}
+
 /**
  * 把線塞進最少的欄位：時間上不重疊的刊共用一欄。
  *
@@ -325,57 +400,15 @@ export function packLanes<
    */
   groups: string[][] = []
 ): (T & { lane: number })[] {
-  const occupiedUntil = (t: T) =>
-    (t.tail?.kind === "active" ? Math.max(t.solidEnd.getTime(), today.getTime()) : t.solidEnd.getTime()) +
-    gapMs;
-  const byStart = (a: T, b: T) =>
-    a.start.getTime() - b.start.getTime() || a.solidEnd.getTime() - b.solidEnd.getTime();
-
-  const bySlug = new Map(tracks.flatMap((t) => (t.slug ? [[t.slug, t] as const] : [])));
-  const grouped = new Set<T>();
-  const units: T[][] = [];
-  for (const slugs of groups) {
-    const members = slugs
-      .flatMap((slug) => {
-        const track = bySlug.get(slug);
-        return track && !grouped.has(track) ? [track] : [];
-      })
-      .sort(byStart);
-    // 剩不到兩本的組沒有意義（該側沒有、或成員已經被前一組收走），整組放掉
-    // ——**這時候才登記 grouped**，否則落單的那本會連帶被當成已排好而消失。
-    if (members.length < 2) continue;
-    members.forEach((m) => grouped.add(m));
-    units.push(members);
-  }
+  const occupiedUntil = occupancy(gapMs, today);
+  const { units, grouped } = groupUnits(tracks, groups);
   units.sort((a, b) => byStart(a[0], b[0]));
-
-  // 一組內部先自己排一次，得到組內的相對欄位；整組再當成一塊放進全域的欄位。
-  const localLanes = (members: T[]) => {
-    const ends: number[] = [];
-    return members.map((track) => {
-      // 組內用 best-fit（挑放得下的欄位裡結束最晚的那一欄），不是 first-fit：
-      // 《電視遊樂雜誌》《電視遊樂報導》並存佔兩欄，晚十年的《電玩通》兩欄都
-      // 放得下，而它該接的是報導那一欄——ファミ通系是同一條脈絡。first-fit 會
-      // 把它塞回最左邊那欄，接到不相干的刊後面。
-      let local = -1;
-      let bestEnd = -Infinity;
-      ends.forEach((end, i) => {
-        if (end <= track.start.getTime() && end > bestEnd) {
-          local = i;
-          bestEnd = end;
-        }
-      });
-      if (local === -1) local = ends.length;
-      ends[local] = occupiedUntil(track);
-      return { track, local };
-    });
-  };
 
   const laneEnds: number[] = [];
   const placed: (T & { lane: number })[] = [];
 
   for (const members of units) {
-    const local = localLanes(members);
+    const { local } = localLanes(members, occupiedUntil);
     // 整組要落在連續的幾欄裡，所以找的是「每個成員在對應那一欄都放得下」的
     // 最左邊起點，而不是各自找各自的欄。
     let base = 0;
@@ -426,55 +459,19 @@ export function packSqueezed<
   today: Date,
   groups: string[][] = []
 ): (T & { lane: number })[] | null {
-  const occupiedUntil = (t: T) =>
-    (t.tail?.kind === "active"
-      ? Math.max(t.solidEnd.getTime(), today.getTime())
-      : t.solidEnd.getTime()) + gapMs;
-  const byStart = (a: T, b: T) =>
-    a.start.getTime() - b.start.getTime() || a.solidEnd.getTime() - b.solidEnd.getTime();
+  const occupiedUntil = occupancy(gapMs, today);
 
   // 關聯組先成塊，與 packLanes 同一套：組內先自己排一次得到相對欄位，整組再
   // 當成一塊去找位置。
-  const bySlug = new Map(tracks.flatMap((t) => (t.slug ? [[t.slug, t] as const] : [])));
-  const grouped = new Set<T>();
-  const units: T[][] = [];
-  for (const slugs of groups) {
-    const members = slugs
-      .flatMap((slug) => {
-        const track = bySlug.get(slug);
-        return track && !grouped.has(track) ? [track] : [];
-      })
-      .sort(byStart);
-    if (members.length < 2) continue;
-    members.forEach((m) => grouped.add(m));
-    units.push(members);
-  }
+  const { units, grouped } = groupUnits(tracks, groups);
   for (const track of tracks.filter((t) => !grouped.has(t))) units.push([track]);
   units.sort((a, b) => byStart(a[0], b[0]));
 
-  const laneEnds = new Array<number>(laneCount).fill(-Infinity);
+  const laneEnds = Array.from({ length: laneCount }, () => -Infinity);
   const placed: (T & { lane: number })[] = [];
 
   for (const members of units) {
-    // 組內相對欄位。用 best-fit（放得下的欄位裡挑結束最晚的那一欄）而不是
-    // first-fit，與 packLanes 同一套：《電視遊樂雜誌》《電視遊樂報導》並存佔
-    // 兩欄，晚十年的《電玩通》兩欄都放得下，而它該接的是報導那一欄——ファミ通
-    // 系是同一條脈絡。《軟體世界》與《電玩双週刊》也是這樣接上的。
-    const ends: number[] = [];
-    const local = members.map((track) => {
-      let l = -1;
-      let bestEnd = -Infinity;
-      ends.forEach((end, i) => {
-        if (end <= track.start.getTime() && end > bestEnd) {
-          l = i;
-          bestEnd = end;
-        }
-      });
-      if (l === -1) l = ends.length;
-      ends[l] = occupiedUntil(track);
-      return { track, local: l };
-    });
-    const span = ends.length;
+    const { local, span } = localLanes(members, occupiedUntil);
 
     // 這一塊該偏哪一側，由成員多數決；平手歸左，與「沒有分類歸左」一致。
     const right = members.filter(isRightSide).length;

@@ -80,6 +80,26 @@ function issueHref(magazineSlug: string, issueSlug: string): string {
   return `/magazines/${magazineSlug}/issues/${encodeURIComponent(issueSlug)}`;
 }
 
+const SLUGGED_SELECT = { id: true, name: true, slug: true } as const;
+
+/** Records whose public page is /<section>/<slug> and admin page /admin/<section>/<id>. */
+function sluggedTargets(
+  rows: { id: string; name: string; slug: string }[],
+  linkTo: EditLogLinkTo,
+  section: "magazines" | "tags" | "games"
+): [string, EditLogTarget][] {
+  return rows.map((row) => [
+    row.id,
+    {
+      label: row.name,
+      href:
+        linkTo === "public"
+          ? `/${section}/${row.slug}`
+          : `/admin/${section}/${row.id}`,
+    },
+  ]);
+}
+
 /** Names are only loaded for the entity types that appear in the logs. */
 async function loadTargets(
   entityType: string,
@@ -109,22 +129,15 @@ async function loadTargets(
         },
       ]);
     }
-    case "Magazine": {
-      const rows = await prisma.magazine.findMany({
-        where: { id: { in: ids } },
-        select: { id: true, name: true, slug: true },
-      });
-      return rows.map((row) => [
-        row.id,
-        {
-          label: row.name,
-          href:
-            linkTo === "public"
-              ? `/magazines/${row.slug}`
-              : `/admin/magazines/${row.id}`,
-        },
-      ]);
-    }
+    case "Magazine":
+      return sluggedTargets(
+        await prisma.magazine.findMany({
+          where: { id: { in: ids } },
+          select: SLUGGED_SELECT,
+        }),
+        linkTo,
+        "magazines"
+      );
     case "Issue": {
       const rows = await prisma.issue.findMany({
         where: { id: { in: ids } },
@@ -170,36 +183,24 @@ async function loadTargets(
         },
       ]);
     }
-    case "Tag": {
-      const rows = await prisma.tag.findMany({
-        where: { id: { in: ids } },
-        select: { id: true, name: true, slug: true },
-      });
-      return rows.map((row) => [
-        row.id,
-        {
-          label: row.name,
-          href:
-            linkTo === "public" ? `/tags/${row.slug}` : `/admin/tags/${row.id}`,
-        },
-      ]);
-    }
-    case "Game": {
-      const rows = await prisma.game.findMany({
-        where: { id: { in: ids } },
-        select: { id: true, name: true, slug: true },
-      });
-      return rows.map((row) => [
-        row.id,
-        {
-          label: row.name,
-          href:
-            linkTo === "public"
-              ? `/games/${row.slug}`
-              : `/admin/games/${row.id}`,
-        },
-      ]);
-    }
+    case "Tag":
+      return sluggedTargets(
+        await prisma.tag.findMany({
+          where: { id: { in: ids } },
+          select: SLUGGED_SELECT,
+        }),
+        linkTo,
+        "tags"
+      );
+    case "Game":
+      return sluggedTargets(
+        await prisma.game.findMany({
+          where: { id: { in: ids } },
+          select: SLUGGED_SELECT,
+        }),
+        linkTo,
+        "games"
+      );
     case "User": {
       // Only ADMIN may see who the account belongs to -- /admin/users is
       // ADMIN-only for the same reason. User management is a single list page,

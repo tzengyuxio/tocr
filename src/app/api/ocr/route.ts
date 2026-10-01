@@ -38,10 +38,9 @@ const recentRequests = new Map<string, number[]>();
 /**
  * How long until this caller may try again, or null when it may go now.
  *
- * Deliberately small. This used to be a general-purpose limiter with a config
- * object, a remaining count and a cleanup timer, serving exactly one caller
- * with one hardcoded setting — it read like a defence line while its own
- * comment said it was not one.
+ * Deliberately small: it serves exactly one caller with one setting, and it
+ * is a courtesy brake rather than a defence line, so a config object, a
+ * remaining count and a cleanup timer would only make it look like one.
  */
 function retryAfterMs(key: string): number | null {
   const now = Date.now();
@@ -134,162 +133,139 @@ function tooManyImages(count: number) {
   );
 }
 
+function badRequest(error: string) {
+  return NextResponse.json({ error }, { status: 400 });
+}
+
+async function fileToImage(file: File): Promise<OcrImage | NextResponse> {
+  if (!isAllowedImageMimeType(file.type)) {
+    return badRequest(
+      `Invalid image type: ${file.type}. Allowed: ${ALLOWED_IMAGE_LABEL}`
+    );
+  }
+  const bytes = await file.arrayBuffer();
+  return {
+    base64: Buffer.from(bytes).toString("base64"),
+    mimeType: file.type,
+  };
+}
+
+async function urlToImage(url: string): Promise<OcrImage | NextResponse> {
+  if (!isSafeImageUrl(url)) {
+    return badRequest(
+      `URL not allowed: ${url}. Only same-origin and trusted storage URLs are permitted.`
+    );
+  }
+  const response = await fetch(resolveImageUrl(url));
+  if (!response.ok) {
+    return badRequest(`Failed to fetch image from URL: ${url}`);
+  }
+  const mimeType =
+    response.headers.get("content-type") || DEFAULT_IMAGE_MIME_TYPE;
+  if (!isAllowedImageMimeType(mimeType)) {
+    return badRequest(
+      `Invalid image type from URL: ${mimeType}. Allowed: ${ALLOWED_IMAGE_LABEL}`
+    );
+  }
+  const buffer = await response.arrayBuffer();
+  return { base64: Buffer.from(buffer).toString("base64"), mimeType };
+}
+
+/** Rate limiting by IP (or forwarded IP behind proxy). */
+function rateLimited(request: NextRequest): NextResponse | null {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
+  const retryAfter = retryAfterMs(`ocr:${ip}`);
+
+  if (retryAfter !== null) {
+    return NextResponse.json(
+      {
+        error: "Too many OCR requests. Please try again later.",
+        retryAfterMs: retryAfter,
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(retryAfter / 1000)) },
+      }
+    );
+  }
+  return null;
+}
+
+function resolveProvider(formData: FormData): OcrProviderType | NextResponse {
+  // The admin UI always names a provider; scripts calling the API do not,
+  // and defaulting them to Claude sends the request somewhere this
+  // deployment may not even have a key for. GET reports the same default.
+  const provider =
+    (formData.get("provider") as OcrProviderType) ||
+    OcrProviderFactory.getDefaultProviderType();
+  // Asking for a provider this deployment has no key for fails deep inside
+  // the SDK, and the handler reports that as a generic "OCR processing
+  // failed" -- an afternoon of debugging for a request that was answerable
+  // up front. GET /api/ocr lists the same set.
+  const availableProviders = OcrProviderFactory.getAvailableProviders();
+  if (!availableProviders.includes(provider)) {
+    return NextResponse.json(
+      {
+        error: `OCR provider not available: ${provider}`,
+        available: availableProviders,
+      },
+      { status: 400 }
+    );
+  }
+  return provider;
+}
+
+async function collectImages(
+  formData: FormData
+): Promise<OcrImage[] | NextResponse> {
+  const imageUrlsRaw = formData.get("imageUrls") as string | null;
+  const legacyImage = formData.get("image") as File | null;
+  const legacyImageUrl = formData.get("imageUrl") as string | null;
+
+  // 多圖：FormData 中多個 "images" 欄位，與 "imageUrls" JSON 字串陣列
+  let files = formData.getAll("images") as File[];
+  let urls: string[] = imageUrlsRaw ? JSON.parse(imageUrlsRaw) : [];
+  // 向下相容：單個 "image" 檔案或 "imageUrl"
+  if (files.length === 0 && urls.length === 0) {
+    if (legacyImage) files = [legacyImage];
+    else if (legacyImageUrl) urls = [legacyImageUrl];
+  }
+  if (files.length + urls.length > MAX_IMAGES) {
+    return tooManyImages(files.length + urls.length);
+  }
+
+  const images: OcrImage[] = [];
+  for (const load of [
+    ...files.map((file) => () => fileToImage(file)),
+    ...urls.map((url) => () => urlToImage(url)),
+  ]) {
+    const image = await load();
+    if (image instanceof NextResponse) return image;
+    images.push(image);
+  }
+  return images;
+}
+
 // POST /api/ocr - 執行 AI 辨識（支援多圖）
 export async function POST(request: NextRequest) {
   try {
     const denied = await requireEditor(request);
     if (denied) return denied;
 
-    // Rate limiting by IP (or forwarded IP behind proxy)
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
-    const retryAfter = retryAfterMs(`ocr:${ip}`);
-
-    if (retryAfter !== null) {
-      return NextResponse.json(
-        {
-          error: "Too many OCR requests. Please try again later.",
-          retryAfterMs: retryAfter,
-        },
-        {
-          status: 429,
-          headers: { "Retry-After": String(Math.ceil(retryAfter / 1000)) },
-        }
-      );
-    }
+    const limited = rateLimited(request);
+    if (limited) return limited;
 
     const formData = await request.formData();
-    // The admin UI always names a provider; scripts calling the API do not,
-    // and defaulting them to Claude sends the request somewhere this
-    // deployment may not even have a key for. GET reports the same default.
-    const provider =
-      (formData.get("provider") as OcrProviderType) ||
-      OcrProviderFactory.getDefaultProviderType();
-    // Asking for a provider this deployment has no key for fails deep inside
-    // the SDK, and the handler reports that as a generic "OCR processing
-    // failed" -- an afternoon of debugging for a request that was answerable
-    // up front. GET /api/ocr lists the same set.
-    const availableProviders = OcrProviderFactory.getAvailableProviders();
-    if (!availableProviders.includes(provider)) {
-      return NextResponse.json(
-        {
-          error: `OCR provider not available: ${provider}`,
-          available: availableProviders,
-        },
-        { status: 400 }
-      );
-    }
+    const provider = resolveProvider(formData);
+    if (provider instanceof NextResponse) return provider;
 
     const issueId = formData.get("issueId") as string | null;
 
-    const images: OcrImage[] = [];
-
-    // 多圖：FormData 中多個 "images" 欄位
-    const imageFiles = formData.getAll("images") as File[];
-    if (imageFiles.length > MAX_IMAGES) {
-      return tooManyImages(imageFiles.length);
-    }
-    if (imageFiles.length > 0) {
-      for (const file of imageFiles) {
-        if (!isAllowedImageMimeType(file.type)) {
-          return NextResponse.json(
-            { error: `Invalid image type: ${file.type}. Allowed: ${ALLOWED_IMAGE_LABEL}` },
-            { status: 400 }
-          );
-        }
-        const bytes = await file.arrayBuffer();
-        images.push({
-          base64: Buffer.from(bytes).toString("base64"),
-          mimeType: file.type,
-        });
-      }
-    }
-
-    // 多圖 URL：FormData 中 "imageUrls" JSON 字串陣列
-    const imageUrlsRaw = formData.get("imageUrls") as string | null;
-    if (imageUrlsRaw) {
-      const imageUrls: string[] = JSON.parse(imageUrlsRaw);
-      if (images.length + imageUrls.length > MAX_IMAGES) {
-        return tooManyImages(images.length + imageUrls.length);
-      }
-      for (const url of imageUrls) {
-        if (!isSafeImageUrl(url)) {
-          return NextResponse.json(
-            { error: `URL not allowed: ${url}. Only same-origin and trusted storage URLs are permitted.` },
-            { status: 400 }
-          );
-        }
-        const absoluteUrl = resolveImageUrl(url);
-        const response = await fetch(absoluteUrl);
-        if (!response.ok) {
-          return NextResponse.json(
-            { error: `Failed to fetch image from URL: ${url}` },
-            { status: 400 }
-          );
-        }
-        const buffer = await response.arrayBuffer();
-        const mimeType = response.headers.get("content-type") || DEFAULT_IMAGE_MIME_TYPE;
-        if (!isAllowedImageMimeType(mimeType)) {
-          return NextResponse.json(
-            { error: `Invalid image type from URL: ${mimeType}` },
-            { status: 400 }
-          );
-        }
-        images.push({
-          base64: Buffer.from(buffer).toString("base64"),
-          mimeType,
-        });
-      }
-    }
-
-    // 向下相容：單個 "image" 檔案或 "imageUrl"
-    if (images.length === 0) {
-      const image = formData.get("image") as File | null;
-      const imageUrl = formData.get("imageUrl") as string | null;
-
-      if (image) {
-        if (!isAllowedImageMimeType(image.type)) {
-          return NextResponse.json(
-            { error: "Invalid image type. Allowed: ${ALLOWED_IMAGE_LABEL}" },
-            { status: 400 }
-          );
-        }
-        const bytes = await image.arrayBuffer();
-        images.push({
-          base64: Buffer.from(bytes).toString("base64"),
-          mimeType: image.type,
-        });
-      } else if (imageUrl) {
-        if (!isSafeImageUrl(imageUrl)) {
-          return NextResponse.json(
-            { error: `URL not allowed: ${imageUrl}. Only same-origin and trusted storage URLs are permitted.` },
-            { status: 400 }
-          );
-        }
-        const absoluteImageUrl = resolveImageUrl(imageUrl);
-        const response = await fetch(absoluteImageUrl);
-        if (!response.ok) {
-          return NextResponse.json(
-            { error: "Failed to fetch image from URL" },
-            { status: 400 }
-          );
-        }
-        const buffer = await response.arrayBuffer();
-        const mimeType = response.headers.get("content-type") || DEFAULT_IMAGE_MIME_TYPE;
-        if (!isAllowedImageMimeType(mimeType)) {
-          return NextResponse.json(
-            { error: "Invalid image type. Allowed: ${ALLOWED_IMAGE_LABEL}" },
-            { status: 400 }
-          );
-        }
-        images.push({
-          base64: Buffer.from(buffer).toString("base64"),
-          mimeType,
-        });
-      }
-    }
+    const images = await collectImages(formData);
+    if (images instanceof NextResponse) return images;
 
     if (images.length === 0) {
       return NextResponse.json(
@@ -307,7 +283,10 @@ export async function POST(request: NextRequest) {
       const ocrRecord = await prisma.ocrRecord.create({
         data: {
           issueId,
-          imageUrl: imageUrlsRaw || formData.get("imageUrl") as string || "",
+          imageUrl:
+            (formData.get("imageUrls") as string | null) ||
+            (formData.get("imageUrl") as string | null) ||
+            "",
           provider,
           rawResult: result as object,
         },
