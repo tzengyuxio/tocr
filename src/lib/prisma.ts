@@ -3,10 +3,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { pinSslMode } from "./database-url";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-  pool: Pool | undefined;
-};
+// Kept on globalThis so dev-mode hot reloads reuse one client and pool.
+declare global {
+  var __prisma: PrismaClient | undefined;
+  var __pgPool: Pool | undefined;
+}
 
 // pinSslMode, not the raw variable: pg warns that sslmode=require will lose
 // its verification in pg v9, and the connection string lives in the platform's
@@ -15,12 +16,12 @@ const connectionString = process.env.DATABASE_URL
   ? pinSslMode(process.env.DATABASE_URL)
   : undefined;
 
-const pool = globalForPrisma.pool ?? new Pool({ connectionString });
+const pool = globalThis.__pgPool ?? new Pool({ connectionString });
 
 const adapter = new PrismaPg(pool);
 
 export const prisma =
-  globalForPrisma.prisma ??
+  globalThis.__prisma ??
   new PrismaClient({
     adapter,
     log:
@@ -30,8 +31,8 @@ export const prisma =
   });
 
 if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-  globalForPrisma.pool = pool;
+  globalThis.__prisma = prisma;
+  globalThis.__pgPool = pool;
 }
 
 export default prisma;

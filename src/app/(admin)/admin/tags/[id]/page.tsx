@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -45,35 +45,36 @@ export default function TagDetailPage() {
   const [grouped, setGrouped] = useState<GroupedData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 抽成 callback 而不是留在 effect 裡：存檔之後要重取，而這頁的資料是自己
-  // fetch 的，router.refresh() 帶不動它。（與遊戲詳情頁同一個理由。）
-  const load = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/tags/${params.id}?all=true`);
-      const data = await res.json();
-      setTag({
-        id: data.id,
-        name: data.name,
-        slug: data.slug,
-        type: data.type,
-        description: data.description,
-        _count: data._count,
-      });
-      const articles = data.articleTags.map(
-        (at: { article: ArticleData }) => at.article
-      );
-      setGrouped(groupArticles(articles));
-    } catch (err) {
-      console.error("Failed to load tag:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [params.id]);
+  // 存檔之後要重取，而這頁的資料是自己 fetch 的，router.refresh() 帶不動它；
+  // 所以存檔時遞增 reloadKey，讓 effect 再跑一次。（與遊戲詳情頁同一個做法。）
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/tags/${params.id}?all=true`);
+        const data = await res.json();
+        setTag({
+          id: data.id,
+          name: data.name,
+          slug: data.slug,
+          type: data.type,
+          description: data.description,
+          _count: data._count,
+        });
+        const articles = data.articleTags.map(
+          (at: { article: ArticleData }) => at.article
+        );
+        setGrouped(groupArticles(articles));
+      } catch (err) {
+        console.error("Failed to load tag:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     load();
-  }, [load]);
+  }, [params.id, reloadKey]);
 
   if (isLoading) {
     return (
@@ -128,7 +129,7 @@ export default function TagDetailPage() {
             }}
             onSaved={() => {
               toast.success("已儲存");
-              load();
+              setReloadKey((k) => k + 1);
             }}
           />
         </CardContent>

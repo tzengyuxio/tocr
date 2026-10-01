@@ -2,8 +2,9 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -111,9 +112,8 @@ export function ArticleForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ArticleUpdateInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(articleUpdateSchema) as any,
+  } = useForm<z.input<typeof articleUpdateSchema>, unknown, ArticleUpdateInput>({
+    resolver: zodResolver(articleUpdateSchema),
     defaultValues: {
       title: initialData.title,
       subtitle: initialData.subtitle || "",
@@ -128,29 +128,28 @@ export function ArticleForm({
   });
 
   // 載入遊戲和標籤列表
-  const fetchGamesAndTags = useCallback(async () => {
-    try {
-      const [gamesRes, tagsRes] = await Promise.all([
-        fetch("/api/games?limit=500"),
-        fetch("/api/tags?limit=500"),
-      ]);
-
-      if (gamesRes.ok) {
-        const gamesData = await gamesRes.json();
-        setAllGames(gamesData.data || []);
-      }
-      if (tagsRes.ok) {
-        const tagsData = await tagsRes.json();
-        setAllTags(tagsData.data || []);
-      }
-    } catch (error) {
-      console.error("Failed to fetch games/tags:", error);
-    }
-  }, []);
-
   useEffect(() => {
+    const fetchGamesAndTags = async () => {
+      try {
+        const [gamesRes, tagsRes] = await Promise.all([
+          fetch("/api/games?limit=500"),
+          fetch("/api/tags?limit=500"),
+        ]);
+
+        if (gamesRes.ok) {
+          const gamesData = await gamesRes.json();
+          setAllGames(gamesData.data || []);
+        }
+        if (tagsRes.ok) {
+          const tagsData = await tagsRes.json();
+          setAllTags(tagsData.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch games/tags:", error);
+      }
+    };
     fetchGamesAndTags();
-  }, [fetchGamesAndTags]);
+  }, []);
 
   const addAuthor = () => {
     const trimmed = newAuthor.trim();
@@ -203,7 +202,8 @@ export function ArticleForm({
         const data = await res.json();
         toast.error(data.error || "建立標籤失敗");
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to create tag:", err);
       toast.error("建立標籤失敗");
     } finally {
       setIsCreatingTag(false);
@@ -233,7 +233,8 @@ export function ArticleForm({
         const data = await res.json();
         toast.error(data.error || "建立遊戲失敗");
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to create game:", err);
       toast.error("建立遊戲失敗");
     } finally {
       setIsCreatingGame(false);
@@ -496,7 +497,6 @@ export function ArticleForm({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                role="combobox"
                 aria-expanded={gameOpen}
                 className="w-full justify-between"
               >
@@ -584,7 +584,6 @@ export function ArticleForm({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                role="combobox"
                 aria-expanded={tagOpen}
                 className="w-full justify-between"
               >

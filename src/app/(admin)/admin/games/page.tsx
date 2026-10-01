@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -182,56 +182,64 @@ export default function GamesPage() {
     }
   };
 
-  const fetchGames = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(PAGE_SIZE),
-      });
-      if (debouncedSearch) {
-        params.set("search", debouncedSearch);
+  // Bumped after a save, delete or merge to refetch the current page.
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+        if (debouncedSearch) {
+          params.set("search", debouncedSearch);
+        }
+        if (platformFilter !== "all") {
+          params.set("platform", platformFilter);
+        }
+        if (genreFilter !== "all") {
+          params.set("genre", genreFilter);
+        }
+        const [sort, direction] = sortOption.split(":");
+        params.set("sort", sort);
+        params.set("direction", direction as GameDirection);
+        const response = await fetch(`/api/games?${params}`);
+        const data = await response.json();
+        setGames(data.data);
+        setTotal(data.pagination?.total ?? 0);
+        setTotalPages(data.pagination?.totalPages ?? 1);
+      } catch (err) {
+        console.error("Failed to fetch games:", err);
+      } finally {
+        setIsLoading(false);
       }
-      if (platformFilter !== "all") {
-        params.set("platform", platformFilter);
-      }
-      if (genreFilter !== "all") {
-        params.set("genre", genreFilter);
-      }
-      const [sort, direction] = sortOption.split(":");
-      params.set("sort", sort);
-      params.set("direction", direction as GameDirection);
-      const response = await fetch(`/api/games?${params}`);
-      const data = await response.json();
-      setGames(data.data);
-      setTotal(data.pagination?.total ?? 0);
-      setTotalPages(data.pagination?.totalPages ?? 1);
-    } catch (err) {
-      console.error("Failed to fetch games:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [debouncedSearch, platformFilter, genreFilter, sortOption, page]);
+    };
+    fetchGames();
+  }, [
+    debouncedSearch,
+    platformFilter,
+    genreFilter,
+    sortOption,
+    page,
+    reloadKey,
+  ]);
 
   // 打字要等使用者停手，翻頁不必——debounce 掛在關鍵字上而不是整個查詢，
   // 按下一頁才會立刻有反應。
+  // 換了關鍵字、篩選或排序就回第 1 頁：在第 5 頁換關鍵字，新的結果多半沒有
+  // 第 5 頁，留在原頁只會看到空白；換了排序，第 5 頁講的已經是別的東西。
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1);
+    }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   const isFiltered =
     debouncedSearch !== "" || platformFilter !== "all" || genreFilter !== "all";
-
-  // 在第 5 頁換關鍵字，新的結果多半沒有第 5 頁，留在原頁只會看到空白。
-  // 篩選與排序同理——換了排序，第 5 頁講的已經是別的東西。
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, platformFilter, genreFilter, sortOption]);
-
-  useEffect(() => {
-    fetchGames();
-  }, [fetchGames]);
 
 
   const handleDelete = async (id: string) => {
@@ -246,7 +254,7 @@ export default function GamesPage() {
         throw new Error("刪除失敗");
       }
 
-      fetchGames();
+      setReloadKey((k) => k + 1);
     } catch (err) {
       alert(err instanceof Error ? err.message : "刪除失敗");
     }
@@ -281,7 +289,13 @@ export default function GamesPage() {
             <div className="flex flex-wrap items-center gap-2">
               {/* 選項沿用新增／編輯表單的那兩份清單：能挑的就是能篩的。
                   辨識寫入的遊戲可能帶著清單外的平台或類型，那種只能靠關鍵字找。 */}
-              <Select value={platformFilter} onValueChange={setPlatformFilter}>
+              <Select
+                value={platformFilter}
+                onValueChange={(v) => {
+                  setPlatformFilter(v);
+                  setPage(1);
+                }}
+              >
                 <SelectTrigger className="w-36">
                   <SelectValue placeholder="全部平台" />
                 </SelectTrigger>
@@ -299,7 +313,13 @@ export default function GamesPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={genreFilter} onValueChange={setGenreFilter}>
+              <Select
+                value={genreFilter}
+                onValueChange={(v) => {
+                  setGenreFilter(v);
+                  setPage(1);
+                }}
+              >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="全部類型" />
                 </SelectTrigger>
@@ -312,7 +332,13 @@ export default function GamesPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={sortOption} onValueChange={setSortOption}>
+              <Select
+                value={sortOption}
+                onValueChange={(v) => {
+                  setSortOption(v);
+                  setPage(1);
+                }}
+              >
                 <SelectTrigger className="w-44">
                   <SelectValue />
                 </SelectTrigger>
@@ -539,7 +565,7 @@ export default function GamesPage() {
             variant="dialog"
             onSaved={() => {
               setIsDialogOpen(false);
-              fetchGames();
+              setReloadKey((k) => k + 1);
             }}
             onCancel={() => setIsDialogOpen(false)}
           />
@@ -549,7 +575,7 @@ export default function GamesPage() {
       <MergeGameDialog
         source={mergeSource}
         onClose={() => setMergeSource(null)}
-        onMerged={fetchGames}
+        onMerged={() => setReloadKey((k) => k + 1)}
       />
     </div>
   );

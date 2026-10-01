@@ -38,6 +38,21 @@ function createEmptyRow(key: number): ArticleRow {
   };
 }
 
+const COLUMNS: {
+  field: Exclude<keyof ArticleRow, "key">;
+  header: string;
+  headClass: string;
+  placeholder: string;
+  type?: "number";
+}[] = [
+  { field: "title", header: "標題 *", headClass: "min-w-[200px]", placeholder: "文章標題" },
+  { field: "subtitle", header: "副標題", headClass: "min-w-[150px]", placeholder: "副標題" },
+  { field: "category", header: "分類", headClass: "min-w-[100px]", placeholder: "分類" },
+  { field: "pageStart", header: "起始頁", headClass: "w-[80px]", placeholder: "起始", type: "number" },
+  { field: "pageEnd", header: "結束頁", headClass: "w-[80px]", placeholder: "結束", type: "number" },
+  { field: "authors", header: "作者（逗號分隔）", headClass: "min-w-[150px]", placeholder: "作者1, 作者2" },
+];
+
 interface BatchArticleFormProps {
   issueId: string;
   onDone: () => void;
@@ -119,80 +134,30 @@ export function BatchArticleForm({ issueId, onDone }: BatchArticleFormProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[200px]">標題 *</TableHead>
-              <TableHead className="min-w-[150px]">副標題</TableHead>
-              <TableHead className="min-w-[100px]">分類</TableHead>
-              <TableHead className="w-[80px]">起始頁</TableHead>
-              <TableHead className="w-[80px]">結束頁</TableHead>
-              <TableHead className="min-w-[150px]">作者（逗號分隔）</TableHead>
+              {COLUMNS.map((column) => (
+                <TableHead key={column.field} className={column.headClass}>
+                  {column.header}
+                </TableHead>
+              ))}
               <TableHead className="w-[50px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.key}>
-                <TableCell>
-                  <Input
-                    placeholder="文章標題"
-                    value={row.title}
-                    onChange={(e) =>
-                      updateRow(row.key, "title", e.target.value)
-                    }
-                    disabled={isSubmitting}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    placeholder="副標題"
-                    value={row.subtitle}
-                    onChange={(e) =>
-                      updateRow(row.key, "subtitle", e.target.value)
-                    }
-                    disabled={isSubmitting}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    placeholder="分類"
-                    value={row.category}
-                    onChange={(e) =>
-                      updateRow(row.key, "category", e.target.value)
-                    }
-                    disabled={isSubmitting}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    placeholder="起始"
-                    value={row.pageStart}
-                    onChange={(e) =>
-                      updateRow(row.key, "pageStart", e.target.value)
-                    }
-                    disabled={isSubmitting}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    placeholder="結束"
-                    value={row.pageEnd}
-                    onChange={(e) =>
-                      updateRow(row.key, "pageEnd", e.target.value)
-                    }
-                    disabled={isSubmitting}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    placeholder="作者1, 作者2"
-                    value={row.authors}
-                    onChange={(e) =>
-                      updateRow(row.key, "authors", e.target.value)
-                    }
-                    disabled={isSubmitting}
-                  />
-                </TableCell>
+                {COLUMNS.map((column) => (
+                  <TableCell key={column.field}>
+                    <Input
+                      type={column.type}
+                      placeholder={column.placeholder}
+                      value={row[column.field]}
+                      onChange={(e) =>
+                        updateRow(row.key, column.field, e.target.value)
+                      }
+                      disabled={isSubmitting}
+                    />
+                  </TableCell>
+                ))}
                 <TableCell>
                   <Button
                     variant="ghost"

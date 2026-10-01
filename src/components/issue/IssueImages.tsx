@@ -182,6 +182,9 @@ export function IssueImages({
             <div
               ref={panRef}
               {...panProps}
+              // Pointer shortcuts only: Escape, the close button and the size
+              // toggle below are the keyboard routes.
+              role="presentation"
               onClick={() => {
                 if (!didPan()) close();
               }}
@@ -190,7 +193,14 @@ export function IssueImages({
                 actualSize && "cursor-grab select-none active:cursor-grabbing"
               )}
             >
-              <div className="m-auto">
+              <div
+                className="m-auto"
+                role="presentation"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (!didPan()) setActualSize((it) => !it);
+                }}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element -- the
                     lightbox sizes itself to the viewport, which next/image
                     cannot do without fixed dimensions or fill. */}
@@ -198,10 +208,6 @@ export function IssueImages({
                   src={zoomed.src}
                   alt={zoomed.label}
                   draggable={false}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    if (!didPan()) setActualSize((it) => !it);
-                  }}
                   className={
                     actualSize
                       ? "max-w-none"

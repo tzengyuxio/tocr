@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -70,53 +70,54 @@ export default function ArticlesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const fetchMagazines = useCallback(async () => {
-    try {
-      const response = await fetch("/api/magazines?limit=100");
-      if (response.ok) {
-        const data = await response.json();
-        setMagazines(data.data || []);
+  useEffect(() => {
+    const fetchMagazines = async () => {
+      try {
+        const response = await fetch("/api/magazines?limit=100");
+        if (response.ok) {
+          const data = await response.json();
+          setMagazines(data.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch magazines:", error);
       }
-    } catch (error) {
-      console.error("Failed to fetch magazines:", error);
-    }
+    };
+    fetchMagazines();
   }, []);
 
-  const fetchArticles = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set("page", String(page));
-      params.set("limit", "20");
-      if (search) params.set("search", search);
-      if (selectedMagazine) params.set("magazineId", selectedMagazine);
+  // Bumped by the search button to refetch even when nothing else changed.
+  const [reloadKey, setReloadKey] = useState(0);
 
-      const response = await fetch(`/api/articles?${params.toString()}`);
-      if (response.ok) {
-        const data = await response.json();
-        setArticles(data.data || []);
-        setTotal(data.pagination?.total || 0);
-        setTotalPages(data.pagination?.totalPages || 1);
+  useEffect(() => {
+    const fetchArticles = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("limit", "20");
+        if (search) params.set("search", search);
+        if (selectedMagazine) params.set("magazineId", selectedMagazine);
+
+        const response = await fetch(`/api/articles?${params.toString()}`);
+        if (response.ok) {
+          const data = await response.json();
+          setArticles(data.data || []);
+          setTotal(data.pagination?.total || 0);
+          setTotalPages(data.pagination?.totalPages || 1);
+        }
+      } catch (error) {
+        console.error("Failed to fetch articles:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to fetch articles:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search, selectedMagazine]);
-
-  useEffect(() => {
-    fetchMagazines();
-  }, [fetchMagazines]);
-
-  useEffect(() => {
+    };
     fetchArticles();
-  }, [fetchArticles]);
+  }, [page, search, selectedMagazine, reloadKey]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    fetchArticles();
+    setReloadKey((k) => k + 1);
   };
 
   return (

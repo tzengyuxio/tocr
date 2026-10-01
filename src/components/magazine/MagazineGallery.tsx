@@ -173,7 +173,12 @@ export function MagazineGallery({
               />
             </>
           )}
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
+          {/* Only stops a click on the image from closing the lightbox. */}
+          <div
+            className="relative"
+            role="presentation"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element -- the
                 lightbox sizes itself to the viewport, which next/image cannot
                 express without fixed dimensions or a positioned parent. */}
@@ -240,17 +245,20 @@ function SourceName({ source }: { source: { name: string; url: string | null } }
   );
 }
 
-function GalleryArrow({
-  side,
-  label,
-  disabled,
-  onClick,
-}: {
+type ArrowProps = {
   side: "left" | "right";
   label: string;
   disabled: boolean;
   onClick: () => void;
-}) {
+};
+
+function ArrowButton({
+  side,
+  label,
+  disabled,
+  onClick,
+  className,
+}: ArrowProps & { className: string }) {
   const Icon = side === "left" ? ChevronLeft : ChevronRight;
   return (
     <button
@@ -258,39 +266,32 @@ function GalleryArrow({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className={`absolute top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm transition-opacity hover:text-foreground disabled:pointer-events-none disabled:opacity-0 ${
-        side === "left" ? "left-1" : "right-1"
-      }`}
+      className={className}
     >
       <Icon className="h-4 w-4" />
     </button>
   );
 }
 
+function GalleryArrow(props: ArrowProps) {
+  return (
+    <ArrowButton
+      {...props}
+      className={`absolute top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm transition-opacity hover:text-foreground disabled:pointer-events-none disabled:opacity-0 ${
+        props.side === "left" ? "left-1" : "right-1"
+      }`}
+    />
+  );
+}
+
 /* The caption row's arrows. Unlike the pair over the image, a disabled one
    stays visible at low contrast: the row is a fixed set of controls, and
    having one vanish at either end of the run makes the counter jump. */
-function CaptionArrow({
-  side,
-  label,
-  disabled,
-  onClick,
-}: {
-  side: "left" | "right";
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  const Icon = side === "left" ? ChevronLeft : ChevronRight;
+function CaptionArrow(props: ArrowProps) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
+    <ArrowButton
+      {...props}
       className="flex h-5 w-5 items-center justify-center rounded transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-    >
-      <Icon className="h-4 w-4" />
-    </button>
+    />
   );
 }

@@ -70,29 +70,31 @@ export default function UsersPage() {
   const [newRole, setNewRole] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // Bumped after a role change to refetch the list.
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch("/api/users");
-      if (!response.ok) {
-        if (response.status === 403) {
-          toast.error("權限不足，僅管理員可存取此頁面");
-          return;
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("/api/users");
+        if (!response.ok) {
+          if (response.status === 403) {
+            toast.error("權限不足，僅管理員可存取此頁面");
+            return;
+          }
+          throw new Error("Failed to fetch users");
         }
-        throw new Error("Failed to fetch users");
+        const data = await response.json();
+        setUsers(data.data || []);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        toast.error("載入使用者列表失敗");
+      } finally {
+        setLoading(false);
       }
-      const data = await response.json();
-      setUsers(data.data || []);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-      toast.error("載入使用者列表失敗");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    fetchUsers();
+  }, [reloadKey]);
 
   const handleRoleChange = async () => {
     if (!editingUser || !newRole) return;
@@ -112,7 +114,7 @@ export default function UsersPage() {
 
       toast.success("使用者角色已更新");
       setEditingUser(null);
-      fetchUsers();
+      setReloadKey((k) => k + 1);
     } catch (error) {
       console.error("Failed to update user role:", error);
       toast.error(error instanceof Error ? error.message : "更新失敗");
@@ -308,9 +310,11 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">選擇角色</label>
+              <label htmlFor="user-role" className="text-sm font-medium">
+                選擇角色
+              </label>
               <Select value={newRole} onValueChange={setNewRole}>
-                <SelectTrigger>
+                <SelectTrigger id="user-role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

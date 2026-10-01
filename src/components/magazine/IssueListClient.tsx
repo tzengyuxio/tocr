@@ -225,7 +225,8 @@ export function IssueListClient({
       });
       if (!res.ok) throw new Error("Reorder failed");
       toast.success("排序已更新");
-    } catch {
+    } catch (err) {
+      console.error("Failed to reorder issues:", err);
       setIssues(initialIssues); // rollback
       toast.error("排序更新失敗");
     }
@@ -242,7 +243,8 @@ export function IssueListClient({
       setIssues((prev) => prev.filter((i) => i.id !== deleteTarget.id));
       toast.success(`已刪除單期：${formatIssueNumber(deleteTarget.issueNumber)}`);
       router.refresh();
-    } catch {
+    } catch (err) {
+      console.error("Failed to delete issue:", err);
       toast.error("刪除失敗");
     } finally {
       setIsDeleting(false);

@@ -87,8 +87,8 @@ export const PUT = withErrorHandler(async (
 
   const tag = await prisma.tag.update({
     where: { id },
-    // Renaming a tag has to move its key, or recognition goes on matching the
-    // name it used to have.
+    // Renaming a tag has to move its key, or recognition keeps matching the
+    // old name.
     data: {
       ...validatedData,
       ...(validatedData.name && { nameKey: tagNameKey(validatedData.name) }),

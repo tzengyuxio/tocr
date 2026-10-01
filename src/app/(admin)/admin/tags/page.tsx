@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -97,31 +97,33 @@ export default function TagsPage() {
     }
   };
 
-  const fetchTags = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(PAGE_SIZE),
-      });
-      if (activeType !== "all") {
-        params.set("type", activeType);
-      }
-      const response = await fetch(`/api/tags?${params}`);
-      const data = await response.json();
-      setTags(data.data);
-      setTotal(data.pagination?.total ?? 0);
-      setTotalPages(data.pagination?.totalPages ?? 1);
-    } catch (err) {
-      console.error("Failed to fetch tags:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeType, page]);
+  // Bumped after a save or delete to refetch the current page.
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    const fetchTags = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+        if (activeType !== "all") {
+          params.set("type", activeType);
+        }
+        const response = await fetch(`/api/tags?${params}`);
+        const data = await response.json();
+        setTags(data.data);
+        setTotal(data.pagination?.total ?? 0);
+        setTotalPages(data.pagination?.totalPages ?? 1);
+      } catch (err) {
+        console.error("Failed to fetch tags:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchTags();
-  }, [fetchTags]);
+  }, [activeType, page, reloadKey]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("確定要刪除此標籤嗎？")) return;
@@ -135,7 +137,7 @@ export default function TagsPage() {
         throw new Error("刪除失敗");
       }
 
-      fetchTags();
+      setReloadKey((k) => k + 1);
     } catch (err) {
       alert(err instanceof Error ? err.message : "刪除失敗");
     }
@@ -347,7 +349,7 @@ export default function TagsPage() {
             variant="dialog"
             onSaved={() => {
               setIsDialogOpen(false);
-              fetchTags();
+              setReloadKey((k) => k + 1);
             }}
             onCancel={() => setIsDialogOpen(false)}
           />
